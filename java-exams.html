@@ -55,7 +55,7 @@
             <nav class="header-nav"><a href="scores.html">Scores</a><a href="profile.html">Profile</a><button class="logout-btn" id="logout-btn">Logout</button></nav>
         </header>
         <main class="dashboard-content">
-            <a href="dashboard.html" class="back-btn">&larr; Back to Dashboard</a>
+            <a href="dashboard.html" class="back-btn">&larr; Back to All Subjects</a>
             <h2 id="page-title">Java Exams</h2>
             <div class="exam-list" id="exam-list"></div>
         </main>
@@ -67,17 +67,25 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = { /* YOUR FIREBASE CONFIG HERE */ };
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
 
-            // *** THIS IS THE ONLY LINE YOU NEED TO CHANGE FOR EACH NEW PAGE ***
-            const CURRENT_PAGE_ID = "java-exams.html";
+            const CURRENT_PAGE_FILENAME = "java-exams.html";
 
             const dom = {
                 loadingOverlay: document.getElementById('loading-overlay'),
                 page: document.getElementById('exam-category-page'),
+                pageTitle: document.getElementById('page-title'),
                 userPhoto: document.getElementById('user-photo'),
                 userName: document.getElementById('user-name'),
                 examList: document.getElementById('exam-list'),
@@ -93,7 +101,7 @@
                     dom.userName.textContent = userProfile.displayName; 
                     dom.userPhoto.src = userProfile.photoURL || '';
                     
-                    renderExamsForPage();
+                    loadAndRenderExams();
                     
                     dom.page.style.display = 'flex';
                     dom.loadingOverlay.style.display = 'none';
@@ -101,9 +109,23 @@
                     window.location.href = 'index.html';
                 }
             });
-            
-            const renderExamsForPage = () => {
-                db.collection('exams').where('assignedPage', '==', CURRENT_PAGE_ID)
+
+            const loadAndRenderExams = async () => {
+                dom.examList.innerHTML = '<p>Loading exams for this subject...</p>';
+
+                const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
+
+                if (subjectQuery.empty) {
+                    dom.examList.innerHTML = '<p>This subject category has not been set up by the admin.</p>';
+                    return;
+                }
+
+                const subjectDoc = subjectQuery.docs[0];
+                const subjectId = subjectDoc.id;
+                const subjectName = subjectDoc.data().name;
+                dom.pageTitle.textContent = `${subjectName} Exams`;
+                
+                db.collection('exams').where('subjectId', '==', subjectId)
                   .onSnapshot(snapshot => {
                     dom.examList.innerHTML = '';
                     if (snapshot.empty) {
