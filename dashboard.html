@@ -31,11 +31,16 @@
         .dashboard-content h2 { font-size: 2rem; margin-bottom: 24px; }
         .exam-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
         .exam-card { background: var(--color-surface); border-radius: var(--border-radius-lg); padding: 24px; box-shadow: var(--shadow-lg); transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
-        .exam-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        .exam-card.locked { opacity: 0.7; }
+        .exam-card.locked:hover { transform: none; box-shadow: var(--shadow-lg); }
+        .exam-card:not(.locked):hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
         .exam-card h3 { font-size: 1.25rem; margin-bottom: 8px; color: var(--color-text-primary); }
         .exam-card p { color: var(--color-text-secondary); margin-bottom: 16px; font-size: 0.9rem; }
-        .enter-exam-btn { width: 100%; padding: 12px; border-radius: var(--border-radius-md); background: var(--color-primary); color: white; font-weight: 600; transition: background-color var(--transition-fast); }
+        .exam-action-btn { width: 100%; padding: 12px; border-radius: var(--border-radius-md); font-weight: 600; transition: background-color var(--transition-fast); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .enter-exam-btn { background: var(--color-primary); color: white; }
         .enter-exam-btn:hover { background: var(--color-primary-dark); }
+        .locked-exam-btn { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
+        .locked-exam-btn svg { width: 16px; height: 16px; }
         @media (max-width: 800px) {
             .portal-header { padding: 16px; }
             .user-info .user-email { display: none; }
@@ -129,20 +134,33 @@
             };
 
             const renderStudentDashboard = () => {
-                db.collection('exams').where('isLocked', '==', false).onSnapshot(snapshot => {
+                db.collection('exams').onSnapshot(snapshot => {
                     dom.examList.innerHTML = '';
                     if (snapshot.empty) {
-                        dom.examList.innerHTML = '<p>No exams are available at the moment. Please check back later.</p>';
+                        dom.examList.innerHTML = '<p>No exams have been created yet. Please check back later.</p>';
                         return;
                     }
                     snapshot.forEach(doc => {
                         const exam = doc.data();
                         const card = document.createElement('div');
-                        card.className = 'exam-card';
+                        card.className = `exam-card ${exam.isLocked ? 'locked' : ''}`;
+                        
+                        let actionButton;
+                        if (exam.isLocked) {
+                            actionButton = `
+                                <button class="exam-action-btn locked-exam-btn" disabled>
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg>
+                                    <span>Locked</span>
+                                </button>
+                            `;
+                        } else {
+                             actionButton = `<button class="exam-action-btn enter-exam-btn" data-exam-id="${doc.id}">Enter Exam</button>`;
+                        }
+
                         card.innerHTML = `
                             <h3>${exam.name}</h3>
                             <p>${exam.questions.length} Questions | ${exam.duration / 60} Minutes</p>
-                            <button class="enter-exam-btn" data-exam-id="${doc.id}">Enter Exam</button>
+                            ${actionButton}
                         `;
                         dom.examList.appendChild(card);
                     });
@@ -150,8 +168,9 @@
             };
 
             dom.examList.addEventListener('click', e => {
-                if (e.target.matches('.enter-exam-btn')) {
-                    const examId = e.target.dataset.examId;
+                const button = e.target.closest('.enter-exam-btn');
+                if (button) {
+                    const examId = button.dataset.examId;
                     window.location.href = `exam.html?id=${examId}`;
                 }
             });
