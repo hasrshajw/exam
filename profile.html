@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile - Exam Portal</title>
+    <style>
+        :root {
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
+            --color-background: #f4f7fa; --color-surface: #ffffff; --color-text-primary: #111827; --color-text-secondary: #6b7280;
+            --color-border: #e5e7eb; --color-success: #10b981;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius-md: 8px; --border-radius-lg: 16px;
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: flex; flex-direction: column; }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        .page { display: flex; flex-direction: column; width: 100%; min-height: 100%; }
+        .portal-header { width: 100%; background: var(--color-surface); padding: 16px 48px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); flex-shrink: 0; }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; }
+        .user-info .user-name { font-weight: 600; }
+        .user-info .user-email { font-size: 0.8rem; color: var(--color-text-secondary); }
+        .header-nav { display: flex; align-items: center; gap: 8px; }
+        .header-nav a, .logout-btn { color: var(--color-text-secondary); font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: var(--border-radius-md); transition: background-color var(--transition-fast); }
+        .header-nav a:hover, .logout-btn:hover { background-color: var(--color-background); }
+        .dashboard-content { padding: 40px; width: 100%; max-width: 800px; margin: 0 auto; flex-grow: 1; }
+        .profile-card { background: var(--color-surface); border-radius: var(--border-radius-lg); padding: 40px; box-shadow: var(--shadow-lg); }
+        .profile-card-header { border-bottom: 1px solid var(--color-border); padding-bottom: 16px; margin-bottom: 24px; }
+        .profile-card-header h2 { font-size: 1.5rem; }
+        .profile-card-header p { color: var(--color-text-secondary); margin-top: 4px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left; }
+        .form-field { display: flex; flex-direction: column; }
+        .form-field.full-width { grid-column: 1 / -1; }
+        .form-field label { font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; }
+        .form-field input, .form-field select { padding: 12px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border); font-size: 1rem; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
+        .form-field input:focus, .form-field select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); outline: none; }
+        .form-field input[readonly] { background-color: var(--color-background); color: var(--color-text-secondary); cursor: not-allowed; }
+        .form-field .gender-options { display: flex; gap: 16px; align-items: center; padding-top: 8px; }
+        .form-field .gender-options label { margin-bottom: 0; font-weight: normal; }
+        .profile-card-footer { border-top: 1px solid var(--color-border); padding-top: 24px; margin-top: 32px; text-align: right; }
+        .save-btn { padding: 12px 28px; border-radius: var(--border-radius-md); font-weight: 600; transition: all var(--transition-fast); background-color: var(--color-primary); color: white; }
+        .save-btn:hover { background-color: var(--color-primary-dark); }
+        .save-btn:disabled { background-color: #a5b4fc; cursor: not-allowed; }
+        .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #2c3e50; color: white; padding: 12px 24px; border-radius: var(--border-radius-md); box-shadow: var(--shadow-lg); z-index: 2000; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
+        .toast-notification.show { opacity: 1; bottom: 40px; }
+        @media (max-width: 800px) {
+            .portal-header { padding: 16px; }
+            .user-info .user-email { display: none; }
+            .dashboard-content { padding: 24px; }
+            .profile-card { padding: 24px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .profile-card-footer { text-align: center; }
+            .save-btn { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--color-text-secondary);">Loading Profile...</div>
+
+    <div class="page" id="profile-page" style="display: none;">
+        <header class="portal-header">
+            <div class="user-profile">
+                <img id="user-photo" src="" alt="User photo">
+                <div class="user-info">
+                    <div class="user-name" id="user-name"></div>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <a href="dashboard.html">Exams</a>
+                <a href="scores.html">Scores</a>
+                <button class="logout-btn" id="logout-btn">Logout</button>
+            </nav>
+        </header>
+        <main class="dashboard-content">
+            <div class="profile-card">
+                <div class="profile-card-header">
+                    <h2>Personal Information</h2>
+                    <p>Update your photo and personal details here.</p>
+                </div>
+                <form id="user-details-form">
+                    <div class="form-grid">
+                        <div class="form-field full-width">
+                            <label for="user-detail-name">Full Name</label>
+                            <input type="text" id="user-detail-name" required>
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="user-detail-email">Email Address</label>
+                            <input type="email" id="user-detail-email" readonly>
+                        </div>
+                        <div class="form-field">
+                            <label for="user-detail-rollno">Roll No.</label>
+                            <input type="text" id="user-detail-rollno" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="user-detail-dob">Date of Birth</label>
+                            <input type="date" id="user-detail-dob" required>
+                        </div>
+                        <div class="form-field full-width">
+                             <label>Gender</label>
+                             <div class="gender-options">
+                                <input type="radio" id="gender-male" name="gender" value="Male" required><label for="gender-male">Male</label>
+                                <input type="radio" id="gender-female" name="gender" value="Female"><label for="gender-female">Female</label>
+                                <input type="radio" id="gender-other" name="gender" value="Other"><label for="gender-other">Other</label>
+                             </div>
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="user-detail-college">College</label>
+                            <select id="user-detail-college" required>
+                                <option value="">-- Select your college --</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="profile-card-footer">
+                        <button type="submit" class="save-btn" id="save-btn">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast-notification" id="toast-notification"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            
+            const COLLEGES = ["Stanford University", "MIT", "Harvard University", "Caltech", "University of Oxford", "Other"];
+
+            const dom = {
+                loadingOverlay: document.getElementById('loading-overlay'),
+                profilePage: document.getElementById('profile-page'),
+                userPhoto: document.getElementById('user-photo'),
+                userName: document.getElementById('user-name'),
+                logoutBtn: document.getElementById('logout-btn'),
+                userDetailsForm: document.getElementById('user-details-form'),
+                collegeSelect: document.getElementById('user-detail-college'),
+                saveBtn: document.getElementById('save-btn'),
+                toast: document.getElementById('toast-notification')
+            };
+            
+            let currentUserProfile = null;
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) {
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    currentUserProfile = userDoc.data();
+                    setupUserUI(currentUserProfile);
+                    populateForm(currentUserProfile);
+                    dom.profilePage.style.display = 'flex';
+                    dom.loadingOverlay.style.display = 'none';
+                } else {
+                    window.location.href = 'index.html';
+                }
+            });
+            
+            const setupUserUI = (profile) => {
+                dom.userName.textContent = profile.displayName; 
+                dom.userPhoto.src = profile.photoURL || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+            };
+
+            const populateColleges = () => {
+                COLLEGES.forEach(college => {
+                    const option = document.createElement('option');
+                    option.value = college;
+                    option.textContent = college;
+                    dom.collegeSelect.appendChild(option);
+                });
+            };
+
+            const populateForm = (profile) => {
+                document.getElementById('user-detail-name').value = profile.displayName || '';
+                document.getElementById('user-detail-email').value = profile.email || '';
+                document.getElementById('user-detail-rollno').value = profile.rollNo || '';
+                document.getElementById('user-detail-dob').value = profile.dob || '';
+                if (profile.gender) {
+                    document.querySelector(`input[name="gender"][value="${profile.gender}"]`).checked = true;
+                }
+                dom.collegeSelect.value = profile.college || '';
+            };
+
+            dom.userDetailsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                dom.saveBtn.disabled = true;
+                dom.saveBtn.textContent = 'Saving...';
+                
+                const currentUser = auth.currentUser;
+                if (!currentUser) return;
+                
+                const updatedData = {
+                    displayName: document.getElementById('user-detail-name').value.trim(),
+                    rollNo: document.getElementById('user-detail-rollno').value.trim(),
+                    dob: document.getElementById('user-detail-dob').value,
+                    gender: document.querySelector('input[name="gender"]:checked').value,
+                    college: dom.collegeSelect.value
+                };
+
+                try {
+                    await db.collection('users').doc(currentUser.uid).update(updatedData);
+                    dom.userName.textContent = updatedData.displayName; 
+                    showToast('Profile updated successfully!');
+                } catch (error) {
+                    console.error("Error updating profile:", error);
+                    alert("Could not update profile. Please try again.");
+                } finally {
+                    dom.saveBtn.disabled = false;
+                    dom.saveBtn.textContent = 'Save Changes';
+                }
+            });
+
+            const showToast = (message) => {
+                dom.toast.textContent = message;
+                dom.toast.classList.add('show');
+                setTimeout(() => dom.toast.classList.remove('show'), 3000);
+            };
+            
+            const signOutUser = () => {
+                auth.signOut();
+            };
+
+            dom.logoutBtn.addEventListener('click', signOutUser);
+            
+            populateColleges();
+        });
+    </script>
+</body>
+</html>
