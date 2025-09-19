@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Advanced UI/UX Exam Dashboard</title>
+    <title>Advanced Exam Portal</title>
     <style>
         :root {
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -20,6 +20,45 @@
         body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); overflow-x: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         button { font-family: inherit; cursor: pointer; border: none; background: none; }
         svg { display: block; width: 100%; height: 100%; }
+        
+        .page { display: none; width: 100%; min-height: 100%; }
+        .page.active { display: flex; }
+
+        #login-page { flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        .login-card { background: var(--color-surface); padding: 40px; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); max-width: 400px; }
+        .login-card h1 { font-size: 1.75rem; margin-bottom: 8px; } .login-card p { color: var(--color-text-secondary); margin-bottom: 24px; }
+        .google-login-btn { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); font-weight: 500; transition: all var(--transition-fast); }
+        .google-login-btn:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); } .google-login-btn svg { width: 20px; height: 20px; }
+
+        .portal-header { width: 100%; background: var(--color-surface); padding: 16px 48px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; }
+        .user-info .user-name { font-weight: 600; } .user-info .user-email { font-size: 0.8rem; color: var(--color-text-secondary); }
+        .header-nav a, .logout-btn { color: var(--color-text-secondary); font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: var(--border-radius-md); transition: background-color var(--transition-fast); }
+        .header-nav a:hover, .logout-btn:hover { background-color: var(--color-background); }
+        .header-nav a.active { background-color: var(--color-primary-light); color: var(--color-primary); }
+
+        .dashboard-container { flex-direction: column; width: 100%; }
+        .dashboard-content { padding: 40px; width: 100%; max-width: 1200px; margin: 0 auto; }
+        .dashboard-content h2 { font-size: 2rem; margin-bottom: 24px; }
+        .exam-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
+        .exam-card { background: var(--color-surface); border-radius: var(--border-radius-lg); padding: 24px; box-shadow: var(--shadow-lg); }
+        .exam-card h3 { font-size: 1.25rem; margin-bottom: 8px; } .exam-card p { color: var(--color-text-secondary); margin-bottom: 16px; font-size: 0.9rem; }
+        .enter-exam-btn { width: 100%; padding: 12px; border-radius: var(--border-radius-md); background: var(--color-primary); color: white; font-weight: 600; transition: background-color var(--transition-fast); }
+        .enter-exam-btn:hover { background: var(--color-primary-dark); }
+        
+        #scores-dashboard-page .back-btn { margin-bottom: 24px; font-weight: 500; color: var(--color-primary); }
+        .scores-table-container { background: var(--color-surface); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); overflow: hidden; }
+        .scores-table { width: 100%; border-collapse: collapse; }
+        .scores-table th, .scores-table td { padding: 16px; text-align: left; border-bottom: 1px solid var(--color-border); }
+        .scores-table th { background: var(--color-background); font-size: 0.8rem; text-transform: uppercase; color: var(--color-text-secondary); }
+        .scores-table td .student-info { display: flex; align-items: center; gap: 12px; }
+        .scores-table td .student-info img { width: 32px; height: 32px; border-radius: 50%; }
+        .scores-table td .score-badge { display: inline-block; padding: 4px 12px; border-radius: 999px; font-weight: 600; font-size: 0.9rem; }
+        .scores-table td .score-badge.high { background: var(--color-success-light); color: var(--color-success); }
+        .scores-table td .score-badge.medium { background: var(--color-warning-light); color: var(--color-warning); }
+        .scores-table td .score-badge.low { background: #fee2e2; color: var(--color-danger); }
+        
         .exam-dashboard { display: flex; height: 100%; position: relative; }
         .sidebar { width: 280px; background-color: var(--color-sidebar-bg); color: var(--color-sidebar-text); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
         .sidebar-header { margin-bottom: 24px; } .sidebar-header .round-title { font-size: 0.9rem; color: var(--color-sidebar-text-muted); margin-bottom: 4px; } .sidebar-header .test-title { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
@@ -90,28 +129,49 @@
 
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 800px) {
-            .exam-dashboard { flex-direction: column; overflow-y: auto; }
+            .portal-header { padding: 16px; }
+            .user-info .user-email, #scores-dashboard-page .header-nav { display: none; }
+            #exam-page .exam-dashboard { flex-direction: column; overflow-y: auto; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); } .sidebar.active { transform: translateX(0); } .sidebar-header { padding-right: 30px; }
             .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--color-sidebar-hover); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn .icon { width: 18px; height: 18px; }
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
             .main-content { padding: 16px; } .main-header { justify-content: flex-start; }
             .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--color-border); border-radius: 50%; color: var(--color-text-secondary); } .menu-toggle .icon { width: 20px; height: 20px; }
             .question-card, .review-card, .results-summary { padding: 24px; }
-            .stats-grid { grid-template-columns: 1fr; }
+            .stats-grid, #scores-dashboard-page .scores-table thead { display: none; }
+            #scores-dashboard-page .scores-table, #scores-dashboard-page .scores-table tbody, #scores-dashboard-page .scores-table tr, #scores-dashboard-page .scores-table td { display: block; width: 100%; }
+            #scores-dashboard-page .scores-table tr { margin-bottom: 16px; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); }
+            #scores-dashboard-page .scores-table td { display: flex; justify-content: space-between; align-items: center; border: none; }
+            #scores-dashboard-page .scores-table td::before { content: attr(data-label); font-weight: bold; margin-right: 16px; }
         }
     </style>
 </head>
 <body>
-    <div class="network-status" id="network-status"></div>
-    <div class="toast-notification" id="toast-notification"></div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
 
-    <div class="exam-dashboard" id="exam-dashboard">
-        <aside class="sidebar" id="sidebar"> <button class="close-menu-btn" id="close-menu-btn" aria-label="Close menu"><span class="icon"></span></button> <div class="sidebar-header"><p class="round-title">Round 1</p><h1 class="test-title">Java Full Stack Development Pre-Test</h1></div> <div class="progress-container"><span id="progress-text">0% Completed</span><div class="progress-bar"><div id="progress-bar-inner" class="progress"></div></div></div> <nav><ul class="question-nav" id="question-nav"></ul></nav> </aside>
-        <main class="main-content"> <header class="main-header"> <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><span class="icon"></span></button> <div class="timer"><span class="icon"></span><span id="timer-display">01:59:19</span></div> <button class="end-round-btn" id="end-round-btn">End Round</button> </header> <div class="question-area"> <section class="question-card"> <div class="question-header"><p class="question-number" id="question-number"></p><button class="flag-btn" id="flag-btn"><span class="icon"></span><span class="flag-text"></span></button></div><h2 class="question-title" id="question-title"></h2> <div class="options-container" id="options-container"></div> <footer class="question-footer"> <button class="nav-btn prev-btn" id="prev-btn">&larr; Previous</button> <div> <button class="nav-btn next-btn" id="next-btn">Next &rarr;</button> <button class="nav-btn submit-btn" id="submit-btn" style="display: none;">Review & Submit</button> </div> </footer> </section> </div> </main>
-        <div class="overlay" id="overlay"></div>
+    <div class="page" id="login-page">
+        <div class="login-card"><h1>Exam Portal</h1><p>Please sign in to continue.</p><button class="google-login-btn" id="google-login-btn"><svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.519-3.108-11.127-7.481l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.022,36.218,44,30.561,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg><span>Sign in with Google</span></button></div>
+    </div>
+    
+    <div class="page dashboard-container" id="student-dashboard-page">
+        <header class="portal-header"><div class="user-profile"><img id="user-photo" src="" alt="User photo"><div class="user-info"><div class="user-name" id="user-name"></div><div class="user-email" id="user-email"></div></div></div><nav class="header-nav"><a href="#" id="scores-link">Scores Dashboard</a><button class="logout-btn" id="logout-btn">Logout</button></nav></header>
+        <main class="dashboard-content"><h2>Available Exams</h2><div class="exam-list" id="exam-list"></div></main>
     </div>
 
-    <div class="review-page" id="review-page">
+    <div class="page dashboard-container" id="scores-dashboard-page">
+        <header class="portal-header"><div class="user-profile"><img id="scores-user-photo" src="" alt="User photo"><div class="user-info"><div class="user-name" id="scores-user-name"></div></div></div><nav class="header-nav"><button class="logout-btn" id="scores-logout-btn">Logout</button></nav></header>
+        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Exam</th><th>Score</th><th>Date</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
+    </div>
+
+    <div class="page" id="exam-page">
+        <div class="exam-dashboard">
+            <aside class="sidebar" id="sidebar"> <button class="close-menu-btn" id="close-menu-btn" aria-label="Close menu"><span class="icon"></span></button> <div class="sidebar-header"><p class="round-title">Round 1</p><h1 class="test-title" id="exam-title-sidebar"></h1></div> <div class="progress-container"><span id="progress-text">0% Completed</span><div class="progress-bar"><div id="progress-bar-inner" class="progress"></div></div></div> <nav><ul class="question-nav" id="question-nav"></ul></nav> </aside>
+            <main class="main-content"> <header class="main-header"> <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><span class="icon"></span></button> <div class="timer"><span class="icon"></span><span id="timer-display"></span></div> <button class="end-round-btn" id="end-round-btn">End Round</button> </header> <div class="question-area"> <section class="question-card"> <div class="question-header"><p class="question-number" id="question-number"></p><button class="flag-btn" id="flag-btn"><span class="icon"></span><span class="flag-text"></span></button></div><h2 class="question-title" id="question-title"></h2> <div class="options-container" id="options-container"></div> <footer class="question-footer"> <button class="nav-btn prev-btn" id="prev-btn">&larr; Previous</button> <div> <button class="nav-btn next-btn" id="next-btn">Next &rarr;</button> <button class="nav-btn submit-btn" id="submit-btn" style="display: none;">Review & Submit</button> </div> </footer> </section> </div> </main>
+            <div class="overlay" id="overlay"></div>
+        </div>
+    </div>
+
+    <div class="page" id="review-page">
         <div class="review-card">
             <div class="review-header"><h2>Review Your Answers</h2><p>Click on a number to jump to that question. Submit when you are ready.</p></div>
             <div class="review-grid" id="review-grid"></div>
@@ -119,40 +179,72 @@
         </div>
     </div>
 
-    <div class="results-page" id="results-page">
+    <div class="page" id="results-page">
         <div class="results-summary">
             <h2 class="summary-title" id="summary-title"></h2><p class="summary-message" id="summary-message"></p>
             <div class="score-display"><div class="score-header"><span class="score-label">Your Score</span><span class="score-percentage" id="score-percentage">0%</span></div><div class="score-bar-track"><div class="score-bar-fill" id="score-bar-fill"></div></div></div>
             <div class="stats-grid"><div class="stat-card total"><div class="stat-icon" id="total-icon"></div><div class="stat-info"><span class="stat-number" id="total-mcqs"></span><span class="stat-label">Total Questions</span></div></div><div class="stat-card correct"><div class="stat-icon" id="correct-icon"></div><div class="stat-info"><span class="stat-number" id="correct-answers"></span><span class="stat-label">Correct</span></div></div><div class="stat-card incorrect"><div class="stat-icon" id="wrong-answers-icon"></div><div class="stat-info"><span class="stat-number" id="wrong-answers"></span><span class="stat-label">Incorrect</span></div></div></div>
             <div class="secondary-stats"><div class="secondary-stat"><span class="stat-number" id="total-points"></span><span class="stat-label">Points Scored</span></div><div class="secondary-stat"><span class="stat-number" id="time-taken"></span><span class="stat-label">Time Taken</span></div></div>
-            <button class="retake-btn" id="retake-btn">Retake Test</button>
+            <button class="retake-btn" id="back-to-dashboard-from-results">Back to Dashboard</button>
         </div>
     </div>
     
     <div class="modal-overlay" id="times-up-modal">
-        <div class="modal-content">
-            <h2>Time's Up!</h2><p>Your time has expired. The test will be submitted automatically.</p>
-            <div class="modal-countdown" id="grace-countdown">10</div>
-        </div>
+        <div class="modal-content"><h2>Time's Up!</h2><p>Your time has expired. The test will be submitted automatically.</p><div class="modal-countdown" id="grace-countdown">10</div></div>
     </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            let questions = [
-                { type: 'Mcq', points: 2, title: 'In a microservices architecture using Spring Cloud, what is the primary role of a service registry like Eureka?', options: ['Handle authentication', 'Monitor application logs', 'Manage API documentation', 'Track and register service instances dynamically'], correctAnswer: 3, userAnswer: null, isFlagged: false },
-                { type: 'Mcq', points: 10, title: 'Which is the most efficient and recommended way to reverse a String in Java?', options: ['Using a for loop and charAt()', 'Using the StringBuilder.reverse() method', 'Using recursion', 'Converting to char array and iterating backwards'], correctAnswer: 1, userAnswer: null, isFlagged: false },
-                { type: 'Mcq', points: 2, title: 'Which annotation defines a controller for RESTful web services in Spring Boot?', options: ['@Controller', '@Service', '@RestController', '@Repository'], correctAnswer: 2, userAnswer: null, isFlagged: false },
-                { type: 'Mcq', points: 10, title: 'What is a key characteristic of a thread-safe Singleton pattern in Java?', options: ['Using a public constructor', 'A public static instance variable', 'Lazy initialization without synchronization', 'A private constructor and a synchronized static method'], correctAnswer: 3, userAnswer: null, isFlagged: false },
-                { type: 'Mcq', points: 2, title: 'What is the default scope of a bean in the Spring IoC container?', options: ['singleton', 'prototype', 'request', 'session'], correctAnswer: 0, userAnswer: null, isFlagged: false }
-            ];
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
 
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            const ALL_EXAMS = {
+                'java-pre-test': {
+                    name: "Java Full Stack Pre-Test",
+                    duration: 3600,
+                    questions: [
+                        { type: 'Mcq', points: 2, title: 'In a microservices architecture using Spring Cloud, what is the primary role of a service registry like Eureka?', options: ['Handle authentication', 'Monitor application logs', 'Manage API documentation', 'Track and register service instances dynamically'], correctAnswer: 3 },
+                        { type: 'Mcq', points: 10, title: 'Which is the most efficient way to reverse a String in Java?', options: ['Using a for loop', 'Using the StringBuilder.reverse() method', 'Using recursion', 'Converting to char array'], correctAnswer: 1 },
+                        { type: 'Mcq', points: 2, title: 'Which annotation defines a REST controller in Spring Boot?', options: ['@Controller', '@Service', '@RestController', '@Repository'], correctAnswer: 2 },
+                        { type: 'Mcq', points: 10, title: 'What is a key trait of a thread-safe Singleton pattern?', options: ['Public constructor', 'Public static instance', 'Lazy initialization without synchronization', 'Private constructor and a synchronized static method'], correctAnswer: 3 },
+                        { type: 'Mcq', points: 2, title: 'What is the default scope of a bean in Spring?', options: ['singleton', 'prototype', 'request', 'session'], correctAnswer: 0 }
+                    ]
+                },
+                'javascript-fundamentals': {
+                    name: "JavaScript Fundamentals",
+                    duration: 1800,
+                    questions: [
+                        { type: 'Mcq', points: 5, title: 'Which keyword is used to declare a constant variable?', options: ['var', 'let', 'const', 'static'], correctAnswer: 2 },
+                        { type: 'Mcq', points: 5, title: 'What will `typeof null` return?', options: ['null', 'undefined', 'object', 'string'], correctAnswer: 2 },
+                        { type: 'Mcq', points: 5, title: 'Which of the following is NOT a primitive type in JavaScript?', options: ['String', 'Number', 'Array', 'Boolean'], correctAnswer: 2 },
+                        { type: 'Mcq', points: 5, title: 'What is the purpose of the `===` operator?', options: ['Assigns a value', 'Compares values for equality', 'Compares both value and type for equality', 'Compares object references'], correctAnswer: 2 }
+                    ]
+                }
+            };
+            
+            let questions = [];
             let currentQuestionIndex = 0;
-            const initialTime = 3600 + 59 * 60 + 19;
-            let timeLeft = initialTime;
-            let timerInterval;
-            let saveInterval;
+            let initialTime = 0;
+            let timeLeft = 0;
+            let timerInterval, saveInterval;
             let focusLossCount = 0;
-            const SESSION_KEY = 'examSession';
+            let currentUser = null;
+            let currentExamId = null;
 
             const ICONS = {
                 MENU: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>`,
@@ -166,13 +258,91 @@
                 INCORRECT: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`
             };
             
-            const dom = { examDashboard: document.getElementById('exam-dashboard'), reviewPage: document.getElementById('review-page'), resultsPage: document.getElementById('results-page'), questionNav: document.getElementById('question-nav'), progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), qNumber: document.getElementById('question-number'), qTitle: document.getElementById('question-title'), optionsContainer: document.getElementById('options-container'), flagBtn: document.getElementById('flag-btn'), prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'), submitBtn: document.getElementById('submit-btn'), endRoundBtn: document.getElementById('end-round-btn'), timerDisplay: document.getElementById('timer-display'), sidebar: document.getElementById('sidebar'), menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), closeMenuBtn: document.getElementById('close-menu-btn'), reviewGrid: document.getElementById('review-grid'), finalSubmitBtn: document.getElementById('final-submit-btn'), retakeBtn: document.getElementById('retake-btn'), networkStatus: document.getElementById('network-status'), toast: document.getElementById('toast-notification'), timesUpModal: document.getElementById('times-up-modal'), graceCountdown: document.getElementById('grace-countdown') };
+            const dom = {
+                pages: document.querySelectorAll('.page'), loadingOverlay: document.getElementById('loading-overlay'),
+                loginBtn: document.getElementById('google-login-btn'), logoutBtn: document.getElementById('logout-btn'), scoresLogoutBtn: document.getElementById('scores-logout-btn'),
+                userPhoto: document.getElementById('user-photo'), userName: document.getElementById('user-name'), userEmail: document.getElementById('user-email'),
+                scoresUserPhoto: document.getElementById('scores-user-photo'), scoresUserName: document.getElementById('scores-user-name'),
+                examList: document.getElementById('exam-list'), scoresLink: document.getElementById('scores-link'), backToDashboardBtn: document.getElementById('back-to-dashboard-btn'),
+                scoresTbody: document.getElementById('scores-tbody'),
+                examDashboard: document.getElementById('exam-dashboard'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
+                reviewPage: document.getElementById('review-page'), resultsPage: document.getElementById('results-page'), questionNav: document.getElementById('question-nav'), progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), qNumber: document.getElementById('question-number'), qTitle: document.getElementById('question-title'), optionsContainer: document.getElementById('options-container'), flagBtn: document.getElementById('flag-btn'), prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'), submitBtn: document.getElementById('submit-btn'), endRoundBtn: document.getElementById('end-round-btn'), timerDisplay: document.getElementById('timer-display'), sidebar: document.getElementById('sidebar'), menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), closeMenuBtn: document.getElementById('close-menu-btn'), reviewGrid: document.getElementById('review-grid'), finalSubmitBtn: document.getElementById('final-submit-btn'), retakeBtn: document.getElementById('back-to-dashboard-from-results'), networkStatus: document.getElementById('network-status'), toast: document.getElementById('toast-notification'), timesUpModal: document.getElementById('times-up-modal'), graceCountdown: document.getElementById('grace-countdown')
+            };
 
+            const showPage = (pageId) => { dom.pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); window.scrollTo(0, 0); };
+            const signInWithGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+            const signOutUser = () => auth.signOut();
+
+            auth.onAuthStateChanged(user => {
+                dom.loadingOverlay.style.display = 'none';
+                if (user) {
+                    currentUser = user;
+                    dom.userName.textContent = user.displayName; dom.userEmail.textContent = user.email; dom.userPhoto.src = user.photoURL;
+                    dom.scoresUserName.textContent = user.displayName; dom.scoresUserPhoto.src = user.photoURL;
+                    renderStudentDashboard(); showPage('student-dashboard-page');
+                } else {
+                    currentUser = null;
+                    showPage('login-page');
+                }
+            });
+
+            const renderStudentDashboard = () => {
+                dom.examList.innerHTML = '';
+                for (const id in ALL_EXAMS) {
+                    const exam = ALL_EXAMS[id];
+                    const card = document.createElement('div');
+                    card.className = 'exam-card';
+                    card.innerHTML = `<h3>${exam.name}</h3><p>${exam.questions.length} Questions | ${exam.duration / 60} Minutes</p><button class="enter-exam-btn" data-exam-id="${id}">Enter Exam</button>`;
+                    dom.examList.appendChild(card);
+                }
+            };
+            
+            const startExam = (examId) => {
+                currentExamId = examId;
+                const examData = ALL_EXAMS[examId];
+                questions = JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isFlagged: false}));
+                initialTime = examData.duration;
+                timeLeft = initialTime;
+                dom.examTitleSidebar.textContent = examData.name;
+                loadSession();
+                initializeApp();
+                showPage('exam-page');
+            };
+
+            const showScoresDashboard = async () => {
+                showPage('scores-dashboard-page');
+                dom.scoresTbody.innerHTML = '<tr><td colspan="5">Loading scores...</td></tr>';
+                const scoresRef = db.collection('scores').orderBy('percentage', 'desc');
+                const snapshot = await scoresRef.get();
+                dom.scoresTbody.innerHTML = '';
+                if(snapshot.empty) {
+                    dom.scoresTbody.innerHTML = '<tr><td colspan="5">No scores submitted yet.</td></tr>';
+                    return;
+                }
+                let rank = 1;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
+                    let scoreClass = 'low';
+                    if (data.percentage >= 75) scoreClass = 'high';
+                    else if (data.percentage >= 50) scoreClass = 'medium';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td data-label="Rank">${rank++}</td>
+                        <td data-label="Student"><div class="student-info"><img src="${data.userPhotoURL}" alt="${data.userName}"><p>${data.userName}</p></div></td>
+                        <td data-label="Exam">${data.examName}</td>
+                        <td data-label="Score"><span class="score-badge ${scoreClass}">${data.percentage}%</span></td>
+                        <td data-label="Date">${date}</td>
+                    `;
+                    dom.scoresTbody.appendChild(row);
+                });
+            };
+            
             const renderSidebar = () => { dom.questionNav.innerHTML = ''; questions.forEach((q, index) => { const item = document.createElement('li'); item.className = `question-item ${index === currentQuestionIndex ? 'active' : ''} ${q.userAnswer !== null ? 'answered' : ''} ${q.isFlagged ? 'flagged' : ''}`; item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><div class="q-status-icons"><span class="q-status-icon check">${ICONS.CHECK}</span><span class="q-status-icon flag">${ICONS.FLAG}</span></div>`; item.addEventListener('click', () => { navigateToQuestion(index); closeMobileMenu(); }); dom.questionNav.appendChild(item); }); };
             const renderQuestion = () => { const question = questions[currentQuestionIndex]; dom.qNumber.textContent = `Question ${currentQuestionIndex + 1}`; dom.qTitle.textContent = question.title; dom.optionsContainer.innerHTML = ''; question.options.forEach((opt, index) => { const optionDiv = document.createElement('div'); optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`; optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span><div class="option-check-icon">${ICONS.CHECK}</div>`; optionDiv.addEventListener('click', () => selectOption(index)); dom.optionsContainer.appendChild(optionDiv); }); updateFlagButton(); updateNavButtons(); };
             const injectIcons = () => { document.querySelector('.menu-toggle .icon').innerHTML = ICONS.MENU; document.querySelector('.close-menu-btn .icon').innerHTML = ICONS.CLOSE; document.querySelector('.timer .icon').innerHTML = ICONS.TIMER; };
             const renderResults = () => { const totalQuestions = questions.length; const correctCount = questions.filter(q => q.userAnswer === q.correctAnswer).length; const incorrectCount = totalQuestions - correctCount; const percentage = Math.round((correctCount / totalQuestions) * 100); const totalPoints = questions.reduce((sum, q) => sum + q.points, 0); const userPoints = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0); const timeTakenSecs = initialTime - timeLeft; const minutes = Math.floor(timeTakenSecs / 60); const seconds = timeTakenSecs % 60; document.getElementById('score-percentage').textContent = `${percentage}%`; setTimeout(() => { document.getElementById('score-bar-fill').style.width = `${percentage}%`; }, 100); let title, message; if (percentage === 100) { title = "Perfect Score!"; message = "Incredible work! You nailed every question."; } else if (percentage >= 75) { title = "Excellent Job!"; message = "You have a strong understanding of the material."; } else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track. Every attempt is a step forward."; } else { title = "Keep Studying!"; message = "Don't be discouraged. This is a great learning opportunity."; } document.getElementById('summary-title').textContent = title; document.getElementById('summary-message').textContent = message; document.getElementById('total-mcqs').textContent = totalQuestions; document.getElementById('correct-answers').textContent = correctCount; document.getElementById('wrong-answers').textContent = incorrectCount; document.getElementById('total-icon').innerHTML = ICONS.TOTAL; document.getElementById('correct-icon').innerHTML = ICONS.CORRECT; document.getElementById('wrong-answers-icon').innerHTML = ICONS.INCORRECT; document.getElementById('total-points').textContent = `${userPoints} / ${totalPoints}`; document.getElementById('time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; };
-            const renderReviewGrid = () => { dom.reviewGrid.innerHTML = ''; questions.forEach((q, index) => { const btn = document.createElement('button'); btn.className = 'review-item-btn'; if (q.isFlagged) { btn.classList.add('flagged'); } else if (q.userAnswer !== null) { btn.classList.add('answered'); } else { btn.classList.add('unanswered'); } btn.textContent = index + 1; btn.addEventListener('click', () => { navigateToQuestion(index); showPage('exam'); }); dom.reviewGrid.appendChild(btn); }); };
+            const renderReviewGrid = () => { dom.reviewGrid.innerHTML = ''; questions.forEach((q, index) => { const btn = document.createElement('button'); btn.className = 'review-item-btn'; if (q.isFlagged) { btn.classList.add('flagged'); } else if (q.userAnswer !== null) { btn.classList.add('answered'); } else { btn.classList.add('unanswered'); } btn.textContent = index + 1; btn.addEventListener('click', () => { navigateToQuestion(index); showPage('exam-page'); }); dom.reviewGrid.appendChild(btn); }); };
             
             const selectOption = (optionIndex) => { const question = questions[currentQuestionIndex]; question.userAnswer = (question.userAnswer === optionIndex) ? null : optionIndex; renderQuestion(); updateProgress(); renderSidebar(); saveSession();};
             const updateProgress = () => { const answeredCount = questions.filter(q => q.userAnswer !== null).length; const percentage = Math.round((answeredCount / questions.length) * 100); dom.progressText.textContent = `${percentage}% Completed`; dom.progressBarInner.style.width = `${percentage}%`; };
@@ -185,22 +355,28 @@
             const startTimer = () => { if (timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { timeLeft--; const minutes = Math.floor(timeLeft / 60); if ([600, 300, 60].includes(timeLeft)) { showToast(`${minutes} minutes remaining!`); } if (timeLeft <= 0) { handleTimesUp(); return; } const hours = Math.floor(timeLeft / 3600); const mins = Math.floor((timeLeft % 3600) / 60); const secs = timeLeft % 60; dom.timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`; }, 1000); };
             const handleTimesUp = () => { clearInterval(timerInterval); dom.timesUpModal.style.display = 'flex'; let gracePeriod = 10; dom.graceCountdown.textContent = gracePeriod; const graceInterval = setInterval(() => { gracePeriod--; dom.graceCountdown.textContent = gracePeriod; if (gracePeriod <= 0) { clearInterval(graceInterval); handleSubmit(true); } }, 1000); };
             
-            const saveSession = () => { const session = { questions, timeLeft, focusLossCount }; localStorage.setItem(SESSION_KEY, JSON.stringify(session)); };
-            const loadSession = () => { const savedSession = localStorage.getItem(SESSION_KEY); if (savedSession) { if (confirm("An unfinished session was found. Do you want to resume?")) { const session = JSON.parse(savedSession); questions = session.questions; timeLeft = session.timeLeft; focusLossCount = session.focusLossCount; } else { localStorage.removeItem(SESSION_KEY); } } };
-            const clearSession = () => localStorage.removeItem(SESSION_KEY);
+            const getSessionKey = () => `examSession-${currentUser.uid}-${currentExamId}`;
+            const saveSession = () => { if(!currentUser || !currentExamId) return; const session = { questions, timeLeft, focusLossCount }; localStorage.setItem(getSessionKey(), JSON.stringify(session)); };
+            const loadSession = () => { const savedSession = localStorage.getItem(getSessionKey()); if (savedSession) { if (confirm("An unfinished session was found. Do you want to resume?")) { const session = JSON.parse(savedSession); questions = session.questions; timeLeft = session.timeLeft; focusLossCount = session.focusLossCount; } else { localStorage.removeItem(getSessionKey()); } } };
+            const clearSession = () => localStorage.removeItem(getSessionKey());
             
-            const handleNetworkStatus = () => { const statusEl = dom.networkStatus; if (navigator.onLine) { statusEl.textContent = 'Back online!'; statusEl.className = 'network-status online'; setTimeout(() => statusEl.className = 'network-status', 2000); } else { statusEl.textContent = 'You are offline. Progress is saved locally.'; statusEl.className = 'network-status offline'; } };
-            const showPage = (page) => { dom.examDashboard.style.display = 'none'; dom.reviewPage.style.display = 'none'; dom.resultsPage.style.display = 'none'; if(page === 'exam') dom.examDashboard.style.display = 'flex'; if(page === 'review') dom.reviewPage.style.display = 'flex'; if(page === 'results') dom.resultsPage.style.display = 'flex'; window.scrollTo(0, 0); };
-            const showReviewPage = () => { renderReviewGrid(); showPage('review'); };
+            const handleNetworkStatus = () => { const statusEl = dom.networkStatus; if (navigator.onLine) { if(statusEl.classList.contains('offline')) { statusEl.textContent = 'Back online!'; statusEl.className = 'network-status online'; setTimeout(() => statusEl.className = 'network-status', 2000); } } else { statusEl.textContent = 'You are offline. Progress is saved locally.'; statusEl.className = 'network-status offline'; } };
+            const showReviewPage = () => { renderReviewGrid(); showPage('review-page'); };
             const handleFocusLoss = () => { focusLossCount++; saveSession(); if (focusLossCount < 3) { alert(`Warning ${focusLossCount} of 2: Switching tabs or applications is not allowed. Further violations will result in auto-submission.`); } else { alert('Third violation detected. Your test will be submitted automatically.'); handleSubmit(true); } };
-            const handleSubmit = (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(timerInterval); clearInterval(saveInterval); clearSession(); renderResults(); showPage('results'); };
-            const retakeTest = () => { currentQuestionIndex = 0; timeLeft = initialTime; focusLossCount = 0; questions.forEach(q => { q.userAnswer = null; q.isFlagged = false; }); document.getElementById('score-bar-fill').style.width = '0%'; clearSession(); showPage('exam'); initializeApp(); };
-
+            const handleSubmit = async (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(timerInterval); clearInterval(saveInterval); renderResults(); const totalQuestions = questions.length; const correctCount = questions.filter(q => q.userAnswer === q.correctAnswer).length; const percentage = Math.round((correctCount / totalQuestions) * 100); const timeTaken = initialTime - timeLeft; await db.collection('scores').add({ userId: currentUser.uid, userName: currentUser.displayName, userEmail: currentUser.email, userPhotoURL: currentUser.photoURL, examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, score: correctCount, total: totalQuestions, percentage: percentage, timeTaken: timeTaken, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); clearSession(); showPage('results-page'); };
+            
             const openMobileMenu = () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); };
             const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
             const preventDefault = e => e.preventDefault();
             const preventDevTools = e => { if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ) { e.preventDefault(); } };
 
+            dom.loginBtn.addEventListener('click', signInWithGoogle);
+            dom.logoutBtn.addEventListener('click', signOutUser);
+            dom.scoresLogoutBtn.addEventListener('click', signOutUser);
+            dom.scoresLink.addEventListener('click', showScoresDashboard);
+            dom.backToDashboardBtn.addEventListener('click', () => showPage('student-dashboard-page'));
+            dom.examList.addEventListener('click', e => { if (e.target.matches('.enter-exam-btn')) { startExam(e.target.dataset.examId); } });
+            
             dom.flagBtn.addEventListener('click', toggleFlag);
             dom.prevBtn.addEventListener('click', () => { if (currentQuestionIndex > 0) navigateToQuestion(currentQuestionIndex - 1); });
             dom.nextBtn.addEventListener('click', () => { if (currentQuestionIndex < questions.length - 1) navigateToQuestion(currentQuestionIndex + 1); });
@@ -208,11 +384,10 @@
             dom.endRoundBtn.addEventListener('click', showReviewPage);
             dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
             dom.menuToggle.addEventListener('click', openMobileMenu); dom.overlay.addEventListener('click', closeMobileMenu); dom.closeMenuBtn.addEventListener('click', closeMobileMenu);
-            dom.retakeBtn.addEventListener('click', retakeTest);
+            dom.retakeBtn.addEventListener('click', () => showPage('student-dashboard-page'));
             window.addEventListener('online', handleNetworkStatus); window.addEventListener('offline', handleNetworkStatus);
 
             const initializeApp = () => {
-                loadSession();
                 injectIcons(); 
                 renderSidebar(); 
                 renderQuestion(); 
@@ -224,7 +399,6 @@
                 document.addEventListener('contextmenu', preventDefault); 
                 document.addEventListener('keydown', preventDevTools); 
             };
-            initializeApp();
         });
     </script>
 </body>
