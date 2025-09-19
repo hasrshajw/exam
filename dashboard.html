@@ -9,66 +9,56 @@
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
             --color-background: #f4f7fa; --color-surface: #ffffff; --color-text-primary: #111827; --color-text-secondary: #6b7280;
-            --color-border: #e5e7eb;
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --border-radius-md: 8px; --border-radius-lg: 16px;
+            --border-radius-lg: 16px;
             --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; }
-        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: flex; flex-direction: column; }
-        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); display: flex; flex-direction: column; }
         .page { display: flex; flex-direction: column; width: 100%; min-height: 100%; }
         .portal-header { width: 100%; background: var(--color-surface); padding: 16px 48px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); flex-shrink: 0; }
         .user-profile { display: flex; align-items: center; gap: 12px; }
         .user-profile img { width: 40px; height: 40px; border-radius: 50%; }
         .user-info .user-name { font-weight: 600; }
-        .user-info .user-email { font-size: 0.8rem; color: var(--color-text-secondary); }
         .header-nav { display: flex; align-items: center; gap: 8px; }
-        .header-nav a, .logout-btn { color: var(--color-text-secondary); font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: var(--border-radius-md); transition: background-color var(--transition-fast); }
+        .header-nav a, .logout-btn { color: var(--color-text-secondary); font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: 8px; transition: background-color var(--transition-fast); }
         .header-nav a:hover, .logout-btn:hover { background-color: var(--color-background); }
         .dashboard-content { padding: 40px; width: 100%; max-width: 1200px; margin: 0 auto; flex-grow: 1; }
         .dashboard-content h2 { font-size: 2rem; margin-bottom: 24px; }
-        .exam-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-        .exam-card { background: var(--color-surface); border-radius: var(--border-radius-lg); padding: 24px; box-shadow: var(--shadow-lg); transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
-        .exam-card.locked { opacity: 0.7; }
-        .exam-card.locked:hover { transform: none; box-shadow: var(--shadow-lg); }
-        .exam-card:not(.locked):hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
-        .exam-card h3 { font-size: 1.25rem; margin-bottom: 8px; color: var(--color-text-primary); }
-        .exam-card p { color: var(--color-text-secondary); margin-bottom: 16px; font-size: 0.9rem; }
-        .exam-action-btn { width: 100%; padding: 12px; border-radius: var(--border-radius-md); font-weight: 600; transition: background-color var(--transition-fast); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .enter-exam-btn { background: var(--color-primary); color: white; }
-        .enter-exam-btn:hover { background: var(--color-primary-dark); }
-        .locked-exam-btn { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
-        .locked-exam-btn svg { width: 16px; height: 16px; }
-        @media (max-width: 800px) {
-            .portal-header { padding: 16px; }
-            .user-info .user-email { display: none; }
-            .dashboard-content { padding: 24px; }
-        }
+        .category-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
+        .category-card { display: block; text-decoration: none; background: var(--color-surface); border-radius: var(--border-radius-lg); padding: 32px 24px; box-shadow: var(--shadow-lg); transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
+        .category-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
+        .category-card h3 { font-size: 1.5rem; color: var(--color-text-primary); }
+        .category-card p { color: var(--color-primary); font-weight: 600; margin-top: 8px; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--color-text-secondary);">Loading Dashboard...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
     
     <div class="page" id="student-dashboard-page" style="display: none;">
         <header class="portal-header">
             <div class="user-profile">
                 <img id="user-photo" src="" alt="User photo">
-                <div class="user-info">
-                    <div class="user-name" id="user-name"></div>
-                    <div class="user-email" id="user-email"></div>
-                </div>
+                <div class="user-info"><div class="user-name" id="user-name"></div></div>
             </div>
-            <nav class="header-nav">
-                <a href="scores.html" id="scores-link">Scores Dashboard</a>
-                <a href="profile.html" id="profile-link">My Profile</a>
-                <button class="logout-btn" id="logout-btn">Logout</button>
-            </nav>
+            <nav class="header-nav"><a href="scores.html">Scores</a><a href="profile.html">Profile</a><button class="logout-btn" id="logout-btn">Logout</button></nav>
         </header>
         <main class="dashboard-content">
-            <h2>Available Exams</h2>
-            <div class="exam-list" id="exam-list">
+            <h2>Exam Categories</h2>
+            <div class="category-list" id="category-list">
+                <a href="java-exams.html" class="category-card">
+                    <h3>Java Exams</h3>
+                    <p>View Exams &rarr;</p>
+                </a>
+                <a href="python-exams.html" class="category-card">
+                    <h3>Python Exams</h3>
+                    <p>View Exams &rarr;</p>
+                </a>
+                <a href="javascript-exams.html" class="category-card">
+                    <h3>JavaScript Exams</h3>
+                    <p>View Exams &rarr;</p>
+                </a>
             </div>
         </main>
     </div>
@@ -79,109 +69,30 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e799",
-                storageBucket: "exam-2e799.firebasestorage.app",
-                messagingSenderId: "472506328501",
-                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-                measurementId: "G-NX21HT3JKT"
-            };
-
+            const firebaseConfig = { /* YOUR FIREBASE CONFIG HERE */ };
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
             const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
-            const dom = {
-                loadingOverlay: document.getElementById('loading-overlay'),
-                dashboardPage: document.getElementById('student-dashboard-page'),
-                userPhoto: document.getElementById('user-photo'),
-                userName: document.getElementById('user-name'),
-                userEmail: document.getElementById('user-email'),
-                examList: document.getElementById('exam-list'),
-                logoutBtn: document.getElementById('logout-btn')
-            };
-
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    if (user.email === ADMIN_EMAIL) {
-                        window.location.href = 'admin.html';
-                        return;
-                    }
-
+                    if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) {
-                        window.location.href = 'index.html';
-                        return;
-                    }
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
 
                     const userProfile = userDoc.data();
-                    setupUserUI(userProfile);
-                    renderStudentDashboard();
-                    dom.dashboardPage.style.display = 'flex';
-                    dom.loadingOverlay.style.display = 'none';
+                    document.getElementById('user-name').textContent = userProfile.displayName; 
+                    document.getElementById('user-photo').src = userProfile.photoURL || '';
+                    
+                    document.getElementById('student-dashboard-page').style.display = 'flex';
+                    document.getElementById('loading-overlay').style.display = 'none';
                 } else {
                     window.location.href = 'index.html';
                 }
             });
             
-            const setupUserUI = (profile) => {
-                dom.userName.textContent = profile.displayName; 
-                dom.userEmail.textContent = profile.email; 
-                dom.userPhoto.src = profile.photoURL || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-            };
-
-            const renderStudentDashboard = () => {
-                db.collection('exams').onSnapshot(snapshot => {
-                    dom.examList.innerHTML = '';
-                    if (snapshot.empty) {
-                        dom.examList.innerHTML = '<p>No exams have been created yet. Please check back later.</p>';
-                        return;
-                    }
-                    snapshot.forEach(doc => {
-                        const exam = doc.data();
-                        const card = document.createElement('div');
-                        card.className = `exam-card ${exam.isLocked ? 'locked' : ''}`;
-                        
-                        let actionButton;
-                        if (exam.isLocked) {
-                            actionButton = `
-                                <button class="exam-action-btn locked-exam-btn" disabled>
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg>
-                                    <span>Locked</span>
-                                </button>
-                            `;
-                        } else {
-                             actionButton = `<button class="exam-action-btn enter-exam-btn" data-exam-id="${doc.id}">Enter Exam</button>`;
-                        }
-
-                        card.innerHTML = `
-                            <h3>${exam.name}</h3>
-                            <p>${exam.questions.length} Questions | ${exam.duration / 60} Minutes</p>
-                            ${actionButton}
-                        `;
-                        dom.examList.appendChild(card);
-                    });
-                });
-            };
-
-            dom.examList.addEventListener('click', e => {
-                const button = e.target.closest('.enter-exam-btn');
-                if (button) {
-                    const examId = button.dataset.examId;
-                    window.location.href = `exam.html?id=${examId}`;
-                }
-            });
-            
-            const signOutUser = () => {
-                auth.signOut().catch(error => {
-                    console.error('Sign out error', error);
-                });
-            };
-
-            dom.logoutBtn.addEventListener('click', signOutUser);
+            document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
         });
     </script>
 </body>
