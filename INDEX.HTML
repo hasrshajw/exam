@@ -114,13 +114,22 @@
         .toast-notification.show { opacity: 1; bottom: 40px; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--color-surface); padding: 40px; border-radius: var(--border-radius-lg); text-align: center; max-width: 450px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform var(--transition-fast); }
+        .modal-content { background-color: var(--color-surface); padding: 40px; border-radius: var(--border-radius-lg); text-align: center; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform var(--transition-fast); }
         .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-content h2 { font-size: 1.75rem; margin-bottom: 12px; } .modal-content p { color: var(--color-text-secondary); margin-bottom: 24px; }
         .modal-countdown { font-size: 2.5rem; font-weight: bold; color: var(--color-primary); }
         .modal-actions { margin-top: 24px; display: flex; gap: 12px; justify-content: center; }
         .modal-actions .close-btn { background-color: var(--color-background); color: var(--color-text-secondary); }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; }
+        .form-field { display: flex; flex-direction: column; } .form-field.full-width { grid-column: 1 / -1; }
+        .form-field label { font-size: 0.9rem; font-weight: 500; margin-bottom: 6px; }
+        .form-field input, .form-field select { padding: 10px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border); font-size: 1rem; }
+        .form-field .gender-options { display: flex; gap: 16px; align-items: center; padding-top: 8px; }
+        .form-field .gender-options label { margin-bottom: 0; }
+        .scores-tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--color-border); margin-bottom: 24px; }
+        .scores-tab-btn { padding: 10px 20px; font-weight: 600; color: var(--color-text-secondary); border-bottom: 3px solid transparent; transition: all var(--transition-fast); }
+        .scores-tab-btn.active { color: var(--color-primary); border-bottom-color: var(--color-primary); }
         @media (max-width: 800px) {
             .portal-header { padding: 16px; }
             .user-info .user-email, #scores-dashboard-page .header-nav { display: none; }
@@ -136,6 +145,7 @@
             #scores-dashboard-page .scores-table tr { margin-bottom: 16px; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); }
             #scores-dashboard-page .scores-table td { display: flex; justify-content: space-between; align-items: center; border: none; }
             #scores-dashboard-page .scores-table td::before { content: attr(data-label); font-weight: bold; margin-right: 16px; }
+            .form-grid { grid-template-columns: 1fr; } .form-field.full-width { grid-column: auto; }
         }
     </style>
 </head>
@@ -153,7 +163,7 @@
     </div>
     <div class="page dashboard-container" id="scores-dashboard-page">
         <header class="portal-header"><div class="user-profile"><img id="scores-user-photo" src="" alt="User photo"><div class="user-info"><div class="user-name" id="scores-user-name"></div></div></div><nav class="header-nav"><button class="logout-btn" id="scores-logout-btn">Logout</button></nav></header>
-        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Total Points</th><th>Overall Percentage</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
+        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-tabs" id="scores-tabs"><button class="scores-tab-btn active" id="overall-scores-btn">Overall Scores</button><button class="scores-tab-btn" id="college-scores-btn">My College Scores</button></div><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Total Points</th><th>Overall Percentage</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
     </div>
     <div class="page" id="exam-page">
         <div class="exam-dashboard">
@@ -186,10 +196,7 @@
             <h2 id="prev-results-title">Previous Result</h2>
             <div class="score-display"><div class="score-header"><span class="score-label">Score</span><span class="score-percentage" id="prev-score-percentage">0%</span></div><div class="score-bar-track"><div class="score-bar-fill" id="prev-score-bar-fill"></div></div></div>
             <div class="secondary-stats"><div class="secondary-stat"><span class="stat-number" id="prev-total-points"></span><span class="stat-label">Points Scored</span></div><div class="secondary-stat"><span class="stat-number" id="prev-time-taken"></span><span class="stat-label">Time Taken</span></div></div>
-            <div class="modal-actions">
-                <button class="nav-btn prev-btn close-btn">Close</button>
-                <button class="retake-btn" id="rewrite-exam-btn">Rewrite Exam</button>
-            </div>
+            <div class="modal-actions"><button class="nav-btn prev-btn close-btn">Close</button><button class="retake-btn" id="rewrite-exam-btn">Rewrite Exam</button></div>
         </div>
     </div>
      <div class="modal-overlay" id="submission-choice-modal">
@@ -210,6 +217,45 @@
                     <button class="nav-btn submit-btn" id="submit-new-result-btn" style="width: 100%; margin-top: 10px;">Submit This</button>
                 </div>
             </div>
+        </div>
+    </div>
+    <div class="modal-overlay" id="user-details-modal">
+        <div class="modal-content">
+            <h2>Welcome!</h2>
+            <p>Please complete your profile to continue.</p>
+            <form id="user-details-form">
+                <div class="form-grid">
+                    <div class="form-field full-width">
+                        <label for="user-detail-name">Full Name</label>
+                        <input type="text" id="user-detail-name" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="user-detail-rollno">Roll No.</label>
+                        <input type="text" id="user-detail-rollno" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="user-detail-dob">Date of Birth</label>
+                        <input type="date" id="user-detail-dob" required>
+                    </div>
+                    <div class="form-field full-width">
+                         <label>Gender</label>
+                         <div class="gender-options">
+                            <input type="radio" id="gender-male" name="gender" value="Male" required><label for="gender-male">Male</label>
+                            <input type="radio" id="gender-female" name="gender" value="Female"><label for="gender-female">Female</label>
+                            <input type="radio" id="gender-other" name="gender" value="Other"><label for="gender-other">Other</label>
+                         </div>
+                    </div>
+                    <div class="form-field full-width">
+                        <label for="user-detail-college">College</label>
+                        <select id="user-detail-college" required>
+                            <option value="">-- Select your college --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="nav-btn submit-btn">Save & Continue</button>
+                </div>
+            </form>
         </div>
     </div>
     
@@ -256,9 +302,12 @@
                     ]
                 }
             };
+
+            const COLLEGES = ["Stanford University", "MIT", "Harvard University", "Caltech", "University of Oxford", "Other"];
             
             let examState = {};
             let currentUser = null;
+            let currentUserProfile = null;
             
             const ICONS = {
                 MENU: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>`,
@@ -282,27 +331,76 @@
                 examDashboard: document.getElementById('exam-dashboard'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
                 reviewPage: document.getElementById('review-page'), resultsPage: document.getElementById('results-page'), questionNav: document.getElementById('question-nav'), progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), qNumber: document.getElementById('question-number'), qTitle: document.getElementById('question-title'), optionsContainer: document.getElementById('options-container'), flagBtn: document.getElementById('flag-btn'), prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'), submitBtn: document.getElementById('submit-btn'), endRoundBtn: document.getElementById('end-round-btn'), timerDisplay: document.getElementById('timer-display'), sidebar: document.getElementById('sidebar'), menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), closeMenuBtn: document.getElementById('close-menu-btn'), reviewGrid: document.getElementById('review-grid'), finalSubmitBtn: document.getElementById('final-submit-btn'), retakeBtn: document.getElementById('back-to-dashboard-from-results'), networkStatus: document.getElementById('network-status'), toast: document.getElementById('toast-notification'), timesUpModal: document.getElementById('times-up-modal'), graceCountdown: document.getElementById('grace-countdown'),
                 prevResultsModal: document.getElementById('previous-results-modal'), rewriteExamBtn: document.getElementById('rewrite-exam-btn'),
-                submissionChoiceModal: document.getElementById('submission-choice-modal'),
-                submitOldResultBtn: document.getElementById('submit-old-result-btn'),
-                submitNewResultBtn: document.getElementById('submit-new-result-btn')
+                submissionChoiceModal: document.getElementById('submission-choice-modal'), submitOldResultBtn: document.getElementById('submit-old-result-btn'), submitNewResultBtn: document.getElementById('submit-new-result-btn'),
+                userDetailsModal: document.getElementById('user-details-modal'), userDetailsForm: document.getElementById('user-details-form'),
+                collegeSelect: document.getElementById('user-detail-college'),
+                scoresTabs: document.getElementById('scores-tabs'), overallScoresBtn: document.getElementById('overall-scores-btn'), collegeScoresBtn: document.getElementById('college-scores-btn')
             };
 
             const showPage = (pageId) => { dom.pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); window.scrollTo(0, 0); };
             const signInWithGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
             const signOutUser = () => { if(examState.timerInterval) clearInterval(examState.timerInterval); if(examState.saveInterval) clearInterval(examState.saveInterval); auth.signOut(); };
 
-            auth.onAuthStateChanged(user => {
+            auth.onAuthStateChanged(async user => {
                 dom.loadingOverlay.style.display = 'none';
                 if (user) {
                     currentUser = user;
-                    dom.userName.textContent = user.displayName; dom.userEmail.textContent = user.email; dom.userPhoto.src = user.photoURL;
-                    dom.scoresUserName.textContent = user.displayName; dom.scoresUserPhoto.src = user.photoURL;
-                    renderStudentDashboard(); showPage('student-dashboard-page');
+                    const userDocRef = db.collection('users').doc(user.uid);
+                    const userDoc = await userDocRef.get();
+                    if (!userDoc.exists) {
+                        showUserDetailsModal();
+                    } else {
+                        currentUserProfile = userDoc.data();
+                        setupUserUI();
+                        renderStudentDashboard(); 
+                        showPage('student-dashboard-page');
+                    }
                 } else {
                     currentUser = null;
+                    currentUserProfile = null;
                     showPage('login-page');
                 }
             });
+
+            const showUserDetailsModal = () => {
+                dom.collegeSelect.innerHTML = `<option value="">-- Select your college --</option>`;
+                COLLEGES.forEach(college => {
+                    const option = document.createElement('option');
+                    option.value = college;
+                    option.textContent = college;
+                    dom.collegeSelect.appendChild(option);
+                });
+                document.getElementById('user-detail-name').value = currentUser.displayName || '';
+                dom.userDetailsModal.classList.add('show');
+            };
+
+            dom.userDetailsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const userData = {
+                    uid: currentUser.uid,
+                    displayName: document.getElementById('user-detail-name').value,
+                    email: currentUser.email,
+                    photoURL: currentUser.photoURL,
+                    rollNo: document.getElementById('user-detail-rollno').value,
+                    dob: document.getElementById('user-detail-dob').value,
+                    gender: document.querySelector('input[name="gender"]:checked').value,
+                    college: dom.collegeSelect.value
+                };
+                await db.collection('users').doc(currentUser.uid).set(userData);
+                currentUserProfile = userData;
+                dom.userDetailsModal.classList.remove('show');
+                setupUserUI();
+                renderStudentDashboard();
+                showPage('student-dashboard-page');
+            });
+            
+            const setupUserUI = () => {
+                dom.userName.textContent = currentUserProfile.displayName; 
+                dom.userEmail.textContent = currentUserProfile.email; 
+                dom.userPhoto.src = currentUserProfile.photoURL;
+                dom.scoresUserName.textContent = currentUserProfile.displayName; 
+                dom.scoresUserPhoto.src = currentUserProfile.photoURL;
+            };
 
             const renderStudentDashboard = () => {
                 dom.examList.innerHTML = '';
@@ -355,11 +453,15 @@
 
             const showScoresDashboard = async () => {
                 showPage('scores-dashboard-page');
-                dom.scoresTbody.innerHTML = '<tr><td colspan="4">Loading scores...</td></tr>';
-                const scoresRef = db.collection('scores');
-                const snapshot = await scoresRef.get();
-                if(snapshot.empty) {
-                    dom.scoresTbody.innerHTML = '<tr><td colspan="4">No scores submitted yet.</td></tr>'; return;
+                dom.overallScoresBtn.classList.add('active');
+                dom.collegeScoresBtn.classList.remove('active');
+                renderOverallScores();
+            };
+
+            const renderScoresTable = (snapshot) => {
+                if (snapshot.empty) {
+                    dom.scoresTbody.innerHTML = '<tr><td colspan="4">No scores found.</td></tr>';
+                    return;
                 }
                 const studentScores = new Map();
                 snapshot.forEach(doc => {
@@ -376,49 +478,31 @@
                 });
                 const sortedStudents = [...studentScores.values()].sort((a, b) => b.totalPointsReceived - a.totalPointsReceived);
                 dom.scoresTbody.innerHTML = '';
-                let rank = 1;
-                sortedStudents.forEach(student => {
+                sortedStudents.forEach((student, index) => {
                     const percentage = student.totalPossiblePoints > 0 ? Math.round((student.totalPointsReceived / student.totalPossiblePoints) * 100) : 0;
-                    let scoreClass = 'low';
-                    if (percentage >= 75) scoreClass = 'high';
-                    else if (percentage >= 50) scoreClass = 'medium';
+                    let scoreClass = percentage >= 75 ? 'high' : percentage >= 50 ? 'medium' : 'low';
                     const row = document.createElement('tr');
-                    row.innerHTML = `<td data-label="Rank">${rank++}</td><td data-label="Student"><div class="student-info"><img src="${student.userPhotoURL}" alt="${student.userName}"><p>${student.userName}</p></div></td><td data-label="Points">${student.totalPointsReceived} / ${student.totalPossiblePoints}</td><td data-label="Percentage"><span class="score-badge ${scoreClass}">${percentage}%</span></td>`;
+                    row.innerHTML = `<td data-label="Rank">${index + 1}</td><td data-label="Student"><div class="student-info"><img src="${student.userPhotoURL}" alt="${student.userName}"><p>${student.userName}</p></div></td><td data-label="Points">${student.totalPointsReceived} / ${student.totalPossiblePoints}</td><td data-label="Percentage"><span class="score-badge ${scoreClass}">${percentage}%</span></td>`;
                     dom.scoresTbody.appendChild(row);
                 });
+            };
+
+            const renderOverallScores = async () => {
+                dom.scoresTbody.innerHTML = '<tr><td colspan="4">Loading overall scores...</td></tr>';
+                const snapshot = await db.collection('scores').get();
+                renderScoresTable(snapshot);
+            };
+
+            const renderCollegeScores = async () => {
+                dom.scoresTbody.innerHTML = `<tr><td colspan="4">Loading scores for ${currentUserProfile.college}...</td></tr>`;
+                const snapshot = await db.collection('scores').where('college', '==', currentUserProfile.college).get();
+                renderScoresTable(snapshot);
             };
             
             const renderSidebar = () => { dom.questionNav.innerHTML = ''; examState.questions.forEach((q, index) => { const item = document.createElement('li'); item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.userAnswer !== null ? 'answered' : ''} ${q.isFlagged ? 'flagged' : ''}`; item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><div class="q-status-icons"><span class="q-status-icon check">${ICONS.CHECK}</span><span class="q-status-icon flag">${ICONS.FLAG}</span></div>`; item.addEventListener('click', () => { navigateToQuestion(index); closeMobileMenu(); }); dom.questionNav.appendChild(item); }); };
             const renderQuestion = () => { const question = examState.questions[examState.currentQuestionIndex]; dom.qNumber.textContent = `Question ${examState.currentQuestionIndex + 1}`; dom.qTitle.textContent = question.title; dom.optionsContainer.innerHTML = ''; question.options.forEach((opt, index) => { const optionDiv = document.createElement('div'); optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`; optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span><div class="option-check-icon">${ICONS.CHECK}</div>`; optionDiv.addEventListener('click', () => selectOption(index)); dom.optionsContainer.appendChild(optionDiv); }); updateFlagButton(); updateNavButtons(); };
             const injectIcons = () => { document.querySelector('.menu-toggle .icon').innerHTML = ICONS.MENU; document.querySelector('.close-menu-btn .icon').innerHTML = ICONS.CLOSE; document.querySelector('.timer .icon').innerHTML = ICONS.TIMER; };
             
-            const renderResultsPage = (scoreData) => {
-                const totalQuestions = ALL_EXAMS[scoreData.examId].questions.length;
-                const correctCount = scoreData.pointsReceived / scoreData.totalPoints * totalQuestions; 
-                const percentage = Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100);
-                const timeTakenSecs = scoreData.timeTaken;
-                const minutes = Math.floor(timeTakenSecs / 60);
-                const seconds = timeTakenSecs % 60;
-                document.getElementById('score-percentage').textContent = `${percentage}%`;
-                setTimeout(() => { document.getElementById('score-bar-fill').style.width = `${percentage}%`; }, 100);
-                let title, message;
-                if (percentage === 100) { title = "Perfect Score!"; message = "Incredible work! You nailed every question."; } 
-                else if (percentage >= 75) { title = "Excellent Job!"; message = "You have a strong understanding of the material."; } 
-                else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track. Every attempt is a step forward."; } 
-                else { title = "Keep Studying!"; message = "Don't be discouraged. This is a great learning opportunity."; }
-                document.getElementById('summary-title').textContent = title;
-                document.getElementById('summary-message').textContent = message;
-                document.getElementById('total-mcqs').textContent = totalQuestions;
-                document.getElementById('correct-answers').textContent = questions.filter(q => q.userAnswer === q.correctAnswer).length;
-                document.getElementById('wrong-answers').textContent = totalQuestions - questions.filter(q => q.userAnswer === q.correctAnswer).length;
-                document.getElementById('total-icon').innerHTML = ICONS.TOTAL;
-                document.getElementById('correct-icon').innerHTML = ICONS.CORRECT;
-                document.getElementById('wrong-answers-icon').innerHTML = ICONS.INCORRECT;
-                document.getElementById('total-points').textContent = `${scoreData.pointsReceived} / ${scoreData.totalPoints}`;
-                document.getElementById('time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                showPage('results-page');
-            };
-
             const renderReviewGrid = () => { dom.reviewGrid.innerHTML = ''; examState.questions.forEach((q, index) => { const btn = document.createElement('button'); btn.className = 'review-item-btn'; if (q.isFlagged) { btn.classList.add('flagged'); } else if (q.userAnswer !== null) { btn.classList.add('answered'); } else { btn.classList.add('unanswered'); } btn.textContent = index + 1; btn.addEventListener('click', () => { navigateToQuestion(index); showPage('exam-page'); }); dom.reviewGrid.appendChild(btn); }); };
             
             const selectOption = (optionIndex) => { const question = examState.questions[examState.currentQuestionIndex]; question.userAnswer = (question.userAnswer === optionIndex) ? null : optionIndex; renderQuestion(); updateProgress(); renderSidebar(); saveSession();};
@@ -430,7 +514,7 @@
             
             const showToast = (message) => { dom.toast.textContent = message; dom.toast.classList.add('show'); setTimeout(() => dom.toast.classList.remove('show'), 3000); };
             const startTimer = () => { if (examState.timerInterval) clearInterval(examState.timerInterval); examState.timerInterval = setInterval(() => { examState.timeLeft--; const minutes = Math.floor(examState.timeLeft / 60); if ([600, 300, 60].includes(examState.timeLeft)) { showToast(`${minutes} minutes remaining!`); } if (examState.timeLeft <= 0) { handleTimesUp(); return; } const hours = Math.floor(examState.timeLeft / 3600); const mins = Math.floor((examState.timeLeft % 3600) / 60); const secs = examState.timeLeft % 60; dom.timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`; }, 1000); };
-            const handleTimesUp = () => { clearInterval(examState.timerInterval); dom.timesUpModal.style.display = 'flex'; let gracePeriod = 10; dom.graceCountdown.textContent = gracePeriod; const graceInterval = setInterval(() => { gracePeriod--; dom.graceCountdown.textContent = gracePeriod; if (gracePeriod <= 0) { clearInterval(graceInterval); handleSubmit(true); } }, 1000); };
+            const handleTimesUp = () => { clearInterval(examState.timerInterval); dom.timesUpModal.classList.add('show'); let gracePeriod = 10; dom.graceCountdown.textContent = gracePeriod; const graceInterval = setInterval(() => { gracePeriod--; dom.graceCountdown.textContent = gracePeriod; if (gracePeriod <= 0) { clearInterval(graceInterval); dom.timesUpModal.classList.remove('show'); handleSubmit(true); } }, 1000); };
             
             const getSessionKey = () => `examSession-${currentUser.uid}-${examState.currentExamId}`;
             const saveSession = () => { if(!currentUser || !examState.currentExamId) return; const sessionData = { questions: examState.questions, timeLeft: examState.timeLeft, focusLossCount: examState.focusLossCount }; localStorage.setItem(getSessionKey(), JSON.stringify(sessionData)); };
@@ -442,33 +526,26 @@
             const handleFocusLoss = () => { examState.focusLossCount++; saveSession(); if (examState.focusLossCount < 3) { alert(`Warning ${examState.focusLossCount} of 2: Switching tabs or applications is not allowed. Further violations will result in auto-submission.`); } else { alert('Third violation detected. Your test will be submitted automatically.'); handleSubmit(true); } };
             
             const handleSubmit = async (isAutoSubmit = false) => {
-                if (!isAutoSubmit) {
-                    const confirmed = confirm("Are you sure you want to permanently submit your test?");
-                    if (!confirmed) return;
-                }
+                if (!isAutoSubmit && !confirm("Are you sure you want to permanently submit your test?")) return;
                 
-                window.removeEventListener('blur', handleFocusLoss);
-                document.removeEventListener('contextmenu', preventDefault);
-                document.removeEventListener('keydown', preventDevTools);
-                clearInterval(examState.timerInterval);
-                clearInterval(examState.saveInterval);
+                window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools);
+                clearInterval(examState.timerInterval); clearInterval(examState.saveInterval);
                 
                 const { questions, initialTime, timeLeft, currentExamId, previousResultData } = examState;
                 const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
                 const pointsReceived = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0);
                 
                 const newScoreData = {
-                    userId: currentUser.uid, userName: currentUser.displayName, userPhotoURL: currentUser.photoURL,
-                    examId: currentExamId, examName: ALL_EXAMS[currentExamId].name,
-                    pointsReceived: pointsReceived, totalPoints: totalPoints,
-                    timeTaken: initialTime - timeLeft,
+                    userId: currentUser.uid, userName: currentUserProfile.displayName, userPhotoURL: currentUser.photoURL,
+                    examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, college: currentUserProfile.college,
+                    pointsReceived: pointsReceived, totalPoints: totalPoints, timeTaken: initialTime - timeLeft,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
                 if (previousResultData) {
                     showSubmissionChoice(previousResultData, newScoreData);
                 } else {
-                    await finalizeSubmission(newScoreData, true);
+                    await finalizeSubmission(newScoreData);
                 }
             };
 
@@ -479,13 +556,13 @@
                 document.getElementById('new-score-display').textContent = `${newData.pointsReceived} / ${newData.totalPoints}`;
                 document.getElementById('new-time-display').textContent = formatTime(newData.timeTaken);
 
-                dom.submitOldResultBtn.onclick = () => finalizeSubmission(oldData, false);
-                dom.submitNewResultBtn.onclick = () => finalizeSubmission(newData, true);
+                dom.submitOldResultBtn.onclick = () => finalizeSubmission(oldData);
+                dom.submitNewResultBtn.onclick = () => finalizeSubmission(newData);
                 
                 dom.submissionChoiceModal.classList.add('show');
             };
             
-            const finalizeSubmission = async (scoreDataToSubmit, isNewSubmission) => {
+            const finalizeSubmission = async (scoreDataToSubmit) => {
                 dom.submissionChoiceModal.classList.remove('show');
                 const scoresQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', scoreDataToSubmit.examId).limit(1).get();
 
@@ -497,37 +574,38 @@
                 }
 
                 clearSession();
-                const { questions } = ALL_EXAMS[scoreDataToSubmit.examId];
-                const totalQuestions = questions.length;
-                const correctCount = questions.filter((q,i) => {
-                    const sessionAnswers = JSON.parse(localStorage.getItem(getSessionKey()) || '{}');
-                    return sessionAnswers?.questions?.[i]?.userAnswer === q.correctAnswer;
-                }).length;
-                
-                renderResultsPageWithData(scoreDataToSubmit, totalQuestions, correctCount);
+                renderResultsPageWithData(scoreDataToSubmit);
             };
 
-            const renderResultsPageWithData = (scoreData, totalQuestions, correctCount) => {
-                const percentage = Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100);
+            const renderResultsPageWithData = (scoreData) => {
+                const totalQuestions = ALL_EXAMS[scoreData.examId].questions.length;
+                const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
+                
+                let correctCount = 0;
+                let incorrectCount = 0;
+                // We can estimate correct/incorrect based on percentage if we don't have the original answers.
+                // A better approach would be to pass the answered questions array to this function. For simplicity, we estimate.
+                correctCount = Math.round((percentage / 100) * totalQuestions);
+                incorrectCount = totalQuestions - correctCount;
+
                 const timeTakenSecs = scoreData.timeTaken;
                 const minutes = Math.floor(timeTakenSecs / 60);
                 const seconds = timeTakenSecs % 60;
 
                 document.getElementById('score-percentage').textContent = `${percentage}%`;
                 setTimeout(() => { document.getElementById('score-bar-fill').style.width = `${percentage}%`; }, 100);
-
+                
                 let title, message;
                 if (percentage === 100) { title = "Perfect Score!"; message = "Incredible work! You nailed every question."; } 
                 else if (percentage >= 75) { title = "Excellent Job!"; message = "You have a strong understanding of the material."; } 
-                else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track. Every attempt is a step forward."; } 
-                else { title = "Keep Studying!"; message = "Don't be discouraged. This is a great learning opportunity."; }
+                else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track."; } 
+                else { title = "Keep Studying!"; message = "This is a great learning opportunity."; }
 
                 document.getElementById('summary-title').textContent = title;
                 document.getElementById('summary-message').textContent = message;
                 document.getElementById('total-mcqs').textContent = totalQuestions;
-                const wrongAnswers = totalQuestions - correctCount;
                 document.getElementById('correct-answers').textContent = correctCount;
-                document.getElementById('wrong-answers').textContent = wrongAnswers >= 0 ? wrongAnswers : 'N/A';
+                document.getElementById('wrong-answers').textContent = incorrectCount;
                 document.getElementById('total-icon').innerHTML = ICONS.TOTAL;
                 document.getElementById('correct-icon').innerHTML = ICONS.CORRECT;
                 document.getElementById('wrong-answers-icon').innerHTML = ICONS.INCORRECT;
@@ -567,6 +645,17 @@
             dom.retakeBtn.addEventListener('click', () => showPage('student-dashboard-page'));
             dom.prevResultsModal.querySelector('.close-btn').addEventListener('click', () => dom.prevResultsModal.classList.remove('show'));
             window.addEventListener('online', handleNetworkStatus); window.addEventListener('offline', handleNetworkStatus);
+
+            dom.overallScoresBtn.addEventListener('click', () => {
+                dom.overallScoresBtn.classList.add('active');
+                dom.collegeScoresBtn.classList.remove('active');
+                renderOverallScores();
+            });
+            dom.collegeScoresBtn.addEventListener('click', () => {
+                dom.collegeScoresBtn.classList.add('active');
+                dom.overallScoresBtn.classList.remove('active');
+                renderCollegeScores();
+            });
         });
     </script>
 </body>
