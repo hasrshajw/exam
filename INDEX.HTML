@@ -186,7 +186,30 @@
             <h2 id="prev-results-title">Previous Result</h2>
             <div class="score-display"><div class="score-header"><span class="score-label">Score</span><span class="score-percentage" id="prev-score-percentage">0%</span></div><div class="score-bar-track"><div class="score-bar-fill" id="prev-score-bar-fill"></div></div></div>
             <div class="secondary-stats"><div class="secondary-stat"><span class="stat-number" id="prev-total-points"></span><span class="stat-label">Points Scored</span></div><div class="secondary-stat"><span class="stat-number" id="prev-time-taken"></span><span class="stat-label">Time Taken</span></div></div>
-            <div class="modal-actions"><button class="nav-btn prev-btn close-btn">Close</button><button class="retake-btn" id="rewrite-exam-btn">Rewrite Exam</button></div>
+            <div class="modal-actions">
+                <button class="nav-btn prev-btn close-btn">Close</button>
+                <button class="retake-btn" id="rewrite-exam-btn">Rewrite Exam</button>
+            </div>
+        </div>
+    </div>
+     <div class="modal-overlay" id="submission-choice-modal">
+        <div class="modal-content">
+            <h2>Choose Which Result to Submit</h2>
+            <p>You have completed the exam again. Please select which result you would like to submit.</p>
+            <div style="display: flex; justify-content: space-around; gap: 20px; text-align: left;">
+                <div id="old-result-summary" style="border: 1px solid var(--color-border); padding: 15px; border-radius: var(--border-radius-md); width: 50%;">
+                    <h4>Previous Attempt</h4>
+                    <p><strong>Score:</strong> <span id="old-score-display"></span></p>
+                    <p><strong>Time:</strong> <span id="old-time-display"></span></p>
+                    <button class="nav-btn" id="submit-old-result-btn" style="width: 100%; margin-top: 10px; background-color: var(--color-text-secondary); color: white;">Submit This</button>
+                </div>
+                <div id="new-result-summary" style="border: 1px solid var(--color-primary); padding: 15px; border-radius: var(--border-radius-md); width: 50%;">
+                    <h4>New Attempt</h4>
+                    <p><strong>Score:</strong> <span id="new-score-display"></span></p>
+                    <p><strong>Time:</strong> <span id="new-time-display"></span></p>
+                    <button class="nav-btn submit-btn" id="submit-new-result-btn" style="width: 100%; margin-top: 10px;">Submit This</button>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -258,7 +281,10 @@
                 scoresTbody: document.getElementById('scores-tbody'), examPage: document.getElementById('exam-page'),
                 examDashboard: document.getElementById('exam-dashboard'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
                 reviewPage: document.getElementById('review-page'), resultsPage: document.getElementById('results-page'), questionNav: document.getElementById('question-nav'), progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), qNumber: document.getElementById('question-number'), qTitle: document.getElementById('question-title'), optionsContainer: document.getElementById('options-container'), flagBtn: document.getElementById('flag-btn'), prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'), submitBtn: document.getElementById('submit-btn'), endRoundBtn: document.getElementById('end-round-btn'), timerDisplay: document.getElementById('timer-display'), sidebar: document.getElementById('sidebar'), menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), closeMenuBtn: document.getElementById('close-menu-btn'), reviewGrid: document.getElementById('review-grid'), finalSubmitBtn: document.getElementById('final-submit-btn'), retakeBtn: document.getElementById('back-to-dashboard-from-results'), networkStatus: document.getElementById('network-status'), toast: document.getElementById('toast-notification'), timesUpModal: document.getElementById('times-up-modal'), graceCountdown: document.getElementById('grace-countdown'),
-                prevResultsModal: document.getElementById('previous-results-modal'), rewriteExamBtn: document.getElementById('rewrite-exam-btn')
+                prevResultsModal: document.getElementById('previous-results-modal'), rewriteExamBtn: document.getElementById('rewrite-exam-btn'),
+                submissionChoiceModal: document.getElementById('submission-choice-modal'),
+                submitOldResultBtn: document.getElementById('submit-old-result-btn'),
+                submitNewResultBtn: document.getElementById('submit-new-result-btn')
             };
 
             const showPage = (pageId) => { dom.pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); window.scrollTo(0, 0); };
@@ -289,13 +315,13 @@
                 }
             };
             
-            const handleExamEntry = async (examId) => {
+             const handleExamEntry = async (examId) => {
                 const scoresQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
                 if (!scoresQuery.empty) {
                     const previousScoreDoc = scoresQuery.docs[0];
                     const data = previousScoreDoc.data();
                     document.getElementById('prev-results-title').textContent = `Previous Result: ${data.examName}`;
-                    const percentage = Math.round((data.pointsReceived / data.totalPoints) * 100);
+                    const percentage = data.totalPoints > 0 ? Math.round((data.pointsReceived / data.totalPoints) * 100) : 0;
                     document.getElementById('prev-score-percentage').textContent = `${percentage}%`;
                     document.getElementById('prev-score-bar-fill').style.width = `${percentage}%`;
                     document.getElementById('prev-total-points').textContent = `${data.pointsReceived} / ${data.totalPoints}`;
@@ -304,7 +330,7 @@
                     document.getElementById('prev-time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
                     dom.rewriteExamBtn.onclick = () => {
                         dom.prevResultsModal.classList.remove('show');
-                        startExam(examId, previousScoreDoc.id);
+                        startExam(examId, data);
                     };
                     dom.prevResultsModal.classList.add('show');
                 } else {
@@ -312,10 +338,11 @@
                 }
             };
 
-            const startExam = (examId, existingDocId = null) => {
+            const startExam = (examId, previousResultData = null) => {
                 const examData = ALL_EXAMS[examId];
                 examState = {
-                    currentExamId: examId, existingScoreDocId: existingDocId,
+                    currentExamId: examId, 
+                    previousResultData: previousResultData,
                     questions: JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isFlagged: false})),
                     currentQuestionIndex: 0, initialTime: examData.duration, timeLeft: examData.duration,
                     timerInterval: null, saveInterval: null, focusLossCount: 0
@@ -364,7 +391,34 @@
             const renderSidebar = () => { dom.questionNav.innerHTML = ''; examState.questions.forEach((q, index) => { const item = document.createElement('li'); item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.userAnswer !== null ? 'answered' : ''} ${q.isFlagged ? 'flagged' : ''}`; item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><div class="q-status-icons"><span class="q-status-icon check">${ICONS.CHECK}</span><span class="q-status-icon flag">${ICONS.FLAG}</span></div>`; item.addEventListener('click', () => { navigateToQuestion(index); closeMobileMenu(); }); dom.questionNav.appendChild(item); }); };
             const renderQuestion = () => { const question = examState.questions[examState.currentQuestionIndex]; dom.qNumber.textContent = `Question ${examState.currentQuestionIndex + 1}`; dom.qTitle.textContent = question.title; dom.optionsContainer.innerHTML = ''; question.options.forEach((opt, index) => { const optionDiv = document.createElement('div'); optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`; optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span><div class="option-check-icon">${ICONS.CHECK}</div>`; optionDiv.addEventListener('click', () => selectOption(index)); dom.optionsContainer.appendChild(optionDiv); }); updateFlagButton(); updateNavButtons(); };
             const injectIcons = () => { document.querySelector('.menu-toggle .icon').innerHTML = ICONS.MENU; document.querySelector('.close-menu-btn .icon').innerHTML = ICONS.CLOSE; document.querySelector('.timer .icon').innerHTML = ICONS.TIMER; };
-            const renderResults = () => { const { questions, initialTime, timeLeft } = examState; const totalQuestions = questions.length; const correctCount = questions.filter(q => q.userAnswer === q.correctAnswer).length; const incorrectCount = totalQuestions - correctCount; const percentage = Math.round((correctCount / totalQuestions) * 100); const totalPoints = questions.reduce((sum, q) => sum + q.points, 0); const userPoints = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0); const timeTakenSecs = initialTime - timeLeft; const minutes = Math.floor(timeTakenSecs / 60); const seconds = timeTakenSecs % 60; document.getElementById('score-percentage').textContent = `${percentage}%`; setTimeout(() => { document.getElementById('score-bar-fill').style.width = `${percentage}%`; }, 100); let title, message; if (percentage === 100) { title = "Perfect Score!"; message = "Incredible work! You nailed every question."; } else if (percentage >= 75) { title = "Excellent Job!"; message = "You have a strong understanding of the material."; } else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track. Every attempt is a step forward."; } else { title = "Keep Studying!"; message = "Don't be discouraged. This is a great learning opportunity."; } document.getElementById('summary-title').textContent = title; document.getElementById('summary-message').textContent = message; document.getElementById('total-mcqs').textContent = totalQuestions; document.getElementById('correct-answers').textContent = correctCount; document.getElementById('wrong-answers').textContent = incorrectCount; document.getElementById('total-icon').innerHTML = ICONS.TOTAL; document.getElementById('correct-icon').innerHTML = ICONS.CORRECT; document.getElementById('wrong-answers-icon').innerHTML = ICONS.INCORRECT; document.getElementById('total-points').textContent = `${userPoints} / ${totalPoints}`; document.getElementById('time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; };
+            
+            const renderResultsPage = (scoreData) => {
+                const totalQuestions = ALL_EXAMS[scoreData.examId].questions.length;
+                const correctCount = scoreData.pointsReceived / scoreData.totalPoints * totalQuestions; 
+                const percentage = Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100);
+                const timeTakenSecs = scoreData.timeTaken;
+                const minutes = Math.floor(timeTakenSecs / 60);
+                const seconds = timeTakenSecs % 60;
+                document.getElementById('score-percentage').textContent = `${percentage}%`;
+                setTimeout(() => { document.getElementById('score-bar-fill').style.width = `${percentage}%`; }, 100);
+                let title, message;
+                if (percentage === 100) { title = "Perfect Score!"; message = "Incredible work! You nailed every question."; } 
+                else if (percentage >= 75) { title = "Excellent Job!"; message = "You have a strong understanding of the material."; } 
+                else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track. Every attempt is a step forward."; } 
+                else { title = "Keep Studying!"; message = "Don't be discouraged. This is a great learning opportunity."; }
+                document.getElementById('summary-title').textContent = title;
+                document.getElementById('summary-message').textContent = message;
+                document.getElementById('total-mcqs').textContent = totalQuestions;
+                document.getElementById('correct-answers').textContent = questions.filter(q => q.userAnswer === q.correctAnswer).length;
+                document.getElementById('wrong-answers').textContent = totalQuestions - questions.filter(q => q.userAnswer === q.correctAnswer).length;
+                document.getElementById('total-icon').innerHTML = ICONS.TOTAL;
+                document.getElementById('correct-icon').innerHTML = ICONS.CORRECT;
+                document.getElementById('wrong-answers-icon').innerHTML = ICONS.INCORRECT;
+                document.getElementById('total-points').textContent = `${scoreData.pointsReceived} / ${scoreData.totalPoints}`;
+                document.getElementById('time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                showPage('results-page');
+            };
+
             const renderReviewGrid = () => { dom.reviewGrid.innerHTML = ''; examState.questions.forEach((q, index) => { const btn = document.createElement('button'); btn.className = 'review-item-btn'; if (q.isFlagged) { btn.classList.add('flagged'); } else if (q.userAnswer !== null) { btn.classList.add('answered'); } else { btn.classList.add('unanswered'); } btn.textContent = index + 1; btn.addEventListener('click', () => { navigateToQuestion(index); showPage('exam-page'); }); dom.reviewGrid.appendChild(btn); }); };
             
             const selectOption = (optionIndex) => { const question = examState.questions[examState.currentQuestionIndex]; question.userAnswer = (question.userAnswer === optionIndex) ? null : optionIndex; renderQuestion(); updateProgress(); renderSidebar(); saveSession();};
@@ -386,8 +440,103 @@
             const handleNetworkStatus = () => { const statusEl = dom.networkStatus; if (navigator.onLine) { if(statusEl.classList.contains('offline')) { statusEl.textContent = 'Back online!'; statusEl.className = 'network-status online'; setTimeout(() => statusEl.className = 'network-status', 2000); } } else { statusEl.textContent = 'You are offline. Progress is saved locally.'; statusEl.className = 'network-status offline'; } };
             const showReviewPage = () => { renderReviewGrid(); showPage('review-page'); };
             const handleFocusLoss = () => { examState.focusLossCount++; saveSession(); if (examState.focusLossCount < 3) { alert(`Warning ${examState.focusLossCount} of 2: Switching tabs or applications is not allowed. Further violations will result in auto-submission.`); } else { alert('Third violation detected. Your test will be submitted automatically.'); handleSubmit(true); } };
-            const handleSubmit = async (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(examState.timerInterval); clearInterval(examState.saveInterval); renderResults(); const { questions, initialTime, timeLeft, currentExamId, existingScoreDocId } = examState; const totalPoints = questions.reduce((sum, q) => sum + q.points, 0); const pointsReceived = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0); const scoreData = { userId: currentUser.uid, userName: currentUser.displayName, userPhotoURL: currentUser.photoURL, examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, pointsReceived: pointsReceived, totalPoints: totalPoints, timeTaken: initialTime - timeLeft, timestamp: firebase.firestore.FieldValue.serverTimestamp() }; if (existingScoreDocId) { await db.collection('scores').doc(existingScoreDocId).update(scoreData); } else { await db.collection('scores').add(scoreData); } clearSession(); showPage('results-page'); };
             
+            const handleSubmit = async (isAutoSubmit = false) => {
+                if (!isAutoSubmit) {
+                    const confirmed = confirm("Are you sure you want to permanently submit your test?");
+                    if (!confirmed) return;
+                }
+                
+                window.removeEventListener('blur', handleFocusLoss);
+                document.removeEventListener('contextmenu', preventDefault);
+                document.removeEventListener('keydown', preventDevTools);
+                clearInterval(examState.timerInterval);
+                clearInterval(examState.saveInterval);
+                
+                const { questions, initialTime, timeLeft, currentExamId, previousResultData } = examState;
+                const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
+                const pointsReceived = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0);
+                
+                const newScoreData = {
+                    userId: currentUser.uid, userName: currentUser.displayName, userPhotoURL: currentUser.photoURL,
+                    examId: currentExamId, examName: ALL_EXAMS[currentExamId].name,
+                    pointsReceived: pointsReceived, totalPoints: totalPoints,
+                    timeTaken: initialTime - timeLeft,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                if (previousResultData) {
+                    showSubmissionChoice(previousResultData, newScoreData);
+                } else {
+                    await finalizeSubmission(newScoreData, true);
+                }
+            };
+
+            const showSubmissionChoice = (oldData, newData) => {
+                const formatTime = (seconds) => `${String(Math.floor(seconds / 60)).padStart(2, '0')}:${String(seconds % 60).padStart(2, '0')}`;
+                document.getElementById('old-score-display').textContent = `${oldData.pointsReceived} / ${oldData.totalPoints}`;
+                document.getElementById('old-time-display').textContent = formatTime(oldData.timeTaken);
+                document.getElementById('new-score-display').textContent = `${newData.pointsReceived} / ${newData.totalPoints}`;
+                document.getElementById('new-time-display').textContent = formatTime(newData.timeTaken);
+
+                dom.submitOldResultBtn.onclick = () => finalizeSubmission(oldData, false);
+                dom.submitNewResultBtn.onclick = () => finalizeSubmission(newData, true);
+                
+                dom.submissionChoiceModal.classList.add('show');
+            };
+            
+            const finalizeSubmission = async (scoreDataToSubmit, isNewSubmission) => {
+                dom.submissionChoiceModal.classList.remove('show');
+                const scoresQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', scoreDataToSubmit.examId).limit(1).get();
+
+                if (!scoresQuery.empty) {
+                     const docId = scoresQuery.docs[0].id;
+                     await db.collection('scores').doc(docId).set(scoreDataToSubmit, { merge: true });
+                } else {
+                     await db.collection('scores').add(scoreDataToSubmit);
+                }
+
+                clearSession();
+                const { questions } = ALL_EXAMS[scoreDataToSubmit.examId];
+                const totalQuestions = questions.length;
+                const correctCount = questions.filter((q,i) => {
+                    const sessionAnswers = JSON.parse(localStorage.getItem(getSessionKey()) || '{}');
+                    return sessionAnswers?.questions?.[i]?.userAnswer === q.correctAnswer;
+                }).length;
+                
+                renderResultsPageWithData(scoreDataToSubmit, totalQuestions, correctCount);
+            };
+
+            const renderResultsPageWithData = (scoreData, totalQuestions, correctCount) => {
+                const percentage = Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100);
+                const timeTakenSecs = scoreData.timeTaken;
+                const minutes = Math.floor(timeTakenSecs / 60);
+                const seconds = timeTakenSecs % 60;
+
+                document.getElementById('score-percentage').textContent = `${percentage}%`;
+                setTimeout(() => { document.getElementById('score-bar-fill').style.width = `${percentage}%`; }, 100);
+
+                let title, message;
+                if (percentage === 100) { title = "Perfect Score!"; message = "Incredible work! You nailed every question."; } 
+                else if (percentage >= 75) { title = "Excellent Job!"; message = "You have a strong understanding of the material."; } 
+                else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track. Every attempt is a step forward."; } 
+                else { title = "Keep Studying!"; message = "Don't be discouraged. This is a great learning opportunity."; }
+
+                document.getElementById('summary-title').textContent = title;
+                document.getElementById('summary-message').textContent = message;
+                document.getElementById('total-mcqs').textContent = totalQuestions;
+                const wrongAnswers = totalQuestions - correctCount;
+                document.getElementById('correct-answers').textContent = correctCount;
+                document.getElementById('wrong-answers').textContent = wrongAnswers >= 0 ? wrongAnswers : 'N/A';
+                document.getElementById('total-icon').innerHTML = ICONS.TOTAL;
+                document.getElementById('correct-icon').innerHTML = ICONS.CORRECT;
+                document.getElementById('wrong-answers-icon').innerHTML = ICONS.INCORRECT;
+                document.getElementById('total-points').textContent = `${scoreData.pointsReceived} / ${scoreData.totalPoints}`;
+                document.getElementById('time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                
+                showPage('results-page');
+            };
+
             const openMobileMenu = () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); };
             const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
             const preventDefault = e => e.preventDefault();
