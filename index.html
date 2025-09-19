@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exam Portal - Login</title>
+    <style>
+        :root {
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
+            --color-background: #f4f7fa; --color-surface: #ffffff; --color-text-primary: #111827; --color-text-secondary: #6b7280;
+            --color-border: #e5e7eb; --color-success: #10b981; --color-danger: #ef4444;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius-md: 8px; --border-radius-lg: 16px;
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        .page { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; min-height: 100%; }
+        .page.active { display: flex; }
+        .login-card { background: var(--color-surface); padding: 40px; border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); max-width: 400px; text-align: center; }
+        .login-card h1 { font-size: 1.75rem; margin-bottom: 8px; }
+        .login-card p { color: var(--color-text-secondary); margin-bottom: 24px; }
+        .google-login-btn { display: inline-flex; align-items: center; gap: 12px; padding: 12px 24px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); font-weight: 500; transition: all var(--transition-fast); }
+        .google-login-btn:hover { box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); }
+        .google-login-btn svg { width: 20px; height: 20px; }
+        .nav-btn { padding: 12px 28px; border-radius: var(--border-radius-md); font-weight: 600; transition: all var(--transition-fast); }
+        .nav-btn.submit-btn { background-color: var(--color-primary); color: white; }
+        .nav-btn.submit-btn:hover { background-color: var(--color-primary-dark); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-content { background-color: var(--color-surface); padding: 40px; border-radius: var(--border-radius-lg); text-align: center; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform var(--transition-fast); }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-content h2 { font-size: 1.75rem; margin-bottom: 12px; }
+        .modal-content p { color: var(--color-text-secondary); margin-bottom: 24px; }
+        .modal-actions { margin-top: 24px; display: flex; gap: 12px; justify-content: center; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; text-align: left; }
+        .form-field { display: flex; flex-direction: column; }
+        .form-field.full-width { grid-column: 1 / -1; }
+        .form-field label { font-size: 0.9rem; font-weight: 500; margin-bottom: 6px; }
+        .form-field input, .form-field select { padding: 10px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border); font-size: 1rem; }
+        .form-field .gender-options { display: flex; gap: 16px; align-items: center; padding-top: 8px; }
+        .form-field .gender-options label { margin-bottom: 0; }
+        @media (max-width: 800px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .form-field.full-width { grid-column: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--color-text-secondary);">Loading Portal...</div>
+
+    <div class="page active" id="login-page">
+        <div class="login-card">
+            <h1>Exam Portal</h1>
+            <p>Please sign in to continue.</p>
+            <button class="google-login-btn" id="google-login-btn">
+                <svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.519-3.108-11.127-7.481l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.022,36.218,44,30.561,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg>
+                <span>Sign in with Google</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="user-details-modal">
+        <div class="modal-content">
+            <h2>Welcome!</h2>
+            <p>Please complete your profile to continue.</p>
+            <form id="user-details-form">
+                <div class="form-grid">
+                    <div class="form-field full-width">
+                        <label for="user-detail-name">Full Name</label>
+                        <input type="text" id="user-detail-name" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="user-detail-rollno">Roll No.</label>
+                        <input type="text" id="user-detail-rollno" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="user-detail-dob">Date of Birth</label>
+                        <input type="date" id="user-detail-dob" required>
+                    </div>
+                    <div class="form-field full-width">
+                         <label>Gender</label>
+                         <div class="gender-options">
+                            <input type="radio" id="gender-male" name="gender" value="Male" required><label for="gender-male">Male</label>
+                            <input type="radio" id="gender-female" name="gender" value="Female"><label for="gender-female">Female</label>
+                            <input type="radio" id="gender-other" name="gender" value="Other"><label for="gender-other">Other</label>
+                         </div>
+                    </div>
+                    <div class="form-field full-width">
+                        <label for="user-detail-college">College</label>
+                        <select id="user-detail-college" required>
+                            <option value="">-- Select your college --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="nav-btn submit-btn">Save & Continue</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
+
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            const COLLEGES = ["Stanford University", "MIT", "Harvard University", "Caltech", "University of Oxford", "Other"];
+
+            const dom = {
+                loadingOverlay: document.getElementById('loading-overlay'),
+                loginBtn: document.getElementById('google-login-btn'),
+                userDetailsModal: document.getElementById('user-details-modal'),
+                userDetailsForm: document.getElementById('user-details-form'),
+                collegeSelect: document.getElementById('user-detail-college')
+            };
+
+            const populateColleges = () => {
+                COLLEGES.forEach(college => {
+                    const option = document.createElement('option');
+                    option.value = college;
+                    option.textContent = college;
+                    dom.collegeSelect.appendChild(option);
+                });
+            };
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    const userDocRef = db.collection('users').doc(user.uid);
+                    const userDoc = await userDocRef.get();
+
+                    if (userDoc.exists) {
+                        window.location.href = 'dashboard.html';
+                    } else {
+                        document.getElementById('user-detail-name').value = user.displayName || '';
+                        dom.loadingOverlay.style.display = 'none';
+                        dom.userDetailsModal.classList.add('show');
+                    }
+                } else {
+                    dom.loadingOverlay.style.display = 'none';
+                }
+            });
+
+            const signInWithGoogle = () => {
+                dom.loadingOverlay.style.display = 'flex';
+                auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(error => {
+                    console.error("Authentication Error:", error);
+                    dom.loadingOverlay.style.display = 'none';
+                    alert("Failed to sign in. Please try again.");
+                });
+            };
+
+            dom.loginBtn.addEventListener('click', signInWithGoogle);
+
+            dom.userDetailsForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const currentUser = auth.currentUser;
+                if (!currentUser) return;
+                
+                const submitButton = dom.userDetailsForm.querySelector('button[type="submit"]');
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving...';
+
+                const userData = {
+                    uid: currentUser.uid,
+                    displayName: document.getElementById('user-detail-name').value.trim(),
+                    email: currentUser.email,
+                    photoURL: currentUser.photoURL,
+                    rollNo: document.getElementById('user-detail-rollno').value.trim(),
+                    dob: document.getElementById('user-detail-dob').value,
+                    gender: document.querySelector('input[name="gender"]:checked').value,
+                    college: dom.collegeSelect.value,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                try {
+                    await db.collection('users').doc(currentUser.uid).set(userData);
+                    window.location.href = 'dashboard.html';
+                } catch (error) {
+                    console.error("Error saving user details:", error);
+                    alert("Could not save profile. Please try again.");
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Save & Continue';
+                }
+            });
+
+            populateColleges();
+        });
+    </script>
+
+</body>
+</html>
