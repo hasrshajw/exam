@@ -152,7 +152,7 @@
 
     <div class="page dashboard-container" id="scores-dashboard-page">
         <header class="portal-header"><div class="user-profile"><img id="scores-user-photo" src="" alt="User photo"><div class="user-info"><div class="user-name" id="scores-user-name"></div></div></div><nav class="header-nav"><button class="logout-btn" id="scores-logout-btn">Logout</button></nav></header>
-        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Exam</th><th>Score</th><th>Date</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
+        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Exams Taken</th><th>Total Score</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
     </div>
 
     <div class="page" id="exam-page">
@@ -229,17 +229,7 @@
                 }
             };
             
-            let examState = {
-                questions: [],
-                currentQuestionIndex: 0,
-                initialTime: 0,
-                timeLeft: 0,
-                timerInterval: null,
-                saveInterval: null,
-                focusLossCount: 0,
-                currentExamId: null,
-            };
-
+            let examState = {};
             let currentUser = null;
 
             const ICONS = {
@@ -313,23 +303,40 @@
 
             const showScoresDashboard = async () => {
                 showPage('scores-dashboard-page');
-                dom.scoresTbody.innerHTML = '<tr><td colspan="5">Loading scores...</td></tr>';
-                const scoresRef = db.collection('scores').orderBy('percentage', 'desc');
+                dom.scoresTbody.innerHTML = '<tr><td colspan="4">Loading scores...</td></tr>';
+                const scoresRef = db.collection('scores');
                 const snapshot = await scoresRef.get();
-                dom.scoresTbody.innerHTML = '';
                 if(snapshot.empty) {
-                    dom.scoresTbody.innerHTML = '<tr><td colspan="5">No scores submitted yet.</td></tr>';
+                    dom.scoresTbody.innerHTML = '<tr><td colspan="4">No scores submitted yet.</td></tr>';
                     return;
                 }
-                let rank = 1;
+                const aggregatedScores = {};
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const date = data.timestamp ? new Date(data.timestamp.seconds * 1000).toLocaleDateString() : 'N/A';
+                    if (!aggregatedScores[data.userId]) {
+                        aggregatedScores[data.userId] = {
+                            userName: data.userName, userPhotoURL: data.userPhotoURL,
+                            totalScoreReceived: 0, totalPossibleScore: 0, examCount: 0
+                        };
+                    }
+                    aggregatedScores[data.userId].totalScoreReceived += data.score;
+                    aggregatedScores[data.userId].totalPossibleScore += data.total;
+                    aggregatedScores[data.userId].examCount += 1;
+                });
+
+                const scoresArray = Object.values(aggregatedScores);
+                scoresArray.forEach(user => {
+                    user.percentage = user.totalPossibleScore > 0 ? Math.round((user.totalScoreReceived / user.totalPossibleScore) * 100) : 0;
+                });
+                scoresArray.sort((a, b) => b.percentage - a.percentage);
+                
+                dom.scoresTbody.innerHTML = '';
+                scoresArray.forEach((user, index) => {
                     let scoreClass = 'low';
-                    if (data.percentage >= 75) scoreClass = 'high';
-                    else if (data.percentage >= 50) scoreClass = 'medium';
+                    if (user.percentage >= 75) scoreClass = 'high';
+                    else if (user.percentage >= 50) scoreClass = 'medium';
                     const row = document.createElement('tr');
-                    row.innerHTML = `<td data-label="Rank">${rank++}</td><td data-label="Student"><div class="student-info"><img src="${data.userPhotoURL}" alt="${data.userName}"><p>${data.userName}</p></div></td><td data-label="Exam">${data.examName}</td><td data-label="Score"><span class="score-badge ${scoreClass}">${data.percentage}%</span></td><td data-label="Date">${date}</td>`;
+                    row.innerHTML = `<td data-label="Rank">${index + 1}</td><td data-label="Student"><div class="student-info"><img src="${user.userPhotoURL}" alt="${user.userName}"><p>${user.userName}</p></div></td><td data-label="Exams Taken">${user.examCount}</td><td data-label="Total Score"> ${user.totalScoreReceived} / ${user.totalPossibleScore} <span class="score-badge ${scoreClass}">${user.percentage}%</span></td>`;
                     dom.scoresTbody.appendChild(row);
                 });
             };
