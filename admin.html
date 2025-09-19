@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Exam Portal</title>
+    <style>
+        :root {
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --color-primary: #6d28d9; --color-primary-light: #ede9fe; --color-primary-dark: #5b21b6;
+            --color-background: #f4f7fa; --color-surface: #ffffff; --color-text-primary: #111827; --color-text-secondary: #6b7280;
+            --color-border: #e5e7eb; --color-success: #10b981; --color-danger: #ef4444;
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius-md: 8px; --border-radius-lg: 16px;
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        .page { display: flex; flex-direction: column; width: 100%; min-height: 100%; }
+        .portal-header { width: 100%; background: var(--color-surface); padding: 16px 48px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); }
+        .user-profile { display: flex; align-items: center; gap: 12px; }
+        .user-profile img { width: 40px; height: 40px; border-radius: 50%; }
+        .user-info .user-name { font-weight: 600; } .user-info .user-name span { font-weight: normal; font-size: 0.8rem; color: var(--color-primary); background-color: var(--color-primary-light); padding: 2px 6px; border-radius: 4px; margin-left: 8px; }
+        .header-nav { display: flex; align-items: center; gap: 8px; }
+        .header-nav a, .logout-btn { color: var(--color-text-secondary); font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: var(--border-radius-md); transition: background-color var(--transition-fast); }
+        .header-nav a:hover, .logout-btn:hover { background-color: var(--color-background); }
+        .admin-content { padding: 40px; width: 100%; max-width: 1200px; margin: 0 auto; }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .admin-content-header h2 { font-size: 2rem; }
+        .primary-btn { padding: 10px 20px; border-radius: var(--border-radius-md); font-weight: 600; background-color: var(--color-primary); color: white; transition: background-color var(--transition-fast); }
+        .primary-btn:hover { background-color: var(--color-primary-dark); }
+        .exam-manage-table { width: 100%; background-color: var(--color-surface); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); border-collapse: collapse; overflow: hidden; }
+        .exam-manage-table th, .exam-manage-table td { padding: 16px; text-align: left; border-bottom: 1px solid var(--color-border); }
+        .exam-manage-table th { background: #f9fafb; font-size: 0.8rem; text-transform: uppercase; color: var(--color-text-secondary); }
+        .status-badge { padding: 4px 10px; border-radius: 999px; font-weight: 600; font-size: 0.8rem; }
+        .status-badge.locked { background-color: #fee2e2; color: var(--color-danger); }
+        .status-badge.unlocked { background-color: #d1fae5; color: var(--color-success); }
+        .action-btn { font-weight: 600; color: var(--color-primary); margin-right: 16px; } .action-btn:hover { color: var(--color-primary-dark); }
+        .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .lock-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--color-danger); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--color-success); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-content { background-color: var(--color-surface); padding: 32px; border-radius: var(--border-radius-lg); width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--color-border); }
+        .modal-header h3 { font-size: 1.5rem; }
+        .close-btn { color: var(--color-text-secondary); font-size: 1.5rem; line-height: 1; }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 24px 0; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-field { display: flex; flex-direction: column; gap: 6px; } .form-field.full-width { grid-column: 1 / -1; }
+        .form-field label { font-weight: 500; font-size: 0.9rem; }
+        .form-field input, .form-field textarea { padding: 10px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border); }
+        .questions-container h4 { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 24px; }
+        .question-card { border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 16px; margin-top: 16px; }
+        .modal-footer { padding-top: 16px; border-top: 1px solid var(--color-border); text-align: right; }
+        .secondary-btn { padding: 10px 20px; border-radius: var(--border-radius-md); font-weight: 600; color: var(--color-text-secondary); background-color: #f3f4f6; margin-right: 8px; }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Admin Panel...</div>
+
+    <div class="page" id="admin-page" style="display: none;">
+        <header class="portal-header">
+            <div class="user-profile">
+                <img id="user-photo" src="" alt="User photo">
+                <div class="user-info">
+                    <div class="user-name" id="user-name"><span>Admin</span></div>
+                </div>
+            </div>
+            <nav class="header-nav">
+                <button class="logout-btn" id="logout-btn">Logout</button>
+            </nav>
+        </header>
+        <main class="admin-content">
+            <div class="admin-content-header">
+                <h2>Manage Exams</h2>
+                <button class="primary-btn" id="create-exam-btn">Create New Exam</button>
+            </div>
+            <table class="exam-manage-table">
+                <thead>
+                    <tr>
+                        <th>Exam Name</th>
+                        <th>Duration (Mins)</th>
+                        <th>Questions</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="exams-tbody"></tbody>
+            </table>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="exam-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Create New Exam</h3>
+                <button class="close-btn" id="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="exam-form">
+                    <input type="hidden" id="exam-id">
+                    <div class="form-grid">
+                        <div class="form-field full-width">
+                            <label for="exam-name">Exam Name</label>
+                            <input type="text" id="exam-name" required>
+                        </div>
+                        <div class="form-field">
+                            <label for="exam-duration">Duration (in minutes)</label>
+                            <input type="number" id="exam-duration" required>
+                        </div>
+                    </div>
+                    <div class="questions-container" id="questions-container">
+                        <h4>Questions</h4>
+                    </div>
+                    <button type="button" class="primary-btn" id="add-question-btn" style="margin-top: 16px;">Add Question</button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="cancel-modal-btn">Cancel</button>
+                <button class="primary-btn" id="save-exam-btn">Save Exam</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = { /* YOUR FIREBASE CONFIG HERE */ };
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
+
+            const dom = {
+                loadingOverlay: document.getElementById('loading-overlay'),
+                adminPage: document.getElementById('admin-page'),
+                userPhoto: document.getElementById('user-photo'),
+                userName: document.getElementById('user-name'),
+                logoutBtn: document.getElementById('logout-btn'),
+                createExamBtn: document.getElementById('create-exam-btn'),
+                examsTbody: document.getElementById('exams-tbody'),
+                examModal: document.getElementById('exam-modal'),
+                modalTitle: document.getElementById('modal-title'),
+                closeModalBtn: document.getElementById('close-modal-btn'),
+                cancelModalBtn: document.getElementById('cancel-modal-btn'),
+                examForm: document.getElementById('exam-form'),
+                examIdInput: document.getElementById('exam-id'),
+                examNameInput: document.getElementById('exam-name'),
+                examDurationInput: document.getElementById('exam-duration'),
+                questionsContainer: document.getElementById('questions-container'),
+                addQuestionBtn: document.getElementById('add-question-btn'),
+                saveExamBtn: document.getElementById('save-exam-btn'),
+            };
+
+            auth.onAuthStateChanged(user => {
+                if (user && user.email === ADMIN_EMAIL) {
+                    setupAdminUI(user);
+                    loadExams();
+                    dom.adminPage.style.display = 'flex';
+                    dom.loadingOverlay.style.display = 'none';
+                } else {
+                    window.location.href = 'dashboard.html';
+                }
+            });
+
+            const setupAdminUI = (user) => {
+                dom.userPhoto.src = user.photoURL;
+                dom.userName.firstChild.textContent = user.displayName;
+            };
+
+            const loadExams = () => {
+                db.collection('exams').onSnapshot(snapshot => {
+                    dom.examsTbody.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const exam = doc.data();
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${exam.name}</td>
+                            <td>${exam.duration / 60}</td>
+                            <td>${exam.questions.length}</td>
+                            <td><span class="status-badge ${exam.isLocked ? 'locked' : 'unlocked'}">${exam.isLocked ? 'Locked' : 'Unlocked'}</span></td>
+                            <td>
+                                <button class="action-btn" data-id="${doc.id}">Edit</button>
+                                <label class="lock-switch">
+                                    <input type="checkbox" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}>
+                                    <span class="slider"></span>
+                                </label>
+                            </td>
+                        `;
+                        dom.examsTbody.appendChild(row);
+                    });
+                });
+            };
+
+            const openModal = (exam = null) => {
+                dom.examForm.reset();
+                dom.questionsContainer.innerHTML = '<h4>Questions</h4>';
+                if (exam) {
+                    dom.modalTitle.textContent = 'Edit Exam';
+                    dom.examIdInput.value = exam.id;
+                    dom.examNameInput.value = exam.name;
+                    dom.examDurationInput.value = exam.duration / 60;
+                    exam.questions.forEach(addQuestionToForm);
+                } else {
+                    dom.modalTitle.textContent = 'Create New Exam';
+                    dom.examIdInput.value = '';
+                }
+                dom.examModal.classList.add('show');
+            };
+
+            const closeModal = () => dom.examModal.classList.remove('show');
+
+            const addQuestionToForm = (question = {}) => {
+                const qIndex = dom.questionsContainer.querySelectorAll('.question-card').length;
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.innerHTML = `
+                    <div class="form-field full-width">
+                        <label>Question Title</label>
+                        <textarea rows="2" class="question-title" required>${question.title || ''}</textarea>
+                    </div>
+                    <div class="form-grid">
+                        ${[0, 1, 2, 3].map(i => `
+                            <div class="form-field">
+                                <label>Option ${String.fromCharCode(65 + i)}</label>
+                                <input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required>
+                            </div>
+                        `).join('')}
+                        <div class="form-field">
+                            <label>Correct Answer (A=0, B=1...)</label>
+                            <input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required>
+                        </div>
+                        <div class="form-field">
+                            <label>Points</label>
+                            <input type="number" class="question-points" value="${question.points || ''}" required>
+                        </div>
+                    </div>
+                `;
+                dom.questionsContainer.appendChild(card);
+            };
+
+            dom.saveExamBtn.addEventListener('click', async () => {
+                const examId = dom.examIdInput.value;
+                const questions = [];
+                dom.questionsContainer.querySelectorAll('.question-card').forEach(card => {
+                    const options = [];
+                    card.querySelectorAll('.question-option').forEach(opt => options.push(opt.value));
+                    questions.push({
+                        title: card.querySelector('.question-title').value,
+                        options: options,
+                        correctAnswer: parseInt(card.querySelector('.question-correct').value, 10),
+                        points: parseInt(card.querySelector('.question-points').value, 10),
+                        type: 'Mcq'
+                    });
+                });
+
+                const examData = {
+                    name: dom.examNameInput.value,
+                    duration: parseInt(dom.examDurationInput.value, 10) * 60,
+                    questions: questions,
+                    isLocked: examId ? (await db.collection('exams').doc(examId).get()).data().isLocked : true,
+                };
+
+                if (examId) {
+                    await db.collection('exams').doc(examId).update(examData);
+                } else {
+                    await db.collection('exams').add(examData);
+                }
+                closeModal();
+            });
+            
+            dom.examsTbody.addEventListener('click', async e => {
+                const id = e.target.dataset.id;
+                if (e.target.matches('.action-btn')) {
+                    const doc = await db.collection('exams').doc(id).get();
+                    openModal({ id: doc.id, ...doc.data() });
+                }
+            });
+
+            dom.examsTbody.addEventListener('change', async e => {
+                 if (e.target.matches('input[type="checkbox"]')) {
+                    const id = e.target.dataset.id;
+                    await db.collection('exams').doc(id).update({ isLocked: !e.target.checked });
+                }
+            });
+
+            dom.createExamBtn.addEventListener('click', () => openModal());
+            dom.addQuestionBtn.addEventListener('click', () => addQuestionToForm());
+            dom.closeModalBtn.addEventListener('click', closeModal);
+            dom.cancelModalBtn.addEventListener('click', closeModal);
+            dom.logoutBtn.addEventListener('click', () => auth.signOut());
+        });
+    </script>
+</body>
+</html>
