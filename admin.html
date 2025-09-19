@@ -150,7 +150,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = { /* YOUR FIREBASE CONFIG HERE */ };
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
@@ -314,7 +322,7 @@
             const addQuestionToForm = (question = {}) => {
                 const card = document.createElement('div');
                 card.className = 'question-card';
-                card.innerHTML = `<button type="button" class="delete-question-btn">&times;</button><div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div><div class="form-grid">${[0,1,2,3].map(i=>`<div class="form-field"><label>Option ${String.fromCharCode(65+i)}</label><input type="text" class="question-option" value="${(question.options&&question.options[i])||''}" required></div>`).join('')}<div class="form-field"><label>Correct Answer (A=0..)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer??''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points||''}" required></div></div>`;
+                card.innerHTML = `<button type="button" class="delete-question-btn">&times;</button><div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div><div class="form-grid">${[0,1,2,3].map(i=>`<div class="form-field"><label>Option ${String.fromCharCode(65+i)}</label><input type="text" class="question-option" value="${(question.options&&question.options[i])||''}" required></div>`).join('')}<div class="form-field"><label>Correct Answer (A=0..)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points||''}" required></div></div>`;
                 document.getElementById('questions-container').appendChild(card);
             };
 
