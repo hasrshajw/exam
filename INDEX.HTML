@@ -137,24 +137,19 @@
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
-
     <div class="network-status" id="network-status"></div>
     <div class="toast-notification" id="toast-notification"></div>
-
     <div class="page" id="login-page">
         <div class="login-card"><h1>Exam Portal</h1><p>Please sign in to continue.</p><button class="google-login-btn" id="google-login-btn"><svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.519-3.108-11.127-7.481l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.022,36.218,44,30.561,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg><span>Sign in with Google</span></button></div>
     </div>
-    
     <div class="page dashboard-container" id="student-dashboard-page">
         <header class="portal-header"><div class="user-profile"><img id="user-photo" src="" alt="User photo"><div class="user-info"><div class="user-name" id="user-name"></div><div class="user-email" id="user-email"></div></div></div><nav class="header-nav"><a href="#" id="scores-link">Scores Dashboard</a><button class="logout-btn" id="logout-btn">Logout</button></nav></header>
         <main class="dashboard-content"><h2>Available Exams</h2><div class="exam-list" id="exam-list"></div></main>
     </div>
-
     <div class="page dashboard-container" id="scores-dashboard-page">
         <header class="portal-header"><div class="user-profile"><img id="scores-user-photo" src="" alt="User photo"><div class="user-info"><div class="user-name" id="scores-user-name"></div></div></div><nav class="header-nav"><button class="logout-btn" id="scores-logout-btn">Logout</button></nav></header>
-        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Exams Taken</th><th>Total Score</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
+        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Points</th><th>Percentage</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
     </div>
-
     <div class="page" id="exam-page">
         <div class="exam-dashboard">
             <aside class="sidebar" id="sidebar"> <button class="close-menu-btn" id="close-menu-btn" aria-label="Close menu"><span class="icon"></span></button> <div class="sidebar-header"><p class="round-title">Round 1</p><h1 class="test-title" id="exam-title-sidebar"></h1></div> <div class="progress-container"><span id="progress-text">0% Completed</span><div class="progress-bar"><div id="progress-bar-inner" class="progress"></div></div></div> <nav><ul class="question-nav" id="question-nav"></ul></nav> </aside>
@@ -162,7 +157,6 @@
             <div class="overlay" id="overlay"></div>
         </div>
     </div>
-
     <div class="page" id="review-page">
         <div class="review-card">
             <div class="review-header"><h2>Review Your Answers</h2><p>Click on a number to jump to that question. Submit when you are ready.</p></div>
@@ -170,7 +164,6 @@
             <div class="review-footer"><button class="nav-btn submit-btn" id="final-submit-btn">Confirm & Submit Test</button></div>
         </div>
     </div>
-
     <div class="page" id="results-page">
         <div class="results-summary">
             <h2 class="summary-title" id="summary-title"></h2><p class="summary-message" id="summary-message"></p>
@@ -180,7 +173,6 @@
             <button class="retake-btn" id="back-to-dashboard-from-results">Back to Dashboard</button>
         </div>
     </div>
-    
     <div class="modal-overlay" id="times-up-modal">
         <div class="modal-content"><h2>Time's Up!</h2><p>Your time has expired. The test will be submitted automatically.</p><div class="modal-countdown" id="grace-countdown">10</div></div>
     </div>
@@ -231,7 +223,7 @@
             
             let examState = {};
             let currentUser = null;
-
+            
             const ICONS = {
                 MENU: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>`,
                 CLOSE: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`,
@@ -310,33 +302,29 @@
                     dom.scoresTbody.innerHTML = '<tr><td colspan="4">No scores submitted yet.</td></tr>';
                     return;
                 }
-                const aggregatedScores = {};
+                const studentScores = new Map();
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    if (!aggregatedScores[data.userId]) {
-                        aggregatedScores[data.userId] = {
+                    if (!studentScores.has(data.userId)) {
+                        studentScores.set(data.userId, {
                             userName: data.userName, userPhotoURL: data.userPhotoURL,
-                            totalScoreReceived: 0, totalPossibleScore: 0, examCount: 0
-                        };
+                            totalPointsReceived: 0, totalPossiblePoints: 0
+                        });
                     }
-                    aggregatedScores[data.userId].totalScoreReceived += data.score;
-                    aggregatedScores[data.userId].totalPossibleScore += data.total;
-                    aggregatedScores[data.userId].examCount += 1;
+                    const student = studentScores.get(data.userId);
+                    student.totalPointsReceived += data.pointsReceived;
+                    student.totalPossiblePoints += data.totalPoints;
                 });
-
-                const scoresArray = Object.values(aggregatedScores);
-                scoresArray.forEach(user => {
-                    user.percentage = user.totalPossibleScore > 0 ? Math.round((user.totalScoreReceived / user.totalPossibleScore) * 100) : 0;
-                });
-                scoresArray.sort((a, b) => b.percentage - a.percentage);
-                
+                const sortedStudents = [...studentScores.values()].sort((a, b) => b.totalPointsReceived - a.totalPointsReceived);
                 dom.scoresTbody.innerHTML = '';
-                scoresArray.forEach((user, index) => {
+                let rank = 1;
+                sortedStudents.forEach(student => {
+                    const percentage = student.totalPossiblePoints > 0 ? Math.round((student.totalPointsReceived / student.totalPossiblePoints) * 100) : 0;
                     let scoreClass = 'low';
-                    if (user.percentage >= 75) scoreClass = 'high';
-                    else if (user.percentage >= 50) scoreClass = 'medium';
+                    if (percentage >= 75) scoreClass = 'high';
+                    else if (percentage >= 50) scoreClass = 'medium';
                     const row = document.createElement('tr');
-                    row.innerHTML = `<td data-label="Rank">${index + 1}</td><td data-label="Student"><div class="student-info"><img src="${user.userPhotoURL}" alt="${user.userName}"><p>${user.userName}</p></div></td><td data-label="Exams Taken">${user.examCount}</td><td data-label="Total Score"> ${user.totalScoreReceived} / ${user.totalPossibleScore} <span class="score-badge ${scoreClass}">${user.percentage}%</span></td>`;
+                    row.innerHTML = `<td data-label="Rank">${rank++}</td><td data-label="Student"><div class="student-info"><img src="${student.userPhotoURL}" alt="${student.userName}"><p>${student.userName}</p></div></td><td data-label="Points">${student.totalPointsReceived} / ${student.totalPossiblePoints}</td><td data-label="Percentage"><span class="score-badge ${scoreClass}">${percentage}%</span></td>`;
                     dom.scoresTbody.appendChild(row);
                 });
             };
@@ -366,7 +354,7 @@
             const handleNetworkStatus = () => { const statusEl = dom.networkStatus; if (navigator.onLine) { if(statusEl.classList.contains('offline')) { statusEl.textContent = 'Back online!'; statusEl.className = 'network-status online'; setTimeout(() => statusEl.className = 'network-status', 2000); } } else { statusEl.textContent = 'You are offline. Progress is saved locally.'; statusEl.className = 'network-status offline'; } };
             const showReviewPage = () => { renderReviewGrid(); showPage('review-page'); };
             const handleFocusLoss = () => { examState.focusLossCount++; saveSession(); if (examState.focusLossCount < 3) { alert(`Warning ${examState.focusLossCount} of 2: Switching tabs or applications is not allowed. Further violations will result in auto-submission.`); } else { alert('Third violation detected. Your test will be submitted automatically.'); handleSubmit(true); } };
-            const handleSubmit = async (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(examState.timerInterval); clearInterval(examState.saveInterval); renderResults(); const { questions, initialTime, timeLeft, currentExamId } = examState; const totalQuestions = questions.length; const correctCount = questions.filter(q => q.userAnswer === q.correctAnswer).length; const percentage = Math.round((correctCount / totalQuestions) * 100); const timeTaken = initialTime - timeLeft; await db.collection('scores').add({ userId: currentUser.uid, userName: currentUser.displayName, userEmail: currentUser.email, userPhotoURL: currentUser.photoURL, examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, score: correctCount, total: totalQuestions, percentage: percentage, timeTaken: timeTaken, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); clearSession(); showPage('results-page'); };
+            const handleSubmit = async (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(examState.timerInterval); clearInterval(examState.saveInterval); renderResults(); const { questions, initialTime, timeLeft, currentExamId } = examState; const totalPoints = questions.reduce((sum, q) => sum + q.points, 0); const pointsReceived = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0); await db.collection('scores').add({ userId: currentUser.uid, userName: currentUser.displayName, userPhotoURL: currentUser.photoURL, examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, pointsReceived: pointsReceived, totalPoints: totalPoints, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); clearSession(); showPage('results-page'); };
             
             const openMobileMenu = () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); };
             const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
@@ -374,12 +362,7 @@
             const preventDevTools = e => { if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) ) { e.preventDefault(); } };
 
             const initializeExam = () => {
-                injectIcons(); 
-                renderSidebar(); 
-                renderQuestion(); 
-                startTimer(); 
-                updateProgress(); 
-                handleNetworkStatus();
+                injectIcons(); renderSidebar(); renderQuestion(); startTimer(); updateProgress(); handleNetworkStatus();
                 examState.saveInterval = setInterval(saveSession, 5000);
                 window.addEventListener('blur', handleFocusLoss); 
                 document.addEventListener('contextmenu', preventDefault); 
