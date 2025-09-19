@@ -87,19 +87,7 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-
-            const ALL_EXAMS = {
-                'java-pre-test': {
-                    name: "Java Full Stack Pre-Test",
-                    duration: 3600,
-                    questions: 5
-                },
-                'javascript-fundamentals': {
-                    name: "JavaScript Fundamentals",
-                    duration: 1800,
-                    questions: 4
-                }
-            };
+            const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
             const dom = {
                 loadingOverlay: document.getElementById('loading-overlay'),
@@ -113,11 +101,17 @@
 
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
+                    if (user.email === ADMIN_EMAIL) {
+                        window.location.href = 'admin.html';
+                        return;
+                    }
+
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (!userDoc.exists) {
                         window.location.href = 'index.html';
                         return;
                     }
+
                     const userProfile = userDoc.data();
                     setupUserUI(userProfile);
                     renderStudentDashboard();
@@ -135,18 +129,24 @@
             };
 
             const renderStudentDashboard = () => {
-                dom.examList.innerHTML = '';
-                for (const id in ALL_EXAMS) {
-                    const exam = ALL_EXAMS[id];
-                    const card = document.createElement('div');
-                    card.className = 'exam-card';
-                    card.innerHTML = `
-                        <h3>${exam.name}</h3>
-                        <p>${exam.questions} Questions | ${exam.duration / 60} Minutes</p>
-                        <button class="enter-exam-btn" data-exam-id="${id}">Enter Exam</button>
-                    `;
-                    dom.examList.appendChild(card);
-                }
+                db.collection('exams').where('isLocked', '==', false).onSnapshot(snapshot => {
+                    dom.examList.innerHTML = '';
+                    if (snapshot.empty) {
+                        dom.examList.innerHTML = '<p>No exams are available at the moment. Please check back later.</p>';
+                        return;
+                    }
+                    snapshot.forEach(doc => {
+                        const exam = doc.data();
+                        const card = document.createElement('div');
+                        card.className = 'exam-card';
+                        card.innerHTML = `
+                            <h3>${exam.name}</h3>
+                            <p>${exam.questions.length} Questions | ${exam.duration / 60} Minutes</p>
+                            <button class="enter-exam-btn" data-exam-id="${doc.id}">Enter Exam</button>
+                        `;
+                        dom.examList.appendChild(card);
+                    });
+                });
             };
 
             dom.examList.addEventListener('click', e => {
@@ -157,9 +157,7 @@
             });
             
             const signOutUser = () => {
-                auth.signOut().then(() => {
-                    console.log('User signed out.');
-                }).catch(error => {
+                auth.signOut().catch(error => {
                     console.error('Sign out error', error);
                 });
             };
