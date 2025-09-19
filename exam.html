@@ -177,28 +177,6 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-
-            const ALL_EXAMS = {
-                'java-pre-test': {
-                    name: "Java Full Stack Pre-Test", duration: 3600,
-                    questions: [
-                        { type: 'Mcq', points: 2, title: 'In a microservices architecture using Spring Cloud, what is the primary role of a service registry like Eureka?', options: ['Handle authentication', 'Monitor application logs', 'Manage API documentation', 'Track and register service instances dynamically'], correctAnswer: 3 },
-                        { type: 'Mcq', points: 10, title: 'Which is the most efficient way to reverse a String in Java?', options: ['Using a for loop', 'Using the StringBuilder.reverse() method', 'Using recursion', 'Converting to char array'], correctAnswer: 1 },
-                        { type: 'Mcq', points: 2, title: 'Which annotation defines a REST controller in Spring Boot?', options: ['@Controller', '@Service', '@RestController', '@Repository'], correctAnswer: 2 },
-                        { type: 'Mcq', points: 10, title: 'What is a key trait of a thread-safe Singleton pattern?', options: ['Public constructor', 'Public static instance', 'Lazy initialization without synchronization', 'Private constructor and a synchronized static method'], correctAnswer: 3 },
-                        { type: 'Mcq', points: 2, title: 'What is the default scope of a bean in Spring?', options: ['singleton', 'prototype', 'request', 'session'], correctAnswer: 0 }
-                    ]
-                },
-                'javascript-fundamentals': {
-                    name: "JavaScript Fundamentals", duration: 1800,
-                    questions: [
-                        { type: 'Mcq', points: 5, title: 'Which keyword is used to declare a constant variable?', options: ['var', 'let', 'const', 'static'], correctAnswer: 2 },
-                        { type: 'Mcq', points: 5, title: 'What will `typeof null` return?', options: ['null', 'undefined', 'object', 'string'], correctAnswer: 2 },
-                        { type: 'Mcq', points: 5, title: 'Which of the following is NOT a primitive type in JavaScript?', options: ['String', 'Number', 'Array', 'Boolean'], correctAnswer: 2 },
-                        { type: 'Mcq', points: 5, title: 'What is the purpose of the `===` operator?', options: ['Assigns a value', 'Compares values for equality', 'Compares both value and type for equality', 'Compares object references'], correctAnswer: 2 }
-                    ]
-                }
-            };
             
             const ICONS = {
                 MENU: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>`,
@@ -257,22 +235,31 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const examId = urlParams.get('id');
 
-                if (!examId || !ALL_EXAMS[examId]) {
+                if (!examId) {
                     alert('Invalid exam ID.');
                     window.location.href = 'dashboard.html';
                     return;
                 }
+                
+                const examDoc = await db.collection('exams').doc(examId).get();
+                if (!examDoc.exists) {
+                    alert('Exam not found or is no longer available.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+                const examData = examDoc.data();
+                examData.id = examDoc.id;
 
                 const scoresQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
                 if (!scoresQuery.empty) {
                     const previousScoreData = scoresQuery.docs[0].data();
-                    showPreviousResultModal(previousScoreData, examId);
+                    showPreviousResultModal(previousScoreData, examData);
                 } else {
-                    startExam(examId, null);
+                    startExam(examData, null);
                 }
             };
             
-            const showPreviousResultModal = (data, examId) => {
+            const showPreviousResultModal = (data, examData) => {
                 document.getElementById('prev-results-title').textContent = `Previous Result: ${data.examName}`;
                 const percentage = data.totalPoints > 0 ? Math.round((data.pointsReceived / data.totalPoints) * 100) : 0;
                 document.getElementById('prev-score-percentage').textContent = `${percentage}%`;
@@ -284,16 +271,16 @@
                 
                 dom.rewriteExamBtn.onclick = () => {
                     dom.prevResultsModal.classList.remove('show');
-                    startExam(examId, data);
+                    startExam(examData, data);
                 };
                 dom.prevResultsModal.classList.add('show');
                 dom.loadingOverlay.style.display = 'none';
             };
 
-            const startExam = (examId, previousResultData = null) => {
-                const examData = ALL_EXAMS[examId];
+            const startExam = (examData, previousResultData = null) => {
                 examState = {
-                    currentExamId: examId, 
+                    currentExamId: examData.id,
+                    currentExamData: examData,
                     previousResultData: previousResultData,
                     questions: JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isFlagged: false})),
                     currentQuestionIndex: 0, initialTime: examData.duration, timeLeft: examData.duration,
@@ -309,7 +296,6 @@
             const renderSidebar = () => { dom.questionNav.innerHTML = ''; examState.questions.forEach((q, index) => { const item = document.createElement('li'); item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.userAnswer !== null ? 'answered' : ''} ${q.isFlagged ? 'flagged' : ''}`; item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><div class="q-status-icons"><span class="q-status-icon check">${ICONS.CHECK}</span><span class="q-status-icon flag">${ICONS.FLAG}</span></div>`; item.addEventListener('click', () => { navigateToQuestion(index); closeMobileMenu(); }); dom.questionNav.appendChild(item); }); };
             const renderQuestion = () => { const question = examState.questions[examState.currentQuestionIndex]; dom.qNumber.textContent = `Question ${examState.currentQuestionIndex + 1}`; dom.qTitle.textContent = question.title; dom.optionsContainer.innerHTML = ''; question.options.forEach((opt, index) => { const optionDiv = document.createElement('div'); optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`; optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span><div class="option-check-icon">${ICONS.CHECK}</div>`; optionDiv.addEventListener('click', () => selectOption(index)); dom.optionsContainer.appendChild(optionDiv); }); updateFlagButton(); updateNavButtons(); };
             const injectIcons = () => { document.querySelector('.menu-toggle').innerHTML = ICONS.MENU; document.querySelector('.close-menu-btn .icon').innerHTML = ICONS.CLOSE; document.querySelector('.timer .icon').innerHTML = ICONS.TIMER; };
-            
             const renderReviewGrid = () => { dom.reviewGrid.innerHTML = ''; examState.questions.forEach((q, index) => { const btn = document.createElement('button'); btn.className = 'review-item-btn'; if (q.isFlagged) { btn.classList.add('flagged'); } else if (q.userAnswer !== null) { btn.classList.add('answered'); } else { btn.classList.add('unanswered'); } btn.textContent = index + 1; btn.addEventListener('click', () => { navigateToQuestion(index); showView('exam-view'); }); dom.reviewGrid.appendChild(btn); }); };
             
             const selectOption = (optionIndex) => { const question = examState.questions[examState.currentQuestionIndex]; question.userAnswer = (question.userAnswer === optionIndex) ? null : optionIndex; renderQuestion(); updateProgress(); renderSidebar(); saveSession();};
@@ -332,13 +318,13 @@
                 
                 clearInterval(examState.timerInterval); clearInterval(examState.saveInterval);
                 
-                const { questions, initialTime, timeLeft, currentExamId, previousResultData } = examState;
+                const { questions, initialTime, timeLeft, currentExamId, currentExamData, previousResultData } = examState;
                 const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
                 const pointsReceived = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0);
                 
                 const newScoreData = {
                     userId: currentUser.uid, userName: currentUserProfile.displayName, userPhotoURL: currentUser.photoURL,
-                    examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, college: currentUserProfile.college,
+                    examId: currentExamId, examName: currentExamData.name, college: currentUserProfile.college,
                     pointsReceived: pointsReceived, totalPoints: totalPoints, timeTaken: initialTime - timeLeft,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
@@ -379,12 +365,11 @@
             };
 
             const renderResultsPageWithData = (scoreData) => {
-                const totalQuestions = ALL_EXAMS[scoreData.examId].questions.length;
+                const totalQuestions = examState.currentExamData.questions.length;
                 const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
                 
                 const correctCount = examState.questions.filter(q => q.userAnswer === q.correctAnswer).length;
                 const incorrectCount = totalQuestions - correctCount;
-
                 const timeTakenSecs = scoreData.timeTaken;
                 const minutes = Math.floor(timeTakenSecs / 60);
                 const seconds = timeTakenSecs % 60;
