@@ -138,6 +138,9 @@
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
 
+    <div class="network-status" id="network-status"></div>
+    <div class="toast-notification" id="toast-notification"></div>
+
     <div class="page" id="login-page">
         <div class="login-card"><h1>Exam Portal</h1><p>Please sign in to continue.</p><button class="google-login-btn" id="google-login-btn"><svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.519-3.108-11.127-7.481l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.022,36.218,44,30.561,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg><span>Sign in with Google</span></button></div>
     </div>
@@ -226,14 +229,18 @@
                 }
             };
             
-            let questions = [];
-            let currentQuestionIndex = 0;
-            let initialTime = 0;
-            let timeLeft = 0;
-            let timerInterval, saveInterval;
-            let focusLossCount = 0;
+            let examState = {
+                questions: [],
+                currentQuestionIndex: 0,
+                initialTime: 0,
+                timeLeft: 0,
+                timerInterval: null,
+                saveInterval: null,
+                focusLossCount: 0,
+                currentExamId: null,
+            };
+
             let currentUser = null;
-            let currentExamId = null;
 
             const ICONS = {
                 MENU: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>`,
@@ -260,7 +267,7 @@
 
             const showPage = (pageId) => { dom.pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); window.scrollTo(0, 0); };
             const signInWithGoogle = () => auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
-            const signOutUser = () => { if(timerInterval) clearInterval(timerInterval); if(saveInterval) clearInterval(saveInterval); auth.signOut(); };
+            const signOutUser = () => { if(examState.timerInterval) clearInterval(examState.timerInterval); if(examState.saveInterval) clearInterval(examState.saveInterval); auth.signOut(); };
 
             auth.onAuthStateChanged(user => {
                 dom.loadingOverlay.style.display = 'none';
@@ -287,11 +294,17 @@
             };
             
             const startExam = (examId) => {
-                currentExamId = examId;
                 const examData = ALL_EXAMS[examId];
-                questions = JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isFlagged: false}));
-                initialTime = examData.duration;
-                timeLeft = initialTime;
+                examState = {
+                    currentExamId: examId,
+                    questions: JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isFlagged: false})),
+                    currentQuestionIndex: 0,
+                    initialTime: examData.duration,
+                    timeLeft: examData.duration,
+                    timerInterval: null,
+                    saveInterval: null,
+                    focusLossCount: 0
+                };
                 dom.examTitleSidebar.textContent = examData.name;
                 loadSession();
                 initializeExam();
@@ -316,43 +329,37 @@
                     if (data.percentage >= 75) scoreClass = 'high';
                     else if (data.percentage >= 50) scoreClass = 'medium';
                     const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td data-label="Rank">${rank++}</td>
-                        <td data-label="Student"><div class="student-info"><img src="${data.userPhotoURL}" alt="${data.userName}"><p>${data.userName}</p></div></td>
-                        <td data-label="Exam">${data.examName}</td>
-                        <td data-label="Score"><span class="score-badge ${scoreClass}">${data.percentage}%</span></td>
-                        <td data-label="Date">${date}</td>
-                    `;
+                    row.innerHTML = `<td data-label="Rank">${rank++}</td><td data-label="Student"><div class="student-info"><img src="${data.userPhotoURL}" alt="${data.userName}"><p>${data.userName}</p></div></td><td data-label="Exam">${data.examName}</td><td data-label="Score"><span class="score-badge ${scoreClass}">${data.percentage}%</span></td><td data-label="Date">${date}</td>`;
                     dom.scoresTbody.appendChild(row);
                 });
             };
             
-            const renderSidebar = () => { dom.questionNav.innerHTML = ''; questions.forEach((q, index) => { const item = document.createElement('li'); item.className = `question-item ${index === currentQuestionIndex ? 'active' : ''} ${q.userAnswer !== null ? 'answered' : ''} ${q.isFlagged ? 'flagged' : ''}`; item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><div class="q-status-icons"><span class="q-status-icon check">${ICONS.CHECK}</span><span class="q-status-icon flag">${ICONS.FLAG}</span></div>`; item.addEventListener('click', () => { navigateToQuestion(index); closeMobileMenu(); }); dom.questionNav.appendChild(item); }); };
-            const renderQuestion = () => { const question = questions[currentQuestionIndex]; dom.qNumber.textContent = `Question ${currentQuestionIndex + 1}`; dom.qTitle.textContent = question.title; dom.optionsContainer.innerHTML = ''; question.options.forEach((opt, index) => { const optionDiv = document.createElement('div'); optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`; optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span><div class="option-check-icon">${ICONS.CHECK}</div>`; optionDiv.addEventListener('click', () => selectOption(index)); dom.optionsContainer.appendChild(optionDiv); }); updateFlagButton(); updateNavButtons(); };
+            const renderSidebar = () => { dom.questionNav.innerHTML = ''; examState.questions.forEach((q, index) => { const item = document.createElement('li'); item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.userAnswer !== null ? 'answered' : ''} ${q.isFlagged ? 'flagged' : ''}`; item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><div class="q-status-icons"><span class="q-status-icon check">${ICONS.CHECK}</span><span class="q-status-icon flag">${ICONS.FLAG}</span></div>`; item.addEventListener('click', () => { navigateToQuestion(index); closeMobileMenu(); }); dom.questionNav.appendChild(item); }); };
+            const renderQuestion = () => { const question = examState.questions[examState.currentQuestionIndex]; dom.qNumber.textContent = `Question ${examState.currentQuestionIndex + 1}`; dom.qTitle.textContent = question.title; dom.optionsContainer.innerHTML = ''; question.options.forEach((opt, index) => { const optionDiv = document.createElement('div'); optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`; optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span><div class="option-check-icon">${ICONS.CHECK}</div>`; optionDiv.addEventListener('click', () => selectOption(index)); dom.optionsContainer.appendChild(optionDiv); }); updateFlagButton(); updateNavButtons(); };
             const injectIcons = () => { document.querySelector('.menu-toggle .icon').innerHTML = ICONS.MENU; document.querySelector('.close-menu-btn .icon').innerHTML = ICONS.CLOSE; document.querySelector('.timer .icon').innerHTML = ICONS.TIMER; };
-            const renderResults = () => { const totalQuestions = questions.length; const correctCount = questions.filter(q => q.userAnswer === q.correctAnswer).length; const incorrectCount = totalQuestions - correctCount; const percentage = Math.round((correctCount / totalQuestions) * 100); const totalPoints = questions.reduce((sum, q) => sum + q.points, 0); const userPoints = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0); const timeTakenSecs = initialTime - timeLeft; const minutes = Math.floor(timeTakenSecs / 60); const seconds = timeTakenSecs % 60; document.getElementById('score-percentage').textContent = `${percentage}%`; setTimeout(() => { document.getElementById('score-bar-fill').style.width = `${percentage}%`; }, 100); let title, message; if (percentage === 100) { title = "Perfect Score!"; message = "Incredible work! You nailed every question."; } else if (percentage >= 75) { title = "Excellent Job!"; message = "You have a strong understanding of the material."; } else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track. Every attempt is a step forward."; } else { title = "Keep Studying!"; message = "Don't be discouraged. This is a great learning opportunity."; } document.getElementById('summary-title').textContent = title; document.getElementById('summary-message').textContent = message; document.getElementById('total-mcqs').textContent = totalQuestions; document.getElementById('correct-answers').textContent = correctCount; document.getElementById('wrong-answers').textContent = incorrectCount; document.getElementById('total-icon').innerHTML = ICONS.TOTAL; document.getElementById('correct-icon').innerHTML = ICONS.CORRECT; document.getElementById('wrong-answers-icon').innerHTML = ICONS.INCORRECT; document.getElementById('total-points').textContent = `${userPoints} / ${totalPoints}`; document.getElementById('time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; };
-            const renderReviewGrid = () => { dom.reviewGrid.innerHTML = ''; questions.forEach((q, index) => { const btn = document.createElement('button'); btn.className = 'review-item-btn'; if (q.isFlagged) { btn.classList.add('flagged'); } else if (q.userAnswer !== null) { btn.classList.add('answered'); } else { btn.classList.add('unanswered'); } btn.textContent = index + 1; btn.addEventListener('click', () => { navigateToQuestion(index); showPage('exam-page'); }); dom.reviewGrid.appendChild(btn); }); };
+            const renderResults = () => { const { questions, initialTime, timeLeft } = examState; const totalQuestions = questions.length; const correctCount = questions.filter(q => q.userAnswer === q.correctAnswer).length; const incorrectCount = totalQuestions - correctCount; const percentage = Math.round((correctCount / totalQuestions) * 100); const totalPoints = questions.reduce((sum, q) => sum + q.points, 0); const userPoints = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0); const timeTakenSecs = initialTime - timeLeft; const minutes = Math.floor(timeTakenSecs / 60); const seconds = timeTakenSecs % 60; document.getElementById('score-percentage').textContent = `${percentage}%`; setTimeout(() => { document.getElementById('score-bar-fill').style.width = `${percentage}%`; }, 100); let title, message; if (percentage === 100) { title = "Perfect Score!"; message = "Incredible work! You nailed every question."; } else if (percentage >= 75) { title = "Excellent Job!"; message = "You have a strong understanding of the material."; } else if (percentage >= 50) { title = "Good Effort!"; message = "You're on the right track. Every attempt is a step forward."; } else { title = "Keep Studying!"; message = "Don't be discouraged. This is a great learning opportunity."; } document.getElementById('summary-title').textContent = title; document.getElementById('summary-message').textContent = message; document.getElementById('total-mcqs').textContent = totalQuestions; document.getElementById('correct-answers').textContent = correctCount; document.getElementById('wrong-answers').textContent = incorrectCount; document.getElementById('total-icon').innerHTML = ICONS.TOTAL; document.getElementById('correct-icon').innerHTML = ICONS.CORRECT; document.getElementById('wrong-answers-icon').innerHTML = ICONS.INCORRECT; document.getElementById('total-points').textContent = `${userPoints} / ${totalPoints}`; document.getElementById('time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; };
+            const renderReviewGrid = () => { dom.reviewGrid.innerHTML = ''; examState.questions.forEach((q, index) => { const btn = document.createElement('button'); btn.className = 'review-item-btn'; if (q.isFlagged) { btn.classList.add('flagged'); } else if (q.userAnswer !== null) { btn.classList.add('answered'); } else { btn.classList.add('unanswered'); } btn.textContent = index + 1; btn.addEventListener('click', () => { navigateToQuestion(index); showPage('exam-page'); }); dom.reviewGrid.appendChild(btn); }); };
             
-            const selectOption = (optionIndex) => { const question = questions[currentQuestionIndex]; question.userAnswer = (question.userAnswer === optionIndex) ? null : optionIndex; renderQuestion(); updateProgress(); renderSidebar(); saveSession();};
-            const updateProgress = () => { const answeredCount = questions.filter(q => q.userAnswer !== null).length; const percentage = Math.round((answeredCount / questions.length) * 100); dom.progressText.textContent = `${percentage}% Completed`; dom.progressBarInner.style.width = `${percentage}%`; };
-            const updateNavButtons = () => { dom.prevBtn.disabled = currentQuestionIndex === 0; const isLastQuestion = currentQuestionIndex === questions.length - 1; dom.nextBtn.style.display = isLastQuestion ? 'none' : 'inline-block'; dom.submitBtn.style.display = isLastQuestion ? 'inline-block' : 'none'; };
-            const updateFlagButton = () => { const question = questions[currentQuestionIndex]; dom.flagBtn.classList.toggle('flagged', question.isFlagged); dom.flagBtn.querySelector('.icon').innerHTML = question.isFlagged ? ICONS.FLAG_FILLED : ICONS.FLAG; dom.flagBtn.querySelector('.flag-text').textContent = question.isFlagged ? 'Flagged' : 'Flag for Review'; };
-            const toggleFlag = () => { questions[currentQuestionIndex].isFlagged = !questions[currentQuestionIndex].isFlagged; updateFlagButton(); renderSidebar(); saveSession();};
-            const navigateToQuestion = (index) => { currentQuestionIndex = index; renderQuestion(); renderSidebar(); };
+            const selectOption = (optionIndex) => { const question = examState.questions[examState.currentQuestionIndex]; question.userAnswer = (question.userAnswer === optionIndex) ? null : optionIndex; renderQuestion(); updateProgress(); renderSidebar(); saveSession();};
+            const updateProgress = () => { const answeredCount = examState.questions.filter(q => q.userAnswer !== null).length; const percentage = Math.round((answeredCount / examState.questions.length) * 100); dom.progressText.textContent = `${percentage}% Completed`; dom.progressBarInner.style.width = `${percentage}%`; };
+            const updateNavButtons = () => { dom.prevBtn.disabled = examState.currentQuestionIndex === 0; const isLastQuestion = examState.currentQuestionIndex === examState.questions.length - 1; dom.nextBtn.style.display = isLastQuestion ? 'none' : 'inline-block'; dom.submitBtn.style.display = isLastQuestion ? 'inline-block' : 'none'; };
+            const updateFlagButton = () => { const question = examState.questions[examState.currentQuestionIndex]; dom.flagBtn.classList.toggle('flagged', question.isFlagged); dom.flagBtn.querySelector('.icon').innerHTML = question.isFlagged ? ICONS.FLAG_FILLED : ICONS.FLAG; dom.flagBtn.querySelector('.flag-text').textContent = question.isFlagged ? 'Flagged' : 'Flag for Review'; };
+            const toggleFlag = () => { examState.questions[examState.currentQuestionIndex].isFlagged = !examState.questions[examState.currentQuestionIndex].isFlagged; updateFlagButton(); renderSidebar(); saveSession();};
+            const navigateToQuestion = (index) => { examState.currentQuestionIndex = index; renderQuestion(); renderSidebar(); };
             
             const showToast = (message) => { dom.toast.textContent = message; dom.toast.classList.add('show'); setTimeout(() => dom.toast.classList.remove('show'), 3000); };
-            const startTimer = () => { if (timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { timeLeft--; const minutes = Math.floor(timeLeft / 60); if ([600, 300, 60].includes(timeLeft)) { showToast(`${minutes} minutes remaining!`); } if (timeLeft <= 0) { handleTimesUp(); return; } const hours = Math.floor(timeLeft / 3600); const mins = Math.floor((timeLeft % 3600) / 60); const secs = timeLeft % 60; dom.timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`; }, 1000); };
-            const handleTimesUp = () => { clearInterval(timerInterval); dom.timesUpModal.style.display = 'flex'; let gracePeriod = 10; dom.graceCountdown.textContent = gracePeriod; const graceInterval = setInterval(() => { gracePeriod--; dom.graceCountdown.textContent = gracePeriod; if (gracePeriod <= 0) { clearInterval(graceInterval); handleSubmit(true); } }, 1000); };
+            const startTimer = () => { if (examState.timerInterval) clearInterval(examState.timerInterval); examState.timerInterval = setInterval(() => { examState.timeLeft--; const minutes = Math.floor(examState.timeLeft / 60); if ([600, 300, 60].includes(examState.timeLeft)) { showToast(`${minutes} minutes remaining!`); } if (examState.timeLeft <= 0) { handleTimesUp(); return; } const hours = Math.floor(examState.timeLeft / 3600); const mins = Math.floor((examState.timeLeft % 3600) / 60); const secs = examState.timeLeft % 60; dom.timerDisplay.textContent = `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`; }, 1000); };
+            const handleTimesUp = () => { clearInterval(examState.timerInterval); dom.timesUpModal.style.display = 'flex'; let gracePeriod = 10; dom.graceCountdown.textContent = gracePeriod; const graceInterval = setInterval(() => { gracePeriod--; dom.graceCountdown.textContent = gracePeriod; if (gracePeriod <= 0) { clearInterval(graceInterval); handleSubmit(true); } }, 1000); };
             
-            const getSessionKey = () => `examSession-${currentUser.uid}-${currentExamId}`;
-            const saveSession = () => { if(!currentUser || !currentExamId) return; const session = { questions, timeLeft, focusLossCount }; localStorage.setItem(getSessionKey(), JSON.stringify(session)); };
-            const loadSession = () => { const savedSession = localStorage.getItem(getSessionKey()); if (savedSession) { if (confirm("An unfinished session was found. Do you want to resume?")) { const session = JSON.parse(savedSession); questions = session.questions; timeLeft = session.timeLeft; focusLossCount = session.focusLossCount; } else { localStorage.removeItem(getSessionKey()); } } };
+            const getSessionKey = () => `examSession-${currentUser.uid}-${examState.currentExamId}`;
+            const saveSession = () => { if(!currentUser || !examState.currentExamId) return; const sessionData = { questions: examState.questions, timeLeft: examState.timeLeft, focusLossCount: examState.focusLossCount }; localStorage.setItem(getSessionKey(), JSON.stringify(sessionData)); };
+            const loadSession = () => { const savedSession = localStorage.getItem(getSessionKey()); if (savedSession) { if (confirm("An unfinished session was found. Do you want to resume?")) { const session = JSON.parse(savedSession); examState.questions = session.questions; examState.timeLeft = session.timeLeft; examState.focusLossCount = session.focusLossCount; } else { localStorage.removeItem(getSessionKey()); } } };
             const clearSession = () => localStorage.removeItem(getSessionKey());
             
             const handleNetworkStatus = () => { const statusEl = dom.networkStatus; if (navigator.onLine) { if(statusEl.classList.contains('offline')) { statusEl.textContent = 'Back online!'; statusEl.className = 'network-status online'; setTimeout(() => statusEl.className = 'network-status', 2000); } } else { statusEl.textContent = 'You are offline. Progress is saved locally.'; statusEl.className = 'network-status offline'; } };
             const showReviewPage = () => { renderReviewGrid(); showPage('review-page'); };
-            const handleFocusLoss = () => { focusLossCount++; saveSession(); if (focusLossCount < 3) { alert(`Warning ${focusLossCount} of 2: Switching tabs or applications is not allowed. Further violations will result in auto-submission.`); } else { alert('Third violation detected. Your test will be submitted automatically.'); handleSubmit(true); } };
-            const handleSubmit = async (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(timerInterval); clearInterval(saveInterval); renderResults(); const totalQuestions = questions.length; const correctCount = questions.filter(q => q.userAnswer === q.correctAnswer).length; const percentage = Math.round((correctCount / totalQuestions) * 100); const timeTaken = initialTime - timeLeft; await db.collection('scores').add({ userId: currentUser.uid, userName: currentUser.displayName, userEmail: currentUser.email, userPhotoURL: currentUser.photoURL, examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, score: correctCount, total: totalQuestions, percentage: percentage, timeTaken: timeTaken, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); clearSession(); showPage('results-page'); };
+            const handleFocusLoss = () => { examState.focusLossCount++; saveSession(); if (examState.focusLossCount < 3) { alert(`Warning ${examState.focusLossCount} of 2: Switching tabs or applications is not allowed. Further violations will result in auto-submission.`); } else { alert('Third violation detected. Your test will be submitted automatically.'); handleSubmit(true); } };
+            const handleSubmit = async (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(examState.timerInterval); clearInterval(examState.saveInterval); renderResults(); const { questions, initialTime, timeLeft, currentExamId } = examState; const totalQuestions = questions.length; const correctCount = questions.filter(q => q.userAnswer === q.correctAnswer).length; const percentage = Math.round((correctCount / totalQuestions) * 100); const timeTaken = initialTime - timeLeft; await db.collection('scores').add({ userId: currentUser.uid, userName: currentUser.displayName, userEmail: currentUser.email, userPhotoURL: currentUser.photoURL, examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, score: correctCount, total: totalQuestions, percentage: percentage, timeTaken: timeTaken, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); clearSession(); showPage('results-page'); };
             
             const openMobileMenu = () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); };
             const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
@@ -366,7 +373,7 @@
                 startTimer(); 
                 updateProgress(); 
                 handleNetworkStatus();
-                saveInterval = setInterval(saveSession, 5000);
+                examState.saveInterval = setInterval(saveSession, 5000);
                 window.addEventListener('blur', handleFocusLoss); 
                 document.addEventListener('contextmenu', preventDefault); 
                 document.addEventListener('keydown', preventDevTools); 
@@ -380,15 +387,14 @@
             dom.examList.addEventListener('click', e => { if (e.target.matches('.enter-exam-btn')) { startExam(e.target.dataset.examId); } });
             
             dom.flagBtn.addEventListener('click', toggleFlag);
-            dom.prevBtn.addEventListener('click', () => { if (currentQuestionIndex > 0) navigateToQuestion(currentQuestionIndex - 1); });
-            dom.nextBtn.addEventListener('click', () => { if (currentQuestionIndex < questions.length - 1) navigateToQuestion(currentQuestionIndex + 1); });
+            dom.prevBtn.addEventListener('click', () => { if (examState.currentQuestionIndex > 0) navigateToQuestion(examState.currentQuestionIndex - 1); });
+            dom.nextBtn.addEventListener('click', () => { if (examState.currentQuestionIndex < examState.questions.length - 1) navigateToQuestion(examState.currentQuestionIndex + 1); });
             dom.submitBtn.addEventListener('click', showReviewPage);
             dom.endRoundBtn.addEventListener('click', showReviewPage);
             dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
             dom.menuToggle.addEventListener('click', openMobileMenu); dom.overlay.addEventListener('click', closeMobileMenu); dom.closeMenuBtn.addEventListener('click', closeMobileMenu);
             dom.retakeBtn.addEventListener('click', () => showPage('student-dashboard-page'));
             window.addEventListener('online', handleNetworkStatus); window.addEventListener('offline', handleNetworkStatus);
-
         });
     </script>
 </body>
