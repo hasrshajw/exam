@@ -31,6 +31,7 @@
         .admin-content-header h2 { font-size: 2rem; }
         .primary-btn { padding: 10px 20px; border-radius: var(--border-radius-md); font-weight: 600; background-color: var(--color-primary); color: white; transition: background-color var(--transition-fast); }
         .primary-btn:hover { background-color: var(--color-primary-dark); }
+        .primary-btn:disabled { background-color: #a78bfa; cursor: not-allowed; }
         .exam-manage-table { width: 100%; background-color: var(--color-surface); border-radius: var(--border-radius-lg); box-shadow: var(--shadow-lg); border-collapse: collapse; overflow: hidden; }
         .exam-manage-table th, .exam-manage-table td { padding: 16px; text-align: left; border-bottom: 1px solid var(--color-border); }
         .exam-manage-table th { background: #f9fafb; font-size: 0.8rem; text-transform: uppercase; color: var(--color-text-secondary); }
@@ -50,19 +51,21 @@
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--color-border); }
         .modal-header h3 { font-size: 1.5rem; }
         .close-btn { color: var(--color-text-secondary); font-size: 1.5rem; line-height: 1; }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding: 24px 0; }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 24px 8px 24px 0; margin-right: -8px; }
+        .modal-body::-webkit-scrollbar { width: 6px; } .modal-body::-webkit-scrollbar-track { background: transparent; } .modal-body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
         .form-field { display: flex; flex-direction: column; gap: 6px; } .form-field.full-width { grid-column: 1 / -1; }
         .form-field label { font-weight: 500; font-size: 0.9rem; }
-        .form-field input, .form-field textarea { padding: 10px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border); }
-        .questions-container h4 { margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 24px; }
-        .question-card { border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 16px; margin-top: 16px; }
+        .form-field input, .form-field textarea { padding: 10px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border); font-size: 1rem; }
+        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; border-top: 1px solid var(--color-border); padding-top: 24px; }
+        .question-card { border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 16px; margin-top: 16px; position: relative; }
+        .delete-question-btn { position: absolute; top: 8px; right: 8px; color: var(--color-danger); }
         .modal-footer { padding-top: 16px; border-top: 1px solid var(--color-border); text-align: right; }
         .secondary-btn { padding: 10px 20px; border-radius: var(--border-radius-md); font-weight: 600; color: var(--color-text-secondary); background-color: #f3f4f6; margin-right: 8px; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Admin Panel...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">Authenticating Admin...</div>
 
     <div class="page" id="admin-page" style="display: none;">
         <header class="portal-header">
@@ -115,10 +118,11 @@
                             <input type="number" id="exam-duration" required>
                         </div>
                     </div>
-                    <div class="questions-container" id="questions-container">
+                    <div class="questions-header">
                         <h4>Questions</h4>
+                        <button type="button" class="primary-btn" id="add-question-btn">Add Question</button>
                     </div>
-                    <button type="button" class="primary-btn" id="add-question-btn" style="margin-top: 16px;">Add Question</button>
+                    <div id="questions-container"></div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -134,7 +138,15 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = { /* YOUR FIREBASE CONFIG HERE */ };
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
@@ -168,12 +180,13 @@
                     dom.adminPage.style.display = 'flex';
                     dom.loadingOverlay.style.display = 'none';
                 } else {
-                    window.location.href = 'dashboard.html';
+                    dom.loadingOverlay.innerHTML = 'Access Denied. Redirecting...';
+                    setTimeout(() => { window.location.href = 'index.html'; }, 2000);
                 }
             });
 
             const setupAdminUI = (user) => {
-                dom.userPhoto.src = user.photoURL;
+                dom.userPhoto.src = user.photoURL || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
                 dom.userName.firstChild.textContent = user.displayName;
             };
 
@@ -189,9 +202,9 @@
                             <td>${exam.questions.length}</td>
                             <td><span class="status-badge ${exam.isLocked ? 'locked' : 'unlocked'}">${exam.isLocked ? 'Locked' : 'Unlocked'}</span></td>
                             <td>
-                                <button class="action-btn" data-id="${doc.id}">Edit</button>
+                                <button class="action-btn edit-btn" data-id="${doc.id}">Edit</button>
                                 <label class="lock-switch">
-                                    <input type="checkbox" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}>
+                                    <input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}>
                                     <span class="slider"></span>
                                 </label>
                             </td>
@@ -203,7 +216,7 @@
 
             const openModal = (exam = null) => {
                 dom.examForm.reset();
-                dom.questionsContainer.innerHTML = '<h4>Questions</h4>';
+                dom.questionsContainer.innerHTML = '';
                 if (exam) {
                     dom.modalTitle.textContent = 'Edit Exam';
                     dom.examIdInput.value = exam.id;
@@ -220,10 +233,10 @@
             const closeModal = () => dom.examModal.classList.remove('show');
 
             const addQuestionToForm = (question = {}) => {
-                const qIndex = dom.questionsContainer.querySelectorAll('.question-card').length;
                 const card = document.createElement('div');
                 card.className = 'question-card';
                 card.innerHTML = `
+                    <button type="button" class="delete-question-btn">&times;</button>
                     <div class="form-field full-width">
                         <label>Question Title</label>
                         <textarea rows="2" class="question-title" required>${question.title || ''}</textarea>
@@ -249,6 +262,7 @@
             };
 
             dom.saveExamBtn.addEventListener('click', async () => {
+                dom.saveExamBtn.disabled = true;
                 const examId = dom.examIdInput.value;
                 const questions = [];
                 dom.questionsContainer.querySelectorAll('.question-card').forEach(card => {
@@ -267,29 +281,42 @@
                     name: dom.examNameInput.value,
                     duration: parseInt(dom.examDurationInput.value, 10) * 60,
                     questions: questions,
-                    isLocked: examId ? (await db.collection('exams').doc(examId).get()).data().isLocked : true,
                 };
 
-                if (examId) {
-                    await db.collection('exams').doc(examId).update(examData);
-                } else {
-                    await db.collection('exams').add(examData);
+                try {
+                    if (examId) {
+                        await db.collection('exams').doc(examId).update(examData);
+                    } else {
+                        examData.isLocked = true;
+                        await db.collection('exams').add(examData);
+                    }
+                    closeModal();
+                } catch (error) {
+                    console.error("Error saving exam:", error);
+                    alert("Failed to save exam.");
+                } finally {
+                    dom.saveExamBtn.disabled = false;
                 }
-                closeModal();
             });
             
             dom.examsTbody.addEventListener('click', async e => {
-                const id = e.target.dataset.id;
-                if (e.target.matches('.action-btn')) {
+                if (e.target.classList.contains('edit-btn')) {
+                    const id = e.target.dataset.id;
                     const doc = await db.collection('exams').doc(id).get();
                     openModal({ id: doc.id, ...doc.data() });
                 }
             });
 
             dom.examsTbody.addEventListener('change', async e => {
-                 if (e.target.matches('input[type="checkbox"]')) {
+                 if (e.target.classList.contains('lock-toggle')) {
                     const id = e.target.dataset.id;
                     await db.collection('exams').doc(id).update({ isLocked: !e.target.checked });
+                }
+            });
+
+            dom.questionsContainer.addEventListener('click', e => {
+                if (e.target.classList.contains('delete-question-btn')) {
+                    e.target.closest('.question-card').remove();
                 }
             });
 
