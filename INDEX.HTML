@@ -112,10 +112,14 @@
         .network-status.online { background-color: var(--color-success); transform: translateY(0); }
         .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: var(--color-sidebar-bg); color: white; padding: 12px 24px; border-radius: var(--border-radius-md); box-shadow: var(--shadow-lg); z-index: 2000; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
         .toast-notification.show { opacity: 1; bottom: 40px; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1999; display: none; align-items: center; justify-content: center; }
-        .modal-content { background-color: var(--color-surface); padding: 40px; border-radius: var(--border-radius-lg); text-align: center; max-width: 400px; box-shadow: var(--shadow-lg); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.6); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-content { background-color: var(--color-surface); padding: 40px; border-radius: var(--border-radius-lg); text-align: center; max-width: 450px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform var(--transition-fast); }
+        .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-content h2 { font-size: 1.75rem; margin-bottom: 12px; } .modal-content p { color: var(--color-text-secondary); margin-bottom: 24px; }
         .modal-countdown { font-size: 2.5rem; font-weight: bold; color: var(--color-primary); }
+        .modal-actions { margin-top: 24px; display: flex; gap: 12px; justify-content: center; }
+        .modal-actions .close-btn { background-color: var(--color-background); color: var(--color-text-secondary); }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 800px) {
             .portal-header { padding: 16px; }
@@ -139,6 +143,7 @@
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
     <div class="network-status" id="network-status"></div>
     <div class="toast-notification" id="toast-notification"></div>
+
     <div class="page" id="login-page">
         <div class="login-card"><h1>Exam Portal</h1><p>Please sign in to continue.</p><button class="google-login-btn" id="google-login-btn"><svg viewBox="0 0 48 48"><path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.222,0-9.519-3.108-11.127-7.481l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571l6.19,5.238C42.022,36.218,44,30.561,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path></svg><span>Sign in with Google</span></button></div>
     </div>
@@ -148,7 +153,7 @@
     </div>
     <div class="page dashboard-container" id="scores-dashboard-page">
         <header class="portal-header"><div class="user-profile"><img id="scores-user-photo" src="" alt="User photo"><div class="user-info"><div class="user-name" id="scores-user-name"></div></div></div><nav class="header-nav"><button class="logout-btn" id="scores-logout-btn">Logout</button></nav></header>
-        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Points</th><th>Percentage</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
+        <main class="dashboard-content"><button class="back-btn" id="back-to-dashboard-btn">&larr; Back to Exams</button><h2>Scores Dashboard</h2><div class="scores-table-container"><table class="scores-table"><thead><tr><th>Rank</th><th>Student</th><th>Total Points</th><th>Overall Percentage</th></tr></thead><tbody id="scores-tbody"></tbody></table></div></main>
     </div>
     <div class="page" id="exam-page">
         <div class="exam-dashboard">
@@ -176,6 +181,14 @@
     <div class="modal-overlay" id="times-up-modal">
         <div class="modal-content"><h2>Time's Up!</h2><p>Your time has expired. The test will be submitted automatically.</p><div class="modal-countdown" id="grace-countdown">10</div></div>
     </div>
+    <div class="modal-overlay" id="previous-results-modal">
+        <div class="modal-content" id="previous-results-content">
+            <h2 id="prev-results-title">Previous Result</h2>
+            <div class="score-display"><div class="score-header"><span class="score-label">Score</span><span class="score-percentage" id="prev-score-percentage">0%</span></div><div class="score-bar-track"><div class="score-bar-fill" id="prev-score-bar-fill"></div></div></div>
+            <div class="secondary-stats"><div class="secondary-stat"><span class="stat-number" id="prev-total-points"></span><span class="stat-label">Points Scored</span></div><div class="secondary-stat"><span class="stat-number" id="prev-time-taken"></span><span class="stat-label">Time Taken</span></div></div>
+            <div class="modal-actions"><button class="nav-btn prev-btn close-btn">Close</button><button class="retake-btn" id="rewrite-exam-btn">Rewrite Exam</button></div>
+        </div>
+    </div>
     
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -202,21 +215,21 @@
                     name: "Java Full Stack Pre-Test",
                     duration: 3600,
                     questions: [
-                        { type: 'Mcq', points: 2, title: 'In a microservices architecture using Spring Cloud, what is the primary role of a service registry like Eureka?', options: ['Handle authentication', 'Monitor application logs', 'Manage API documentation', 'Track and register service instances dynamically'], correctAnswer: 1 },
+                        { type: 'Mcq', points: 2, title: 'In a microservices architecture using Spring Cloud, what is the primary role of a service registry like Eureka?', options: ['Handle authentication', 'Monitor application logs', 'Manage API documentation', 'Track and register service instances dynamically'], correctAnswer: 3 },
                         { type: 'Mcq', points: 10, title: 'Which is the most efficient way to reverse a String in Java?', options: ['Using a for loop', 'Using the StringBuilder.reverse() method', 'Using recursion', 'Converting to char array'], correctAnswer: 1 },
-                        { type: 'Mcq', points: 2, title: 'Which annotation defines a REST controller in Spring Boot?', options: ['@Controller', '@Service', '@RestController', '@Repository'], correctAnswer: 1 },
-                        { type: 'Mcq', points: 10, title: 'What is a key trait of a thread-safe Singleton pattern?', options: ['Public constructor', 'Public static instance', 'Lazy initialization without synchronization', 'Private constructor and a synchronized static method'], correctAnswer: 1 },
-                        { type: 'Mcq', points: 2, title: 'What is the default scope of a bean in Spring?', options: ['singleton', 'prototype', 'request', 'session'], correctAnswer: 1 }
+                        { type: 'Mcq', points: 2, title: 'Which annotation defines a REST controller in Spring Boot?', options: ['@Controller', '@Service', '@RestController', '@Repository'], correctAnswer: 2 },
+                        { type: 'Mcq', points: 10, title: 'What is a key trait of a thread-safe Singleton pattern?', options: ['Public constructor', 'Public static instance', 'Lazy initialization without synchronization', 'Private constructor and a synchronized static method'], correctAnswer: 3 },
+                        { type: 'Mcq', points: 2, title: 'What is the default scope of a bean in Spring?', options: ['singleton', 'prototype', 'request', 'session'], correctAnswer: 0 }
                     ]
                 },
                 'javascript-fundamentals': {
                     name: "JavaScript Fundamentals",
                     duration: 1800,
                     questions: [
-                        { type: 'Mcq', points: 5, title: 'Which keyword is used to declare a constant variable?', options: ['var', 'let', 'const', 'static'], correctAnswer: 1 },
-                        { type: 'Mcq', points: 5, title: 'What will `typeof null` return?', options: ['null', 'undefined', 'object', 'string'], correctAnswer: 1 },
-                        { type: 'Mcq', points: 5, title: 'Which of the following is NOT a primitive type in JavaScript?', options: ['String', 'Number', 'Array', 'Boolean'], correctAnswer: 1 },
-                        { type: 'Mcq', points: 5, title: 'What is the purpose of the `===` operator?', options: ['Assigns a value', 'Compares values for equality', 'Compares both value and type for equality', 'Compares object references'], correctAnswer: 1 }
+                        { type: 'Mcq', points: 5, title: 'Which keyword is used to declare a constant variable?', options: ['var', 'let', 'const', 'static'], correctAnswer: 2 },
+                        { type: 'Mcq', points: 5, title: 'What will `typeof null` return?', options: ['null', 'undefined', 'object', 'string'], correctAnswer: 2 },
+                        { type: 'Mcq', points: 5, title: 'Which of the following is NOT a primitive type in JavaScript?', options: ['String', 'Number', 'Array', 'Boolean'], correctAnswer: 2 },
+                        { type: 'Mcq', points: 5, title: 'What is the purpose of the `===` operator?', options: ['Assigns a value', 'Compares values for equality', 'Compares both value and type for equality', 'Compares object references'], correctAnswer: 2 }
                     ]
                 }
             };
@@ -244,7 +257,8 @@
                 examList: document.getElementById('exam-list'), scoresLink: document.getElementById('scores-link'), backToDashboardBtn: document.getElementById('back-to-dashboard-btn'),
                 scoresTbody: document.getElementById('scores-tbody'), examPage: document.getElementById('exam-page'),
                 examDashboard: document.getElementById('exam-dashboard'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
-                reviewPage: document.getElementById('review-page'), resultsPage: document.getElementById('results-page'), questionNav: document.getElementById('question-nav'), progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), qNumber: document.getElementById('question-number'), qTitle: document.getElementById('question-title'), optionsContainer: document.getElementById('options-container'), flagBtn: document.getElementById('flag-btn'), prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'), submitBtn: document.getElementById('submit-btn'), endRoundBtn: document.getElementById('end-round-btn'), timerDisplay: document.getElementById('timer-display'), sidebar: document.getElementById('sidebar'), menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), closeMenuBtn: document.getElementById('close-menu-btn'), reviewGrid: document.getElementById('review-grid'), finalSubmitBtn: document.getElementById('final-submit-btn'), retakeBtn: document.getElementById('back-to-dashboard-from-results'), networkStatus: document.getElementById('network-status'), toast: document.getElementById('toast-notification'), timesUpModal: document.getElementById('times-up-modal'), graceCountdown: document.getElementById('grace-countdown')
+                reviewPage: document.getElementById('review-page'), resultsPage: document.getElementById('results-page'), questionNav: document.getElementById('question-nav'), progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), qNumber: document.getElementById('question-number'), qTitle: document.getElementById('question-title'), optionsContainer: document.getElementById('options-container'), flagBtn: document.getElementById('flag-btn'), prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'), submitBtn: document.getElementById('submit-btn'), endRoundBtn: document.getElementById('end-round-btn'), timerDisplay: document.getElementById('timer-display'), sidebar: document.getElementById('sidebar'), menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), closeMenuBtn: document.getElementById('close-menu-btn'), reviewGrid: document.getElementById('review-grid'), finalSubmitBtn: document.getElementById('final-submit-btn'), retakeBtn: document.getElementById('back-to-dashboard-from-results'), networkStatus: document.getElementById('network-status'), toast: document.getElementById('toast-notification'), timesUpModal: document.getElementById('times-up-modal'), graceCountdown: document.getElementById('grace-countdown'),
+                prevResultsModal: document.getElementById('previous-results-modal'), rewriteExamBtn: document.getElementById('rewrite-exam-btn')
             };
 
             const showPage = (pageId) => { dom.pages.forEach(p => p.classList.remove('active')); document.getElementById(pageId).classList.add('active'); window.scrollTo(0, 0); };
@@ -275,17 +289,36 @@
                 }
             };
             
-            const startExam = (examId) => {
+            const handleExamEntry = async (examId) => {
+                const scoresQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
+                if (!scoresQuery.empty) {
+                    const previousScoreDoc = scoresQuery.docs[0];
+                    const data = previousScoreDoc.data();
+                    document.getElementById('prev-results-title').textContent = `Previous Result: ${data.examName}`;
+                    const percentage = Math.round((data.pointsReceived / data.totalPoints) * 100);
+                    document.getElementById('prev-score-percentage').textContent = `${percentage}%`;
+                    document.getElementById('prev-score-bar-fill').style.width = `${percentage}%`;
+                    document.getElementById('prev-total-points').textContent = `${data.pointsReceived} / ${data.totalPoints}`;
+                    const minutes = Math.floor(data.timeTaken / 60);
+                    const seconds = data.timeTaken % 60;
+                    document.getElementById('prev-time-taken').textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                    dom.rewriteExamBtn.onclick = () => {
+                        dom.prevResultsModal.classList.remove('show');
+                        startExam(examId, previousScoreDoc.id);
+                    };
+                    dom.prevResultsModal.classList.add('show');
+                } else {
+                    startExam(examId, null);
+                }
+            };
+
+            const startExam = (examId, existingDocId = null) => {
                 const examData = ALL_EXAMS[examId];
                 examState = {
-                    currentExamId: examId,
+                    currentExamId: examId, existingScoreDocId: existingDocId,
                     questions: JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isFlagged: false})),
-                    currentQuestionIndex: 0,
-                    initialTime: examData.duration,
-                    timeLeft: examData.duration,
-                    timerInterval: null,
-                    saveInterval: null,
-                    focusLossCount: 0
+                    currentQuestionIndex: 0, initialTime: examData.duration, timeLeft: examData.duration,
+                    timerInterval: null, saveInterval: null, focusLossCount: 0
                 };
                 dom.examTitleSidebar.textContent = examData.name;
                 loadSession();
@@ -299,8 +332,7 @@
                 const scoresRef = db.collection('scores');
                 const snapshot = await scoresRef.get();
                 if(snapshot.empty) {
-                    dom.scoresTbody.innerHTML = '<tr><td colspan="4">No scores submitted yet.</td></tr>';
-                    return;
+                    dom.scoresTbody.innerHTML = '<tr><td colspan="4">No scores submitted yet.</td></tr>'; return;
                 }
                 const studentScores = new Map();
                 snapshot.forEach(doc => {
@@ -354,7 +386,7 @@
             const handleNetworkStatus = () => { const statusEl = dom.networkStatus; if (navigator.onLine) { if(statusEl.classList.contains('offline')) { statusEl.textContent = 'Back online!'; statusEl.className = 'network-status online'; setTimeout(() => statusEl.className = 'network-status', 2000); } } else { statusEl.textContent = 'You are offline. Progress is saved locally.'; statusEl.className = 'network-status offline'; } };
             const showReviewPage = () => { renderReviewGrid(); showPage('review-page'); };
             const handleFocusLoss = () => { examState.focusLossCount++; saveSession(); if (examState.focusLossCount < 3) { alert(`Warning ${examState.focusLossCount} of 2: Switching tabs or applications is not allowed. Further violations will result in auto-submission.`); } else { alert('Third violation detected. Your test will be submitted automatically.'); handleSubmit(true); } };
-            const handleSubmit = async (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(examState.timerInterval); clearInterval(examState.saveInterval); renderResults(); const { questions, initialTime, timeLeft, currentExamId } = examState; const totalPoints = questions.reduce((sum, q) => sum + q.points, 0); const pointsReceived = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0); await db.collection('scores').add({ userId: currentUser.uid, userName: currentUser.displayName, userPhotoURL: currentUser.photoURL, examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, pointsReceived: pointsReceived, totalPoints: totalPoints, timestamp: firebase.firestore.FieldValue.serverTimestamp() }); clearSession(); showPage('results-page'); };
+            const handleSubmit = async (isAutoSubmit = false) => { if (!isAutoSubmit) { const confirmed = confirm("Are you sure you want to permanently submit your test?"); if (!confirmed) return; } window.removeEventListener('blur', handleFocusLoss); document.removeEventListener('contextmenu', preventDefault); document.removeEventListener('keydown', preventDevTools); clearInterval(examState.timerInterval); clearInterval(examState.saveInterval); renderResults(); const { questions, initialTime, timeLeft, currentExamId, existingScoreDocId } = examState; const totalPoints = questions.reduce((sum, q) => sum + q.points, 0); const pointsReceived = questions.reduce((sum, q) => (q.userAnswer === q.correctAnswer ? sum + q.points : sum), 0); const scoreData = { userId: currentUser.uid, userName: currentUser.displayName, userPhotoURL: currentUser.photoURL, examId: currentExamId, examName: ALL_EXAMS[currentExamId].name, pointsReceived: pointsReceived, totalPoints: totalPoints, timeTaken: initialTime - timeLeft, timestamp: firebase.firestore.FieldValue.serverTimestamp() }; if (existingScoreDocId) { await db.collection('scores').doc(existingScoreDocId).update(scoreData); } else { await db.collection('scores').add(scoreData); } clearSession(); showPage('results-page'); };
             
             const openMobileMenu = () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); };
             const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
@@ -374,7 +406,7 @@
             dom.scoresLogoutBtn.addEventListener('click', signOutUser);
             dom.scoresLink.addEventListener('click', showScoresDashboard);
             dom.backToDashboardBtn.addEventListener('click', () => showPage('student-dashboard-page'));
-            dom.examList.addEventListener('click', e => { if (e.target.matches('.enter-exam-btn')) { startExam(e.target.dataset.examId); } });
+            dom.examList.addEventListener('click', e => { if (e.target.matches('.enter-exam-btn')) { handleExamEntry(e.target.dataset.examId); } });
             
             dom.flagBtn.addEventListener('click', toggleFlag);
             dom.prevBtn.addEventListener('click', () => { if (examState.currentQuestionIndex > 0) navigateToQuestion(examState.currentQuestionIndex - 1); });
@@ -384,6 +416,7 @@
             dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
             dom.menuToggle.addEventListener('click', openMobileMenu); dom.overlay.addEventListener('click', closeMobileMenu); dom.closeMenuBtn.addEventListener('click', closeMobileMenu);
             dom.retakeBtn.addEventListener('click', () => showPage('student-dashboard-page'));
+            dom.prevResultsModal.querySelector('.close-btn').addEventListener('click', () => dom.prevResultsModal.classList.remove('show'));
             window.addEventListener('online', handleNetworkStatus); window.addEventListener('offline', handleNetworkStatus);
         });
     </script>
