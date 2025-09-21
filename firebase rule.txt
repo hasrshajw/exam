@@ -1,0 +1,36 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    function isAdmin() {
+      return request.auth.token.email == "harshavardhanjw@gmail.com";
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && request.auth.uid == userId;
+      allow delete: if false;
+    }
+    
+    match /scores/{scoreId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+    
+    // NEW: Rules for the 'subjects' collection
+    match /subjects/{subjectId} {
+        // Any authenticated user can read the list of subjects.
+        allow read: if request.auth != null;
+        // Only the admin can create, update, or delete subjects.
+        allow write: if isAdmin();
+    }
+    
+    match /exams/{examId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin();
+    }
+  }
+}
