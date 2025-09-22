@@ -235,7 +235,7 @@
                             <td>${subject.name}</td>
                             <td>${subject.page}</td>
                             <td class="actions-cell">
-                                <a href="manage-lessons.html?subjectId=${doc.id}" class="action-btn"><i class='bx bxs-book-content'></i> Courses & Lessons</a>
+                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-btn"><i class='bx bxs-book-content'></i> Courses & Lessons</a>
                                 <a href="manage-exams.html?subjectId=${doc.id}" class="action-btn"><i class='bx bxs-graduation'></i> Exams</a>
                                 <button class="action-btn edit" data-id="${doc.id}"><i class='bx bxs-edit'></i> Edit</button>
                                 <button class="action-btn delete" data-id="${doc.id}"><i class='bx bxs-trash'></i> Delete</button>
@@ -244,7 +244,7 @@
 
                         const card = document.createElement('div');
                         card.className = 'subject-card';
-                        card.innerHTML = `<h3>${subject.name}</h3><button class="primary-btn manage-mobile-btn" data-id="${doc.id}" data-name="${subject.name}">Manage</button>`;
+                        card.innerHTML = `<h3>${subject.name}</h3><button class="primary-btn manage-mobile-btn" data-subject-id="${doc.id}" data-course-id="${subject.courseId}" data-name="${subject.name}">Manage</button>`;
                         cardsContainer.appendChild(card);
                     });
                 });
@@ -259,11 +259,11 @@
                 modal.classList.add('show');
             };
 
-            const openActionsheet = async (subjectId, subjectName) => {
+            const openActionsheet = (subjectId, courseId, subjectName) => {
                 const list = document.querySelector('.actionsheet-list');
                 document.getElementById('actionsheet-title').textContent = subjectName;
                 list.innerHTML = `
-                    <li><a href="manage-lessons.html?subjectId=${subjectId}"><i class='bx bxs-book-content'></i> Manage Courses & Lessons</a></li>
+                    <li><a href="manage-lessons.html?courseId=${courseId}"><i class='bx bxs-book-content'></i> Manage Courses & Lessons</a></li>
                     <li><a href="manage-exams.html?subjectId=${subjectId}"><i class='bx bxs-graduation'></i> Manage Exams</a></li>
                     <li><button class="edit" data-id="${subjectId}"><i class='bx bxs-edit'></i> Edit Subject</button></li>
                     <li><button class="delete" data-id="${subjectId}"><i class='bx bxs-trash'></i> Delete Subject</button></li>`;
@@ -305,7 +305,7 @@
                     closeActionsheet();
                 }
                 if (button.matches('.delete')) deleteSubject(button.dataset.id);
-                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id, button.dataset.name);
+                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.subjectId, button.dataset.courseId, button.dataset.name);
                 if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
                     button.closest('.modal-overlay').classList.remove('show');
                 }
@@ -316,8 +316,17 @@
                 const id = document.getElementById('subject-id').value;
                 const data = { name: document.getElementById('subject-name').value.trim(), page: document.getElementById('subject-page').value.trim() };
                 if (!data.name || !data.page) { alert('All fields are required.'); return; }
-                if (id) await db.collection('subjects').doc(id).update(data);
-                else await db.collection('subjects').add(data);
+
+                if (id) {
+                    await db.collection('subjects').doc(id).update(data);
+                } else {
+                    const newSubjectRef = db.collection('subjects').doc();
+                    const newCourseRef = db.collection('courses').doc();
+                    const batch = db.batch();
+                    batch.set(newCourseRef, { name: `${data.name} Main Course`, subjectId: newSubjectRef.id, chapters: ['Chapter 1: Getting Started'] });
+                    batch.set(newSubjectRef, { ...data, courseId: newCourseRef.id });
+                    await batch.commit();
+                }
                 document.getElementById('subject-modal').classList.remove('show');
             });
         });
