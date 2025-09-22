@@ -169,7 +169,7 @@
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    initSharedUI(userDoc.exists() ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
                     loadSubjects();
                 } else {
                     window.location.href = 'index.html';
@@ -199,7 +199,7 @@
 
             const loadSubjects = () => {
                 const tbody = document.getElementById('subjects-tbody');
-                db.collection('subjects').onSnapshot(snapshot => {
+                db.collection('subjects').orderBy('name').onSnapshot(snapshot => {
                     tbody.innerHTML = '';
                     snapshot.forEach(doc => {
                         const subject = doc.data();
@@ -264,9 +264,15 @@
             document.getElementById('save-subject-btn').addEventListener('click', async () => {
                 const id = document.getElementById('subject-id').value;
                 const data = {
-                    name: document.getElementById('subject-name').value,
-                    page: document.getElementById('subject-page').value
+                    name: document.getElementById('subject-name').value.trim(),
+                    page: document.getElementById('subject-page').value.trim()
                 };
+
+                if (!data.name || !data.page) {
+                    alert('All fields are required.');
+                    return;
+                }
+
                 if (id) await db.collection('subjects').doc(id).update(data);
                 else await db.collection('subjects').add(data);
                 document.getElementById('subject-modal').classList.remove('show');
