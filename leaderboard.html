@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375; --hover-bg: #F3F4F6; --danger-color: #EF4444; --warning-color: #ff9f43; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; } .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { list-style: none; padding-top: 0.5rem; } .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; text-decoration: none; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); } .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; }
+        .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .content-body { padding: 2rem 3rem 3rem 3rem; max-width: 1000px; margin: 0 auto; width: 100%; }
+        .rank-summary-card { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+        .rank-item { text-align: center; }
+        .rank-item p { color: var(--text-secondary); font-weight: 500; margin-bottom: 0.5rem; }
+        .rank-value { font-size: 2.5rem; font-weight: 700; color: var(--text-primary); }
+        .rank-value.gold { color: #FFBF00; }
+        .leaderboard-widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; }
+        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; }
+        .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 2; transition: color 0.3s ease; }
+        .nav-tab.active { color: var(--text-primary); }
+        #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; border-radius: 99px; background-color: var(--widget-bg); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
+        .tab-content { display: none; } .tab-content.active { display: block; }
+        .leaderboard-table { width: 100%; border-collapse: collapse; }
+        .leaderboard-table th { text-align: left; padding: 0.75rem 1rem; color: var(--text-secondary); font-weight: 500; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border-color); }
+        .leaderboard-table td { padding: 1rem; border-bottom: 1px solid var(--border-color); }
+        .leaderboard-table tr:last-child td { border-bottom: none; }
+        .leaderboard-table tr.current-user { background-color: #F0FDF4; }
+        .rank-cell { font-size: 1.125rem; font-weight: 600; color: var(--text-secondary); text-align: center; width: 60px; }
+        .student-cell { display: flex; align-items: center; gap: 1rem; }
+        .student-cell img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .student-info .name { font-weight: 600; }
+        .student-info .affiliation { color: var(--text-secondary); font-size: 0.9rem; }
+        .score-cell { font-weight: 700; font-size: 1.125rem; color: var(--brand-green); text-align: right; }
+        .score-cell .crown { color: var(--warning-color); font-size: 1.25rem; margin-right: 0.5rem; vertical-align: middle; }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 1.25rem 1.5rem; }
+            .content-body { padding: 1.5rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+            .leaderboard-table .hide-mobile { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Leaderboard...</div>
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container" style="display: none;">
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
+                    <li><a href="course.html"><i class='bx bx-book-open'></i> Course & Content</a></li>
+                    <li><a href="leaderboard.html" class="active"><i class='bx bx-bar-chart-alt-2'></i> Leaderboard</a></li>
+                    <li><a href="programs.html"><i class='bx bx-briefcase-alt-2'></i> Explore Programs</a></li>
+                    <li><a href="community.html"><i class='bx bx-group'></i> Community</a></li>
+                    <li><a href="help.html"><i class='bx bx-help-circle'></i> Help & Support</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+            </div>
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-header">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                </div>
+                <ul class="popup-list">
+                    <li><a href="profile.html"><i class='bx bx-user'></i> Profile</a></li>
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
+        </aside>
+        <main class="main-area">
+            <header class="main-header">
+                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
+                <h1>Leaderboard</h1>
+            </header>
+            <div class="content-body">
+                <div class="rank-summary-card">
+                    <div class="rank-item">
+                        <p>Your College Rank</p>
+                        <div class="rank-value" id="college-rank-value">-</div>
+                    </div>
+                    <div class="rank-item">
+                        <p>Your Overall Rank</p>
+                        <div class="rank-value" id="overall-rank-value">-</div>
+                    </div>
+                </div>
+                <div class="leaderboard-widget">
+                    <div class="pill-nav">
+                        <div id="pill-slider"></div>
+                        <button id="collegeTab" class="nav-tab active" data-target="#college-content">My College</button>
+                        <button id="overallTab" class="nav-tab" data-target="#overall-content">Overall</button>
+                    </div>
+                    <div id="college-content" class="tab-content active">
+                        <table class="leaderboard-table">
+                            <thead><tr><th>Rank</th><th>Student</th><th class="hide-mobile">Branch</th><th style="text-align: right;">Score</th></tr></thead>
+                            <tbody id="college-leaderboard-tbody"></tbody>
+                        </table>
+                    </div>
+                    <div id="overall-content" class="tab-content">
+                        <table class="leaderboard-table">
+                             <thead><tr><th>Rank</th><th>Student</th><th class="hide-mobile">College</th><th style="text-align: right;">Score</th></tr></thead>
+                            <tbody id="overall-leaderboard-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                    const userProfile = userDoc.data();
+                    initSharedUI(userProfile);
+                    await loadLeaderboardData(user.uid, userProfile);
+                    document.querySelector('.dashboard-container').style.display = 'grid';
+                    document.getElementById('loading-overlay').style.display = 'none';
+                } else { window.location.href = 'index.html'; }
+            });
+
+            const initSharedUI = (userProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
+                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                const profileSection = document.getElementById('profile-section');
+                const profilePopup = document.getElementById('profile-popup');
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
+                const overlay = document.getElementById('overlay');
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                menuToggle.addEventListener('click', toggleMenu);
+                closeBtn.addEventListener('click', toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
+                
+                const tabs = document.querySelectorAll('.nav-tab');
+                const slider = document.getElementById('pill-slider');
+                const activeTab = document.querySelector('.nav-tab.active');
+                function moveSlider(tab) { if(tab) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
+                moveSlider(activeTab);
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        moveSlider(e.currentTarget);
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        document.querySelector(e.currentTarget.dataset.target).classList.add('active');
+                    });
+                });
+            };
+
+            const loadLeaderboardData = async (userId, userProfile) => {
+                const [scoresSnap, usersSnap] = await Promise.all([
+                    db.collection('scores').get(),
+                    db.collection('users').get()
+                ]);
+                const allUsers = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
+                
+                const userPoints = {};
+                scoresSnap.forEach(doc => {
+                    const score = doc.data();
+                    userPoints[score.userId] = (userPoints[score.userId] || 0) + score.pointsReceived;
+                });
+                
+                const sortedUsers = Object.keys(userPoints).map(id => ({
+                    id,
+                    points: userPoints[id],
+                    profile: allUsers.get(id)
+                })).filter(u => u.profile).sort((a,b) => b.points - a.points);
+
+                const collegeUsers = sortedUsers.filter(u => u.profile.college === userProfile.college);
+                
+                renderLeaderboard('overall-leaderboard-tbody', sortedUsers, userId, false);
+                renderLeaderboard('college-leaderboard-tbody', collegeUsers, userId, true);
+                renderRankSummary(sortedUsers, collegeUsers, userId);
+            };
+
+            const renderLeaderboard = (tbodyId, userList, currentUserId, isCollegeView) => {
+                const tbody = document.getElementById(tbodyId);
+                tbody.innerHTML = '';
+
+                if(userList.length === 0) {
+                    const user = auth.currentUser;
+                    const profile = { displayName: user.displayName, college: 'Your College', branch: 'Your Branch', photoURL: user.photoURL };
+                    tbody.innerHTML = createRow(1, profile, 0, true);
+                    return;
+                }
+                
+                userList.forEach((user, index) => {
+                    tbody.innerHTML += createRow(index + 1, user.profile, user.points, user.id === currentUserId, isCollegeView);
+                });
+            };
+
+            const createRow = (rank, profile, points, isCurrentUser, isCollegeView) => {
+                const crown = rank === 1 ? `<i class='bx bxs-crown crown'></i>` : '';
+                const affiliation = isCollegeView ? (profile.branch || 'N/A') : profile.college;
+                return `
+                    <tr class="${isCurrentUser ? 'current-user' : ''}">
+                        <td class="rank-cell">${rank}</td>
+                        <td class="student-cell">
+                            <img src="${profile.photoURL || ''}" alt="Avatar">
+                            <div class="student-info">
+                                <span class="name">${profile.displayName}${isCurrentUser ? ' (You)' : ''}</span>
+                                <span class="affiliation">${affiliation}</span>
+                            </div>
+                        </td>
+                        <td class="hide-mobile">${affiliation}</td>
+                        <td class="score-cell">${crown}${points} XP</td>
+                    </tr>
+                `;
+            };
+
+            const renderRankSummary = (overallList, collegeList, userId) => {
+                const overallRank = overallList.findIndex(u => u.id === userId) + 1;
+                const collegeRank = collegeList.findIndex(u => u.id === userId) + 1;
+                
+                const overallRankEl = document.getElementById('overall-rank-value');
+                const collegeRankEl = document.getElementById('college-rank-value');
+
+                overallRankEl.textContent = overallRank > 0 ? `#${overallRank}` : '-';
+                collegeRankEl.textContent = collegeRank > 0 ? `#${collegeRank}` : '-';
+
+                if(collegeRank === 1) collegeRankEl.classList.add('gold');
+            };
+        });
+    </script>
+</body>
+</html>
