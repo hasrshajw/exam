@@ -217,25 +217,20 @@
             const initPage = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const courseId = urlParams.get('courseId');
-
                 if (!courseId) {
                     alert('No course selected. Redirecting...');
                     window.location.href = 'manage-subjects.html';
                     return;
                 }
-
                 const courseDoc = await db.collection('courses').doc(courseId).get();
                 if (!courseDoc.exists) {
                     alert('Selected course not found. Redirecting...');
                     window.location.href = 'manage-subjects.html';
                     return;
                 }
-
                 currentCourse = { id: courseId, ...courseDoc.data() };
                 document.getElementById('page-title').textContent = `${currentCourse.name}`;
-                
                 loadLessonEditor();
-                
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
@@ -249,19 +244,20 @@
                     container.innerHTML = '';
                     if (courseData.chapters.length === 0) {
                         container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">This course has no chapters yet. Click "Manage Chapters" to add the first one.</p>';
+                    } else {
+                        courseData.chapters.forEach((chapter, index) => {
+                            const chapterBlock = document.createElement('div');
+                            chapterBlock.className = 'chapter-block';
+                            chapterBlock.innerHTML = `
+                                <div class="chapter-header">${index + 1}. ${chapter}</div>
+                                <div class="lessons-list" id="chapter-${index}-lessons"></div>
+                                <div style="padding: 0 1.5rem 1.5rem;">
+                                    <button class="primary-btn add-lesson-btn" data-chapter-index="${index}">+ Add Lesson</button>
+                                </div>`;
+                            container.appendChild(chapterBlock);
+                            loadLessonsForChapter(index);
+                        });
                     }
-                    courseData.chapters.forEach((chapter, index) => {
-                        const chapterBlock = document.createElement('div');
-                        chapterBlock.className = 'chapter-block';
-                        chapterBlock.innerHTML = `
-                            <div class="chapter-header">${index + 1}. ${chapter}</div>
-                            <div class="lessons-list" id="chapter-${index}-lessons"></div>
-                            <div style="padding: 0 1.5rem 1.5rem;">
-                                <button class="primary-btn add-lesson-btn" data-chapter-index="${index}">+ Add Lesson</button>
-                            </div>`;
-                        container.appendChild(chapterBlock);
-                        loadLessonsForChapter(index);
-                    });
                 });
             };
 
@@ -315,11 +311,13 @@
             };
 
             document.addEventListener('click', async e => {
-                const target = e.target;
+                const target = e.target.closest('button');
+                if (!target) return;
+
                 if (target.id === 'manage-chapters-btn') openChaptersModal();
                 if (target.id === 'add-chapter-btn') addChapterInput();
                 if (target.matches('.remove-item-btn')) target.closest('.list-item').remove();
-                if (target.matches('.add-lesson-btn')) { openLessonModal(null, target.dataset.chapterIndex); }
+                if (target.matches('.add-lesson-btn')) openLessonModal(null, target.dataset.chapterIndex);
                 if (target.matches('.edit-lesson-btn')) {
                     const doc = await db.collection('lessons').doc(target.dataset.id).get();
                     openLessonModal({ id: doc.id, ...doc.data() });
@@ -336,6 +334,15 @@
 
             document.getElementById('save-chapters-btn').addEventListener('click', async () => {
                 const chapters = [...document.querySelectorAll('#chapters-list input')].map(i => i.value.trim()).filter(Boolean);
+                
+                const lessonsQuery = await db.collection('lessons').where('courseId', '==', currentCourse.id).get();
+                const maxChapterIndex = lessonsQuery.docs.reduce((max, doc) => Math.max(max, doc.data().chapterIndex), -1);
+
+                if (chapters.length < currentCourse.chapters.length && chapters.length <= maxChapterIndex) {
+                    alert('Cannot delete a chapter that still contains lessons. Please delete all lessons from a chapter before removing it.');
+                    return;
+                }
+
                 await db.collection('courses').doc(currentCourse.id).update({ chapters });
                 document.getElementById('chapters-modal').classList.remove('show');
             });
