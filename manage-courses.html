@@ -180,7 +180,7 @@
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    initSharedUI(userDoc.exists() ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
                     initPage();
                 } else {
                     window.location.href = 'index.html';
@@ -297,10 +297,11 @@
                 const id = document.getElementById('course-id').value;
                 const chapters = [...document.querySelectorAll('#chapters-list input')].map(i => i.value.trim()).filter(Boolean);
                 const data = {
-                    name: document.getElementById('course-name').value,
+                    name: document.getElementById('course-name').value.trim(),
                     subjectId: currentSubject.id,
                     chapters
                 };
+                if (!data.name) { alert('Course name cannot be empty.'); return; }
                 if (id) await db.collection('courses').doc(id).update(data);
                 else await db.collection('courses').add(data);
                 document.getElementById('course-modal').classList.remove('show');
