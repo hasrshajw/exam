@@ -159,6 +159,7 @@
                 <form id="subject-form">
                     <input type="hidden" id="subject-id">
                     <div class="form-field"><label for="subject-name">Subject Name</label><input type="text" id="subject-name" required></div>
+                    <div class="form-field"><label for="course-name">Course Name for this Subject</label><input type="text" id="course-name" placeholder="e.g., Complete Java Bootcamp" required></div>
                     <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
                 </form>
             </div>
@@ -250,12 +251,19 @@
                 });
             };
 
-            const openSubjectModal = (subject = null) => {
+            const openSubjectModal = async (subject = null) => {
                 const modal = document.getElementById('subject-modal');
                 modal.querySelector('#subject-modal-title').textContent = subject ? 'Edit Subject' : 'Create New Subject';
                 modal.querySelector('#subject-id').value = subject ? subject.id : '';
                 modal.querySelector('#subject-name').value = subject ? subject.name : '';
                 modal.querySelector('#subject-page').value = subject ? subject.page : '';
+                const courseNameInput = modal.querySelector('#course-name');
+                if (subject && subject.courseId) {
+                    const courseDoc = await db.collection('courses').doc(subject.courseId).get();
+                    courseNameInput.value = courseDoc.exists ? courseDoc.data().name : '';
+                } else {
+                    courseNameInput.value = '';
+                }
                 modal.classList.add('show');
             };
 
@@ -314,17 +322,27 @@
 
             document.getElementById('save-subject-btn').addEventListener('click', async () => {
                 const id = document.getElementById('subject-id').value;
-                const data = { name: document.getElementById('subject-name').value.trim(), page: document.getElementById('subject-page').value.trim() };
-                if (!data.name || !data.page) { alert('All fields are required.'); return; }
+                const subjectData = { name: document.getElementById('subject-name').value.trim(), page: document.getElementById('subject-page').value.trim() };
+                const courseName = document.getElementById('course-name').value.trim();
+                if (!subjectData.name || !subjectData.page || !courseName) { alert('All fields are required.'); return; }
 
                 if (id) {
-                    await db.collection('subjects').doc(id).update(data);
+                    const subjectRef = db.collection('subjects').doc(id);
+                    const subjectDoc = await subjectRef.get();
+                    const existingCourseId = subjectDoc.data().courseId;
+                    const batch = db.batch();
+                    batch.update(subjectRef, { name: subjectData.name, page: subjectData.page });
+                    if (existingCourseId) {
+                        const courseRef = db.collection('courses').doc(existingCourseId);
+                        batch.update(courseRef, { name: courseName });
+                    }
+                    await batch.commit();
                 } else {
                     const newSubjectRef = db.collection('subjects').doc();
                     const newCourseRef = db.collection('courses').doc();
                     const batch = db.batch();
-                    batch.set(newCourseRef, { name: `${data.name} Main Course`, subjectId: newSubjectRef.id, chapters: ['Chapter 1: Getting Started'] });
-                    batch.set(newSubjectRef, { ...data, courseId: newCourseRef.id });
+                    batch.set(newCourseRef, { name: courseName, subjectId: newSubjectRef.id, chapters: ['Chapter 1: Getting Started'] });
+                    batch.set(newSubjectRef, { ...subjectData, courseId: newCourseRef.id });
                     await batch.commit();
                 }
                 document.getElementById('subject-modal').classList.remove('show');
