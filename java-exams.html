@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java Subject Dashboard - Exam Portal</title>
+    <title>Java Subject - Exam Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -37,25 +37,29 @@
         .nav-tab.active, .nav-tab:hover { color: var(--c-primary); }
         .nav-tab.active::after { transform: scaleX(1); }
         @keyframes slideInFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .content-section { animation: slideInFade 0.5s var(--transition) forwards; }
+        .content-section > .chapter-group { opacity: 0; animation: slideInFade 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
         .hidden { display: none; }
         .chapter-group { margin-bottom: var(--space-xl); }
         .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--c-text-secondary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--c-border); }
         .chapter-lessons { display: flex; flex-direction: column; gap: var(--space-md); }
-        .card { display: flex; align-items: center; gap: var(--space-md); background-color: var(--c-bg-card); padding: var(--space-md); border-radius: var(--border-radius-lg); box-shadow: var(--shadow); border: 1px solid var(--c-border); transition: var(--transition); text-decoration: none; }
-        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .card { display: flex; align-items: center; gap: var(--space-md); background-color: var(--c-bg-card); padding: var(--space-md); border-radius: var(--border-radius-lg); box-shadow: var(--shadow); border: 1px solid var(--c-border); transition: var(--transition); position: relative; text-decoration: none; }
+        .card:not([data-status='locked']):hover { transform: translateY(-4px); box-shadow: var(--shadow-lg), 0 0 20px -5px var(--c-primary-light); }
         .card-icon { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.25rem; }
         .card-info { flex-grow: 1; }
-        .card-title { font-weight: 600; font-size: 1.1rem; color: var(--c-text-primary); }
+        .card-title { font-weight: 600; font-size: 1.1rem; color: var(--c-text-primary); transition: var(--transition); }
         .card-meta { font-size: 0.9rem; color: var(--c-text-tertiary); }
         .card-button { background-color: var(--c-bg-card); color: var(--c-primary); border: 1px solid var(--c-border); border-radius: 99px; padding: 0.6rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
         .card-button:hover { background-color: var(--c-primary); color: var(--c-text-white); border-color: var(--c-primary); }
+        .card[data-status="next"] { border-color: var(--c-primary); }
+        .card[data-status="next"] .card-button { background-color: var(--c-primary); color: var(--c-text-white); }
         .card-icon--default { background-color: var(--c-primary-light); color: var(--c-primary); }
         .card[data-status="completed"] .card-title { color: var(--c-text-secondary); }
         .card-icon--completed { background-color: var(--c-accent-light); color: var(--c-status-completed); }
-        .card[data-status="locked"] { opacity: 0.6; background-color: #F9FAFB; pointer-events: none; }
+        .card[data-status="locked"] { opacity: 0.6; background-color: #F9FAFB; }
+        .card[data-status="locked"] a { pointer-events: none; }
         .card-icon--locked { background-color: #F3F4F6; color: var(--c-status-locked); }
-        .card-button--locked { background-color: var(--c-border); color: var(--c-text-tertiary); border-color: transparent; }
+        .card-button--locked { background-color: var(--c-border); color: var(--c-text-tertiary); border-color: transparent; cursor: not-allowed; }
+        .continue-badge { position: absolute; top: -12px; right: var(--space-lg); background-color: var(--c-primary); color: var(--c-text-white); font-size: 0.8rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 99px; }
         .sidebar-card { background-color: var(--c-bg-card); border-radius: var(--border-radius-lg); padding: var(--space-lg); box-shadow: var(--shadow); border: 1px solid var(--c-border); }
         .sidebar-card h4 { font-size: 1.25rem; font-weight: 700; margin-bottom: var(--space-lg); }
         .progress-donut { --progress: 0; --size: 140px; width: var(--size); height: var(--size); border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--c-primary) calc(var(--progress) * 1%), #EDF2F7 0); margin: 0 auto var(--space-md); position: relative; }
@@ -70,15 +74,13 @@
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
-    
     <main style="display: none;">
         <section class="hero-section">
             <div class="container">
-                <p class="course-category">Subject</p>
-                <h1 class="course-title" id="subject-title">Java</h1>
+                <a href="dashboard.html" style="text-decoration: none;"><p class="course-category">Back to All Subjects</p></a>
+                <h1 class="course-title" id="subject-title"></h1>
             </div>
         </section>
-
         <section class="course-details">
             <div class="container content-wrapper">
                 <div class="main-content">
@@ -86,22 +88,24 @@
                         <button id="courseTab" class="nav-tab active">Curriculum</button>
                         <button id="assessmentsTab" class="nav-tab">Assessments</button>
                     </div>
-
-                    <div id="courseContent" class="content-section">
-                        <div class="chapter-group"><h3 class="chapter-title">Courses</h3><div class="chapter-lessons" id="courses-list"></div></div>
-                    </div>
-
-                    <div id="assessmentsContent" class="content-section hidden">
-                         <div class="chapter-group"><h3 class="chapter-title">Available Assessments</h3><div class="chapter-lessons" id="exams-list"></div></div>
-                    </div>
+                    <div id="courseContent" class="content-section"></div>
+                    <div id="assessmentsContent" class="content-section hidden"></div>
                 </div>
-
                 <aside class="sidebar">
-                    <div id="assessmentsSidebar" class="sidebar-card">
-                        <h4>Progress Summary</h4>
-                        <div id="progress-donut" class="progress-donut">
+                    <div id="courseSidebar" class="sidebar-card">
+                        <h4>Course Progress</h4>
+                        <div class="progress-donut" id="course-progress-donut">
                             <div class="progress-donut-label">
-                                <div class="progress-donut-percent" id="summary-percent">0%</div>
+                                <div class="progress-donut-percent" id="course-progress-percent">0%</div>
+                                <div class="progress-donut-text">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="assessmentsSidebar" class="sidebar-card hidden">
+                        <h4>Assessment Summary</h4>
+                        <div class="progress-donut" id="assessment-progress-donut">
+                            <div class="progress-donut-label">
+                                <div class="progress-donut-percent" id="assessment-progress-percent">0%</div>
                                 <div class="progress-donut-text">Completed</div>
                             </div>
                         </div>
@@ -140,22 +144,18 @@
                 loadingOverlay: document.getElementById('loading-overlay'),
                 main: document.querySelector('main'),
                 subjectTitle: document.getElementById('subject-title'),
-                coursesList: document.getElementById('courses-list'),
-                examsList: document.getElementById('exams-list'),
-                progressDonut: document.getElementById('progress-donut'),
-                summaryPercent: document.getElementById('summary-percent'),
+                courseContent: document.getElementById('courseContent'),
+                assessmentsContent: document.getElementById('assessmentsContent'),
+                courseProgressDonut: document.getElementById('course-progress-donut'),
+                courseProgressPercent: document.getElementById('course-progress-percent'),
+                assessmentProgressDonut: document.getElementById('assessment-progress-donut'),
+                assessmentProgressPercent: document.getElementById('assessment-progress-percent'),
                 summaryScore: document.getElementById('summary-score'),
-                tabs: document.querySelectorAll('.nav-tab'),
-                contentSections: document.querySelectorAll('.content-section'),
             };
-
-            let currentUser = null;
-            let userScores = {};
 
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    currentUser = user;
-                    await loadAndRenderContent();
+                    await loadAndRenderContent(user.uid);
                     dom.main.style.display = 'block';
                     dom.loadingOverlay.style.display = 'none';
                 } else {
@@ -163,124 +163,159 @@
                 }
             });
 
-            const loadAndRenderContent = async () => {
+            const loadAndRenderContent = async (userId) => {
                 const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
-                if (subjectQuery.empty) {
-                    dom.main.innerHTML = '<h1>Subject not found.</h1>';
-                    return;
-                }
+                if (subjectQuery.empty) { dom.main.innerHTML = '<h1>Subject not found. Please check the filename in the Admin Panel.</h1>'; return; }
+                
                 const subjectDoc = subjectQuery.docs[0];
                 const subjectId = subjectDoc.id;
                 dom.subjectTitle.textContent = subjectDoc.data().name;
 
-                const scoresQuery = await db.collection('scores').where('userId', '==', currentUser.uid).get();
-                scoresQuery.forEach(doc => { userScores[doc.data().examId] = doc.data(); });
+                const [coursesSnapshot, examsSnapshot, progressSnapshot, scoresSnapshot] = await Promise.all([
+                    db.collection('courses').where('subjectId', '==', subjectId).get(),
+                    db.collection('exams').where('subjectId', '==', subjectId).get(),
+                    db.collection('users').doc(userId).collection('progress').get(),
+                    db.collection('scores').where('userId', '==', userId).get()
+                ]);
 
-                renderCourses(subjectId);
-                renderExams(subjectId);
+                const userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
+                const userScores = new Map(scoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
+
+                const courseIds = coursesSnapshot.docs.map(doc => doc.id);
+                const lessonsByCourse = {};
+                if (courseIds.length > 0) {
+                    const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
+                    lessonsQuery.forEach(doc => {
+                        const lesson = { id: doc.id, ...doc.data() };
+                        if (!lessonsByCourse[lesson.courseId]) lessonsByCourse[lesson.courseId] = [];
+                        lessonsByCourse[lesson.courseId].push(lesson);
+                    });
+                }
+
+                renderCourses(coursesSnapshot, lessonsByCourse, userProgress);
+                renderAssessments(examsSnapshot, userScores);
             };
 
-            const renderCourses = (subjectId) => {
-                db.collection('courses').where('subjectId', '==', subjectId).onSnapshot(snapshot => {
-                    dom.coursesList.innerHTML = '';
-                    if (snapshot.empty) {
-                        dom.coursesList.innerHTML = '<p>No courses available in this subject yet.</p>'; return;
-                    }
-                    snapshot.forEach(doc => {
-                        const course = doc.data();
-                        const card = document.createElement('a');
-                        card.href = `course.html?id=${doc.id}`;
-                        card.className = 'card';
-                        card.innerHTML = `
-                            <div class="card-icon card-icon--default"><i class="fas fa-book-open"></i></div>
-                            <div class="card-info">
-                                <p class="card-title">${course.name}</p>
-                                <p class="card-meta">${course.chapters.length} Chapters</p>
-                            </div>
-                            <button class="card-button">Start Course</button>
-                        `;
-                        dom.coursesList.appendChild(card);
+            const renderCourses = (coursesSnapshot, lessonsByCourse, userProgress) => {
+                dom.courseContent.innerHTML = '';
+                if (coursesSnapshot.empty) { dom.courseContent.innerHTML = '<p>No courses available in this subject yet.</p>'; updateCourseProgress(0, 0); return; }
+
+                let allLessonsInSubject = [];
+                coursesSnapshot.forEach(doc => {
+                    const lessons = (lessonsByCourse[doc.id] || []);
+                    allLessonsInSubject.push(...lessons);
+                });
+                
+                const allLessonsSorted = allLessonsInSubject.sort((a,b) => a.courseId.localeCompare(b.courseId) || a.chapterIndex - b.chapterIndex || a.order - b.order);
+                const firstUncompletedLesson = allLessonsSorted.find(l => !userProgress.has(l.id));
+
+                coursesSnapshot.forEach((courseDoc) => {
+                    const course = courseDoc.data();
+                    const lessons = (lessonsByCourse[courseDoc.id] || []);
+
+                    course.chapters.forEach((chapterName, chapterIndex) => {
+                        const lessonsInChapter = lessons.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
+                        if (lessonsInChapter.length === 0) return;
+
+                        const chapterGroup = document.createElement('div');
+                        chapterGroup.className = 'chapter-group';
+                        chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="chapter-lessons"></div>`;
+                        const lessonsContainer = chapterGroup.querySelector('.chapter-lessons');
+
+                        lessonsInChapter.forEach(lesson => {
+                            const card = document.createElement('a');
+                            card.href = `course.html?id=${courseDoc.id}`;
+                            card.className = 'card';
+
+                            let status, iconClass, icon, buttonHtml = '';
+                            const isCompleted = userProgress.has(lesson.id);
+                            const isNext = firstUncompletedLesson && lesson.id === firstUncompletedLesson.id;
+
+                            if (isCompleted) {
+                                status = 'completed'; iconClass = 'card-icon--completed'; icon = '<i class="fas fa-check"></i>';
+                            } else if (isNext) {
+                                status = 'next'; iconClass = 'card-icon--default'; icon = '<i class="fas fa-book-open"></i>'; buttonHtml = '<button class="card-button">Start Lesson</button>';
+                            } else {
+                                status = 'locked'; iconClass = 'card-icon--locked'; icon = '<i class="fas fa-lock"></i>'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
+                            }
+
+                            card.dataset.status = status;
+                            card.innerHTML = `<div class="card-icon ${iconClass}">${icon}</div><div class="card-info"><p class="card-title">${lesson.title}</p><p class="card-meta">${lesson.duration}</p></div>${buttonHtml}`;
+                            lessonsContainer.appendChild(card);
+                        });
+                        dom.courseContent.appendChild(chapterGroup);
                     });
                 });
+                updateCourseProgress(allLessonsInSubject.length, userProgress.size);
             };
 
-            const renderExams = (subjectId) => {
-                db.collection('exams').where('subjectId', '==', subjectId).onSnapshot(snapshot => {
-                    dom.examsList.innerHTML = '';
-                    let totalPointsReceived = 0;
-                    let totalPossiblePoints = 0;
-                    
-                    if (snapshot.empty) {
-                        dom.examsList.innerHTML = '<p>No assessments available in this subject yet.</p>'; 
-                        updateSummary(0, 0, 0);
-                        return;
-                    }
-
-                    snapshot.forEach(doc => {
+            const renderAssessments = (examsSnapshot, userScores) => {
+                dom.assessmentsContent.innerHTML = '';
+                const chapterGroup = document.createElement('div');
+                chapterGroup.className = 'chapter-group';
+                chapterGroup.innerHTML = '<h3 class="chapter-title">Available Assessments</h3><div class="chapter-lessons"></div>';
+                const assessmentsContainer = chapterGroup.querySelector('.chapter-lessons');
+                
+                let totalPointsReceived = 0, totalPossiblePoints = 0, examsCompleted = 0;
+                
+                if (examsSnapshot.empty) {
+                    assessmentsContainer.innerHTML = '<p>No assessments available in this subject yet.</p>';
+                } else {
+                    examsSnapshot.forEach(doc => {
                         const exam = doc.data();
-                        const examId = doc.id;
-                        const score = userScores[examId];
-                        totalPossiblePoints += exam.questions.reduce((sum, q) => sum + q.points, 0);
+                        const score = userScores.get(doc.id);
+                        const examTotalPoints = exam.questions.reduce((sum, q) => sum + q.points, 0);
+                        totalPossiblePoints += examTotalPoints;
                         
                         const card = document.createElement('a');
-                        card.href = `exam.html?id=${examId}`;
+                        card.href = `exam.html?id=${doc.id}`;
                         card.className = 'card';
                         
                         let status, iconClass, icon, meta, buttonText;
-
                         if (score) {
-                            status = 'completed';
-                            iconClass = 'card-icon--completed';
-                            icon = '<i class="fas fa-check"></i>';
-                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                            meta = `Score: ${percentage}%`;
-                            buttonText = 'View Results';
+                            examsCompleted++;
                             totalPointsReceived += score.pointsReceived;
-                        } else if (exam.isLocked) {
-                            status = 'locked';
-                            iconClass = 'card-icon--locked';
-                            icon = '<i class="fas fa-lock"></i>';
-                            meta = `${exam.questions.length} Questions`;
-                            buttonText = 'Locked';
-                            card.style.pointerEvents = 'none';
+                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                            status = 'completed'; iconClass = 'card-icon--completed'; icon = '<i class="fas fa-check"></i>'; meta = `Score: ${percentage}%`; buttonText = 'View Results';
                         } else {
-                            status = 'next';
-                            iconClass = 'card-icon--default';
-                            icon = '<i class="fas fa-file-alt"></i>';
+                            status = exam.isLocked ? 'locked' : 'next';
+                            iconClass = exam.isLocked ? 'card-icon--locked' : 'card-icon--default';
+                            icon = exam.isLocked ? '<i class="fas fa-lock"></i>' : '<i class="fas fa-file-alt"></i>';
                             meta = `${exam.questions.length} Questions`;
-                            buttonText = 'Start Exam';
+                            buttonText = exam.isLocked ? 'Locked' : 'Start Exam';
+                            if (exam.isLocked) card.style.pointerEvents = 'none';
                         }
-
                         card.dataset.status = status;
-                        card.innerHTML = `
-                            <div class="card-icon ${iconClass}">${icon}</div>
-                            <div class="card-info">
-                                <p class="card-title">${exam.name}</p>
-                                <p class="card-meta">${meta}</p>
-                            </div>
-                            <button class="card-button">${buttonText}</button>
-                        `;
-                        dom.examsList.appendChild(card);
+                        card.innerHTML = `<div class="card-icon ${iconClass}">${icon}</div><div class="card-info"><p class="card-title">${exam.name}</p><p class="card-meta">${meta}</p></div><button class="card-button">${buttonText}</button>`;
+                        assessmentsContainer.appendChild(card);
                     });
-                    
-                    const overallPercentage = totalPossiblePoints > 0 ? Math.round((totalPointsReceived / totalPossiblePoints) * 100) : 0;
-                    updateSummary(overallPercentage, totalPointsReceived, totalPossiblePoints);
-                });
+                }
+                const assessmentProgressPercent = examsSnapshot.size > 0 ? Math.round((examsCompleted / examsSnapshot.size) * 100) : 0;
+                updateAssessmentSummary(assessmentProgressPercent, totalPointsReceived, totalPossiblePoints);
+                dom.assessmentsContent.appendChild(chapterGroup);
+            };
+
+            const updateCourseProgress = (total, completed) => {
+                const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+                dom.courseProgressDonut.style.setProperty('--progress', percent);
+                dom.courseProgressPercent.textContent = `${percent}%`;
             };
             
-            const updateSummary = (percentage, received, total) => {
-                dom.progressDonut.style.setProperty('--progress', percentage);
-                dom.summaryPercent.textContent = `${percentage}%`;
+            const updateAssessmentSummary = (percentage, received, total) => {
+                dom.assessmentProgressDonut.style.setProperty('--progress', percentage);
+                dom.assessmentProgressPercent.textContent = `${percentage}%`;
                 dom.summaryScore.textContent = `${received} / ${total}`;
             };
-
-            dom.tabs.forEach(tab => {
+            
+            document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.addEventListener('click', () => {
-                    dom.tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
                     tab.classList.add('active');
-                    dom.contentSections.forEach(s => s.classList.add('hidden'));
-                    const targetContent = document.getElementById(tab.id === 'courseTab' ? 'courseContent' : 'assessmentsContent');
-                    targetContent.classList.remove('hidden');
+                    const isCourseTab = tab.id === 'courseTab';
+                    document.getElementById('courseContent').classList.toggle('hidden', !isCourseTab);
+                    document.getElementById('assessmentsContent').classList.toggle('hidden', isCourseTab);
+                    document.getElementById('courseSidebar').classList.toggle('hidden', !isCourseTab);
+                    document.getElementById('assessmentsSidebar').classList.toggle('hidden', isCourseTab);
                 });
             });
         });
