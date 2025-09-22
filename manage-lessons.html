@@ -233,7 +233,10 @@
                 const container = document.getElementById('lesson-editor-container');
                 db.collection('courses').doc(currentCourse.id).onSnapshot(doc => {
                     const courseData = doc.data();
-                    if (!courseData) return;
+                    if (!courseData) {
+                        container.innerHTML = 'Error: Course data could not be loaded.';
+                        return;
+                    }
                     container.innerHTML = '';
                     courseData.chapters.forEach((chapter, index) => {
                         const chapterBlock = document.createElement('div');
@@ -306,12 +309,18 @@
                 const id = modal.querySelector('#lesson-id').value;
                 const chapterIndex = parseInt(modal.dataset.chapterIndex, 10);
                 const data = {
-                    title: modal.querySelector('#lesson-title').value,
-                    duration: modal.querySelector('#lesson-duration').value,
-                    content: modal.querySelector('#lesson-content').value,
+                    title: modal.querySelector('#lesson-title').value.trim(),
+                    duration: modal.querySelector('#lesson-duration').value.trim(),
+                    content: modal.querySelector('#lesson-content').value.trim(),
                     courseId: currentCourse.id,
                     chapterIndex: chapterIndex,
                 };
+
+                if (!data.title || !data.duration) {
+                    alert('Title and Duration are required.');
+                    return;
+                }
+
                 if (id) {
                     await db.collection('lessons').doc(id).update(data);
                 } else {
