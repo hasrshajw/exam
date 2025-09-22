@@ -176,7 +176,7 @@
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    initSharedUI(userDoc.exists() ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
                     initPage();
                 } else {
                     window.location.href = 'index.html';
