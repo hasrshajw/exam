@@ -126,7 +126,7 @@
                 <h1>Manage Course Content</h1>
             </header>
             <section class="content-body">
-                <a href="manage-subjects.html" class="back-btn" id="back-to-subjects-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
+                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
                 <div class="admin-content-header">
                     <h2 id="page-title"></h2>
                     <button class="primary-btn" id="manage-chapters-btn">Manage Chapters</button>
@@ -304,13 +304,17 @@
                 modal.classList.add('show');
             };
 
-            document.addEventListener('click', async e => {
-                const target = e.target.closest('button');
-                if (!target) return;
+            document.getElementById('manage-chapters-btn').addEventListener('click', openChaptersModal);
+            document.getElementById('add-chapter-btn').addEventListener('click', () => addChapterInput());
+            document.getElementById('chapters-list').addEventListener('click', e => {
+                if (e.target.matches('.remove-item-btn')) {
+                    e.target.closest('.list-item').remove();
+                }
+            });
 
-                if (target.id === 'manage-chapters-btn') openChaptersModal();
-                if (target.id === 'add-chapter-btn') addChapterInput();
-                if (target.matches('.remove-item-btn')) target.closest('.list-item').remove();
+            document.getElementById('lesson-editor-container').addEventListener('click', async e => {
+                const target = e.target.closest('button');
+                if(!target) return;
                 if (target.matches('.add-lesson-btn')) openLessonModal(null, target.dataset.chapterIndex);
                 if (target.matches('.edit-lesson-btn')) {
                     const doc = await db.collection('lessons').doc(target.dataset.id).get();
@@ -321,21 +325,20 @@
                         await db.collection('lessons').doc(target.dataset.id).delete();
                     }
                 }
-                if (target.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
-                    target.closest('.modal-overlay').classList.remove('show');
-                }
+            });
+
+            document.querySelectorAll('.modal-overlay .close-btn, .modal-overlay .secondary-btn').forEach(btn => {
+                btn.addEventListener('click', () => btn.closest('.modal-overlay').classList.remove('show'));
             });
 
             document.getElementById('save-chapters-btn').addEventListener('click', async () => {
                 const chapters = [...document.querySelectorAll('#chapters-list input')].map(i => i.value.trim()).filter(Boolean);
                 const lessonsQuery = await db.collection('lessons').where('courseId', '==', currentCourse.id).get();
                 const maxChapterIndex = lessonsQuery.docs.reduce((max, doc) => Math.max(max, doc.data().chapterIndex), -1);
-
                 if (chapters.length <= maxChapterIndex) {
-                    alert('Cannot delete a chapter that still contains lessons. Please delete all lessons from a chapter before removing it.');
+                    alert('Cannot delete a chapter that still contains lessons. Please delete all lessons from that chapter before removing it.');
                     return;
                 }
-
                 await db.collection('courses').doc(currentCourse.id).update({ chapters });
                 document.getElementById('chapters-modal').classList.remove('show');
             });
