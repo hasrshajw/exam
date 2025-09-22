@@ -3,135 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course Player - Exam Portal</title>
+    <title>Java Subject Dashboard - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <style>
         :root {
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
-            --color-sidebar-bg: #10172a; --color-sidebar-bg-alt: #1e293b;
-            --color-sidebar-text: #e2e8f0; --color-sidebar-text-muted: #64748b; --color-sidebar-hover: #1e293b;
-            --color-background: #f8fafc; --color-surface: #ffffff; --color-text-primary: #0f172a; --color-text-secondary: #475569;
-            --color-border: #e2e8f0; --color-success: #10b981;
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --border-radius-md: 8px; --border-radius-lg: 12px;
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --c-primary: #6366F1; --c-primary-light: #EEF2FF; --c-primary-dark: #4F46E5;
+            --c-accent: #14B8A6; --c-accent-light: #F0FDFA;
+            --c-text-primary: #111827; --c-text-secondary: #374151; --c-text-tertiary: #6B7280; --c-text-white: #FFFFFF;
+            --c-bg-body: #F9FAFB; --c-bg-card: #FFFFFF; --c-border: #E5E7EB;
+            --c-status-completed: var(--c-accent); --c-status-locked: #9CA3AF;
+            --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2.5rem;
+            --border-radius-lg: 0.75rem; --border-radius-md: 0.5rem;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.04), 0 2px 4px -2px rgb(0 0 0 / 0.04);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; }
-        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); overflow-x: hidden; }
-        button { font-family: inherit; cursor: pointer; border: none; background: none; }
-        svg { display: block; width: 100%; height: 100%; }
-        .course-container { display: flex; height: 100%; position: relative; }
-        .sidebar { width: 340px; background-color: var(--color-sidebar-bg); color: var(--color-sidebar-text); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; border-right: 1px solid var(--color-sidebar-bg-alt); }
-        .sidebar-header { margin-bottom: 24px; } .sidebar-header .course-category { font-size: 0.9rem; color: var(--color-sidebar-text-muted); margin-bottom: 4px; } .sidebar-header .course-title { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
-        .progress-container { margin-bottom: 24px; font-size: 0.8rem; color: var(--color-sidebar-text-muted); } .progress-bar { width: 100%; height: 6px; background-color: var(--color-sidebar-bg-alt); border-radius: 3px; margin-top: 8px; overflow: hidden; } .progress-bar .progress { height: 100%; background-color: var(--color-primary); border-radius: 3px; transition: width 0.4s ease-in-out; }
-        .sidebar nav { flex: 1; overflow: hidden; position: relative; }
-        .course-nav { height: 100%; list-style: none; overflow-y: auto; padding-right: 12px; }
-        .course-nav::-webkit-scrollbar { width: 6px; } .course-nav::-webkit-scrollbar-track { background: transparent; } .course-nav::-webkit-scrollbar-thumb { background: var(--color-sidebar-hover); border-radius: 3px; }
-        .chapter-item { margin-top: 16px; }
-        .chapter-header { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius-md); cursor: pointer; user-select: none; transition: background-color var(--transition-fast); }
-        .chapter-header:hover { background-color: var(--color-sidebar-hover); }
-        .chapter-number { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background-color: var(--color-sidebar-bg-alt); font-size: 0.8rem; font-weight: 600; margin-right: 12px; flex-shrink: 0; }
-        .chapter-title-group { display: flex; flex-direction: column; flex-grow: 1; }
-        .chapter-title { font-weight: 600; font-size: 1rem; color: var(--color-sidebar-text); }
-        .chapter-progress { font-size: 0.75rem; color: var(--color-sidebar-text-muted); }
-        .chapter-status-icon { flex-shrink: 0; width: 20px; height: 20px; margin: 0 8px; color: var(--color-success); opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
-        .chapter-header.completed .chapter-status-icon { opacity: 1; transform: scale(1); }
-        .chapter-toggle-icon { width: 20px; height: 20px; color: var(--color-sidebar-text-muted); transition: transform var(--transition-fast); }
-        .chapter-header.collapsed .chapter-toggle-icon { transform: rotate(-90deg); }
-        .lesson-list-container { position: relative; padding-left: 24px; margin-left: 12px; }
-        .lesson-list-container::before { content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 2px; background-color: var(--color-sidebar-bg-alt); border-radius: 1px; }
-        .lesson-list { list-style: none; max-height: 1000px; overflow: hidden; transition: max-height 0.4s ease-in-out; }
-        .chapter-header.collapsed + .lesson-list-container .lesson-list { max-height: 0; }
-        .lesson-item { display: flex; align-items: center; padding: 10px; border-radius: var(--border-radius-md); margin-top: 8px; transition: all var(--transition-fast); position: relative; } 
-        .lesson-item:not(.locked) { cursor: pointer; }
-        .lesson-item:not(.active):not(.locked):hover { background-color: var(--color-sidebar-hover); transform: translateX(4px); }
-        .lesson-item.active { background-color: var(--color-primary); color: white; font-weight: 600; } 
-        .lesson-item.locked { opacity: 0.5; cursor: not-allowed; }
-        .lesson-number { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0; margin-right: 16px; font-size: 0.8rem; font-weight: 500; transition: all var(--transition-fast); border: 2px solid var(--color-sidebar-bg-alt); background-color: transparent; }
-        .lesson-number::before { content: ''; position: absolute; left: -15px; top: 50%; transform: translateY(-50%); width: 8px; height: 2px; background-color: var(--color-sidebar-bg-alt); }
-        .lesson-item.completed:not(.active) .lesson-number { border-color: var(--color-sidebar-text-muted); color: var(--color-sidebar-text-muted); }
-        .lesson-item.active .lesson-number { background-color: white; color: var(--color-primary); border-color: var(--color-primary); }
-        .lesson-details { display: flex; flex-direction: column; } .lesson-title-nav { font-size: 0.9rem; } .lesson-duration { font-size: 0.75rem; color: var(--color-sidebar-text-muted); } .active .lesson-duration { color: #e0e4f1; }
-        .lesson-status-circle { width: 24px; height: 24px; margin-left: auto; color: var(--color-success); opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); } 
-        .lesson-item.completed:not(.active) .lesson-status-circle { opacity: 1; transform: scale(1); }
-        .main-content { flex-grow: 1; padding: 24px 64px; display: flex; flex-direction: column; overflow-y: auto; }
-        .main-header { display: flex; align-items: center; flex-shrink: 0; gap: 16px; margin-bottom: 32px;}
-        .lesson-area { display: flex; justify-content: center; align-items: flex-start; flex-grow: 1; } 
-        .lesson-view { width: 100%; max-width: 900px; }
-        .lesson-header-main { padding-bottom: 24px; border-bottom: 1px solid var(--color-border); margin-bottom: 32px; }
-        .lesson-header-main .lesson-meta { font-size: 0.9rem; font-weight: 500; color: var(--color-primary); margin-bottom: 12px; } 
-        .lesson-header-main .lesson-title-main { font-size: 2.25rem; font-weight: 700; line-height: 1.3; }
-        .lesson-body { line-height: 1.8; color: var(--color-text-secondary); }
-        .lesson-body h3 { font-size: 1.5rem; font-weight: 600; color: var(--color-text-primary); margin: 40px 0 16px 0; }
-        .lesson-body p { margin-bottom: 20px; }
-        .lesson-body ul { list-style-position: outside; padding-left: 20px; margin-bottom: 20px; }
-        .lesson-body li { margin-bottom: 12px; }
-        .lesson-body code { background-color: #eef2f9; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; }
-        .lesson-body .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: var(--border-radius-lg); margin: 32px 0; box-shadow: var(--shadow-md); }
-        .lesson-body .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        .lesson-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 48px; border-top: 1px solid var(--color-border); padding-top: 24px; } 
-        .nav-btn { padding: 12px 28px; border-radius: var(--border-radius-md); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; gap: 8px; }
-        .nav-btn.complete-btn { background-color: var(--color-primary); color: white; } 
-        .nav-btn.complete-btn:hover { background-color: var(--color-primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .nav-btn.prev-btn { color: var(--color-text-secondary); } .nav-btn.prev-btn:hover { background-color: var(--color-border); } 
-        .nav-btn:disabled { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
-        .menu-toggle, .overlay, .close-menu-btn { display: none; }
-        @media (max-width: 900px) {
-            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); width: 320px;} .sidebar.active { transform: translateX(0); } .sidebar-header { padding-right: 30px; }
-            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--color-sidebar-hover); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn .icon { width: 18px; height: 18px; }
-            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
-            .main-content { padding: 24px 16px; } .main-header { justify-content: flex-start; margin-bottom: 24px; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--color-border); border-radius: 50%; color: var(--color-text-secondary); background-color: var(--color-surface); } .menu-toggle .icon { width: 20px; height: 20px; }
-            .lesson-header-main .lesson-title-main { font-size: 1.75rem; }
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--c-bg-body); color: var(--c-text-primary); font-size: 16px; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 var(--space-xl); }
+        .hero-section { background-color: #f0f0ff; background-image: radial-gradient(circle at top right, #e0e7ff 0%, var(--c-bg-body) 60%); padding: 3rem 0; border-bottom: 1px solid var(--c-border); }
+        .hero-section .course-category { color: var(--c-primary); font-weight: 600; margin-bottom: 0.5rem; }
+        .hero-section .course-title { font-size: 2.75rem; font-weight: 700; margin-bottom: var(--space-md); line-height: 1.2; }
+        .course-details { padding: var(--space-xl) 0; }
+        .content-wrapper { display: flex; align-items: flex-start; gap: var(--space-xl); }
+        .main-content { flex: 2.5; min-width: 0; }
+        .sidebar { flex: 1; position: sticky; top: var(--space-xl); }
+        .course-navigation { display: flex; gap: var(--space-md); margin-bottom: var(--space-xl); border-bottom: 1px solid var(--c-border); }
+        .nav-tab { border: none; background: none; padding-bottom: var(--space-md); font-size: 1.125rem; font-weight: 600; cursor: pointer; color: var(--c-text-tertiary); position: relative; transition: var(--transition); }
+        .nav-tab::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background-color: var(--c-primary); border-radius: 3px; transform: scaleX(0); transition: var(--transition); }
+        .nav-tab.active, .nav-tab:hover { color: var(--c-primary); }
+        .nav-tab.active::after { transform: scaleX(1); }
+        @keyframes slideInFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .content-section { animation: slideInFade 0.5s var(--transition) forwards; }
+        .hidden { display: none; }
+        .chapter-group { margin-bottom: var(--space-xl); }
+        .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--c-text-secondary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--c-border); }
+        .chapter-lessons { display: flex; flex-direction: column; gap: var(--space-md); }
+        .card { display: flex; align-items: center; gap: var(--space-md); background-color: var(--c-bg-card); padding: var(--space-md); border-radius: var(--border-radius-lg); box-shadow: var(--shadow); border: 1px solid var(--c-border); transition: var(--transition); text-decoration: none; }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .card-icon { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.25rem; }
+        .card-info { flex-grow: 1; }
+        .card-title { font-weight: 600; font-size: 1.1rem; color: var(--c-text-primary); }
+        .card-meta { font-size: 0.9rem; color: var(--c-text-tertiary); }
+        .card-button { background-color: var(--c-bg-card); color: var(--c-primary); border: 1px solid var(--c-border); border-radius: 99px; padding: 0.6rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .card-button:hover { background-color: var(--c-primary); color: var(--c-text-white); border-color: var(--c-primary); }
+        .card-icon--default { background-color: var(--c-primary-light); color: var(--c-primary); }
+        .card[data-status="completed"] .card-title { color: var(--c-text-secondary); }
+        .card-icon--completed { background-color: var(--c-accent-light); color: var(--c-status-completed); }
+        .card[data-status="locked"] { opacity: 0.6; background-color: #F9FAFB; pointer-events: none; }
+        .card-icon--locked { background-color: #F3F4F6; color: var(--c-status-locked); }
+        .card-button--locked { background-color: var(--c-border); color: var(--c-text-tertiary); border-color: transparent; }
+        .sidebar-card { background-color: var(--c-bg-card); border-radius: var(--border-radius-lg); padding: var(--space-lg); box-shadow: var(--shadow); border: 1px solid var(--c-border); }
+        .sidebar-card h4 { font-size: 1.25rem; font-weight: 700; margin-bottom: var(--space-lg); }
+        .progress-donut { --progress: 0; --size: 140px; width: var(--size); height: var(--size); border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--c-primary) calc(var(--progress) * 1%), #EDF2F7 0); margin: 0 auto var(--space-md); position: relative; }
+        .progress-donut::before { content: ''; position: absolute; background: var(--c-bg-card); border-radius: 50%; width: calc(var(--size) * 0.8); height: calc(var(--size) * 0.8); }
+        .progress-donut-label { position: relative; text-align: center; }
+        .progress-donut-percent { font-size: 2rem; font-weight: 700; color: var(--c-primary); }
+        .progress-donut-text { font-size: 0.9rem; color: var(--c-text-tertiary); }
+        .score-summary { text-align: center; padding: var(--space-md) 0; border-top: 1px solid var(--c-border); }
+        .score-value { font-size: 1.75rem; font-weight: 700; color: var(--c-text-primary); }
+        .score-label { font-size: 0.875rem; font-weight: 500; color: var(--c-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Course...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
     
-    <div class="course-container" id="course-container" style="display: none;">
-        <aside class="sidebar" id="sidebar">
-            <button class="close-menu-btn" id="close-menu-btn"><span class="icon"></span></button>
-            <div class="sidebar-header">
-                <p class="course-category" id="sidebar-subject-name"></p>
-                <h1 class="course-title" id="sidebar-course-title"></h1>
+    <main style="display: none;">
+        <section class="hero-section">
+            <div class="container">
+                <p class="course-category">Subject</p>
+                <h1 class="course-title" id="subject-title">Java</h1>
             </div>
-            <div class="progress-container">
-                <span id="progress-text">0% Completed</span>
-                <div class="progress-bar"><div id="progress-bar-inner" class="progress"></div></div>
-            </div>
-            <nav>
-                <ul class="course-nav" id="course-nav"></ul>
-            </nav>
-        </aside>
+        </section>
 
-        <main class="main-content">
-            <header class="main-header">
-                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><span class="icon"></span></button>
-                <a id="back-to-subject-link" href="#" style="font-weight: 500; color: var(--color-primary); text-decoration: none;">&larr; Back to Subject</a>
-            </header>
-            <div class="lesson-area">
-                <section class="lesson-view">
-                    <header class="lesson-header-main">
-                        <p class="lesson-meta" id="lesson-meta"></p>
-                        <h2 class="lesson-title-main" id="lesson-title"></h2>
-                    </header>
-                    <div class="lesson-body" id="lesson-content"></div>
-                    <footer class="lesson-footer">
-                        <button class="nav-btn prev-btn" id="prev-btn">&larr; Previous</button>
-                        <button class="nav-btn complete-btn" id="complete-btn">Mark as Complete & Continue &rarr;</button>
-                    </footer>
-                </section>
+        <section class="course-details">
+            <div class="container content-wrapper">
+                <div class="main-content">
+                    <div class="course-navigation">
+                        <button id="courseTab" class="nav-tab active">Curriculum</button>
+                        <button id="assessmentsTab" class="nav-tab">Assessments</button>
+                    </div>
+
+                    <div id="courseContent" class="content-section">
+                        <div class="chapter-group"><h3 class="chapter-title">Courses</h3><div class="chapter-lessons" id="courses-list"></div></div>
+                    </div>
+
+                    <div id="assessmentsContent" class="content-section hidden">
+                         <div class="chapter-group"><h3 class="chapter-title">Available Assessments</h3><div class="chapter-lessons" id="exams-list"></div></div>
+                    </div>
+                </div>
+
+                <aside class="sidebar">
+                    <div id="assessmentsSidebar" class="sidebar-card">
+                        <h4>Progress Summary</h4>
+                        <div id="progress-donut" class="progress-donut">
+                            <div class="progress-donut-label">
+                                <div class="progress-donut-percent" id="summary-percent">0%</div>
+                                <div class="progress-donut-text">Completed</div>
+                            </div>
+                        </div>
+                        <div class="score-summary">
+                            <p class="score-value" id="summary-score">0 / 0</p>
+                            <p class="score-label">Total Points Scored</p>
+                        </div>
+                    </div>
+                </aside>
             </div>
-        </main>
-        <div class="overlay" id="overlay"></div>
-    </div>
+        </section>
+    </main>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
@@ -147,236 +134,155 @@
             const auth = firebase.auth();
             const db = firebase.firestore();
 
-            let courseData = [];
-            let userProgress = new Set();
-            let currentUser = null;
-            let currentCourse = null;
-            let currentChapterIndex = 0;
-            let currentLessonIndex = 0;
+            const CURRENT_PAGE_FILENAME = "java-exams.html";
 
-            const ICONS = {
-                MENU: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>`,
-                CLOSE: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`,
-                CHECK: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
-                CHEVRON: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>`
-            };
-            
             const dom = {
                 loadingOverlay: document.getElementById('loading-overlay'),
-                courseContainer: document.getElementById('course-container'),
-                sidebarSubjectName: document.getElementById('sidebar-subject-name'),
-                sidebarCourseTitle: document.getElementById('sidebar-course-title'),
-                backToSubjectLink: document.getElementById('back-to-subject-link'),
-                courseNav: document.getElementById('course-nav'),
-                progressText: document.getElementById('progress-text'),
-                progressBarInner: document.getElementById('progress-bar-inner'),
-                lessonMeta: document.getElementById('lesson-meta'),
-                lessonTitle: document.getElementById('lesson-title'),
-                lessonContent: document.getElementById('lesson-content'),
-                prevBtn: document.getElementById('prev-btn'),
-                completeBtn: document.getElementById('complete-btn'),
-                sidebar: document.getElementById('sidebar'),
-                menuToggle: document.getElementById('menu-toggle'),
-                overlay: document.getElementById('overlay'),
-                closeMenuBtn: document.getElementById('close-menu-btn'),
+                main: document.querySelector('main'),
+                subjectTitle: document.getElementById('subject-title'),
+                coursesList: document.getElementById('courses-list'),
+                examsList: document.getElementById('exams-list'),
+                progressDonut: document.getElementById('progress-donut'),
+                summaryPercent: document.getElementById('summary-percent'),
+                summaryScore: document.getElementById('summary-score'),
+                tabs: document.querySelectorAll('.nav-tab'),
+                contentSections: document.querySelectorAll('.content-section'),
             };
 
-            auth.onAuthStateChanged(user => {
+            let currentUser = null;
+            let userScores = {};
+
+            auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     currentUser = user;
-                    initializeApp();
+                    await loadAndRenderContent();
+                    dom.main.style.display = 'block';
+                    dom.loadingOverlay.style.display = 'none';
                 } else {
                     window.location.href = 'index.html';
                 }
             });
 
-            const initializeApp = async () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const courseId = urlParams.get('id');
-                if (!courseId) {
-                    alert('Course ID is missing.');
-                    window.location.href = 'dashboard.html';
+            const loadAndRenderContent = async () => {
+                const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
+                if (subjectQuery.empty) {
+                    dom.main.innerHTML = '<h1>Subject not found.</h1>';
                     return;
                 }
+                const subjectDoc = subjectQuery.docs[0];
+                const subjectId = subjectDoc.id;
+                dom.subjectTitle.textContent = subjectDoc.data().name;
 
-                await loadCourseData(courseId);
-                await loadUserProgress(courseId);
+                const scoresQuery = await db.collection('scores').where('userId', '==', currentUser.uid).get();
+                scoresQuery.forEach(doc => { userScores[doc.data().examId] = doc.data(); });
 
-                const startingPoint = findNextUnlockableLesson();
-                currentChapterIndex = startingPoint.chapter;
-                currentLessonIndex = startingPoint.lesson;
-
-                renderAll();
-                injectIcons();
-                
-                dom.courseContainer.style.display = 'flex';
-                dom.loadingOverlay.style.display = 'none';
-            };
-            
-            const loadCourseData = async (courseId) => {
-                const courseDoc = await db.collection('courses').doc(courseId).get();
-                if (!courseDoc.exists) { alert('Course not found.'); window.location.href = 'dashboard.html'; return; }
-                currentCourse = { id: courseDoc.id, ...courseDoc.data() };
-
-                const subjectDoc = await db.collection('subjects').doc(currentCourse.subjectId).get();
-                const subject = subjectDoc.data();
-                dom.sidebarSubjectName.textContent = subject.name;
-                dom.backToSubjectLink.href = subject.page;
-
-                const lessonsQuery = await db.collection('lessons').where('courseId', '==', courseId).orderBy('order').get();
-                const lessons = lessonsQuery.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                courseData = currentCourse.chapters.map((chapterTitle, index) => ({
-                    chapterTitle,
-                    lessons: lessons.filter(l => l.chapterIndex === index)
-                }));
+                renderCourses(subjectId);
+                renderExams(subjectId);
             };
 
-            const loadUserProgress = async (courseId) => {
-                const progressQuery = await db.collection('users').doc(currentUser.uid).collection('progress').where('courseId', '==', courseId).get();
-                progressQuery.forEach(doc => {
-                    if (doc.data().completed) userProgress.add(doc.id);
-                });
-            };
-
-            const findNextUnlockableLesson = () => {
-                for (let i = 0; i < courseData.length; i++) {
-                    for (let j = 0; j < courseData[i].lessons.length; j++) {
-                        const lessonId = courseData[i].lessons[j].id;
-                        if (!userProgress.has(lessonId)) {
-                            return { chapter: i, lesson: j };
-                        }
+            const renderCourses = (subjectId) => {
+                db.collection('courses').where('subjectId', '==', subjectId).onSnapshot(snapshot => {
+                    dom.coursesList.innerHTML = '';
+                    if (snapshot.empty) {
+                        dom.coursesList.innerHTML = '<p>No courses available in this subject yet.</p>'; return;
                     }
-                }
-                const lastChapter = courseData.length - 1;
-                const lastLesson = courseData[lastChapter].lessons.length - 1;
-                return { chapter: lastChapter, lesson: lastLesson };
-            };
-            
-            const renderAll = () => {
-                renderSidebar();
-                renderLesson();
-                updateProgress();
-            };
-
-            const renderSidebar = () => {
-                dom.sidebarCourseTitle.textContent = currentCourse.name;
-                dom.courseNav.innerHTML = '';
-                const unlockable = findNextUnlockableLesson();
-
-                courseData.forEach((chapter, chapIdx) => {
-                    const lessonsCompleted = chapter.lessons.filter(l => userProgress.has(l.id)).length;
-                    const isChapterComplete = lessonsCompleted === chapter.lessons.length;
-                    const isCollapsed = chapIdx !== currentChapterIndex;
-                    
-                    const chapterItem = document.createElement('li');
-                    chapterItem.className = 'chapter-item';
-                    chapterItem.innerHTML = `
-                        <div class="chapter-header ${isChapterComplete ? 'completed' : ''} ${isCollapsed ? 'collapsed' : ''}">
-                            <span class="chapter-number">${chapIdx + 1}</span>
-                            <div class="chapter-title-group">
-                                <span class="chapter-title">${chapter.chapterTitle}</span>
-                                <span class="chapter-progress">${lessonsCompleted} / ${chapter.lessons.length} Completed</span>
+                    snapshot.forEach(doc => {
+                        const course = doc.data();
+                        const card = document.createElement('a');
+                        card.href = `course.html?id=${doc.id}`;
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <div class="card-icon card-icon--default"><i class="fas fa-book-open"></i></div>
+                            <div class="card-info">
+                                <p class="card-title">${course.name}</p>
+                                <p class="card-meta">${course.chapters.length} Chapters</p>
                             </div>
-                            <div class="chapter-status-icon">${ICONS.CHECK}</div>
-                            <div class="chapter-toggle-icon">${ICONS.CHEVRON}</div>
-                        </div>
-                        <div class="lesson-list-container"><ul class="lesson-list"></ul></div>
-                    `;
-                    
-                    const lessonListEl = chapterItem.querySelector('.lesson-list');
-                    chapter.lessons.forEach((lesson, lessIdx) => {
-                        const isCompleted = userProgress.has(lesson.id);
-                        const isActive = chapIdx === currentChapterIndex && lessIdx === currentLessonIndex;
-                        const isLocked = chapIdx > unlockable.chapter || (chapIdx === unlockable.chapter && lessIdx > unlockable.lesson);
-                        const item = document.createElement('li');
-                        item.className = `lesson-item ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
-                        item.innerHTML = `
-                            <div class="lesson-number">${chapIdx + 1}.${lessIdx + 1}</div>
-                            <div class="lesson-details"><span class="lesson-title-nav">${lesson.title}</span><span class="lesson-duration">${lesson.duration}</span></div>
-                            <div class="lesson-status-circle">${ICONS.CHECK}</div>`;
-                        if (!isLocked) item.onclick = () => { navigateToLesson(chapIdx, lessIdx); closeMobileMenu(); };
-                        lessonListEl.appendChild(item);
+                            <button class="card-button">Start Course</button>
+                        `;
+                        dom.coursesList.appendChild(card);
                     });
-
-                    chapterItem.querySelector('.chapter-header').onclick = (e) => e.currentTarget.classList.toggle('collapsed');
-                    dom.courseNav.appendChild(chapterItem);
                 });
             };
 
-            const renderLesson = () => {
-                if(!courseData[currentChapterIndex] || !courseData[currentChapterIndex].lessons[currentLessonIndex]) return;
-                const lesson = courseData[currentChapterIndex].lessons[currentLessonIndex];
-                dom.lessonMeta.textContent = `Chapter ${currentChapterIndex + 1} • Lesson ${currentChapterIndex + 1}.${currentLessonIndex + 1}`;
-                dom.lessonTitle.textContent = lesson.title;
-                dom.lessonContent.innerHTML = lesson.content;
-                updateNavButtons();
-            };
+            const renderExams = (subjectId) => {
+                db.collection('exams').where('subjectId', '==', subjectId).onSnapshot(snapshot => {
+                    dom.examsList.innerHTML = '';
+                    let totalPointsReceived = 0;
+                    let totalPossiblePoints = 0;
+                    
+                    if (snapshot.empty) {
+                        dom.examsList.innerHTML = '<p>No assessments available in this subject yet.</p>'; 
+                        updateSummary(0, 0, 0);
+                        return;
+                    }
 
-            const injectIcons = () => {
-                document.querySelector('.menu-toggle .icon').innerHTML = ICONS.MENU;
-                document.querySelector('.close-menu-btn .icon').innerHTML = ICONS.CLOSE;
-            };
+                    snapshot.forEach(doc => {
+                        const exam = doc.data();
+                        const examId = doc.id;
+                        const score = userScores[examId];
+                        totalPossiblePoints += exam.questions.reduce((sum, q) => sum + q.points, 0);
+                        
+                        const card = document.createElement('a');
+                        card.href = `exam.html?id=${examId}`;
+                        card.className = 'card';
+                        
+                        let status, iconClass, icon, meta, buttonText;
 
-            const updateProgress = () => {
-                const totalLessons = courseData.reduce((sum, chapter) => sum + chapter.lessons.length, 0);
-                const completedLessons = userProgress.size;
-                const percentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-                dom.progressText.textContent = `${percentage}% Completed (${completedLessons}/${totalLessons})`;
-                dom.progressBarInner.style.width = `${percentage}%`;
-            };
+                        if (score) {
+                            status = 'completed';
+                            iconClass = 'card-icon--completed';
+                            icon = '<i class="fas fa-check"></i>';
+                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                            meta = `Score: ${percentage}%`;
+                            buttonText = 'View Results';
+                            totalPointsReceived += score.pointsReceived;
+                        } else if (exam.isLocked) {
+                            status = 'locked';
+                            iconClass = 'card-icon--locked';
+                            icon = '<i class="fas fa-lock"></i>';
+                            meta = `${exam.questions.length} Questions`;
+                            buttonText = 'Locked';
+                            card.style.pointerEvents = 'none';
+                        } else {
+                            status = 'next';
+                            iconClass = 'card-icon--default';
+                            icon = '<i class="fas fa-file-alt"></i>';
+                            meta = `${exam.questions.length} Questions`;
+                            buttonText = 'Start Exam';
+                        }
 
-            const updateNavButtons = () => {
-                dom.prevBtn.disabled = currentChapterIndex === 0 && currentLessonIndex === 0;
-                const isLastLessonOfAll = currentChapterIndex === courseData.length - 1 && currentLessonIndex === courseData[courseData.length - 1].lessons.length - 1;
-                if (isLastLessonOfAll && userProgress.has(courseData[currentChapterIndex].lessons[currentLessonIndex].id)) {
-                     dom.completeBtn.textContent = 'Course Complete!';
-                     dom.completeBtn.disabled = true;
-                } else if (isLastLessonOfAll) {
-                    dom.completeBtn.textContent = 'Finish Course';
-                } else {
-                    dom.completeBtn.innerHTML = 'Mark as Complete & Continue &rarr;';
-                }
-            };
-            
-            const navigateToLesson = (chapIdx, lessIdx) => {
-                currentChapterIndex = chapIdx;
-                currentLessonIndex = lessIdx;
-                renderAll();
-            };
-
-            const handleCompleteAndNext = async () => {
-                const currentLessonId = courseData[currentChapterIndex].lessons[currentLessonIndex].id;
-                await db.collection('users').doc(currentUser.uid).collection('progress').doc(currentLessonId).set({
-                    courseId: currentCourse.id,
-                    completed: true
+                        card.dataset.status = status;
+                        card.innerHTML = `
+                            <div class="card-icon ${iconClass}">${icon}</div>
+                            <div class="card-info">
+                                <p class="card-title">${exam.name}</p>
+                                <p class="card-meta">${meta}</p>
+                            </div>
+                            <button class="card-button">${buttonText}</button>
+                        `;
+                        dom.examsList.appendChild(card);
+                    });
+                    
+                    const overallPercentage = totalPossiblePoints > 0 ? Math.round((totalPointsReceived / totalPossiblePoints) * 100) : 0;
+                    updateSummary(overallPercentage, totalPointsReceived, totalPossiblePoints);
                 });
-                userProgress.add(currentLessonId);
-
-                const nextUnlockable = findNextUnlockableLesson();
-                if (currentChapterIndex === nextUnlockable.chapter && currentLessonIndex === nextUnlockable.lesson) {
-                    alert("Congratulations! You have finished the course.");
-                    renderAll();
-                } else {
-                    navigateToLesson(nextUnlockable.chapter, nextUnlockable.lesson);
-                }
             };
             
-            dom.prevBtn.addEventListener('click', () => {
-                if (currentLessonIndex > 0) {
-                    navigateToLesson(currentChapterIndex, currentLessonIndex - 1);
-                } else if (currentChapterIndex > 0) {
-                    const prevChapIdx = currentChapterIndex - 1;
-                    navigateToLesson(prevChapIdx, courseData[prevChapIdx].lessons.length - 1);
-                }
+            const updateSummary = (percentage, received, total) => {
+                dom.progressDonut.style.setProperty('--progress', percentage);
+                dom.summaryPercent.textContent = `${percentage}%`;
+                dom.summaryScore.textContent = `${received} / ${total}`;
+            };
+
+            dom.tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    dom.tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    dom.contentSections.forEach(s => s.classList.add('hidden'));
+                    const targetContent = document.getElementById(tab.id === 'courseTab' ? 'courseContent' : 'assessmentsContent');
+                    targetContent.classList.remove('hidden');
+                });
             });
-
-            dom.completeBtn.addEventListener('click', handleCompleteAndNext);
-            const openMobileMenu = () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); };
-            const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
-            dom.menuToggle.addEventListener('click', openMobileMenu);
-            dom.overlay.addEventListener('click', closeMobileMenu);
-            dom.closeMenuBtn.addEventListener('click', closeMobileMenu);
         });
     </script>
 </body>
