@@ -3,63 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java Exams - Exam Portal</title>
+    <title>Java Subject Dashboard - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <style>
         :root {
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
-            --color-background: #f4f7fa; --color-surface: #ffffff; --color-text-primary: #111827; --color-text-secondary: #6b7280;
-            --color-border: #e5e7eb;
+            --c-primary: #6366F1; --c-primary-light: #EEF2FF; --c-primary-dark: #4F46E5;
+            --c-accent: #14B8A6; --c-accent-light: #F0FDFA;
+            --c-text-primary: #111827; --c-text-secondary: #374151; --c-text-tertiary: #6B7280; --c-text-white: #FFFFFF;
+            --c-bg-body: #F9FAFB; --c-bg-card: #FFFFFF; --c-border: #E5E7EB;
+            --c-status-completed: var(--c-accent); --c-status-locked: #9CA3AF;
+            --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2.5rem;
+            --border-radius-lg: 0.75rem; --border-radius-md: 0.5rem;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.04), 0 2px 4px -2px rgb(0 0 0 / 0.04);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --border-radius-md: 8px; --border-radius-lg: 16px;
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; }
-        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); display: flex; flex-direction: column; }
-        button { font-family: inherit; cursor: pointer; border: none; background: none; }
-        .page { display: flex; flex-direction: column; width: 100%; min-height: 100%; }
-        .portal-header { width: 100%; background: var(--color-surface); padding: 16px 48px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); flex-shrink: 0; }
-        .user-profile { display: flex; align-items: center; gap: 12px; }
-        .user-profile img { width: 40px; height: 40px; border-radius: 50%; }
-        .user-info .user-name { font-weight: 600; }
-        .header-nav { display: flex; align-items: center; gap: 8px; }
-        .header-nav a, .logout-btn { color: var(--color-text-secondary); font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: var(--border-radius-md); transition: background-color var(--transition-fast); }
-        .header-nav a:hover, .logout-btn:hover { background-color: var(--color-background); }
-        .dashboard-content { padding: 40px; width: 100%; max-width: 1200px; margin: 0 auto; flex-grow: 1; }
-        .dashboard-content h2 { font-size: 2rem; margin-bottom: 24px; }
-        .back-btn { margin-bottom: 24px; font-weight: 500; color: var(--color-primary); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
-        .exam-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; }
-        .exam-card { background: var(--color-surface); border-radius: var(--border-radius-lg); padding: 24px; box-shadow: var(--shadow-lg); transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
-        .exam-card.locked { opacity: 0.7; }
-        .exam-card.locked:hover { transform: none; box-shadow: var(--shadow-lg); }
-        .exam-card:not(.locked):hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
-        .exam-card h3 { font-size: 1.25rem; margin-bottom: 8px; }
-        .exam-card p { color: var(--color-text-secondary); margin-bottom: 16px; font-size: 0.9rem; }
-        .exam-action-btn { width: 100%; padding: 12px; border-radius: var(--border-radius-md); font-weight: 600; transition: background-color var(--transition-fast); display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .enter-exam-btn { background: var(--color-primary); color: white; }
-        .enter-exam-btn:hover { background: var(--color-primary-dark); }
-        .locked-exam-btn { background: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
-        .locked-exam-btn svg { width: 16px; height: 16px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--c-bg-body); color: var(--c-text-primary); font-size: 16px; }
+        .container { max-width: 1280px; margin: 0 auto; padding: 0 var(--space-xl); }
+        .hero-section { background-color: #f0f0ff; background-image: radial-gradient(circle at top right, #e0e7ff 0%, var(--c-bg-body) 60%); padding: 3rem 0; border-bottom: 1px solid var(--c-border); }
+        .hero-section .course-category { color: var(--c-primary); font-weight: 600; margin-bottom: 0.5rem; }
+        .hero-section .course-title { font-size: 2.75rem; font-weight: 700; margin-bottom: var(--space-md); line-height: 1.2; }
+        .course-details { padding: var(--space-xl) 0; }
+        .content-wrapper { display: flex; align-items: flex-start; gap: var(--space-xl); }
+        .main-content { flex: 2.5; min-width: 0; }
+        .sidebar { flex: 1; position: sticky; top: var(--space-xl); }
+        .course-navigation { display: flex; gap: var(--space-md); margin-bottom: var(--space-xl); border-bottom: 1px solid var(--c-border); }
+        .nav-tab { border: none; background: none; padding-bottom: var(--space-md); font-size: 1.125rem; font-weight: 600; cursor: pointer; color: var(--c-text-tertiary); position: relative; transition: var(--transition); }
+        .nav-tab::after { content: ''; position: absolute; bottom: -1px; left: 0; right: 0; height: 3px; background-color: var(--c-primary); border-radius: 3px; transform: scaleX(0); transition: var(--transition); }
+        .nav-tab.active, .nav-tab:hover { color: var(--c-primary); }
+        .nav-tab.active::after { transform: scaleX(1); }
+        @keyframes slideInFade { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .content-section { animation: slideInFade 0.5s var(--transition) forwards; }
+        .hidden { display: none; }
+        .chapter-group { margin-bottom: var(--space-xl); }
+        .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--c-text-secondary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--c-border); }
+        .chapter-lessons { display: flex; flex-direction: column; gap: var(--space-md); }
+        .card { display: flex; align-items: center; gap: var(--space-md); background-color: var(--c-bg-card); padding: var(--space-md); border-radius: var(--border-radius-lg); box-shadow: var(--shadow); border: 1px solid var(--c-border); transition: var(--transition); text-decoration: none; }
+        .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+        .card-icon { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.25rem; }
+        .card-info { flex-grow: 1; }
+        .card-title { font-weight: 600; font-size: 1.1rem; color: var(--c-text-primary); }
+        .card-meta { font-size: 0.9rem; color: var(--c-text-tertiary); }
+        .card-button { background-color: var(--c-bg-card); color: var(--c-primary); border: 1px solid var(--c-border); border-radius: 99px; padding: 0.6rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        .card-button:hover { background-color: var(--c-primary); color: var(--c-text-white); border-color: var(--c-primary); }
+        .card-icon--default { background-color: var(--c-primary-light); color: var(--c-primary); }
+        .card[data-status="completed"] .card-title { color: var(--c-text-secondary); }
+        .card-icon--completed { background-color: var(--c-accent-light); color: var(--c-status-completed); }
+        .card[data-status="locked"] { opacity: 0.6; background-color: #F9FAFB; pointer-events: none; }
+        .card-icon--locked { background-color: #F3F4F6; color: var(--c-status-locked); }
+        .card-button--locked { background-color: var(--c-border); color: var(--c-text-tertiary); border-color: transparent; }
+        .sidebar-card { background-color: var(--c-bg-card); border-radius: var(--border-radius-lg); padding: var(--space-lg); box-shadow: var(--shadow); border: 1px solid var(--c-border); }
+        .sidebar-card h4 { font-size: 1.25rem; font-weight: 700; margin-bottom: var(--space-lg); }
+        .progress-donut { --progress: 0; --size: 140px; width: var(--size); height: var(--size); border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--c-primary) calc(var(--progress) * 1%), #EDF2F7 0); margin: 0 auto var(--space-md); position: relative; }
+        .progress-donut::before { content: ''; position: absolute; background: var(--c-bg-card); border-radius: 50%; width: calc(var(--size) * 0.8); height: calc(var(--size) * 0.8); }
+        .progress-donut-label { position: relative; text-align: center; }
+        .progress-donut-percent { font-size: 2rem; font-weight: 700; color: var(--c-primary); }
+        .progress-donut-text { font-size: 0.9rem; color: var(--c-text-tertiary); }
+        .score-summary { text-align: center; padding: var(--space-md) 0; border-top: 1px solid var(--c-border); }
+        .score-value { font-size: 1.75rem; font-weight: 700; color: var(--c-text-primary); }
+        .score-label { font-size: 0.875rem; font-weight: 500; color: var(--c-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Exams...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
     
-    <div class="page" id="exam-category-page" style="display: none;">
-        <header class="portal-header">
-            <div class="user-profile">
-                <img id="user-photo" src="" alt="User photo">
-                <div class="user-info"><div class="user-name" id="user-name"></div></div>
+    <main style="display: none;">
+        <section class="hero-section">
+            <div class="container">
+                <p class="course-category">Subject</p>
+                <h1 class="course-title" id="subject-title">Java</h1>
             </div>
-            <nav class="header-nav"><a href="scores.html">Scores</a><a href="profile.html">Profile</a><button class="logout-btn" id="logout-btn">Logout</button></nav>
-        </header>
-        <main class="dashboard-content">
-            <a href="dashboard.html" class="back-btn">&larr; Back to All Subjects</a>
-            <h2 id="page-title">Java Exams</h2>
-            <div class="exam-list" id="exam-list"></div>
-        </main>
-    </div>
+        </section>
+
+        <section class="course-details">
+            <div class="container content-wrapper">
+                <div class="main-content">
+                    <div class="course-navigation">
+                        <button id="courseTab" class="nav-tab active">Curriculum</button>
+                        <button id="assessmentsTab" class="nav-tab">Assessments</button>
+                    </div>
+
+                    <div id="courseContent" class="content-section">
+                        <div class="chapter-group"><h3 class="chapter-title">Courses</h3><div class="chapter-lessons" id="courses-list"></div></div>
+                    </div>
+
+                    <div id="assessmentsContent" class="content-section hidden">
+                         <div class="chapter-group"><h3 class="chapter-title">Available Assessments</h3><div class="chapter-lessons" id="exams-list"></div></div>
+                    </div>
+                </div>
+
+                <aside class="sidebar">
+                    <div id="assessmentsSidebar" class="sidebar-card">
+                        <h4>Progress Summary</h4>
+                        <div id="progress-donut" class="progress-donut">
+                            <div class="progress-donut-label">
+                                <div class="progress-donut-percent" id="summary-percent">0%</div>
+                                <div class="progress-donut-text">Completed</div>
+                            </div>
+                        </div>
+                        <div class="score-summary">
+                            <p class="score-value" id="summary-score">0 / 0</p>
+                            <p class="score-label">Total Points Scored</p>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </section>
+    </main>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -84,77 +138,151 @@
 
             const dom = {
                 loadingOverlay: document.getElementById('loading-overlay'),
-                page: document.getElementById('exam-category-page'),
-                pageTitle: document.getElementById('page-title'),
-                userPhoto: document.getElementById('user-photo'),
-                userName: document.getElementById('user-name'),
-                examList: document.getElementById('exam-list'),
-                logoutBtn: document.getElementById('logout-btn')
+                main: document.querySelector('main'),
+                subjectTitle: document.getElementById('subject-title'),
+                coursesList: document.getElementById('courses-list'),
+                examsList: document.getElementById('exams-list'),
+                progressDonut: document.getElementById('progress-donut'),
+                summaryPercent: document.getElementById('summary-percent'),
+                summaryScore: document.getElementById('summary-score'),
+                tabs: document.querySelectorAll('.nav-tab'),
+                contentSections: document.querySelectorAll('.content-section'),
             };
+
+            let currentUser = null;
+            let userScores = {};
 
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                    
-                    const userProfile = userDoc.data();
-                    dom.userName.textContent = userProfile.displayName; 
-                    dom.userPhoto.src = userProfile.photoURL || '';
-                    
-                    loadAndRenderExams();
-                    
-                    dom.page.style.display = 'flex';
+                    currentUser = user;
+                    await loadAndRenderContent();
+                    dom.main.style.display = 'block';
                     dom.loadingOverlay.style.display = 'none';
                 } else {
                     window.location.href = 'index.html';
                 }
             });
 
-            const loadAndRenderExams = async () => {
-                dom.examList.innerHTML = '<p>Loading exams for this subject...</p>';
-
+            const loadAndRenderContent = async () => {
                 const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
-
                 if (subjectQuery.empty) {
-                    dom.examList.innerHTML = '<p>This subject category has not been set up by the admin.</p>';
+                    dom.main.innerHTML = '<h1>Subject not found.</h1>';
                     return;
                 }
-
                 const subjectDoc = subjectQuery.docs[0];
                 const subjectId = subjectDoc.id;
-                const subjectName = subjectDoc.data().name;
-                dom.pageTitle.textContent = `${subjectName} Exams`;
-                
-                db.collection('exams').where('subjectId', '==', subjectId)
-                  .onSnapshot(snapshot => {
-                    dom.examList.innerHTML = '';
+                dom.subjectTitle.textContent = subjectDoc.data().name;
+
+                const scoresQuery = await db.collection('scores').where('userId', '==', currentUser.uid).get();
+                scoresQuery.forEach(doc => { userScores[doc.data().examId] = doc.data(); });
+
+                renderCourses(subjectId);
+                renderExams(subjectId);
+            };
+
+            const renderCourses = (subjectId) => {
+                db.collection('courses').where('subjectId', '==', subjectId).onSnapshot(snapshot => {
+                    dom.coursesList.innerHTML = '';
                     if (snapshot.empty) {
-                        dom.examList.innerHTML = '<p>No exams are available in this category yet.</p>';
-                        return;
+                        dom.coursesList.innerHTML = '<p>No courses available in this subject yet.</p>'; return;
                     }
                     snapshot.forEach(doc => {
-                        const exam = doc.data();
-                        const card = document.createElement('div');
-                        card.className = `exam-card ${exam.isLocked ? 'locked' : ''}`;
-                        
-                        const actionButton = exam.isLocked 
-                            ? `<button class="exam-action-btn locked-exam-btn" disabled><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd" /></svg><span>Locked</span></button>`
-                            : `<button class="exam-action-btn enter-exam-btn" data-exam-id="${doc.id}">Enter Exam</button>`;
-
-                        card.innerHTML = `<h3>${exam.name}</h3><p>${exam.questions.length} Questions | ${exam.duration / 60} Minutes</p>${actionButton}`;
-                        dom.examList.appendChild(card);
+                        const course = doc.data();
+                        const card = document.createElement('a');
+                        card.href = `course.html?id=${doc.id}`;
+                        card.className = 'card';
+                        card.innerHTML = `
+                            <div class="card-icon card-icon--default"><i class="fas fa-book-open"></i></div>
+                            <div class="card-info">
+                                <p class="card-title">${course.name}</p>
+                                <p class="card-meta">${course.chapters.length} Chapters</p>
+                            </div>
+                            <button class="card-button">Start Course</button>
+                        `;
+                        dom.coursesList.appendChild(card);
                     });
                 });
             };
 
-            dom.examList.addEventListener('click', e => {
-                const button = e.target.closest('.enter-exam-btn');
-                if (button) {
-                    window.location.href = `exam.html?id=${button.dataset.examId}`;
-                }
-            });
+            const renderExams = (subjectId) => {
+                db.collection('exams').where('subjectId', '==', subjectId).onSnapshot(snapshot => {
+                    dom.examsList.innerHTML = '';
+                    let totalPointsReceived = 0;
+                    let totalPossiblePoints = 0;
+                    
+                    if (snapshot.empty) {
+                        dom.examsList.innerHTML = '<p>No assessments available in this subject yet.</p>'; 
+                        updateSummary(0, 0, 0);
+                        return;
+                    }
+
+                    snapshot.forEach(doc => {
+                        const exam = doc.data();
+                        const examId = doc.id;
+                        const score = userScores[examId];
+                        totalPossiblePoints += exam.questions.reduce((sum, q) => sum + q.points, 0);
+                        
+                        const card = document.createElement('a');
+                        card.href = `exam.html?id=${examId}`;
+                        card.className = 'card';
+                        
+                        let status, iconClass, icon, meta, buttonText;
+
+                        if (score) {
+                            status = 'completed';
+                            iconClass = 'card-icon--completed';
+                            icon = '<i class="fas fa-check"></i>';
+                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                            meta = `Score: ${percentage}%`;
+                            buttonText = 'View Results';
+                            totalPointsReceived += score.pointsReceived;
+                        } else if (exam.isLocked) {
+                            status = 'locked';
+                            iconClass = 'card-icon--locked';
+                            icon = '<i class="fas fa-lock"></i>';
+                            meta = `${exam.questions.length} Questions`;
+                            buttonText = 'Locked';
+                            card.style.pointerEvents = 'none';
+                        } else {
+                            status = 'next';
+                            iconClass = 'card-icon--default';
+                            icon = '<i class="fas fa-file-alt"></i>';
+                            meta = `${exam.questions.length} Questions`;
+                            buttonText = 'Start Exam';
+                        }
+
+                        card.dataset.status = status;
+                        card.innerHTML = `
+                            <div class="card-icon ${iconClass}">${icon}</div>
+                            <div class="card-info">
+                                <p class="card-title">${exam.name}</p>
+                                <p class="card-meta">${meta}</p>
+                            </div>
+                            <button class="card-button">${buttonText}</button>
+                        `;
+                        dom.examsList.appendChild(card);
+                    });
+                    
+                    const overallPercentage = totalPossiblePoints > 0 ? Math.round((totalPointsReceived / totalPossiblePoints) * 100) : 0;
+                    updateSummary(overallPercentage, totalPointsReceived, totalPossiblePoints);
+                });
+            };
             
-            dom.logoutBtn.addEventListener('click', () => auth.signOut());
+            const updateSummary = (percentage, received, total) => {
+                dom.progressDonut.style.setProperty('--progress', percentage);
+                dom.summaryPercent.textContent = `${percentage}%`;
+                dom.summaryScore.textContent = `${received} / ${total}`;
+            };
+
+            dom.tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    dom.tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    dom.contentSections.forEach(s => s.classList.add('hidden'));
+                    const targetContent = document.getElementById(tab.id === 'courseTab' ? 'courseContent' : 'assessmentsContent');
+                    targetContent.classList.remove('hidden');
+                });
+            });
         });
     </script>
 </body>
