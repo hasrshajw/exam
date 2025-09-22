@@ -58,6 +58,9 @@
         .progress { height: 100%; background: var(--brand-green); border-radius: 10px; width: 0; transition: width 0.5s ease; }
         .progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .btn-continue { background: var(--brand-green); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s ease; text-decoration: none; }
+        .enrollment-prompt { text-align: center; padding: 2rem; }
+        .enrollment-prompt h3 { font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .enrollment-prompt p { color: var(--text-secondary); margin-bottom: 1.5rem; }
         .course-outline-list { list-style: none; position: relative; padding-left: 1.5rem; }
         .course-outline-list::before { content: ''; position: absolute; left: 10px; top: 10px; bottom: 10px; width: 2px; background-color: var(--border-color); }
         .outline-item { position: relative; margin-bottom: 1.5rem; } .outline-item:last-child { margin-bottom: 0; }
@@ -173,7 +176,14 @@
                         <div class="progress-info"><span id="featured-course-subject"></span><span id="featured-course-percent"></span></div>
                         <a href="#" class="btn-continue" id="featured-course-link">Continue Learning</a>
                     </div>
-                    <div class="widget">
+                    <div class="widget" id="enrollment-prompt" style="display: none;">
+                        <div class="enrollment-prompt">
+                            <h3>Welcome to the Portal!</h3>
+                            <p>You are not yet enrolled in any courses. Enroll now to start your learning journey.</p>
+                            <a href="course-enroll.html" class="btn-continue">Enroll in a Course</a>
+                        </div>
+                    </div>
+                    <div class="widget" id="course-outline-widget" style="display: none;">
                         <div class="widget-header"><h2>Course Outline</h2></div>
                         <ol class="course-outline-list" id="course-outline-list"></ol>
                     </div>
@@ -290,25 +300,37 @@
             };
 
             const loadDashboardData = async (userId, userProfile) => {
-                const [coursesSnap, examsSnap, progressSnap, scoresSnap, usersSnap, subjectsSnap] = await Promise.all([
-                    db.collection('courses').get(), db.collection('exams').get(),
-                    db.collection('users').doc(userId).collection('progress').get(),
-                    db.collection('scores').get(), db.collection('users').get(), db.collection('subjects').get()
-                ]);
+                const enrollmentsSnap = await db.collection('enrollments').where('userId', '==', userId).get();
 
-                const allCourses = coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const allExams = examsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                const allUsers = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
-                const allSubjects = new Map(subjectsSnap.docs.map(doc => [doc.id, doc.data()]));
-                const userProgress = new Set(progressSnap.docs.map(doc => doc.data().lessonId));
-                
-                const lessonsPromises = allCourses.map(c => db.collection('lessons').where('courseId', '==', c.id).get());
-                const lessonsSnaps = await Promise.all(lessonsPromises);
-                const allLessons = lessonsSnaps.flatMap(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                if (enrollmentsSnap.empty) {
+                    document.getElementById('enrollment-prompt').style.display = 'block';
+                    document.getElementById('featured-course-widget').style.display = 'none';
+                    document.getElementById('course-outline-widget').style.display = 'none';
+                } else {
+                    document.getElementById('enrollment-prompt').style.display = 'none';
+                    document.getElementById('featured-course-widget').style.display = 'block';
+                    document.getElementById('course-outline-widget').style.display = 'block';
 
-                renderFeaturedCourse(allCourses, allLessons, allSubjects, userProgress);
-                renderOverallProgress(allLessons, allExams, userProgress, scoresSnap.docs.filter(d => d.data().userId === userId));
-                renderLeaderboards(scoresSnap, allUsers, userId, userProfile);
+                    const [coursesSnap, examsSnap, progressSnap, scoresSnap, usersSnap, subjectsSnap] = await Promise.all([
+                        db.collection('courses').get(), db.collection('exams').get(),
+                        db.collection('users').doc(userId).collection('progress').get(),
+                        db.collection('scores').get(), db.collection('users').get(), db.collection('subjects').get()
+                    ]);
+
+                    const allCourses = coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const allExams = examsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const allUsers = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
+                    const allSubjects = new Map(subjectsSnap.docs.map(doc => [doc.id, doc.data()]));
+                    const userProgress = new Set(progressSnap.docs.map(doc => doc.data().lessonId));
+                    
+                    const lessonsPromises = allCourses.map(c => db.collection('lessons').where('courseId', '==', c.id).get());
+                    const lessonsSnaps = await Promise.all(lessonsPromises);
+                    const allLessons = lessonsSnaps.flatMap(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+                    renderFeaturedCourse(allCourses, allLessons, allSubjects, userProgress);
+                    renderOverallProgress(allLessons, allExams, userProgress, scoresSnap.docs.filter(d => d.data().userId === userId));
+                    renderLeaderboards(scoresSnap, allUsers, userId, userProfile);
+                }
             };
 
             const renderFeaturedCourse = (courses, lessons, subjects, progress) => {
@@ -330,8 +352,7 @@
                     document.getElementById('featured-course-progress').style.width = `${percent}%`;
                     document.getElementById('featured-course-percent').textContent = `${percent}% Complete`;
                     document.getElementById('featured-course-link').href = `course.html?id=${featuredCourse.id}`;
-                    document.getElementById('featured-course-widget').style.display = 'block';
-
+                    
                     const outlineList = document.getElementById('course-outline-list');
                     outlineList.innerHTML = '';
                     featuredCourse.chapters.forEach((chapterName, index) => {
