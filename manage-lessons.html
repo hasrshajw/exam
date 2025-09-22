@@ -46,7 +46,7 @@
         .content-body { padding: 2rem 3rem; }
         .menu-toggle { display: none; }
         .sidebar-close-btn { display: none; }
-        .admin-content-header { margin-bottom: 1.5rem; }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
         .admin-content-header h2 { font-size: 2rem; font-weight: 700; }
         .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
         .primary-btn:hover { background-color: #5B21B6; }
@@ -70,6 +70,9 @@
         .form-field { margin-bottom: 1rem; }
         .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
         .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; }
+        .dynamic-list .list-item { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .dynamic-list .list-item input { flex-grow: 1; }
+        .remove-item-btn { background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.2rem; cursor: pointer; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -120,24 +123,34 @@
         <main class="main-area">
             <header class="main-header">
                 <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
-                <h1>Manage Lessons</h1>
+                <h1>Manage Course Content</h1>
             </header>
             <section class="content-body">
-                <a href="manage-subjects.html" class="back-btn" id="back-to-subjects-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
+                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
                 <div class="admin-content-header">
                     <h2 id="page-title"></h2>
+                    <button class="primary-btn" id="manage-chapters-btn">Manage Chapters</button>
                 </div>
                 <div class="lesson-editor" id="lesson-editor-container"></div>
             </section>
         </main>
     </div>
 
+    <div class="modal-overlay" id="chapters-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="chapters-modal-title">Manage Chapters</h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <form id="chapters-form">
+                    <div class="form-field"><label>Chapters</label><div class="dynamic-list" id="chapters-list"></div><button type="button" class="secondary-btn" id="add-chapter-btn" style="margin-top: 8px;">+ Add Chapter</button></div>
+                </form>
+            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-chapters-btn">Save Chapters</button></div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="lesson-modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="lesson-modal-title"></h3>
-                <button class="close-btn">&times;</button>
-            </div>
+            <div class="modal-header"><h3 id="lesson-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
                 <form id="lesson-form">
                     <input type="hidden" id="lesson-id">
@@ -146,10 +159,7 @@
                     <div class="form-field"><label for="lesson-content">Content (HTML allowed)</label><textarea id="lesson-content" rows="10" required></textarea></div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button class="secondary-btn">Cancel</button>
-                <button class="primary-btn" id="save-lesson-btn">Save Lesson</button>
-            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-lesson-btn">Save Lesson</button></div>
         </div>
     </div>
 
@@ -222,7 +232,7 @@
                 }
 
                 currentCourse = { id: courseId, ...courseDoc.data() };
-                document.getElementById('page-title').textContent = `Lessons for ${currentCourse.name}`;
+                document.getElementById('page-title').textContent = `${currentCourse.name}`;
                 
                 loadLessonEditor();
                 
@@ -235,7 +245,11 @@
                 db.collection('courses').doc(currentCourse.id).onSnapshot(doc => {
                     const courseData = doc.data();
                     if (!courseData) { container.innerHTML = 'Error: Course data could not be loaded.'; return; }
+                    currentCourse.chapters = courseData.chapters; 
                     container.innerHTML = '';
+                    if (courseData.chapters.length === 0) {
+                        container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">This course has no chapters yet. Click "Manage Chapters" to add the first one.</p>';
+                    }
                     courseData.chapters.forEach((chapter, index) => {
                         const chapterBlock = document.createElement('div');
                         chapterBlock.className = 'chapter-block';
@@ -274,6 +288,21 @@
                 });
             };
 
+            const openChaptersModal = () => {
+                const modal = document.getElementById('chapters-modal');
+                const list = modal.querySelector('#chapters-list');
+                list.innerHTML = '';
+                currentCourse.chapters.forEach(chapterName => addChapterInput(chapterName));
+                modal.classList.add('show');
+            };
+
+            const addChapterInput = (name = '') => {
+                const item = document.createElement('div');
+                item.className = 'list-item';
+                item.innerHTML = `<input type="text" class="form-field" value="${name}" placeholder="Chapter Name" required><button type="button" class="remove-item-btn">&times;</button>`;
+                document.getElementById('chapters-list').appendChild(item);
+            };
+
             const openLessonModal = (lesson = null, chapterIndex) => {
                 const modal = document.getElementById('lesson-modal');
                 modal.querySelector('#lesson-modal-title').textContent = lesson ? 'Edit Lesson' : 'Create New Lesson';
@@ -287,6 +316,9 @@
 
             document.addEventListener('click', async e => {
                 const target = e.target;
+                if (target.id === 'manage-chapters-btn') openChaptersModal();
+                if (target.id === 'add-chapter-btn') addChapterInput();
+                if (target.matches('.remove-item-btn')) target.closest('.list-item').remove();
                 if (target.matches('.add-lesson-btn')) { openLessonModal(null, target.dataset.chapterIndex); }
                 if (target.matches('.edit-lesson-btn')) {
                     const doc = await db.collection('lessons').doc(target.dataset.id).get();
@@ -302,6 +334,12 @@
                 }
             });
 
+            document.getElementById('save-chapters-btn').addEventListener('click', async () => {
+                const chapters = [...document.querySelectorAll('#chapters-list input')].map(i => i.value.trim()).filter(Boolean);
+                await db.collection('courses').doc(currentCourse.id).update({ chapters });
+                document.getElementById('chapters-modal').classList.remove('show');
+            });
+
             document.getElementById('save-lesson-btn').addEventListener('click', async () => {
                 const modal = document.getElementById('lesson-modal');
                 const id = modal.querySelector('#lesson-id').value;
@@ -313,12 +351,7 @@
                     courseId: currentCourse.id,
                     chapterIndex: chapterIndex,
                 };
-
-                if (!data.title || !data.duration) {
-                    alert('Title and Duration are required.');
-                    return;
-                }
-
+                if (!data.title || !data.duration) { alert('Title and Duration are required.'); return; }
                 if (id) {
                     await db.collection('lessons').doc(id).update(data);
                 } else {
