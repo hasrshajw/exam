@@ -3,70 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Exam Portal</title>
+    <title>Dashboard - Wefha E-Learning</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
     <style>
         :root {
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
-            --color-background: #f4f7fa; --color-surface: #ffffff; --color-text-primary: #111827; --color-text-secondary: #6b7280;
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --border-radius-md: 8px; --border-radius-lg: 16px;
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --primary-color: #6c5ce7; --accent-color: #fd79a8; --success-color: #00b894;
+            --info-color: #74b9ff; --warning-color: #ff9f43;
+            --text-dark: #2d3436; --text-light: #636e72;
+            --body-bg: #f5f6fa; --card-bg: #ffffff; --border-color: #e9eaf0;
+            --shadow-color: rgba(108, 92, 231, 0.08); --transition-speed: 0.3s;
         }
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; }
-        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); display: flex; flex-direction: column; }
-        .page { display: flex; flex-direction: column; width: 100%; min-height: 100%; }
-        .portal-header { width: 100%; background: var(--color-surface); padding: 16px 48px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); flex-shrink: 0; }
-        .user-profile { display: flex; align-items: center; gap: 12px; }
-        .user-profile img { width: 40px; height: 40px; border-radius: 50%; }
-        .user-info .user-name { font-weight: 600; }
-        .header-nav { display: flex; align-items: center; gap: 8px; }
-        .header-nav a, .logout-btn { color: var(--color-text-secondary); font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: var(--border-radius-md); transition: background-color var(--transition-fast); }
-        .header-nav a:hover, .logout-btn:hover { background-color: var(--color-background); }
-        .dashboard-content { padding: 40px; width: 100%; max-width: 1200px; margin: 0 auto; flex-grow: 1; }
-        .dashboard-content h2 { font-size: 2rem; margin-bottom: 24px; }
-        .subject-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; }
-        .subject-card { display: block; text-decoration: none; background: var(--color-surface); border-radius: var(--border-radius-lg); padding: 32px 24px; box-shadow: var(--shadow-lg); transition: transform var(--transition-fast), box-shadow var(--transition-fast); }
-        .subject-card:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1); }
-        .subject-card h3 { font-size: 1.5rem; color: var(--color-text-primary); }
-        .subject-card p { color: var(--color-primary); font-weight: 600; margin-top: 8px; }
-        @media (max-width: 800px) {
-            .portal-header { padding: 16px; }
-            .dashboard-content { padding: 24px; }
+        body.dark-theme {
+            --text-dark: #f5f6fa; --text-light: #b2bec3; --body-bg: #1e272e;
+            --card-bg: #2d3436; --border-color: #4b545c; --shadow-color: rgba(0, 0, 0, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Poppins', sans-serif; background-color: var(--body-bg); color: var(--text-dark);
+            font-size: 15px; transition: background-color var(--transition-speed), color var(--transition-speed); overflow: hidden;
+        }
+        .dashboard-container { display: grid; grid-template-columns: 280px 1fr; height: 100vh; padding: 1.5rem; gap: 1.5rem; }
+        .sidebar { background: var(--card-bg); border-radius: 20px; padding: 2rem 1.5rem; display: flex; flex-direction: column; box-shadow: 0 8px 32px 0 var(--shadow-color); transition: all var(--transition-speed) ease; }
+        .logo { display: flex; align-items: center; gap: 1rem; margin-bottom: 3rem; }
+        .logo-icon { width: 40px; height: 40px; background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.8rem; }
+        .logo-text { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); }
+        .main-nav ul { list-style: none; }
+        .main-nav a { display: flex; align-items: center; padding: 1rem; margin-bottom: 0.5rem; border-radius: 12px; text-decoration: none; color: var(--text-light); font-weight: 500; transition: all var(--transition-speed) ease; }
+        .main-nav a i { font-size: 1.5rem; margin-right: 1.2rem; width: 24px; transition: transform 0.2s ease; }
+        .main-nav a:hover { background: var(--body-bg); color: var(--primary-color); }
+        .main-nav a.active { background: var(--primary-color); color: white; box-shadow: 0 4px 15px var(--shadow-color); }
+        .main-nav a.active i { transform: scale(1.1); }
+        .pro-card { margin-top: auto; background: linear-gradient(135deg, var(--primary-color), #4834d4); border-radius: 15px; padding: 1.5rem; text-align: center; color: white; }
+        .pro-card .btn-upgrade { display: block; background: white; color: var(--primary-color); border: none; padding: 0.8rem; border-radius: 10px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; }
+        .main-content-wrapper { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+        .main-header { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 1rem; margin-bottom: 2rem; }
+        .page-title h1 { font-size: 2.2rem; font-weight: 700; }
+        .page-title p { color: var(--text-light); }
+        .header-actions { display: flex; align-items: center; gap: 1rem; }
+        .menu-toggle { display: none; }
+        .header-icon { font-size: 1.5rem; color: var(--text-light); cursor: pointer; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; transition: all var(--transition-speed) ease; }
+        .header-icon:hover { color: var(--primary-color); background: var(--border-color); }
+        .user-profile img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); transition: transform 0.2s ease;}
+        .user-profile img:hover { transform: scale(1.1); }
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 0 1rem 1rem 1rem; background-image: radial-gradient(var(--border-color) 1px, transparent 1px); background-size: 20px 20px; }
+        .main-content::-webkit-scrollbar { width: 8px; } .main-content::-webkit-scrollbar-track { background: transparent; } .main-content::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card { animation: fadeInUp 0.5s ease-out forwards; opacity: 0; background: var(--card-bg); border-radius: 20px; padding: 1.5rem; box-shadow: 0 8px 32px 0 var(--shadow-color); transition: all 0.3s ease; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px 0 var(--shadow-color); }
+        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
+        .column { display: flex; flex-direction: column; gap: 1.5rem; }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .widget-header h2 { font-size: 1.25rem; font-weight: 600; }
+        .hero-card { background: linear-gradient(135deg, var(--primary-color), #4834d4); color: white; padding: 2rem; position: relative; overflow: hidden; }
+        .hero-card .bg-icon { position: absolute; font-size: 10rem; right: -20px; bottom: -30px; opacity: 0.1; transform: rotate(-30deg); }
+        .hero-card h4 { font-size: 1rem; opacity: 0.8; font-weight: 500; }
+        .hero-card h2 { font-size: 1.8rem; margin-bottom: 1rem; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.3); border-radius: 10px; margin-bottom: 1.5rem; }
+        @keyframes fill-progress { from { width: 0%; } }
+        .progress { height: 100%; background: white; border-radius: 10px; animation: fill-progress 1s ease-out forwards; }
+        .hero-card .btn { background: white; color: var(--primary-color); text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; }
+        .hero-card .btn i { transition: transform 0.2s ease; }
+        .hero-card .btn:hover i { transform: translateX(5px); }
+        .deadline-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
+        .deadline-item { display: flex; align-items: center; gap: 1rem; }
+        .deadline-icon { width: 45px; height: 45px; border-radius: 12px; display: grid; place-items: center; color: white; font-size: 1.5rem; flex-shrink: 0; background: var(--accent-color); }
+        .deadline-info { flex-grow: 1; } .deadline-info p { font-weight: 600; } .deadline-info .urgent { color: var(--accent-color); font-weight: 600; }
+        .glance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .stat-item { text-align: center; } .stat-item .icon { font-size: 1.8rem; margin-bottom: 0.5rem; display: inline-block; }
+        .stat-item .icon.purple { color: var(--primary-color); } .stat-item .icon.orange { color: var(--warning-color); } .stat-item .icon.pink { color: var(--accent-color); }
+        .stat-item strong { font-size: 1.8rem; font-weight: 600; display: block; line-height: 1.2; }
+        .stat-item p { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
+        .stat-item .secondary-rank { display: block; font-size: 0.8rem; color: var(--text-light); margin-top: 4px;}
+        .tab-container { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+        .tab-btn { padding: 0.8rem 1rem; border: none; background: transparent; color: var(--text-light); font-weight: 600; cursor: pointer; transition: color 0.3s ease; position: relative; }
+        .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--primary-color); transform: scaleX(0); transition: transform 0.3s ease-in-out; }
+        .tab-btn.active { color: var(--primary-color); } .tab-btn.active::after { transform: scaleX(1); }
+        .tab-content { display: none; } .tab-content.active { display: block; }
+        .profile-list { list-style: none; display: flex; flex-direction: column; gap: 1.2rem; }
+        .profile-item { display: flex; align-items: center; }
+        .profile-item .rank { font-size: 1rem; font-weight: 600; color: var(--text-light); width: 30px; }
+        .profile-item img { width: 40px; height: 40px; border-radius: 50%; margin-right: 1rem; object-fit: cover; }
+        .profile-info { flex-grow: 1; }
+        .profile-info .user-name { font-weight: 600; }
+        .profile-item .user-handle { color: var(--text-light); font-size: 0.85rem; }
+        .profile-item .score { font-weight: 600; color: var(--primary-color); }
+        .profile-item.you .user-handle { color: var(--primary-color); font-weight: 600; }
+        .profile-item.you .user-handle::after { content: '(You)'; margin-left: 4px; }
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .overlay.active { opacity: 1; pointer-events: all; }
+        @media (max-width: 1200px) { .content-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) {
+            .dashboard-container { grid-template-columns: 1fr; padding: 1rem; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; transform: translateX(-100%); width: 280px; }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 0; margin-bottom: 1.5rem; }
+            .page-title { display: none; }
+            .main-content .page-title { display: block; margin-bottom: 1.5rem; }
+            .main-content .page-title h1 { font-size: 1.8rem; }
+            .menu-toggle { display: block; order: -1; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">Loading Dashboard...</div>
-    
-    <div class="page" id="student-dashboard-page" style="display: none;">
-        <header class="portal-header">
-            <div class="user-profile">
-                <img id="user-photo" src="" alt="User photo">
-                <div class="user-info">
-                    <div class="user-name" id="user-name"></div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Dashboard...</div>
+    <div class="overlay"></div>
+    <div class="dashboard-container">
+        <aside class="sidebar">
+            <div class="logo"><div class="logo-icon"><i class='bx bxs-graduation'></i></div><span class="logo-text">Wefha</span></div>
+            <nav class="main-nav"><ul id="main-nav-list"></ul></nav>
+            <div class="pro-card"><h3>Go PRO</h3><p>Unlock premium features and get unlimited access.</p><a href="#" class="btn-upgrade">Upgrade Now</a></div>
+        </aside>
+        <div class="main-content-wrapper">
+            <header class="main-header">
+                <i class='bx bx-menu header-icon menu-toggle' id="menu-toggle"></i>
+                <div class="page-title"><h1 id="greeting-desktop"></h1><p>Let's learn something new today.</p></div>
+                <div class="header-actions">
+                    <i class='bx bx-bell header-icon'></i>
+                    <div class="theme-toggle" id="theme-toggle"><i class='bx bx-moon header-icon'></i></div>
+                    <div class="user-profile"><img id="user-avatar" src="" alt="User Avatar"></div>
                 </div>
-            </div>
-            <nav class="header-nav">
-                <a href="scores.html" id="scores-link">Scores</a>
-                <a href="profile.html" id="profile-link">Profile</a>
-                <button class="logout-btn" id="logout-btn">Logout</button>
-            </nav>
-        </header>
-        <main class="dashboard-content">
-            <h2>Exam Subjects</h2>
-            <div class="subject-list" id="subject-list">
-            </div>
-        </main>
+            </header>
+            <main class="main-content">
+                 <div class="page-title" id="page-title-mobile" style="display: none;"><h1 id="greeting-mobile"></h1></div>
+                <div class="content-grid">
+                    <section class="column">
+                        <div class="hero-card card" style="animation-delay: 0.1s;"></div>
+                        <div class="deadlines-card card" style="animation-delay: 0.2s;">
+                            <div class="widget-header"><h2>Upcoming Deadlines</h2></div>
+                            <ul class="deadline-list" id="deadline-list"></ul>
+                        </div>
+                    </section>
+                    <section class="column">
+                        <div class="glance-card card" style="animation-delay: 0.3s;">
+                            <div class="widget-header"><h2>Course at a Glance</h2></div>
+                            <div class="glance-grid">
+                                <div class="stat-item"><i class='bx bx-time-five icon purple'></i><strong id="stat-active">-</strong><p>Last Active</p></div>
+                                <div class="stat-item"><i class='bx bxs-bar-chart-alt-2 icon purple'></i><strong id="stat-lessons">- / -</strong><p>Lessons Completed</p></div>
+                                <div class="stat-item"><i class='bx bxs-trophy icon pink'></i><strong id="stat-college-rank">-</strong><p>College Rank</p><span id="stat-overall-rank" class="secondary-rank"></span></div>
+                                <div class="stat-item"><i class='bx bxs-graduation icon orange'></i><strong id="stat-courses">-</strong><p>Courses Started</p></div>
+                            </div>
+                        </div>
+                        <div class="leaderboard-card card" style="animation-delay: 0.4s;">
+                           <div class="widget-header"><h2>Leaderboard</h2></div>
+                           <div class="tab-container"><button class="tab-btn active" data-target="#my-college-content">My College</button><button class="tab-btn" data-target="#overall-content">Overall</button></div>
+                           <div class="tab-content-container">
+                               <div id="my-college-content" class="tab-content active"><ul class="profile-list"></ul></div>
+                               <div id="overall-content" class="tab-content"><ul class="profile-list"></ul></div>
+                           </div>
+                       </div>
+                    </section>
+                </div>
+            </main>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             const firebaseConfig = {
                 apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
                 authDomain: "exam-2e799.firebaseapp.com",
@@ -76,71 +174,191 @@
                 appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
                 measurementId: "G-NX21HT3JKT"
             };
-
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
             const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
-            const dom = {
-                loadingOverlay: document.getElementById('loading-overlay'),
-                dashboardPage: document.getElementById('student-dashboard-page'),
-                userPhoto: document.getElementById('user-photo'),
-                userName: document.getElementById('user-name'),
-                subjectList: document.getElementById('subject-list'),
-                logoutBtn: document.getElementById('logout-btn')
-            };
-
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
-                    if (user.email === ADMIN_EMAIL) {
-                        window.location.href = 'admin.html';
-                        return;
-                    }
-
+                    if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) {
-                        window.location.href = 'index.html';
-                        return;
-                    }
-
-                    const userProfile = userDoc.data();
-                    setupUserUI(userProfile);
-                    renderSubjectList();
-                    dom.dashboardPage.style.display = 'flex';
-                    dom.loadingOverlay.style.display = 'none';
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                    
+                    const userProfile = { id: user.uid, ...userDoc.data() };
+                    initializeDashboard(userProfile);
                 } else {
                     window.location.href = 'index.html';
                 }
             });
-            
-            const setupUserUI = (profile) => {
-                dom.userName.textContent = profile.displayName; 
-                dom.userPhoto.src = profile.photoURL || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
+
+            const initializeDashboard = async (userProfile) => {
+                const [allScores, allUsers, allSubjects, allCourses, allLessons, allExams, userProgress] = await Promise.all([
+                    db.collection('scores').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
+                    db.collection('users').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
+                    db.collection('subjects').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
+                    db.collection('courses').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
+                    db.collection('lessons').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
+                    db.collection('exams').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
+                    db.collection('users').doc(userProfile.id).collection('progress').get().then(snap => snap.docs.map(doc => doc.data()))
+                ]);
+
+                populateUI(userProfile);
+                populateNav(allSubjects);
+                populateHeroCard(userProfile, allCourses, allLessons, userProgress);
+                populateDeadlines(allExams, allScores);
+                populateGlanceCard(userProfile, allUsers, allScores, allLessons, userProgress);
+                populateLeaderboards(userProfile, allUsers, allScores);
+
+                document.getElementById('loading-overlay').style.display = 'none';
             };
 
-            const renderSubjectList = () => {
-                db.collection('subjects').onSnapshot(snapshot => {
-                    dom.subjectList.innerHTML = '';
-                    if (snapshot.empty) {
-                        dom.subjectList.innerHTML = '<p>No exam subjects have been created yet. Please check back later.</p>';
-                        return;
-                    }
-                    snapshot.forEach(doc => {
-                        const subject = doc.data();
-                        const card = document.createElement('a');
-                        card.className = 'subject-card';
-                        card.href = subject.page;
-                        card.innerHTML = `
-                            <h3>${subject.name}</h3>
-                            <p>View Exams &rarr;</p>
-                        `;
-                        dom.subjectList.appendChild(card);
-                    });
+            const populateUI = (profile) => {
+                document.getElementById('user-avatar').src = profile.photoURL || '';
+                const firstName = profile.displayName.split(' ')[0];
+                const currentHour = new Date().getHours();
+                let greetingText;
+                if (currentHour < 12) { greetingText = `Good morning, ${firstName}!`; } 
+                else if (currentHour < 18) { greetingText = `Good afternoon, ${firstName}!`; } 
+                else { greetingText = `Good evening, ${firstName}!`; }
+                document.getElementById('greeting-desktop').textContent = greetingText;
+                document.getElementById('greeting-mobile').textContent = greetingText;
+            };
+
+            const populateNav = (subjects) => {
+                const navList = document.getElementById('main-nav-list');
+                let navHTML = `<li><a href="dashboard.html" class="active"><i class='bx bxs-dashboard'></i> Dashboard</a></li>`;
+                subjects.forEach(subject => {
+                    navHTML += `<li><a href="${subject.page}"><i class='bx bxs-book-content'></i> ${subject.name}</a></li>`;
                 });
+                navList.innerHTML = navHTML;
+            };
+
+            const populateHeroCard = (userProfile, allCourses, allLessons, userProgress) => {
+                const heroCard = document.querySelector('.hero-card');
+                const userProgressByCourse = userProgress.reduce((acc, prog) => {
+                    const lesson = allLessons.find(l => l.id === prog.lessonId);
+                    if (lesson) {
+                        acc[lesson.courseId] = (acc[lesson.courseId] || 0) + 1;
+                    }
+                    return acc;
+                }, {});
+
+                let lastActiveCourseId = null;
+                let latestTimestamp = 0;
+                userProgress.forEach(prog => {
+                    const timestamp = prog.completedAt?.toMillis() || 0;
+                    if (timestamp > latestTimestamp) {
+                        latestTimestamp = timestamp;
+                        const lesson = allLessons.find(l => l.id === prog.lessonId);
+                        if (lesson) lastActiveCourseId = lesson.courseId;
+                    }
+                });
+
+                const targetCourse = lastActiveCourseId ? allCourses.find(c => c.id === lastActiveCourseId) : allCourses[0];
+                if (!targetCourse) { heroCard.innerHTML = '<h4>START LEARNING</h4><h2>No courses available yet.</h2>'; return; }
+
+                const lessonsInCourse = allLessons.filter(l => l.courseId === targetCourse.id);
+                const completedInCourse = userProgressByCourse[targetCourse.id] || 0;
+                const progressPercent = lessonsInCourse.length > 0 ? Math.round((completedInCourse / lessonsInCourse.length) * 100) : 0;
+                
+                heroCard.innerHTML = `
+                    <i class='bx bxs-book-heart bg-icon'></i>
+                    <h4>${lastActiveCourseId ? 'CONTINUE LEARNING' : 'GET STARTED'}</h4>
+                    <h2>${targetCourse.name}</h2>
+                    <div class="progress-bar"><div class="progress" style="width: ${progressPercent}%;"></div></div>
+                    <a href="course.html?id=${targetCourse.id}" class="btn">Continue Lesson <i class='bx bx-right-arrow-alt'></i></a>
+                `;
+            };
+
+            const populateDeadlines = (allExams, allScores) => {
+                const list = document.getElementById('deadline-list');
+                const upcomingExams = allExams.filter(exam => !exam.isLocked && !allScores.find(s => s.examId === exam.id)).slice(0, 2);
+                if (upcomingExams.length === 0) { list.innerHTML = '<li>No upcoming deadlines. Great job!</li>'; return; }
+                list.innerHTML = upcomingExams.map(exam => `
+                    <li class="deadline-item">
+                        <div class="deadline-icon"><i class='bx bxs-pen'></i></div>
+                        <div class="deadline-info"><p>${exam.name}</p></div>
+                    </li>
+                `).join('');
+            };
+
+            const populateGlanceCard = (userProfile, allUsers, allScores, allLessons, userProgress) => {
+                const userScores = allScores.filter(s => s.userId === userProfile.id);
+                const totalLessonsCompleted = userProgress.length;
+                const coursesStarted = new Set(userProgress.map(p => {
+                    const lesson = allLessons.find(l => l.id === p.lessonId);
+                    return lesson ? lesson.courseId : null;
+                }).filter(Boolean)).size;
+
+                const { collegeRank, overallRank } = calculateRanks(userProfile, allUsers, allScores);
+                
+                document.getElementById('stat-lessons').textContent = `${totalLessonsCompleted} / ${allLessons.length}`;
+                document.getElementById('stat-courses').textContent = coursesStarted;
+                document.getElementById('stat-college-rank').textContent = `#${collegeRank}`;
+                document.getElementById('stat-overall-rank').textContent = `Overall: #${overallRank}`;
             };
             
-            dom.logoutBtn.addEventListener('click', () => auth.signOut());
+            const calculateRanks = (userProfile, allUsers, allScores) => {
+                const aggregateScores = allUsers.map(user => {
+                    const userTotal = allScores.filter(s => s.userId === user.id).reduce((sum, s) => sum + s.pointsReceived, 0);
+                    return { ...user, totalScore: userTotal };
+                }).sort((a,b) => b.totalScore - a.totalScore);
+                
+                const collegeUsers = aggregateScores.filter(u => u.college === userProfile.college);
+                
+                const overallRank = aggregateScores.findIndex(u => u.id === userProfile.id) + 1 || '-';
+                const collegeRank = collegeUsers.findIndex(u => u.id === userProfile.id) + 1 || '-';
+                return { collegeRank, overallRank };
+            };
+
+            const populateLeaderboards = (userProfile, allUsers, allScores) => {
+                const aggregateScores = allUsers.map(user => ({
+                    ...user,
+                    totalScore: allScores.filter(s => s.userId === user.id).reduce((sum, s) => sum + s.pointsReceived, 0)
+                })).sort((a, b) => b.totalScore - a.totalScore);
+
+                const collegeRanks = aggregateScores.filter(u => u.college === userProfile.college);
+
+                const renderList = (users, containerId) => {
+                    const container = document.querySelector(`${containerId} .profile-list`);
+                    container.innerHTML = users.slice(0, 5).map((user, i) => `
+                        <li class="profile-item ${user.id === userProfile.id ? 'you' : ''}">
+                            <span class="rank">${i + 1}</span>
+                            <img src="${user.photoURL}" alt="Profile">
+                            <div class="profile-info">
+                                <span class="user-name">${user.displayName}</span>
+                                <span class="user-handle">${user.college}</span>
+                            </div>
+                            <span class="score">${user.totalScore} XP</span>
+                        </li>
+                    `).join('');
+                };
+                renderList(collegeRanks, '#my-college-content');
+                renderList(aggregateScores, '#overall-content');
+            };
+
+            const themeToggle = document.getElementById('theme-toggle');
+            if (localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-theme'); themeToggle.querySelector('i').className = 'bx bxs-sun header-icon'; }
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark-theme');
+                const isDark = document.body.classList.contains('dark-theme');
+                themeToggle.querySelector('i').className = isDark ? 'bx bxs-sun header-icon' : 'bx bx-moon header-icon';
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+            document.querySelectorAll('.tab-btn').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.querySelector(tab.dataset.target).classList.add('active');
+                });
+            });
+            const menuToggle = document.getElementById('menu-toggle');
+            const sidebar = document.querySelector('.sidebar');
+            const overlay = document.querySelector('.overlay');
+            menuToggle.addEventListener('click', () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
+            overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
         });
     </script>
 </body>
