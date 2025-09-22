@@ -46,20 +46,24 @@
         .content-body { padding: 2rem 3rem; }
         .menu-toggle { display: none; }
         .sidebar-close-btn { display: none; }
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
         .admin-content-header h2 { font-size: 2rem; font-weight: 700; }
         .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
         .primary-btn:hover { background-color: #5B21B6; }
         .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
-        .back-btn { margin-bottom: 1rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+        .back-btn { margin-bottom: 1.5rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
         .lesson-editor .chapter-block { background-color: var(--widget-bg); border-radius: 12px; margin-bottom: 2rem; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
-        .lesson-editor .chapter-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-size: 1.25rem; font-weight: 600; }
+        .lesson-editor .chapter-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); font-size: 1.25rem; font-weight: 600; }
+        .chapter-actions button { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 1.25rem; margin-left: 0.5rem; }
         .lesson-editor .lessons-list { padding: 1.5rem; }
         .lesson-editor .lesson-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; }
         .lesson-editor .lesson-item:hover { background-color: #F9FAFB; }
         .lesson-editor .lesson-item span { flex: 1; font-weight: 500; }
         .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; }
         .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
+        .add-chapter-form { background-color: var(--widget-bg); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-color); }
+        .add-chapter-form h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; }
+        .form-inline { display: flex; gap: 1rem; }
+        .form-inline input { flex-grow: 1; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
         .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
@@ -70,9 +74,6 @@
         .form-field { margin-bottom: 1rem; }
         .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
         .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; }
-        .dynamic-list .list-item { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
-        .dynamic-list .list-item input { flex-grow: 1; }
-        .remove-item-btn { background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.2rem; cursor: pointer; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -129,23 +130,17 @@
                 <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
                 <div class="admin-content-header">
                     <h2 id="page-title"></h2>
-                    <button class="primary-btn" id="manage-chapters-btn">Manage Chapters</button>
                 </div>
                 <div class="lesson-editor" id="lesson-editor-container"></div>
+                <div class="add-chapter-form">
+                    <h3>Add New Chapter</h3>
+                    <form id="add-chapter-form" class="form-inline">
+                        <input type="text" id="new-chapter-name" class="form-field" placeholder="Enter new chapter name" required>
+                        <button type="submit" class="primary-btn">Add Chapter</button>
+                    </form>
+                </div>
             </section>
         </main>
-    </div>
-
-    <div class="modal-overlay" id="chapters-modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="chapters-modal-title">Manage Chapters</h3><button class="close-btn">&times;</button></div>
-            <div class="modal-body">
-                <form id="chapters-form">
-                    <div class="form-field"><label>Chapters</label><div class="dynamic-list" id="chapters-list"></div><button type="button" class="secondary-btn" id="add-chapter-btn" style="margin-top: 8px;">+ Add Chapter</button></div>
-                </form>
-            </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-chapters-btn">Save Chapters</button></div>
-        </div>
     </div>
 
     <div class="modal-overlay" id="lesson-modal">
@@ -235,13 +230,19 @@
                     currentCourse.chapters = courseData.chapters || []; 
                     container.innerHTML = '';
                     if (currentCourse.chapters.length === 0) {
-                        container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">This course has no chapters yet. Click "Manage Chapters" to add the first one.</p>';
+                        container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">This course has no chapters yet. Use the form below to add one.</p>';
                     } else {
                         currentCourse.chapters.forEach((chapter, index) => {
                             const chapterBlock = document.createElement('div');
                             chapterBlock.className = 'chapter-block';
                             chapterBlock.innerHTML = `
-                                <div class="chapter-header">${index + 1}. ${chapter}</div>
+                                <div class="chapter-header">
+                                    <span>${index + 1}. ${chapter}</span>
+                                    <div class="chapter-actions">
+                                        <button class="edit-chapter-btn" data-index="${index}" data-name="${chapter}"><i class='bx bxs-edit'></i></button>
+                                        <button class="delete-chapter-btn" data-index="${index}"><i class='bx bxs-trash'></i></button>
+                                    </div>
+                                </div>
                                 <div class="lessons-list" id="chapter-${index}-lessons"></div>
                                 <div style="padding: 0 1.5rem 1.5rem;">
                                     <button class="primary-btn add-lesson-btn" data-chapter-index="${index}">+ Add Lesson</button>
@@ -269,28 +270,10 @@
                             <div>
                                 <button class="action-btn edit-lesson-btn" data-id="${doc.id}">Edit</button>
                                 <button class="delete-btn delete-lesson-btn" data-id="${doc.id}">Delete</button>
-                            </div>
-                        `;
+                            </div>`;
                         container.appendChild(item);
                     });
                 });
-            };
-
-            const openChaptersModal = () => {
-                const modal = document.getElementById('chapters-modal');
-                const list = modal.querySelector('#chapters-list');
-                list.innerHTML = '';
-                if (currentCourse.chapters && currentCourse.chapters.length > 0) {
-                    currentCourse.chapters.forEach(chapterName => addChapterInput(chapterName));
-                }
-                modal.classList.add('show');
-            };
-
-            const addChapterInput = (name = '') => {
-                const item = document.createElement('div');
-                item.className = 'list-item';
-                item.innerHTML = `<input type="text" class="form-field" value="${name}" placeholder="Chapter Name" required><button type="button" class="remove-item-btn">&times;</button>`;
-                document.getElementById('chapters-list').appendChild(item);
             };
 
             const openLessonModal = (lesson = null, chapterIndex) => {
@@ -303,19 +286,23 @@
                 modal.querySelector('#lesson-content').value = lesson ? lesson.content : '';
                 modal.classList.add('show');
             };
-
-            document.getElementById('manage-chapters-btn').addEventListener('click', openChaptersModal);
-            document.getElementById('add-chapter-btn').addEventListener('click', () => addChapterInput());
-            document.getElementById('chapters-list').addEventListener('click', e => {
-                if (e.target.matches('.remove-item-btn')) {
-                    e.target.closest('.list-item').remove();
+            
+            document.getElementById('add-chapter-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const newChapterNameInput = document.getElementById('new-chapter-name');
+                const newChapterName = newChapterNameInput.value.trim();
+                if (newChapterName) {
+                    const updatedChapters = [...currentCourse.chapters, newChapterName];
+                    await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
+                    newChapterNameInput.value = '';
                 }
             });
-
-            document.getElementById('lesson-editor-container').addEventListener('click', async e => {
+            
+            document.getElementById('lesson-editor-container').addEventListener('click', async (e) => {
                 const target = e.target.closest('button');
-                if(!target) return;
-                if (target.matches('.add-lesson-btn')) openLessonModal(null, target.dataset.chapterIndex);
+                if (!target) return;
+
+                if (target.matches('.add-lesson-btn')) { openLessonModal(null, target.dataset.chapterIndex); }
                 if (target.matches('.edit-lesson-btn')) {
                     const doc = await db.collection('lessons').doc(target.dataset.id).get();
                     openLessonModal({ id: doc.id, ...doc.data() });
@@ -325,22 +312,31 @@
                         await db.collection('lessons').doc(target.dataset.id).delete();
                     }
                 }
+                if (target.matches('.edit-chapter-btn')) {
+                    const index = parseInt(target.dataset.index, 10);
+                    const newName = prompt('Enter the new chapter name:', target.dataset.name);
+                    if (newName && newName.trim() !== '') {
+                        const updatedChapters = [...currentCourse.chapters];
+                        updatedChapters[index] = newName.trim();
+                        await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
+                    }
+                }
+                if (target.matches('.delete-chapter-btn')) {
+                    const index = parseInt(target.dataset.index, 10);
+                    const lessonsQuery = await db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', index).get();
+                    if (!lessonsQuery.empty) {
+                        alert('Cannot delete a chapter that still contains lessons. Please delete all lessons from this chapter first.');
+                        return;
+                    }
+                    if (confirm('Are you sure you want to delete this chapter?')) {
+                        const updatedChapters = currentCourse.chapters.filter((_, i) => i !== index);
+                        await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
+                    }
+                }
             });
 
             document.querySelectorAll('.modal-overlay .close-btn, .modal-overlay .secondary-btn').forEach(btn => {
                 btn.addEventListener('click', () => btn.closest('.modal-overlay').classList.remove('show'));
-            });
-
-            document.getElementById('save-chapters-btn').addEventListener('click', async () => {
-                const chapters = [...document.querySelectorAll('#chapters-list input')].map(i => i.value.trim()).filter(Boolean);
-                const lessonsQuery = await db.collection('lessons').where('courseId', '==', currentCourse.id).get();
-                const maxChapterIndex = lessonsQuery.docs.reduce((max, doc) => Math.max(max, doc.data().chapterIndex), -1);
-                if (chapters.length <= maxChapterIndex) {
-                    alert('Cannot delete a chapter that still contains lessons. Please delete all lessons from that chapter before removing it.');
-                    return;
-                }
-                await db.collection('courses').doc(currentCourse.id).update({ chapters });
-                document.getElementById('chapters-modal').classList.remove('show');
             });
 
             document.getElementById('save-lesson-btn').addEventListener('click', async () => {
