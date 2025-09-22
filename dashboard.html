@@ -3,166 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Wefha E-Learning</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Dashboard - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
-
     <style>
-        :root {
-            --primary-color: #6c5ce7; --accent-color: #fd79a8; --success-color: #00b894;
-            --info-color: #74b9ff; --warning-color: #ff9f43;
-            --text-dark: #2d3436; --text-light: #636e72;
-            --body-bg: #f5f6fa; --card-bg: #ffffff; --border-color: #e9eaf0;
-            --shadow-color: rgba(108, 92, 231, 0.08); --transition-speed: 0.3s;
-        }
-        body.dark-theme {
-            --text-dark: #f5f6fa; --text-light: #b2bec3; --body-bg: #1e272e;
-            --card-bg: #2d3436; --border-color: #4b545c; --shadow-color: rgba(0, 0, 0, 0.2);
-        }
+        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375; --hover-bg: #F3F4F6; --warning-color: #ff9f43; --danger-color: #EF4444; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Poppins', sans-serif; background-color: var(--body-bg); color: var(--text-dark);
-            font-size: 15px; transition: background-color var(--transition-speed), color var(--transition-speed); overflow: hidden;
-        }
-        .dashboard-container { display: grid; grid-template-columns: 280px 1fr; height: 100vh; padding: 1.5rem; gap: 1.5rem; }
-        .sidebar { background: var(--card-bg); border-radius: 20px; padding: 2rem 1.5rem; display: flex; flex-direction: column; box-shadow: 0 8px 32px 0 var(--shadow-color); transition: all var(--transition-speed) ease; }
-        .logo { display: flex; align-items: center; gap: 1rem; margin-bottom: 3rem; }
-        .logo-icon { width: 40px; height: 40px; background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); border-radius: 12px; color: white; display: grid; place-items: center; font-size: 1.8rem; }
-        .logo-text { font-size: 1.8rem; font-weight: 700; color: var(--primary-color); }
-        .main-nav ul { list-style: none; }
-        .main-nav a { display: flex; align-items: center; padding: 1rem; margin-bottom: 0.5rem; border-radius: 12px; text-decoration: none; color: var(--text-light); font-weight: 500; transition: all var(--transition-speed) ease; }
-        .main-nav a i { font-size: 1.5rem; margin-right: 1.2rem; width: 24px; transition: transform 0.2s ease; }
-        .main-nav a:hover { background: var(--body-bg); color: var(--primary-color); }
-        .main-nav a.active { background: var(--primary-color); color: white; box-shadow: 0 4px 15px var(--shadow-color); }
-        .main-nav a.active i { transform: scale(1.1); }
-        .pro-card { margin-top: auto; background: linear-gradient(135deg, var(--primary-color), #4834d4); border-radius: 15px; padding: 1.5rem; text-align: center; color: white; }
-        .pro-card .btn-upgrade { display: block; background: white; color: var(--primary-color); border: none; padding: 0.8rem; border-radius: 10px; font-weight: 600; text-decoration: none; transition: all 0.2s ease; }
-        .main-content-wrapper { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
-        .main-header { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 0 1rem; margin-bottom: 2rem; }
-        .page-title h1 { font-size: 2.2rem; font-weight: 700; }
-        .page-title p { color: var(--text-light); }
-        .header-actions { display: flex; align-items: center; gap: 1rem; }
-        .menu-toggle { display: none; }
-        .header-icon { font-size: 1.5rem; color: var(--text-light); cursor: pointer; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; transition: all var(--transition-speed) ease; }
-        .header-icon:hover { color: var(--primary-color); background: var(--border-color); }
-        .user-profile img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-color); transition: transform 0.2s ease;}
-        .user-profile img:hover { transform: scale(1.1); }
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 0 1rem 1rem 1rem; background-image: radial-gradient(var(--border-color) 1px, transparent 1px); background-size: 20px 20px; }
-        .main-content::-webkit-scrollbar { width: 8px; } .main-content::-webkit-scrollbar-track { background: transparent; } .main-content::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
-        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        .card { animation: fadeInUp 0.5s ease-out forwards; opacity: 0; background: var(--card-bg); border-radius: 20px; padding: 1.5rem; box-shadow: 0 8px 32px 0 var(--shadow-color); transition: all 0.3s ease; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px 0 var(--shadow-color); }
-        .content-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; }
-        .column { display: flex; flex-direction: column; gap: 1.5rem; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; }
+        .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
+        .main-nav a.active i { color: var(--brand-green); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { list-style: none; padding-top: 0.5rem; }
+        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; text-decoration: none; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); }
+        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); }
+        .popup-list a.logout { color: var(--danger-color); }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .search-bar { position: relative; width: 300px; }
+        .search-bar i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 1.25rem; }
+        .search-bar input { width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem; background-color: var(--body-bg); outline: none; }
+        .content-body { padding: 2rem 3rem; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: flex-start; }
+        .column { display: flex; flex-direction: column; gap: 2rem; }
+        .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02); }
         .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-        .widget-header h2 { font-size: 1.25rem; font-weight: 600; }
-        .hero-card { background: linear-gradient(135deg, var(--primary-color), #4834d4); color: white; padding: 2rem; position: relative; overflow: hidden; }
-        .hero-card .bg-icon { position: absolute; font-size: 10rem; right: -20px; bottom: -30px; opacity: 0.1; transform: rotate(-30deg); }
-        .hero-card h4 { font-size: 1rem; opacity: 0.8; font-weight: 500; }
-        .hero-card h2 { font-size: 1.8rem; margin-bottom: 1rem; }
-        .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.3); border-radius: 10px; margin-bottom: 1.5rem; }
-        @keyframes fill-progress { from { width: 0%; } }
-        .progress { height: 100%; background: white; border-radius: 10px; animation: fill-progress 1s ease-out forwards; }
-        .hero-card .btn { background: white; color: var(--primary-color); text-decoration: none; padding: 0.8rem 1.5rem; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; }
-        .hero-card .btn i { transition: transform 0.2s ease; }
-        .hero-card .btn:hover i { transform: translateX(5px); }
-        .deadline-list { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
-        .deadline-item { display: flex; align-items: center; gap: 1rem; }
-        .deadline-icon { width: 45px; height: 45px; border-radius: 12px; display: grid; place-items: center; color: white; font-size: 1.5rem; flex-shrink: 0; background: var(--accent-color); }
-        .deadline-info { flex-grow: 1; } .deadline-info p { font-weight: 600; } .deadline-info .urgent { color: var(--accent-color); font-weight: 600; }
-        .glance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-        .stat-item { text-align: center; } .stat-item .icon { font-size: 1.8rem; margin-bottom: 0.5rem; display: inline-block; }
-        .stat-item .icon.purple { color: var(--primary-color); } .stat-item .icon.orange { color: var(--warning-color); } .stat-item .icon.pink { color: var(--accent-color); }
-        .stat-item strong { font-size: 1.8rem; font-weight: 600; display: block; line-height: 1.2; }
-        .stat-item p { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
-        .stat-item .secondary-rank { display: block; font-size: 0.8rem; color: var(--text-light); margin-top: 4px;}
-        .tab-container { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .tab-btn { padding: 0.8rem 1rem; border: none; background: transparent; color: var(--text-light); font-weight: 600; cursor: pointer; transition: color 0.3s ease; position: relative; }
-        .tab-btn::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background: var(--primary-color); transform: scaleX(0); transition: transform 0.3s ease-in-out; }
-        .tab-btn.active { color: var(--primary-color); } .tab-btn.active::after { transform: scaleX(1); }
+        .widget-header h2 { font-size: 1.125rem; font-weight: 600; }
+        .widget-header a { font-size: 0.9rem; color: var(--brand-green); text-decoration: none; font-weight: 500; }
+        .featured-course { background-color: var(--text-primary); color: #FFFFFF; border: none; }
+        .featured-course h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255, 255, 255, 0.7); margin-bottom: 0.5rem; }
+        .featured-course h3 { font-size: 1.75rem; font-weight: 600; margin-bottom: 1.5rem; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; margin-bottom: 0.75rem; }
+        .progress { height: 100%; background: var(--brand-green); border-radius: 10px; width: 0; transition: width 0.5s ease; }
+        .progress-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .btn-continue { background: var(--brand-green); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: opacity 0.2s ease; text-decoration: none; }
+        .course-outline-list { list-style: none; position: relative; padding-left: 1.5rem; }
+        .course-outline-list::before { content: ''; position: absolute; left: 10px; top: 10px; bottom: 10px; width: 2px; background-color: var(--border-color); }
+        .outline-item { position: relative; margin-bottom: 1.5rem; } .outline-item:last-child { margin-bottom: 0; }
+        .outline-marker { position: absolute; left: -24px; top: 0; width: 20px; height: 20px; border-radius: 50%; background-color: var(--widget-bg); border: 2px solid var(--border-color); display: grid; place-items: center; font-size: 0.8rem; }
+        .outline-item.completed .outline-marker { border-color: var(--brand-green); background-color: var(--brand-green); color: white; }
+        .outline-item.current .outline-marker { border-color: var(--brand-green); background-color: var(--widget-bg); color: var(--brand-green); width: 24px; height: 24px; left: -26px; top: -2px; }
+        .outline-item.current .outline-marker::before { content: ''; width: 12px; height: 12px; background-color: var(--brand-green); border-radius: 50%; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(51, 195, 117, 0.7); } 70% { box-shadow: 0 0 0 10px rgba(51, 195, 117, 0); } 100% { box-shadow: 0 0 0 0 rgba(51, 195, 117, 0); } }
+        .outline-info h4 { font-weight: 600; } .outline-info p { color: var(--text-secondary); font-size: 0.9rem; }
+        .outline-item.completed h4 { text-decoration: line-through; color: var(--text-secondary); }
+        .progress-chart-container { display: flex; align-items: center; gap: 2rem; }
+        .circular-progress-container { position: relative; width: 120px; height: 120px; }
+        .progress-ring__svg { transform: rotate(-90deg); }
+        .progress-ring__circle { transition: stroke-dashoffset 0.8s ease-out; }
+        .progress-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .progress-center-text strong { display: block; font-size: 2rem; font-weight: 700; color: var(--brand-green); }
+        .progress-center-text span { font-size: 0.8rem; color: var(--text-secondary); }
+        .progress-stats { display: flex; flex-direction: column; gap: 1rem; }
+        .stat p { font-size: 0.9rem; color: var(--text-secondary); } .stat strong { font-size: 1.25rem; font-weight: 600; }
+        .schedule-list { list-style: none; display: flex; flex-direction: column; gap: 1.25rem; }
+        .schedule-item { display: flex; align-items: center; gap: 1rem; }
+        .date-badge { display: flex; flex-direction: column; align-items: center; background: var(--hover-bg); padding: 0.5rem; border-radius: 8px; width: 40px; text-align: center; }
+        .date-badge .month { font-size: 0.75rem; text-transform: uppercase; font-weight: 600; }
+        .date-badge .day { font-size: 1.25rem; font-weight: 700; }
+        .schedule-info p { font-weight: 600; }
+        .schedule-info span { font-size: 0.9rem; color: var(--text-secondary); }
+        .tab-container { display: flex; position: relative; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+        .tab-btn { padding: 0.8rem 1rem; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; cursor: pointer; transition: color 0.3s ease; }
+        .tab-btn.active { color: var(--text-primary); }
+        .active-line { position: absolute; bottom: 0; height: 2px; background-color: var(--brand-green); border-radius: 2px; transition: left 0.3s ease-in-out, width 0.3s ease-in-out; }
         .tab-content { display: none; } .tab-content.active { display: block; }
-        .profile-list { list-style: none; display: flex; flex-direction: column; gap: 1.2rem; }
+        .profile-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
         .profile-item { display: flex; align-items: center; }
-        .profile-item .rank { font-size: 1rem; font-weight: 600; color: var(--text-light); width: 30px; }
+        .profile-item .rank { font-size: 1rem; font-weight: 600; color: var(--text-secondary); width: 30px; }
         .profile-item img { width: 40px; height: 40px; border-radius: 50%; margin-right: 1rem; object-fit: cover; }
-        .profile-info { flex-grow: 1; }
-        .profile-info .user-name { font-weight: 600; }
-        .profile-item .user-handle { color: var(--text-light); font-size: 0.85rem; }
-        .profile-item .score { font-weight: 600; color: var(--primary-color); }
-        .profile-item.you .user-handle { color: var(--primary-color); font-weight: 600; }
-        .profile-item.you .user-handle::after { content: '(You)'; margin-left: 4px; }
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        .overlay.active { opacity: 1; pointer-events: all; }
-        @media (max-width: 1200px) { .content-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) {
-            .dashboard-container { grid-template-columns: 1fr; padding: 1rem; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; transform: translateX(-100%); width: 280px; }
+        .profile-info { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .profile-affiliation { color: var(--text-secondary); font-size: 0.85rem; }
+        .profile-item .score { font-weight: 600; color: var(--brand-green); display: flex; align-items: center; gap: 0.5rem; }
+        .profile-item .score .crown { color: var(--warning-color); font-size: 1.2rem; }
+        .profile-list .user-separator { margin: 0.5rem 0; border: 0; height: 1px; background: var(--border-color); }
+        .menu-toggle { display: none; }
+        .sidebar-close-btn { display: none; }
+        .placeholder-text { color: var(--text-secondary); text-align: center; padding: 1rem; }
+
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
-            .main-header { padding: 0; margin-bottom: 1.5rem; }
-            .page-title { display: none; }
-            .main-content .page-title { display: block; margin-bottom: 1.5rem; }
-            .main-content .page-title h1 { font-size: 1.8rem; }
-            .menu-toggle { display: block; order: -1; }
+            .main-header { padding: 1.25rem 1.5rem; }
+            .content-body { grid-template-columns: 1fr; padding: 1.5rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; transition: background-color 0.2s ease; }
+            .menu-toggle:hover { background-color: var(--hover-bg); }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; transition: color 0.2s ease; }
+            .sidebar-close-btn:hover { color: #b91c1c; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+            .search-bar { display: none; }
         }
     </style>
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Dashboard...</div>
-    <div class="overlay"></div>
-    <div class="dashboard-container">
-        <aside class="sidebar">
-            <div class="logo"><div class="logo-icon"><i class='bx bxs-graduation'></i></div><span class="logo-text">Wefha</span></div>
-            <nav class="main-nav"><ul id="main-nav-list"></ul></nav>
-            <div class="pro-card"><h3>Go PRO</h3><p>Unlock premium features and get unlimited access.</p><a href="#" class="btn-upgrade">Upgrade Now</a></div>
-        </aside>
-        <div class="main-content-wrapper">
-            <header class="main-header">
-                <i class='bx bx-menu header-icon menu-toggle' id="menu-toggle"></i>
-                <div class="page-title"><h1 id="greeting-desktop"></h1><p>Let's learn something new today.</p></div>
-                <div class="header-actions">
-                    <i class='bx bx-bell header-icon'></i>
-                    <div class="theme-toggle" id="theme-toggle"><i class='bx bx-moon header-icon'></i></div>
-                    <div class="user-profile"><img id="user-avatar" src="" alt="User Avatar"></div>
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container" style="display: none;">
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="dashboard.html" class="active"><i class='bx bx-home-alt'></i> Dashboard</a></li>
+                    <li><a href="course.html"><i class='bx bx-book-open'></i> Course & Content</a></li>
+                    <li><a href="leaderboard.html"><i class='bx bx-bar-chart-alt-2'></i> Leaderboard</a></li>
+                    <li><a href="programs.html"><i class='bx bx-briefcase-alt-2'></i> Explore Programs</a></li>
+                    <li><a href="community.html"><i class='bx bx-group'></i> Community</a></li>
+                    <li><a href="help.html"><i class='bx bx-help-circle'></i> Help & Support</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details">
+                    <span class="profile-name"></span>
+                    <span class="profile-email"></span>
                 </div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+            </div>
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-header">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details">
+                        <span class="profile-name"></span>
+                        <span class="profile-email"></span>
+                    </div>
+                </div>
+                <ul class="popup-list">
+                    <li><a href="profile.html"><i class='bx bx-user'></i> Profile</a></li>
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
+        </aside>
+        <main class="main-area">
+            <header class="main-header">
+                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
+                <h1>Dashboard</h1>
+                <div class="search-bar"><i class='bx bx-search'></i><input type="text" placeholder="What do you want to learn today?"></div>
             </header>
-            <main class="main-content">
-                 <div class="page-title" id="page-title-mobile" style="display: none;"><h1 id="greeting-mobile"></h1></div>
-                <div class="content-grid">
-                    <section class="column">
-                        <div class="hero-card card" style="animation-delay: 0.1s;"></div>
-                        <div class="deadlines-card card" style="animation-delay: 0.2s;">
-                            <div class="widget-header"><h2>Upcoming Deadlines</h2></div>
-                            <ul class="deadline-list" id="deadline-list"></ul>
-                        </div>
-                    </section>
-                    <section class="column">
-                        <div class="glance-card card" style="animation-delay: 0.3s;">
-                            <div class="widget-header"><h2>Course at a Glance</h2></div>
-                            <div class="glance-grid">
-                                <div class="stat-item"><i class='bx bx-time-five icon purple'></i><strong id="stat-active">-</strong><p>Last Active</p></div>
-                                <div class="stat-item"><i class='bx bxs-bar-chart-alt-2 icon purple'></i><strong id="stat-lessons">- / -</strong><p>Lessons Completed</p></div>
-                                <div class="stat-item"><i class='bx bxs-trophy icon pink'></i><strong id="stat-college-rank">-</strong><p>College Rank</p><span id="stat-overall-rank" class="secondary-rank"></span></div>
-                                <div class="stat-item"><i class='bx bxs-graduation icon orange'></i><strong id="stat-courses">-</strong><p>Courses Started</p></div>
+            <section class="content-body">
+                <div class="column main-col">
+                    <div class="widget featured-course" id="featured-course-widget" style="display: none;">
+                        <h4>CONTINUE LEARNING</h4>
+                        <h3 id="featured-course-title"></h3>
+                        <div class="progress-bar"><div class="progress" id="featured-course-progress"></div></div>
+                        <div class="progress-info"><span id="featured-course-subject"></span><span id="featured-course-percent"></span></div>
+                        <a href="#" class="btn-continue" id="featured-course-link">Continue Learning</a>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-header"><h2>Course Outline</h2></div>
+                        <ol class="course-outline-list" id="course-outline-list"></ol>
+                    </div>
+                </div>
+                <div class="column side-col">
+                    <div class="widget">
+                        <div class="widget-header"><h2>Progress</h2></div>
+                        <div class="progress-chart-container">
+                            <div class="circular-progress-container">
+                                <svg class="progress-ring__svg" width="120" height="120">
+                                    <circle stroke="#E5E7EB" stroke-width="10" fill="transparent" r="52" cx="60" cy="60"/>
+                                    <circle class="progress-ring__circle" id="overall-progress-ring" stroke="var(--brand-green)" stroke-linecap="round" stroke-width="10" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="326.7" stroke-dashoffset="326.7"/>
+                                </svg>
+                                <div class="progress-center-text"><strong id="overall-progress-percent">0%</strong><span>Completed</span></div>
+                            </div>
+                            <div class="progress-stats">
+                                <div class="stat"><p>Lessons Completed</p><strong id="lessons-completed-stat">0 / 0</strong></div>
+                                <div class="stat"><p>Assessments</p><strong id="assessments-completed-stat">0 / 0</strong></div>
                             </div>
                         </div>
-                        <div class="leaderboard-card card" style="animation-delay: 0.4s;">
-                           <div class="widget-header"><h2>Leaderboard</h2></div>
-                           <div class="tab-container"><button class="tab-btn active" data-target="#my-college-content">My College</button><button class="tab-btn" data-target="#overall-content">Overall</button></div>
-                           <div class="tab-content-container">
-                               <div id="my-college-content" class="tab-content active"><ul class="profile-list"></ul></div>
-                               <div id="overall-content" class="tab-content"><ul class="profile-list"></ul></div>
-                           </div>
-                       </div>
-                    </section>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-header"><h2>Upcoming Schedule</h2></div>
+                        <div id="schedule-widget-content">
+                            <p class="placeholder-text">Nothing scheduled yet.</p>
+                        </div>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-header"><h2>Leaderboard</h2><a href="leaderboard.html">View All</a></div>
+                        <div class="tab-container">
+                            <button class="tab-btn active" data-target="#my-college-content">My College</button>
+                            <button class="tab-btn" data-target="#overall-content">Overall</button>
+                            <div class="active-line"></div>
+                        </div>
+                        <div id="my-college-content" class="tab-content active"><ul class="profile-list" id="college-leaderboard-list"></ul></div>
+                        <div id="overall-content" class="tab-content"><ul class="profile-list" id="overall-leaderboard-list"></ul></div>
+                    </div>
                 </div>
-            </main>
-        </div>
+            </section>
+        </main>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const firebaseConfig = {
@@ -185,180 +242,167 @@
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (!userDoc.exists) { window.location.href = 'index.html'; return; }
                     
-                    const userProfile = { id: user.uid, ...userDoc.data() };
-                    initializeDashboard(userProfile);
+                    const userProfile = userDoc.data();
+                    initUI(userProfile);
+                    loadDashboardData(user.uid, userProfile);
                 } else {
                     window.location.href = 'index.html';
                 }
             });
 
-            const initializeDashboard = async (userProfile) => {
-                const [allScores, allUsers, allSubjects, allCourses, allLessons, allExams, userProgress] = await Promise.all([
-                    db.collection('scores').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
-                    db.collection('users').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
-                    db.collection('subjects').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
-                    db.collection('courses').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
-                    db.collection('lessons').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
-                    db.collection('exams').get().then(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() }))),
-                    db.collection('users').doc(userProfile.id).collection('progress').get().then(snap => snap.docs.map(doc => doc.data()))
-                ]);
+            const initUI = (userProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
+                
+                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                
+                const tabs = document.querySelectorAll('.tab-btn');
+                const activeLine = document.querySelector('.active-line');
+                function moveActiveLine(tabElement) { if (tabElement) { activeLine.style.width = `${tabElement.offsetWidth}px`; activeLine.style.left = `${tabElement.offsetLeft}px`; } }
+                moveActiveLine(document.querySelector('.tab-btn.active'));
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                        document.querySelector(tab.dataset.target).classList.add('active');
+                        moveActiveLine(tab);
+                    });
+                });
 
-                populateUI(userProfile);
-                populateNav(allSubjects);
-                populateHeroCard(userProfile, allCourses, allLessons, userProgress);
-                populateDeadlines(allExams, allScores);
-                populateGlanceCard(userProfile, allUsers, allScores, allLessons, userProgress);
-                populateLeaderboards(userProfile, allUsers, allScores);
-
+                const profileSection = document.getElementById('profile-section');
+                const profilePopup = document.getElementById('profile-popup');
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
+                const overlay = document.getElementById('overlay');
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                menuToggle.addEventListener('click', toggleMenu);
+                closeBtn.addEventListener('click', toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
+                
+                document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
-            const populateUI = (profile) => {
-                document.getElementById('user-avatar').src = profile.photoURL || '';
-                const firstName = profile.displayName.split(' ')[0];
-                const currentHour = new Date().getHours();
-                let greetingText;
-                if (currentHour < 12) { greetingText = `Good morning, ${firstName}!`; } 
-                else if (currentHour < 18) { greetingText = `Good afternoon, ${firstName}!`; } 
-                else { greetingText = `Good evening, ${firstName}!`; }
-                document.getElementById('greeting-desktop').textContent = greetingText;
-                document.getElementById('greeting-mobile').textContent = greetingText;
-            };
+            const loadDashboardData = async (userId, userProfile) => {
+                const [coursesSnap, examsSnap, progressSnap, scoresSnap, usersSnap, subjectsSnap] = await Promise.all([
+                    db.collection('courses').get(), db.collection('exams').get(),
+                    db.collection('users').doc(userId).collection('progress').get(),
+                    db.collection('scores').get(), db.collection('users').get(), db.collection('subjects').get()
+                ]);
 
-            const populateNav = (subjects) => {
-                const navList = document.getElementById('main-nav-list');
-                let navHTML = `<li><a href="dashboard.html" class="active"><i class='bx bxs-dashboard'></i> Dashboard</a></li>`;
-                subjects.forEach(subject => {
-                    navHTML += `<li><a href="${subject.page}"><i class='bx bxs-book-content'></i> ${subject.name}</a></li>`;
-                });
-                navList.innerHTML = navHTML;
-            };
-
-            const populateHeroCard = (userProfile, allCourses, allLessons, userProgress) => {
-                const heroCard = document.querySelector('.hero-card');
-                const userProgressByCourse = userProgress.reduce((acc, prog) => {
-                    const lesson = allLessons.find(l => l.id === prog.lessonId);
-                    if (lesson) {
-                        acc[lesson.courseId] = (acc[lesson.courseId] || 0) + 1;
-                    }
-                    return acc;
-                }, {});
-
-                let lastActiveCourseId = null;
-                let latestTimestamp = 0;
-                userProgress.forEach(prog => {
-                    const timestamp = prog.completedAt?.toMillis() || 0;
-                    if (timestamp > latestTimestamp) {
-                        latestTimestamp = timestamp;
-                        const lesson = allLessons.find(l => l.id === prog.lessonId);
-                        if (lesson) lastActiveCourseId = lesson.courseId;
-                    }
-                });
-
-                const targetCourse = lastActiveCourseId ? allCourses.find(c => c.id === lastActiveCourseId) : allCourses[0];
-                if (!targetCourse) { heroCard.innerHTML = '<h4>START LEARNING</h4><h2>No courses available yet.</h2>'; return; }
-
-                const lessonsInCourse = allLessons.filter(l => l.courseId === targetCourse.id);
-                const completedInCourse = userProgressByCourse[targetCourse.id] || 0;
-                const progressPercent = lessonsInCourse.length > 0 ? Math.round((completedInCourse / lessonsInCourse.length) * 100) : 0;
+                const allCourses = coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allExams = examsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const allUsers = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
+                const allSubjects = new Map(subjectsSnap.docs.map(doc => [doc.id, doc.data()]));
+                const userProgress = new Set(progressSnap.docs.map(doc => doc.data().lessonId));
                 
-                heroCard.innerHTML = `
-                    <i class='bx bxs-book-heart bg-icon'></i>
-                    <h4>${lastActiveCourseId ? 'CONTINUE LEARNING' : 'GET STARTED'}</h4>
-                    <h2>${targetCourse.name}</h2>
-                    <div class="progress-bar"><div class="progress" style="width: ${progressPercent}%;"></div></div>
-                    <a href="course.html?id=${targetCourse.id}" class="btn">Continue Lesson <i class='bx bx-right-arrow-alt'></i></a>
-                `;
+                const lessonsPromises = allCourses.map(c => db.collection('lessons').where('courseId', '==', c.id).get());
+                const lessonsSnaps = await Promise.all(lessonsPromises);
+                const allLessons = lessonsSnaps.flatMap(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+
+                renderFeaturedCourse(allCourses, allLessons, allSubjects, userProgress);
+                renderOverallProgress(allLessons, allExams, userProgress, scoresSnap.docs.filter(d => d.data().userId === userId));
+                renderLeaderboards(scoresSnap, allUsers, userId, userProfile);
             };
 
-            const populateDeadlines = (allExams, allScores) => {
-                const list = document.getElementById('deadline-list');
-                const upcomingExams = allExams.filter(exam => !exam.isLocked && !allScores.find(s => s.examId === exam.id)).slice(0, 2);
-                if (upcomingExams.length === 0) { list.innerHTML = '<li>No upcoming deadlines. Great job!</li>'; return; }
-                list.innerHTML = upcomingExams.map(exam => `
-                    <li class="deadline-item">
-                        <div class="deadline-icon"><i class='bx bxs-pen'></i></div>
-                        <div class="deadline-info"><p>${exam.name}</p></div>
-                    </li>
-                `).join('');
-            };
-
-            const populateGlanceCard = (userProfile, allUsers, allScores, allLessons, userProgress) => {
-                const userScores = allScores.filter(s => s.userId === userProfile.id);
-                const totalLessonsCompleted = userProgress.length;
-                const coursesStarted = new Set(userProgress.map(p => {
-                    const lesson = allLessons.find(l => l.id === p.lessonId);
-                    return lesson ? lesson.courseId : null;
-                }).filter(Boolean)).size;
-
-                const { collegeRank, overallRank } = calculateRanks(userProfile, allUsers, allScores);
+            const renderFeaturedCourse = (courses, lessons, subjects, progress) => {
+                const startedCourses = courses.filter(course => lessons.some(l => l.courseId === course.id && progress.has(l.id)));
+                let featuredCourse = startedCourses.find(c => {
+                    const courseLessons = lessons.filter(l => l.courseId === c.id);
+                    return courseLessons.length > 0 && courseLessons.some(l => !progress.has(l.id));
+                });
                 
-                document.getElementById('stat-lessons').textContent = `${totalLessonsCompleted} / ${allLessons.length}`;
-                document.getElementById('stat-courses').textContent = coursesStarted;
-                document.getElementById('stat-college-rank').textContent = `#${collegeRank}`;
-                document.getElementById('stat-overall-rank').textContent = `Overall: #${overallRank}`;
+                if (!featuredCourse && courses.length > 0) { featuredCourse = courses[0]; }
+                
+                if (featuredCourse) {
+                    const courseLessons = lessons.filter(l => l.courseId === featuredCourse.id).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
+                    const completed = courseLessons.filter(l => progress.has(l.id)).length;
+                    const percent = courseLessons.length > 0 ? Math.round((completed / courseLessons.length) * 100) : 0;
+                    
+                    document.getElementById('featured-course-title').textContent = featuredCourse.name;
+                    document.getElementById('featured-course-subject').textContent = `in ${subjects.get(featuredCourse.subjectId)?.name || ''}`;
+                    document.getElementById('featured-course-progress').style.width = `${percent}%`;
+                    document.getElementById('featured-course-percent').textContent = `${percent}% Complete`;
+                    document.getElementById('featured-course-link').href = `course.html?id=${featuredCourse.id}`;
+                    document.getElementById('featured-course-widget').style.display = 'block';
+
+                    const outlineList = document.getElementById('course-outline-list');
+                    outlineList.innerHTML = '';
+                    featuredCourse.chapters.forEach((chapterName, index) => {
+                        const lessonsInChapter = courseLessons.filter(l => l.chapterIndex === index);
+                        if (lessonsInChapter.length === 0) return;
+                        const completedInChapter = lessonsInChapter.filter(l => progress.has(l.id)).length;
+                        const isChapterCompleted = completedInChapter === lessonsInChapter.length;
+                        
+                        const firstUncompleted = courseLessons.find(l => !progress.has(l.id));
+                        const isCurrentChapter = firstUncompleted && firstUncompleted.chapterIndex === index;
+
+                        const item = document.createElement('li');
+                        item.className = `outline-item ${isChapterCompleted ? 'completed' : ''} ${isCurrentChapter ? 'current' : ''}`;
+                        item.innerHTML = `<div class="outline-marker">${isChapterCompleted ? "<i class='bx bx-check'></i>" : ''}</div><div class="outline-info"><h4>${chapterName}</h4><p>${completedInChapter} / ${lessonsInChapter.length} lessons</p></div>`;
+                        outlineList.appendChild(item);
+                    });
+                }
             };
             
-            const calculateRanks = (userProfile, allUsers, allScores) => {
-                const aggregateScores = allUsers.map(user => {
-                    const userTotal = allScores.filter(s => s.userId === user.id).reduce((sum, s) => sum + s.pointsReceived, 0);
-                    return { ...user, totalScore: userTotal };
-                }).sort((a,b) => b.totalScore - a.totalScore);
+            const renderOverallProgress = (lessons, exams, progress, userScores) => {
+                const completedLessons = progress.size;
+                const totalLessons = lessons.length;
+                const completedExams = userScores.length;
+                const totalExams = exams.length;
+                const overallPercent = (totalLessons + totalExams > 0) ? Math.round(((completedLessons + completedExams) / (totalLessons + totalExams)) * 100) : 0;
                 
-                const collegeUsers = aggregateScores.filter(u => u.college === userProfile.college);
+                document.getElementById('lessons-completed-stat').textContent = `${completedLessons} / ${totalLessons}`;
+                document.getElementById('assessments-completed-stat').textContent = `${completedExams} / ${totalExams}`;
+                document.getElementById('overall-progress-percent').textContent = `${overallPercent}%`;
                 
-                const overallRank = aggregateScores.findIndex(u => u.id === userProfile.id) + 1 || '-';
-                const collegeRank = collegeUsers.findIndex(u => u.id === userProfile.id) + 1 || '-';
-                return { collegeRank, overallRank };
+                const ring = document.getElementById('overall-progress-ring');
+                const radius = ring.r.baseVal.value;
+                const circumference = 2 * Math.PI * radius;
+                ring.style.strokeDasharray = `${circumference} ${circumference}`;
+                const offset = circumference - (overallPercent / 100) * circumference;
+                ring.style.strokeDashoffset = offset;
             };
 
-            const populateLeaderboards = (userProfile, allUsers, allScores) => {
-                const aggregateScores = allUsers.map(user => ({
-                    ...user,
-                    totalScore: allScores.filter(s => s.userId === user.id).reduce((sum, s) => sum + s.pointsReceived, 0)
-                })).sort((a, b) => b.totalScore - a.totalScore);
-
-                const collegeRanks = aggregateScores.filter(u => u.college === userProfile.college);
-
-                const renderList = (users, containerId) => {
-                    const container = document.querySelector(`${containerId} .profile-list`);
-                    container.innerHTML = users.slice(0, 5).map((user, i) => `
-                        <li class="profile-item ${user.id === userProfile.id ? 'you' : ''}">
-                            <span class="rank">${i + 1}</span>
-                            <img src="${user.photoURL}" alt="Profile">
-                            <div class="profile-info">
-                                <span class="user-name">${user.displayName}</span>
-                                <span class="user-handle">${user.college}</span>
-                            </div>
-                            <span class="score">${user.totalScore} XP</span>
-                        </li>
-                    `).join('');
-                };
-                renderList(collegeRanks, '#my-college-content');
-                renderList(aggregateScores, '#overall-content');
-            };
-
-            const themeToggle = document.getElementById('theme-toggle');
-            if (localStorage.getItem('theme') === 'dark') { document.body.classList.add('dark-theme'); themeToggle.querySelector('i').className = 'bx bxs-sun header-icon'; }
-            themeToggle.addEventListener('click', () => {
-                document.body.classList.toggle('dark-theme');
-                const isDark = document.body.classList.contains('dark-theme');
-                themeToggle.querySelector('i').className = isDark ? 'bx bxs-sun header-icon' : 'bx bx-moon header-icon';
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            });
-            document.querySelectorAll('.tab-btn').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    document.querySelectorAll('.tab-btn').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    tab.classList.add('active');
-                    document.querySelector(tab.dataset.target).classList.add('active');
+            const renderLeaderboards = (scoresSnap, users, currentUserId, currentUserProfile) => {
+                const userPoints = {};
+                scoresSnap.forEach(doc => {
+                    const score = doc.data();
+                    userPoints[score.userId] = (userPoints[score.userId] || 0) + score.pointsReceived;
                 });
-            });
-            const menuToggle = document.getElementById('menu-toggle');
-            const sidebar = document.querySelector('.sidebar');
-            const overlay = document.querySelector('.overlay');
-            menuToggle.addEventListener('click', () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); });
-            overlay.addEventListener('click', () => { sidebar.classList.remove('active'); overlay.classList.remove('active'); });
+                
+                const sortedUsers = Object.keys(userPoints).sort((a,b) => userPoints[b] - userPoints[a]);
+                
+                const createLeaderboardHTML = (userList) => {
+                    if (userList.length === 0) {
+                        return `<li class="profile-item"><span class="rank">1</span><img src="${currentUserProfile.photoURL}" alt="${currentUserProfile.displayName}"><div class="profile-info"><p class="profile-name">${currentUserProfile.displayName} (You)</p><p class="profile-affiliation">${currentUserProfile.college}</p></div><span class="score">0 XP</span></li>`;
+                    }
+
+                    let html = '';
+                    userList.slice(0, 3).forEach((userId, index) => {
+                        const user = users.get(userId);
+                        if(user) html += `<li class="profile-item"><span class="rank">${index + 1}</span><img src="${user.photoURL}" alt="${user.displayName}"><div class="profile-info"><p class="profile-name">${user.displayName}</p><p class="profile-affiliation">${user.college}</p></div><span class="score">${index === 0 ? "<i class='bx bxs-crown crown'></i>": ""} ${userPoints[userId]} XP</span></li>`;
+                    });
+                    
+                    const currentUserRank = userList.indexOf(currentUserId);
+                    if (currentUserRank >= 3) {
+                         const user = users.get(currentUserId);
+                         html += `<hr class="user-separator"><li class="profile-item"><span class="rank">${currentUserRank + 1}</span><img src="${user.photoURL}" alt="${user.displayName}"><div class="profile-info"><p class="profile-name">${user.displayName} (You)</p><p class="profile-affiliation">${user.college}</p></div><span class="score">${userPoints[currentUserId]} XP</span></li>`;
+                    }
+                    return html;
+                };
+
+                document.getElementById('overall-leaderboard-list').innerHTML = createLeaderboardHTML(sortedUsers);
+                
+                const collegeUsers = sortedUsers.filter(userId => users.get(userId)?.college === currentUserProfile.college);
+                document.getElementById('college-leaderboard-list').innerHTML = createLeaderboardHTML(collegeUsers);
+            };
         });
     </script>
 </body>
