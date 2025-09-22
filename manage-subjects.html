@@ -51,11 +51,14 @@
         .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
         .primary-btn:hover { background-color: #5B21B6; }
         .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); }
+        .admin-table thead { display: table-header-group; }
         .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
         .admin-table th { background: #F9FAFB; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; }
-        .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
+        .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 6px; }
+        .action-btn:hover { background-color: var(--hover-bg); }
+        .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 6px; }
+        .delete-btn:hover { background-color: #FEF2F2; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
         .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); }
@@ -79,6 +82,17 @@
             .sidebar-close-btn:hover { color: #b91c1c; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+            .admin-table thead { display: none; }
+            .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display: block; width: 100%; }
+            .admin-table tr { background: var(--widget-bg); border-radius: 12px; margin-bottom: 1rem; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+            .admin-table td { border: none; padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+            .admin-table td:not(:first-child) { border-top: 1px solid var(--border-color); }
+            .admin-table td::before { content: attr(data-label); font-weight: 600; color: var(--text-primary); }
+            .admin-table td.actions-cell { flex-direction: column; align-items: stretch; gap: 0.5rem; padding-top: 1.5rem; }
+            .admin-table td.actions-cell::before { display: none; }
+            .admin-table .action-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+            .admin-table .action-row .action-btn { justify-content: center; margin-right: 0; }
+            .admin-table .action-row .delete-btn { grid-column: 1 / -1; justify-content: center; }
         }
     </style>
 </head>
@@ -138,7 +152,7 @@
                 <form id="subject-form">
                     <input type="hidden" id="subject-id">
                     <div class="form-field"><label for="subject-name">Subject Name</label><input type="text" id="subject-name" required></div>
-                    <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
+                    <div class="form-field"><label for="subject-page">Page Filename (e.g., java-content.html)</label><input type="text" id="subject-page" required></div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -205,13 +219,17 @@
                         const subject = doc.data();
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${subject.name}</td>
-                            <td>${subject.page}</td>
-                            <td>
-                                <a href="manage-courses.html?subjectId=${doc.id}" class="action-btn">Manage Courses</a>
-                                <a href="manage-exams.html?subjectId=${doc.id}" class="action-btn">Manage Exams</a>
-                                <button class="action-btn edit-subject-btn" data-id="${doc.id}">Edit</button>
-                                <button class="delete-btn delete-subject-btn" data-id="${doc.id}">Delete</button>
+                            <td data-label="Subject Name">${subject.name}</td>
+                            <td data-label="Page Filename">${subject.page}</td>
+                            <td data-label="Actions" class="actions-cell">
+                                <div class="action-row">
+                                    <a href="manage-lessons.html?subjectId=${doc.id}" class="action-btn"><i class='bx bxs-book-content'></i> Courses & Lessons</a>
+                                    <a href="manage-exams.html?subjectId=${doc.id}" class="action-btn"><i class='bx bxs-pen'></i> Exams</a>
+                                </div>
+                                <div class="action-row">
+                                    <button class="action-btn edit-subject-btn" data-id="${doc.id}"><i class='bx bxs-edit'></i> Edit</button>
+                                    <button class="delete-btn delete-subject-btn" data-id="${doc.id}"><i class='bx bxs-trash'></i> Delete</button>
+                                </div>
                             </td>
                         `;
                         tbody.appendChild(row);
@@ -249,7 +267,7 @@
             };
 
             document.addEventListener('click', async e => {
-                const target = e.target;
+                const target = e.target.closest('button') || e.target;
                 if (target.id === 'create-subject-btn') openSubjectModal();
                 if (target.matches('.edit-subject-btn')) {
                     const doc = await db.collection('subjects').doc(target.dataset.id).get();
