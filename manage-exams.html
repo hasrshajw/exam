@@ -31,13 +31,14 @@
         a { text-decoration: none; }
         ul { list-style: none; }
 
-        /* --- DASHBOARD LAYOUT --- */
+        /* --- DASHBOARD LAYOUT & RESPONSIVE FIXES --- */
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
         .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .content-body { padding: 2rem 2.5rem; }
-        
+        .menu-toggle, .sidebar-close-btn { display: none; } /* Hide mobile elements on desktop */
+
         /* --- SIDEBAR & PROFILE (Unchanged as requested) --- */
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
         .logo-image { height: 40px; }
@@ -77,26 +78,25 @@
         .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .secondary-btn:hover { background-color: var(--hover-bg); }
-        .menu-toggle, .sidebar-close-btn { display: none; } /* Hide mobile controls by default */
 
-        /* --- DESKTOP TABLE & NEW ACTIONS DROPDOWN --- */
+        /* --- DESKTOP TABLE & NEW ACTIONS MENU --- */
         .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
         .admin-table td { color: var(--text-primary); font-weight: 500; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .actions-cell { text-align: right !important; }
-        .actions-container { position: relative; display: inline-flex; }
-        .action-btn { background: none; border: none; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; color: var(--text-secondary); }
-        .action-btn i { font-size: 1.5rem; }
-        .action-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
-        .actions-dropdown { position: absolute; top: 100%; right: 0; background-color: var(--widget-bg); border-radius: 8px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); z-index: 10; padding: 0.5rem; margin-top: 0.25rem; width: 160px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .actions-cell { position: relative; text-align: right !important; }
+        .actions-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .actions-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
+        .actions-menu-btn:hover { background-color: var(--hover-bg); }
+        .actions-dropdown { position: absolute; top: calc(100% - 10px); right: 1.5rem; background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: var(--shadow-lg); z-index: 10; width: 150px; padding: 0.5rem; opacity: 0; visibility: hidden; transform: translateY(10px); transition: opacity 0.2s ease, transform 0.2s ease; }
         .actions-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
-        .dropdown-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.6rem 0.75rem; border-radius: 6px; background: none; border: none; cursor: pointer; text-align: left; font-weight: 500; font-size: 0.9rem; color: var(--text-primary); }
-        .dropdown-item:hover { background-color: var(--hover-bg); }
-        .dropdown-item i { font-size: 1.25rem; }
-        .dropdown-item.edit { color: var(--brand-purple); }
-        .dropdown-item.delete { color: var(--danger-color); }
+        .actions-dropdown button { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.6rem; border-radius: 6px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; text-align: left; transition: background-color 0.2s ease; }
+        .actions-dropdown button:hover { background-color: var(--hover-bg); }
+        .actions-dropdown button i { font-size: 1.1rem; }
+        .actions-dropdown .edit { color: var(--text-primary); }
+        .actions-dropdown .delete { color: var(--danger-color); }
+
         .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .lock-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger-color); transition: .4s; border-radius: 24px; }
@@ -366,12 +366,10 @@
                             <td>${formatDate(exam.deadline)}</td>
                             <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
                             <td class="actions-cell">
-                                <div class="actions-container">
-                                    <button class="action-btn kebab-menu" aria-label="More actions"><i class='bx bx-dots-vertical-rounded'></i></button>
-                                    <div class="actions-dropdown">
-                                        <button class="dropdown-item edit" data-id="${doc.id}"><i class='bx bxs-edit-alt'></i> Edit</button>
-                                        <button class="dropdown-item delete" data-id="${doc.id}"><i class='bx bxs-trash-alt'></i> Delete</button>
-                                    </div>
+                                <button class="actions-menu-btn" aria-label="Open actions menu"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                <div class="actions-dropdown">
+                                    <button class="edit" data-id="${doc.id}"><i class='bx bxs-edit-alt'></i> Edit</button>
+                                    <button class="delete" data-id="${doc.id}"><i class='bx bxs-trash-alt'></i> Delete</button>
                                 </div>
                             </td>`;
                         tbody.appendChild(row);
@@ -465,34 +463,43 @@
                 document.getElementById('actionsheet-overlay').classList.remove('show');
                 document.getElementById('actionsheet').classList.remove('show');
             };
+
+            const closeAllActionDropdowns = () => {
+                document.querySelectorAll('.actions-dropdown.show').forEach(dropdown => {
+                    dropdown.classList.remove('show');
+                });
+            };
             
             document.addEventListener('click', async e => {
-                // Close open dropdowns when clicking elsewhere
-                document.querySelectorAll('.actions-dropdown.show').forEach(dropdown => {
-                    if (!dropdown.parentElement.contains(e.target)) {
-                        dropdown.classList.remove('show');
-                    }
-                });
+                // Close action dropdowns if clicking outside
+                if (!e.target.closest('.actions-cell')) {
+                    closeAllActionDropdowns();
+                }
 
                 const button = e.target.closest('button');
                 if (!button) return;
                 
                 if (button.id === 'create-exam-btn') openExamModal();
-                if (button.matches('.edit-exam-btn, .edit')) {
+                if (button.matches('.edit')) {
                     closeActionsheet();
                     const doc = await db.collection('exams').doc(button.dataset.id).get();
                     openExamModal({ id: doc.id, ...doc.data() });
                 }
-                if (button.matches('.delete-exam-btn, .delete')) {
+                if (button.matches('.delete')) {
                     closeActionsheet();
                     if (confirm('Are you sure you want to delete this exam? This action cannot be undone.')) {
                         await db.collection('exams').doc(button.dataset.id).delete();
                     }
                 }
-                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
-                if (button.matches('.kebab-menu')) {
-                    button.nextElementSibling.classList.toggle('show');
+                if (button.matches('.actions-menu-btn')) {
+                    const dropdown = button.nextElementSibling;
+                    const isShowing = dropdown.classList.contains('show');
+                    closeAllActionDropdowns(); // Close others first
+                    if (!isShowing) {
+                        dropdown.classList.add('show');
+                    }
                 }
+                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
                 if (button.id === 'add-question-btn') addQuestionToForm();
                 if (button.matches('.remove-item-btn')) {
                     button.closest('.accordion-item').remove();
