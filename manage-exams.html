@@ -77,12 +77,10 @@
         .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .secondary-btn:hover { background-color: var(--hover-bg); }
-
-        /* --- FIX: MOBILE CONTROLS HIDDEN ON DESKTOP --- */
         .menu-toggle, .sidebar-close-btn { display: none; }
 
         /* --- DESKTOP TABLE --- */
-        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
         .admin-table td { color: var(--text-primary); font-weight: 500; }
@@ -94,9 +92,11 @@
         input:checked + .slider { background-color: var(--success-color); }
         input:checked + .slider:before { transform: translateX(20px); }
         
-        /* --- NEW: ACTIONS DROPDOWN UI/UX --- */
+        /* --- ACTIONS DROPDOWN UI/UX --- */
         .actions-cell { text-align: right !important; width: 1%; white-space: nowrap; }
         .actions-container { position: relative; display: inline-flex; }
+        /* --- FIX: Z-INDEX Stacking Context Fix --- */
+        .actions-container.menu-open { z-index: 20; }
         .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
         .action-menu-btn:hover { background-color: var(--hover-bg); }
         .action-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
@@ -472,17 +472,18 @@
             };
             
             document.addEventListener('click', async e => {
-                // --- NEW ACTIONS DROPDOWN LOGIC ---
                 const isDropdownButton = e.target.closest('.action-menu-btn');
                 document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
                     if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
                         dropdown.classList.remove('active');
+                        dropdown.closest('.actions-container').classList.remove('menu-open');
                     }
                 });
                 if (isDropdownButton) {
-                    isDropdownButton.nextElementSibling.classList.toggle('active');
+                    const dropdown = isDropdownButton.nextElementSibling;
+                    dropdown.classList.toggle('active');
+                    isDropdownButton.closest('.actions-container').classList.toggle('menu-open', dropdown.classList.contains('active'));
                 }
-                // --- END ---
                 
                 const button = e.target.closest('button');
                 if (!button) return;
