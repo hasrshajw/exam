@@ -292,13 +292,12 @@
                     const enrollmentsQuery = await db.collection('enrollments').where('courseId', 'in', courseIds).get();
                     enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
 
-                    const usersQuery = await db.collection('users').get();
-                    for (const userDoc of usersQuery.docs) {
+                    const allUsersQuery = await db.collection('users').get();
+                    for (const userDoc of allUsersQuery.docs) {
                         const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
                         progressQuery.forEach(doc => batch.delete(doc.ref));
                     }
                 }
-                
                 coursesQuery.forEach(doc => batch.delete(doc.ref));
                 
                 const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
