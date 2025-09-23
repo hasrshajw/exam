@@ -135,27 +135,27 @@
 
         .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
-        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: #F9FAFB; border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
         .actionsheet.show { transform: translateY(0); }
-        .actionsheet-header { text-align: center; padding-bottom: 1rem; }
+        .actionsheet-header { text-align: center; padding-bottom: 1rem; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
         .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
         .actionsheet-title { font-size: 1.25rem; font-weight: 700; }
-        .actionsheet-content { padding: 1rem 0; border-top: 1px solid var(--border-color); margin-top: 1rem; }
+        .actionsheet-content { padding: 1rem; background-color: var(--widget-bg); border-bottom: 1px solid var(--border-color); }
         .actionsheet-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: left; margin-bottom: 1.5rem; }
         .actionsheet-details p { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
         .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
         .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: var(--hover-bg); border-radius: 12px; }
-        
-        .actionsheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem 0 0.5rem 0; }
-        .actionsheet-btn { padding: 0.9rem 1rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .actionsheet-actions { background-color: var(--widget-bg); padding: 1rem; display: grid; grid-template-columns: 1fr; gap: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .actionsheet-btn { padding: 0.9rem 1rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.75rem; }
         .actionsheet-btn svg { width: 18px; height: 18px; }
         .actionsheet-btn:active { transform: scale(0.97); }
         .actionsheet-btn--edit { background-color: var(--hover-bg); color: var(--text-primary); }
         .actionsheet-btn--edit:hover { background-color: var(--border-color); }
         .actionsheet-btn--delete { background-color: var(--danger-bg-light); color: var(--danger-text-dark); }
         .actionsheet-btn--delete:hover { background-color: #FECACA; }
-        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); color: var(--text-secondary); font-weight: 600; padding: 0.9rem; border: none; cursor: pointer; border-radius: 12px; transition: background-color 0.2s ease; }
-        .actionsheet-cancel button:hover { background-color: var(--hover-bg); }
+        .actionsheet-cancel { background-color: var(--widget-bg); padding: 1rem; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); color: var(--text-secondary); font-weight: 600; padding: 0.9rem; border: none; cursor: pointer; border-radius: 12px; transition: background-color 0.2s ease; }
+        .actionsheet-cancel button:hover { background-color: var(--border-color); }
 
         .mobile-card-view { display: none; }
         @media (max-width: 1024px) {
@@ -275,11 +275,11 @@
             <div class="actionsheet-actions">
                 <button class="actionsheet-btn actionsheet-btn--edit edit-exam-btn">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
-                    Edit
+                    Edit Exam
                 </button>
                 <button class="actionsheet-btn actionsheet-btn--delete delete-exam-btn">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
-                    Delete
+                    Delete Exam
                 </button>
             </div>
             <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
