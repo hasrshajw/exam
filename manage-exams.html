@@ -1,692 +1,291 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="-nav { flex-grow: 1; }
-        .main-nav ul { list-style: noneUTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Exams - Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href='https://unpkg.com/boxicons@2.1; display: flex; flex-direction: column; gap: 0.5rem; }
-        .main.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text {
-            --body-bg: #F9FAFB;
+        :root {
+            --body-bg: #F8F9FA;
             --widget-bg: #FFFFFF;
-            -primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: var(--radius-md); transition: background-color 0.2s ease, color 0--border-color: #E5E7EB;
-            --text-primary: #1118.2s ease; }
-        .main-nav a i { font-size: 1.5rem27;
-            --text-secondary: #6B7280;
-            --brand-purple; color: var(--text-secondary); transition: color 0.2s ease; }
-        .main-nav a:hover { background-color: var(--hover-bg); }
-        .main-nav a.: #6D28D9;
-            --brand-purple-light: #F5F3FF;
-            --hover-bg: #F3F4F6;
-            --danger-color: #EFactive { background-color: var(--brand-purple-light); color: var(--brand-purple); font-4444;
-            --danger-light: #FEF2F2;
-            --success-weight: 600; }
-        .main-nav a.active i { color: var(--brand-purple); }
-        .profile-section { margin-top: auto; padding-top: 1.5rem;color: #10B981;
-            --success-light: #ECFDF5;
-            -- border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.050.75rem; cursor: pointer; }
-        .profile-avatar { width: 40px; height:);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 40px; border-radius: 50%; object-fit: cover; flex-shrink:  0 / 0.1), 0 2px 4px -2px rgb(0 0 00; }
-        .profile-details { flex-grow: 1; min-width: 0; / 0.1);
+            --border-color: #E9ECEF;
+            --text-primary: #212529;
+            --text-secondary: #6C757D;
+            --brand-purple: #7C5DFA;
+            --brand-purple-dark: #6741d9;
+            --hover-bg: #F1F3F5;
+            --danger-color: #E03131;
+            --danger-hover: #c92a2a;
+            --success-color: #2F9E44;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: ' }
-        .profile-name { font-weight: 600; white-space: nowrap; overflowIBM Plex Sans', sans-serif;
+            font-family: 'IBM Plex Sans', sans-serif;
             background-color: var(--body-bg);
-            color: var: hidden; text-overflow: ellipsis; display: block; }
-        .profile-email { font-size: (--text-primary);
+            color: var(--text-primary);
             font-size: 14px;
             overflow: hidden;
-        0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow}
-
-        a {
-            text-decoration: none;
         }
 
-        .dashboard-container {
-            display: ellipsis; display: block; }
-        .profile-options i { font-size: 1.5rem; color: grid;
-            grid-template-columns: 260px 1fr;
-            height: : var(--text-secondary); transition: transform 0.2s ease; }
-        .profile-section.active100vh;
-            position: relative;
-        }
+        a { text-decoration: none; }
+        
+        button { cursor: pointer; }
 
-        .sidebar {
-            background-color: var .profile-options i { transform: rotate(180deg); }
-        .profile-popup { position(--widget-bg);
-            border-right: 1px solid var(--border-color);
-            padding: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background: 2rem 1.5rem;
-            display: flex;
-            flex-direction: column;
-            -color: var(--widget-bg); border-radius: var(--radius-lg); box-shadow: varposition: relative;
-            transition: transform 0.3s ease-in-out;
-        }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
 
-        .sidebar(--shadow-lg); border: 1px solid var(--border-color); padding: 0.75rem;-header {
-            display: flex;
-            align-items: center;
-            margin-bottom:  z-index: 100; opacity: 0; pointer-events: none; transform: translateY(13rem;
-        }
-
-        .logo-image {
-            height: 40px;
-        }
-
-        0px) scale(0.95); transition: opacity 0.2s ease, transform 0.2.main-nav {
-            flex-grow: 1;
-        }
-
-        .main-nav uls ease; }
-        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .main-nav a {
-            display: flex;
-(0) scale(1); }
-        .popup-header { display: flex; align-items: center            align-items: center;
-            gap: 1rem;
-            color: var(--text-primary; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1);
-            font-weight: 500;
-            padding: 0.75rem 1px solid var(--border-color); }
-        .popup-list { list-style: none; padding-top: rem;
-            border-radius: 8px;
-            transition: background-color 0.2s0.5rem; }
-        .popup-list a { display: flex; align-items: center; gap:  ease, color 0.2s ease;
-        }
-
-        .main-nav a i {
-            font0.75rem; padding: 0.6rem; border-radius: 6px; color: var(---size: 1.5rem;
-            color: var(--text-secondary);
-            transition: colortext-primary); }
-        .popup-list a:hover { background-color: var(--hover-bg 0.2s ease;
-        }
-
-        .main-nav a:hover {
-            background-); }
-        .popup-list a i { font-size: 1.2rem; color: varcolor: var(--hover-bg);
-        }
-
-        .main-nav a.active {
-            background-color: var(--brand-purple-light);
-            color: var(--brand-purple);
-            font-weight:(--text-secondary); }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
+        .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; }
+        .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: var(--radius-md); transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; color: var(--brand-purple); }
+        .main-nav a.active i { color: var(--brand-purple); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { list-style: none; padding-top: 0.5rem; }
+        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); }
+        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-         600;
-        }
-
-        .main-nav a.active i {
-            color: var.popup-list a.logout:hover { background-color: var(--danger-light); }
-        .(--brand-purple);
-        }
-
-        .profile-section {
-            margin-top: auto;
-            paddingpopup-list a.logout i { color: var(--danger-color); }
-
-        .main-area {-top: 1.5rem;
-            border-top: 1px solid var(--border-color display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
-        .main-header { padding: 1.25rem 2.5rem; border);
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            cursor: pointer;
-        }
-
-        .profile-avatar {
-            width: 4-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align0px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            flex-shrink: 0;
-        }
-
-        .profile-details-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
-        .main-header h1 { font-size: 1 {
-            flex-grow: 1;
-            min-width: 0;
-        }
-
-        .profile-name {
-            font-weight: 600;
-            white-space: nowrap;
-            overflow.25rem; font-weight: 600; }
-        .content-body { padding: : hidden;
-            text-overflow: ellipsis;
-            display: block;
-        }
-
-        .profile-email2rem 2.5rem; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .main-header h1 { font-size: 1.25rem; font-weight: 600; }
+        .content-body { padding: 2rem; }
         .menu-toggle { display: none; }
-        .sidebar-close {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display-btn { display: none; }
-
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: : block;
-        }
-
-        .profile-options i {
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            transition: transform 0.2s ease;
-1rem; }
-        .admin-content-header h2 { font-size: 1.87        }
-
-        .profile-section.active .profile-options i {
-            transform: rotate(180deg);5rem; font-weight: 700; line-height: 1.2; }
-        .primary-
-        }
-
-        .profile-popup {
-            position: absolute;
-            bottom: 90px;
-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem            left: 1.5rem;
-            right: 1.5rem;
-            background-color; padding: 0.75rem 1.25rem; border-radius: var(--radius-: var(--widget-bg);
-            border-radius: 12px;
-            box-shadow: 0 md); font-weight: 600; background-color: var(--brand-purple); color: white; transition10px 30px -5px rgba(0, 0, 0, 0.1);
-: background-color 0.2s ease; border: none; font-size: 0.9rem            border: 1px solid var(--border-color);
-            padding: 0.75rem;; cursor: pointer; }
-        .primary-btn:hover { background-color: #5B21B6;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: }
-        .secondary-btn { padding: 0.75rem 1.25rem; border- none;
-            transform: translateY(10px) scale(0.95);
-            transition: opacity 0.2s ease, transform 0.2s ease;
-        }
-
-        .profile-popupradius: var(--radius-md); font-weight: 600; color: var(--text-primary); background.active {
-            opacity: 1;
-            pointer-events: all;
-            transform: translateY(-color: var(--widget-bg); border: 1px solid var(--border-color); font-size: 0.9rem; cursor: pointer; transition: background-color 0.2s; }
-        .0) scale(1);
-        }
-
-        .popup-header {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding-bottom: 0secondary-btn:hover { background-color: var(--hover-bg); }
-        .back-btn { margin-bottom: 1.5rem; font-weight: 500; color: var(--brand.75rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .popup-list {
-            list-style: none;
-            padding-top: 0.5rem-purple); display: inline-flex; align-items: center; gap: 0.5rem; text;
-        }
-
-        .popup-list a {
-            display: flex;
-            align-items:-decoration: none; }
-        .back-btn i { font-size: 1.2rem; }
-
-         center;
-            gap: 0.75rem;
-            padding: 0.6rem;
-            border-.exam-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(32radius: 6px;
-            color: var(--text-primary);
-        }
-
-        .popup-0px, 1fr)); gap: 1.5rem; }
-        .exam-card { background-color:list a:hover {
-            background-color: var(--hover-bg);
-        }
-
-        .popup var(--widget-bg); border-radius: var(--radius-lg); border: 1px solid var(---list a i {
-            font-size: 1.2rem;
-            color: var(--textborder-color); padding: 1.5rem; display: flex; flex-direction: column; box-shadow: var-secondary);
-        }
-
-        .popup-list a.logout i {
-            color: var(--danger-color);
-        }
-
-        .popup-list a.logout {
-            color: var(--danger-(--shadow-sm); transition: transform 0.2s ease, box-shadow 0.2s ease; }color);
-        }
-
-        .main-area {
-            display: flex;
-            flex-direction: column;
-
-        .exam-card:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
-        .exam-card-header { display: flex; justify-content: space-between; align-items:            overflow-y: auto;
-            background-color: var(--body-bg);
-        }
-
-        .main- flex-start; margin-bottom: 1rem; }
-        .exam-card-title { font-size: header {
-            padding: 1.25rem 2.5rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-1.125rem; font-weight: 600; color: var(--text-primary);            align-items: center;
-            background-color: rgba(255, 255, 2 margin-right: 1rem; }
-        .exam-status { display: inline-flex; align-items55, 0.8);
-            backdrop-filter: blur(8px);
-            position: sticky: center; gap: 0.5rem; font-size: 0.8rem; font-weight: ;
-            top: 0;
-            z-index: 10;
-        }
-
-        .500; padding: 0.25rem 0.75rem; border-radius: main-header h1 {
-            font-size: 1.5rem;
-            font-weight:999px; }
-        .exam-status.active { background-color: var(--success-light 600;
-        }
-
-        .content-body {
-            padding: 2.5rem); color: var(--success-color); }
-        .exam-status.locked { background-color: var(--danger-light); color: var(--danger-color); }
-        .exam-card-body { display;
-        }
-
-        .menu-toggle {
-            display: none;
-        }
-
-        .sidebar-close-btn {
-            display: none;
-        }
-
-        .admin-content-header {
-            display:: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin flex;
-            justify-content: space-between;
-            align-items: center;
-            margin--bottom: 1.5rem; border-top: 1px solid var(--border-color); paddingbottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        -top: 1rem; }
-        .exam-info-item { text-align: left; }
-        }
-
-        .admin-content-header h2 {
-            font-size: 2rem;
-            font-weight.exam-info-item span { display: block; font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
-        .exam-info-: 700;
-        }
-        .admin-content-header h2 .subject-name {
-item strong { font-weight: 500; color: var(--text-primary); }
-        .            color: var(--brand-purple);
-        }
-
-        .primary-btn {
-            display: inlineexam-card-footer { margin-top: auto; display: flex; align-items: center; justify-content: space-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding-between; }
-        .action-dropdown { position: relative; }
-        .action-dropdown-btn: 0.6rem 1.25rem;
-            border-radius: 8px;
-            font-weight: 600;
-            background-color: var(--brand-purple);
-            color { background: none; border: none; font-size: 1.5rem; color: var(--text: white;
-            transition: background-color 0.2s ease;
-            border: none;
-            -secondary); cursor: pointer; padding: 0.25rem; border-radius: 50%;font-size: 0.9rem;
-            cursor: pointer;
-        }
-
-        .primary- display: flex; align-items: center; justify-content: center; transition: background-color 0.2btn:hover {
-            background-color: #5B21B6;
-        }
-        .primary-s; }
-        .action-dropdown-btn:hover { background-color: var(--hover-bg);btn i { font-size: 1.2rem; }
-
-        .secondary-btn {
-            padding }
-        .action-dropdown-menu { position: absolute; top: 100%; right: 0: 0.6rem 1.25rem;
-            border-radius: 8px;
-; background-color: var(--widget-bg); border-radius: var(--radius-md); box-shadow: var            font-weight: 600;
-            color: var(--text-secondary);
-            background-color: var(--shadow-lg); border: 1px solid var(--border-color); z-index: 50; padding(--widget-bg);
-            border: 1px solid var(--border-color);
-            font-size: : 0.5rem; min-width: 160px; opacity: 0; pointer-events:0.9rem;
-            cursor: pointer;
-            transition: background-color 0.2s ease none; transform: translateY(10px); transition: opacity 0.2s ease, transform 0.2, border-color 0.2s ease;
-        }
-        .secondary-btn:hover {
-            backgrounds ease; }
-        .action-dropdown-menu.show { opacity: 1; pointer-events: auto-color: var(--hover-bg);
-            border-color: #D1D5DB;
-        }
-
-        .back-btn {
-            margin-bottom: 1.5rem;
-            font-weight: 5; transform: translateY(0); }
-        .action-dropdown-menu button { display: flex; align-items00;
-            color: var(--brand-purple);
-            display: inline-flex;
-            align: center; gap: 0.75rem; width: 100%; padding: 0.-items: center;
-            gap: 0.5rem;
-        }
-
-        .admin-table6rem 0.75rem; background: none; border: none; cursor: pointer; text-align: left {
-            width: 100%;
-            background-color: var(--widget-bg);
-            ; font-size: 0.9rem; border-radius: 6px; }
-        .actionborder-radius: 12px;
-            box-shadow: var(--shadow-sm);
-            border-collapse: collapse;
-            overflow: hidden;
-            border: 1px solid var(--border-color-dropdown-menu button:hover { background-color: var(--hover-bg); }
-        .action-);
-        }
-
-        .admin-table th,
-        .admin-table td {
-            padding:dropdown-menu button i { font-size: 1.2rem; color: var(--text-secondary); }
-        .action-dropdown-menu button.delete { color: var(--danger-color); }
-        .action- 1rem 1.5rem;
-            text-align: left;
-            border-bottom: dropdown-menu button.delete i { color: var(--danger-color); }
-        .action-dropdown-1px solid var(--border-color);
-        }
-
-        .admin-table th {
-            background: #F9menu button.delete:hover { background-color: var(--danger-light); }
-
-        .modal-overlayFAFB;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            color: { position: fixed; inset: 0; background-color: rgba(17, 24, 3 var(--text-secondary);
-            letter-spacing: 0.05em;
-        }
-        .admin-9, 0.6); display: grid; place-items: center; padding: 1rem; ztable tr:hover { background-color: var(--hover-bg); }
-        .admin-table tr:last-child-index: 1999; opacity: 0; visibility: hidden; transition: opacity 0.2s td { border-bottom: none; }
-        .actions-cell { text-align: right !important; }
-
- ease, visibility 0.2s ease; backdrop-filter: blur(4px); }
-        .modal-overlay.show { opacity: 1; visibility: visible; }
-        .modal-content { background-color: var        .actions-cell .icon-btn {
-            background: none; border: none; font-size: (--widget-bg); border-radius: var(--radius-xl); width: 100%; max-width: 1.4rem; padding: 0.5rem; border-radius: 50%;
-            cursor: pointer;800px; max-height: 90vh; display: flex; flex-direction: column; box transition: background-color 0.2s ease, color 0.2s ease; color: var(--text-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.-secondary);
-        }
-        .icon-btn:hover { background-color: var(--border-color); color2s ease; overflow: hidden; }
-        .modal-overlay.show .modal-content { transform: scale(1: var(--text-primary); }
-        .icon-btn.edit:hover { color: var(--brand); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center-purple); }
-        .icon-btn.delete:hover { color: var(--danger-color); }
-
-; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-        .status-badge { display: inline-flex; align-items: center; gap: 0.5rem; paddingcolor); flex-shrink: 0; }
-        .modal-header h3 { font-size: 1.: 0.25rem 0.75rem; border-radius: 999px; font-weight25rem; font-weight: 600; }
-        .close-btn { width: : 500; font-size: 0.8rem; }
-        .status-badge.40px; height: 40px; background: none; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center; border-radius: 50%; fontactive { background-color: var(--success-light); color: var(--success-color); }
-        .status-badge.locked { background-color: var(--danger-light); color: var(--danger-color); }-size: 1.75rem; color: var(--text-secondary); transition: background-color 0.2
-
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; widths ease; }
-        .close-btn:hover { background-color: var(--hover-bg); }: 100%; height: 100%; background-color: rgba(17, 2
-        .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem4, 39, 0.6);
-            z-index: 1999; display; }
-        .modal-footer { display: flex; justify-content: flex-end; gap: 0: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2.75rem; padding: 1rem 1.5rem; border-top: 1px solids ease; backdrop-filter: blur(4px);
-        }
-        .modal-overlay.show { display var(--border-color); background-color: #F9FAFB; flex-shrink: 0; }
+        .sidebar-close-btn { display: none; }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h2 { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
+        .primary-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1.25rem; border-radius: var(--radius-md); font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease, box-shadow 0.2s ease; border: none; font-size: 0.9rem; }
+        .primary-btn:hover { background-color: var(--brand-purple-dark); box-shadow: var(--shadow-md); }
+        .secondary-btn { padding: 0.65rem 1.25rem; border-radius: var(--radius-md); font-weight: 600; color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); font-size: 0.9rem; transition: background-color 0.2s ease; }
+        .secondary-btn:hover { background-color: var(--hover-bg); }
+        .back-btn { margin-bottom: 1.5rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; transition: color 0.2s ease; }
+        .back-btn:hover { color: var(--brand-purple-dark); }
+        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border-collapse: separate; border-spacing: 0; overflow: hidden; border: 1px solid var(--border-color); }
+        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
+        .admin-table th { background: #F8F9FA; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .admin-table td { font-size: 0.9rem; }
+        .actions-cell { display: flex; align-items: center; gap: 0.5rem; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-btn i { font-size: 1.25rem; }
+        .action-btn:hover { background-color: var(--hover-bg); }
+        .action-btn.edit { color: var(--brand-purple); }
+        .action-btn.edit:hover { color: var(--brand-purple-dark); }
+        .action-btn.delete { color: var(--danger-color); }
+        .action-btn.delete:hover { color: var(--danger-hover); }
+        .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .lock-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CED4DA; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:not(:checked) + .slider { background-color: var(--danger-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: var(--radius-xl); width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 600; }
+        .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
         .form-field { margin-bottom: 1.25rem; }
-        .form-field label { display: flex; opacity: 1; }
-
-        .modal-content {
-            background-color: var(--widget-: block; font-weight: 500; margin-bottom: 0.5rem; font-sizebg); padding: 1.5rem; border-radius: 16px; width: 100%; max-width: 800px;
-            max-height: 90vh; display: flex;: 0.9rem; }
-        .form-field input, .form-field textarea { width:  flex-direction: column; box-shadow: var(--shadow-md);
-            transform: scale(0.95);100%; padding: 0.75rem 1rem; border-radius: var(--radius-md transition: transform 0.2s ease;
-        }
-        .modal-overlay.show .modal-content); border: 1px solid var(--border-color); font-size: 0.95rem; transition: border-color 0.2s, box-shadow 0.2s; }
-        .form- { transform: scale(1); }
-
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1pxfield input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple solid var(--border-color); margin-bottom: 1.5rem; }
-        .modal-header); box-shadow: 0 0 0 3px var(--brand-purple-light); }
- h3 { font-size: 1.5rem; }
-
-        .close-btn { font-size:         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap:1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; } 1.25rem; }
+        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem; }
+        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 3px rgba(124, 93, 250, 0.2); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .full-width { grid-column: 1 / -1; }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1
-        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; border-top: 1px solid var(--border-color); padding-top:rem; margin-right: -1rem; }
-        .form-field { margin-bottom: 1.25rem; }
-        .form-field label { display: block; font-weight: 50 1.5rem; }
-
-        .accordion-item { border: 1px solid var(--border-color); border0; margin-bottom: 0.5rem; font-size: 0.9rem; }
--radius: var(--radius-lg); margin-bottom: 0.75rem; overflow: hidden; }
-                .form-field input, .form-field textarea {
-            width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border.accordion-button { width: 100%; display: flex; items-center; justify-content:-color); font-size: 1rem;
-            transition: border-color 0.2s ease space-between; padding: 1rem 1.25rem; text-align: left; background-color, box-shadow 0.2s ease;
-        }
-        .form-field input:focus,: #F9FAFB; border: none; cursor: pointer; }
-        .accordion-button:hover { background- .form-field textarea:focus {
-            outline: none; border-color: var(--brand-purple); boxcolor: #F3F4F6; }
-        .accordion-button h4 { font-weight:-shadow: 0 0 0 3px var(--brand-purple-light);
-        }
-        .form 600; color: var(--text-primary); }
-        .accordion-button .accordion-icon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1 { font-size: 1.5rem; transition: transform 0.3s ease; flex-shrink: .5rem; }
-        .full-width { grid-column: 1 / -1; }
-
-0; }
-        .accordion-button.active .accordion-icon { transform: rotate(180deg        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: ); }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 01.5rem; }
-        .accordion-item { border: 1px solid var(--border-color); border.3s ease-out; background-color: var(--widget-bg); }
-        .accordion-content-radius: 8px; margin-bottom: 0.5rem; transition: box-shadow 0-inner { padding: 1.5rem; border-top: 1px solid var(--border-color.2s ease; }
-        .accordion-item:focus-within { box-shadow: 0 0 0); position: relative; }
-        .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--danger-color); font-size: 3px var(--brand-purple-light); border-color: var(--brand-purple); }
-
-        .accordion-header { display: flex; justify-content: space-between; align-items: center; padding 1.5rem; cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; }: 1rem 1.25rem; cursor: pointer; background-color: #F9FAFB; border-radius: 8px 8px 0 0; }
-        .accordion-header h4
-        .remove-item-btn:hover { background-color: var(--danger-light); }
-
-        @media (max-width: 1024px) {
-            .dashboard-container { grid-template-columns { font-weight: 600; }
-        .accordion-header i { transition: transform 0.2: 1fr; }
-            .sidebar { position: fixed; top: 0; left: 0s ease; }
+        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
+        .accordion-item { border: 1px solid var(--border-color); border-radius: var(--radius-lg); margin-bottom: 0.75rem; overflow: hidden; }
+        .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; cursor: pointer; background-color: var(--body-bg); }
+        .accordion-header h4 { font-weight: 600; }
+        .accordion-header i { transition: transform 0.2s ease; }
         .accordion-header.active i { transform: rotate(180deg); }
-
-; height: 100%; width: 80%; max-width: 300px;        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0 z-index: 1000; transform: translateX(-100%); box-shadow: 0 0.3s ease; padding: 0 1.25rem; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 1.25rem; }
         .accordion-content.active { max-height: 500px; padding: 1.5rem 1.25rem; }
-        . 30px rgba(0,0,0,0.1); }
+        .remove-item-btn { background: none; border: none; color: var(--danger-color); font-size: 1.2rem; cursor: pointer; float: right; margin-bottom: 0.5rem; }
+        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        .actionsheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
+        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: var(--radius-xl); border-top-right-radius: var(--radius-xl); padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .actionsheet.show { transform: translateY(0); }
+        .actionsheet-header { text-align: center; padding-bottom: 1rem; }
+        .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
+        .actionsheet-title { font-size: 1.1rem; font-weight: 600; }
+        .actionsheet-content { padding: 1rem 0; border-top: 1px solid var(--border-color); margin-top: 1rem; }
+        .actionsheet-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center; margin-bottom: 1rem; }
+        .actionsheet-details p { font-size: 0.8rem; color: var(--text-secondary); }
+        .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-top: 0.25rem; }
+        .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: var(--radius-md); background-color: var(--hover-bg); margin-bottom: 1rem; }
+        .actionsheet-status-control strong { font-weight: 600; }
+        .actionsheet-list { list-style: none; }
+        .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: var(--radius-md); font-size: 1rem; font-weight: 500; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
+        .actionsheet-list button:hover { background-color: var(--hover-bg); }
+        .actionsheet-list i { font-size: 1.5rem; color: var(--text-secondary); width: 24px; text-align: center; }
+        .actionsheet-list button.edit i { color: var(--brand-purple); }
+        .actionsheet-list button.delete i { color: var(--danger-color); }
+        .actionsheet-list button.delete { color: var(--danger-color); }
+        .actionsheet-cancel { margin-top: 0.5rem; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: var(--radius-md); font-weight: 600; color: var(--text-secondary); border: none; }
+        .mobile-card-view { display: none; }
+        
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
-            .main-header { padding: 1.25rem 1.5rem;remove-item-btn {
-            background: none; border: none; color: var(--danger-color); font-size: 1.2rem; cursor: pointer;
-            position: absolute; top: 1.25rem }
+            .main-header { padding: 1rem 1.5rem; }
+            .main-header h1 { font-size: 1.1rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; right: 1.25rem; padding: 0.25rem; border-radius: ; align-items: center; justify-content: center; width: 40px; height: 40px50%;
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; transition: color 0.2s ease; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+            .admin-table { display: none; }
+            .mobile-card-view { display: flex; flex-direction: column; gap: 1rem; }
+            .exam-card { display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); padding: 1rem; gap: 0.5rem; }
+            .card-main { display: flex; align-items: center; gap: 1rem; flex-grow: 1; min-width: 0; }
+            .card-status { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
+            .card-status i { font-size: 1.25rem; }
+            .status-active { background-color: var(--success-color); }
+            .status-locked { background-color: var(--danger-color); }
+            .card-info { flex-grow: 1; min-width: 0; }
+            .card-info h3 { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.25rem; }
+            .card-meta { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; font-size: 0.75rem; color: var(--text-secondary); }
+            .card-meta span { display: flex; align-items: center; gap: 0.25rem; }
+            .card-actions button { background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); padding: 0.5rem; }
         }
-        .remove-item-btn:hover { background-color: var(--danger; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border-light); }
-        .accordion-content-inner { position: relative; }
-        
-        .modal: 2px solid var(--border-color); border-radius: var(--radius-md); transition: background-color-footer { padding-top: 1.5rem; border-top: 1px solid var(--border 0.2s ease; }
-            .menu-toggle:hover { background-color: var(--hover-bg); }
-            .sidebar-close-btn { display: flex; align-items: center; justify-content-color); margin-top: 1.5rem; text-align: right; display: flex; justify: center; position: absolute; top: 1.5rem; right: 1.5rem; font-content: flex-end; gap: 0.75rem;}
-
-        .actionsheet-overlay {
--size: 1.75rem; color: var(--danger-color); cursor: pointer; border:            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0 none; background: none; transition: color 0.2s ease; }
-            .sidebar-close-btn.6);
-            z-index: 2000; opacity: 0; pointer-events: none;:hover { color: #b91c1c; }
-            .overlay { position: fixed; top: 0 transition: opacity 0.3s ease; backdrop-filter: blur(4px);
-        }
-        .actionsheet; left: 0; width: 100%; height: 100%; background-color: rgba(0-overlay.show { opacity: 1; pointer-events: auto; }
-
-        .actionsheet {
-,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-            .overlay            position: fixed; bottom: 0; left: 0; right: 0; background-color: var.active { opacity: 1; pointer-events: auto; }
-            .exam-grid { grid-template-columns(--widget-bg);
-            border-top-left-radius: 16px; border-top-right-: 1fr; }
-        }
-        @media (max-width: 768px) {
-radius: 16px; padding: 1rem; z-index: 2001;
-            transform            .admin-content-header { margin-bottom: 1.5rem; }
-            .admin-content: translateY(100%); transition: transform 0.3s ease-out;
-        }
-        .-header h2 { font-size: 1.5rem; }
-            .content-body { paddingactionsheet.show { transform: translateY(0); }
-        
-        .actionsheet-header { text-align: center: 1rem; }
+        @media (max-width: 767px) {
+            .content-body { padding: 1rem; }
             .main-header { padding: 1rem; }
-            .form; padding-bottom: 1rem; }
-        .actionsheet-header::before { content: ''; display: block-grid { grid-template-columns: 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .modal-content { padding: 1.5rem; }
         }
     </style>
-</; width: 40px; height: 4px; background-color: var(--border-color);head>
+</head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; border-radius: 2px; margin: 0 auto 1rem; }
-        .actionsheet-title left: 0; width: 100%; height: 100%; background: #fff; z { font-size: 1.25rem; font-weight: 600; }
-        
-        -index: 9999; display: flex; align-items: center; justify-content: center.actionsheet-content { padding: 1rem 0; }
-        .actionsheet-details { display;">Authenticating...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Authenticating...</div>
     <div class="overlay" id="overlay"></div>
-    <div class=": grid; grid-template-columns: repeat(auto-fit, minmax(100px, dashboard-container" style="display: none;">
+    <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
-            <1fr)); gap: 1rem; text-align: center; margin-bottom: 1.5rem; }button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i>
-        .actionsheet-details p { font-size: 0.9rem; color: var(--text</button>
-            <div class="sidebar-header"><img src="https://ihtnas.com/assets/i-secondary); }
-        .actionsheet-details strong { display: block; font-size: 1rem; fonthtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
-            <nav class-weight: 600; color: var(--text-primary); margin-top: 0.2="main-nav">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
                 <ul>
-                    <li><a href="admin.html"><i class='bx b5rem; }
-        
-        .actionsheet-status-control {
-            display: flex; justify-content: spacexs-dashboard'></i> Dashboard</a></li>
-                    <li><a href="manage-subjects.html" class="active-between; align-items: center; padding: 1rem;
-            border-radius: 8px; background-"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
-                    <li><a href="manage-colcolor: var(--hover-bg); margin-bottom: 1rem;
-        }
-        .actionsheet-statusleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
+                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                    <li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
+                    <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
                 </ul>
             </nav>
-            -control strong { font-weight: 600; }
-        .lock-switch { position: relative<div class="profile-section" id="profile-section">
-                <img src="" alt="Profile Picture; display: inline-block; width: 44px; height: 24px; }
-        .lock-switch input { opacity: 0; width: 0; height: 0; }
-        .slider" class="profile-avatar">
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
                 <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                <div class="profile-options"><i class='bx bx-chevron { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom:-down'></i></div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
             </div>
-            <div class="profile-popup" id="profile-popup"> 0; background-color: var(--danger-color); transition: .4s; border-radius: 24px
+            <div class="profile-popup" id="profile-popup">
                 <div class="popup-header">
-                    <img src="" alt="Profile Picture" class="profile-avatar; }
-        .slider:before { position: absolute; content: ""; height: 16px; width">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
                     <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
                 </div>
                 <ul class="popup-list">
-                    <li><a href: 16px; left: 4px; bottom: 4px; background-color: white; transition="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
-: .4s; border-radius: 50%; }
-        input:checked + .slider { background                </ul>
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
             </div>
         </aside>
         <main class="main-area">
-            <header class="main-color: var(--success-color); }
-        input:checked + .slider:before { transform: translateX-header">
-                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
-(20px); }
-
-        .actionsheet-list { list-style: none; display: flex; flex                <h1>Manage Exams</h1>
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle"><i class='bx bx-menu'></i></button>
+                <h1>Manage Exams</h1>
             </header>
             <section class="content-body">
-                <a-direction: column; gap: 0.5rem; }
-        .actionsheet-list button {
- href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to            display: flex; align-items: center; gap: 1rem; padding: 1rem; border- Subjects</a>
+                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
                 <div class="admin-content-header">
-                    <h2 id="page-title"></h2>radius: 8px; font-size: 1rem;
-            font-weight: 500; color:
-                    <button class="primary-btn" id="create-exam-btn"><i class='bx bx- var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; textplus'></i>Create New Exam</button>
+                    <h2 id="page-title"></h2>
+                    <button class="primary-btn" id="create-exam-btn"><i class='bx bx-plus'></i>Create New Exam</button>
                 </div>
-                <div class="exam-grid" id="-align: left;
-        }
-        .actionsheet-list button:hover { background-color: varexam-grid"></div>
+                <table class="admin-table">
+                    <thead><tr><th>Exam Name</th><th>Duration</th><th>Questions</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="exams-tbody"></tbody>
+                </table>
+                <div class="mobile-card-view" id="exams-cards"></div>
             </section>
         </main>
     </div>
-
-    <div class="modal-overlay(--hover-bg); }
-        .actionsheet-list i { font-size: 1.5rem" id="exam-modal">
+    <div class="modal-overlay" id="exam-modal">
         <div class="modal-content">
-            <div class="modal; color: var(--text-primary); width: 24px; text-align: center; }
-        -header">
-                <h3 id="exam-modal-title"></h3>
-                <button class="close-btn">&.actionsheet-list button.edit i { color: var(--brand-purple); }
-        .actionsheet-times;</button>
-            </div>
+            <div class="modal-header"><h3 id="exam-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
                 <form id="exam-form">
                     <input type="hidden" id="exam-id">
-                    <div class="formlist button.delete i { color: var(--danger-color); }
-
-        .actionsheet-cancel { margin-top: 1rem; }
-        .actionsheet-cancel button { width: 100%; background-color-grid">
-                        <div class="form-field"><label for="exam-name">Exam Name</label><: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 6input type="text" id="exam-name" required></div>
-                        <div class="form-field"><label for="exam-duration">Duration (minutes)</label><input type="number" id="exam-duration" required>00; color: var(--text-primary); }
-
-        .mobile-card-view { display: none; }
-        .empty-state { display: none; text-align: center; padding: 4rem 2rem; background</div>
-                        <div class="form-field full-width"><label for="exam-deadline-date">Deadline-color: var(--widget-bg); border: 2px dashed var(--border-color); border-radius: Date (Optional)</label><input type="date" id="exam-deadline-date"></div>
+                    <div class="form-grid">
+                        <div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div>
+                        <div class="form-field"><label for="exam-duration">Duration (minutes)</label><input type="number" id="exam-duration" required></div>
+                        <div class="form-field full-width"><label for="exam-deadline-date">Deadline Date (Optional)</label><input type="date" id="exam-deadline-date"></div>
                     </div>
-                    <div class="questions-header">
-                        <h4>Questions</h4>
-                        <button type="button" class="primary-btn 16px; }
-        .empty-state i { font-size: 4rem; color: var" id="add-question-btn"><i class='bx bx-plus'></i>Add Question</button>
-                    </div>(--border-color); margin-bottom: 1rem; }
-        .empty-state h3 { font-size
-                    <div id="questions-container" style="margin-top: 1rem;"></div>
-                </form: 1.5rem; margin-bottom: 0.5rem; }
-        .empty-state p {>
+                    <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn"><i class='bx bx-plus'></i>Add</button></div>
+                    <div id="questions-container"></div>
+                </form>
             </div>
-            <div class="modal-footer">
-                <button class="secondary-btn"> color: var(--text-secondary); margin-bottom: 1.5rem; }
-
-        @media (Cancel</button>
-                <button class="primary-btn" id="save-exam-btn">Save Exam</buttonmax-width: 1024px) {
-            .dashboard-container { grid-template-columns: 1>
-            </div>
+            <div class="modal-footer"><button type="button" class="secondary-btn">Cancel</button><button type="button" class="primary-btn" id="save-exam-btn">Save Exam</button></div>
         </div>
     </div>
-    
-    <script src="https://www.gstatic.com/firebasefr; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 10js/9.6.1/firebase-app-compat.js"></script>
-    <script src="0%; width: 80%; max-width: 300px; z-index: 1https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js000; transform: translateX(-100%); box-shadow: 0 0 30px"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6. rgba(0, 0, 0, 0.1); }
-            .sidebar.active { transform1/firebase-firestore-compat.js"></script>
+    <div class="actionsheet-overlay" id="actionsheet-overlay">
+        <div class="actionsheet" id="actionsheet">
+            <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
+            <div class="actionsheet-content">
+                <div class="actionsheet-details">
+                    <div><p>Duration</p><strong id="actionsheet-duration"></strong></div>
+                    <div><p>Questions</p><strong id="actionsheet-questions"></strong></div>
+                </div>
+                <div class="actionsheet-details">
+                    <div style="grid-column: 1 / -1;"><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
+                </div>
+                <div class="actionsheet-status-control">
+                    <strong>Status</strong>
+                    <label class="lock-switch"><input type="checkbox" id="actionsheet-lock-toggle"><span class="slider"></span></label>
+                </div>
+            </div>
+            <ul class="actionsheet-list">
+                <li><button class="edit-exam-btn edit"><i class='bx bxs-edit-alt'></i> Edit Exam</button></li>
+                <li><button class="delete-exam-btn delete"><i class='bx bxs-trash'></i> Delete Exam</button></li>
+            </ul>
+            <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded: translateX(0); }
-            .main-header { padding: 1.25rem 1.5rem; }
-            .content-body { padding: 1.5rem; }
-            .menu-toggle {', function() {
+        document.addEventListener('DOMContentLoaded', function() {
             const firebaseConfig = {
-                apiKey: "AIzaSyCSW52Vl display: flex; align-items: center; justify-content: center; width: 40px; height2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam: 40px; font-size: 1.5rem; color: var(--text-primary); cursor-2e799.firebaseapp.com",
-                projectId: "exam-2e799",: pointer; background: none; border: none; }
-            
-            .sidebar-close-btn { display: flex
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
                 storageBucket: "exam-2e799.firebasestorage.app",
-                messaging; align-items: center; justify-content: center; position: absolute; top: 1.5rem; rightSenderId: "472506328501",
-                appId: "1:4: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
-            .overlay {
-                position: fixed72506328501:web:f239c42baed2; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.4);
-                backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999;
-                opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
-            }
-            .overlay.active { opacity: 1; pointer-events: auto; }
-            .admin-table { display: none; }
-            
-            .mobile-card-view {f4b9f925fc",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
                 measurementId: "G-NX21HT3JKT"
             };
             firebase.initializeApp(firebaseConfig);
@@ -696,408 +295,229 @@ radius: 16px; padding: 1rem; z-index: 2001;
 
             let currentSubject = null;
 
-            auth.onAuthStateChanged(async (user) => {
+            auth.onAuthStateChanged(async(user) => {
                 if (user && user.email === ADMIN_EMAIL) {
-                    const userDoc = await db.collection(' display: flex; flex-direction: column; gap: 1rem; }
-            .exam-card { displayusers').doc(user.uid).get();
-                    initSharedUI(userDoc.exists ? userDoc.data: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; background-color: var(--widget-bg); border-radius: 12px; box-shadow:() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
- var(--shadow-sm); border: 1px solid var(--border-color); padding: 1rem                     initPage();
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+                    initPage();
                 } else {
                     window.location.href = 'index.html';
                 }
-1.5rem; }
-            .exam-card-info h3 { font-size: 1.1            });
+            });
 
             const initSharedUI = (adminProfile) => {
-                document.querySelectorAll('.profile-avatar').25rem; font-weight: 600; margin-bottom: 0.5rem; }
-            .exam-card-details { display: flex; align-items: center; gap: 1rem;forEach(el => el.src = adminProfile.photoURL || '');
-                document.querySelectorAll('.profile-name'). color: var(--text-secondary); font-size: 0.85rem; }
-            .exam-forEach(el => el.textContent = adminProfile.displayName);
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || 'https://i.pravatar.cc/40');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
                 document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
-                document.getElementById('logout-btn').addEventListener('click', ()card-details span { display: flex; align-items: center; gap: 0.25rem; }
- => auth.signOut());
+                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
                 const profileSection = document.getElementById('profile-section');
-                const profilePopup            .exam-card-details i { font-size: 1.1rem; }
-            .exam = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { e.stopPropagation();-card-actions { display: flex; flex-direction: column; align-items: center; gap:  profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click0.5rem; }
-        }
-    </style>
-</head>
-
-<body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 10', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                const profilePopup = document.getElementById('profile-popup');
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 const sidebar = document.getElementById('sidebar');
-0%; height: 100%; background: #fff; z-index: 9999; display: flex                const menuToggle = document.getElementById('menu-toggle');
-                const closeBtn = document.getElementById('sidebar; align-items: center; justify-content: center;">Authenticating...</div>
-    <div class="overlay" id-close-btn');
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
                 const overlay = document.getElementById('overlay');
-                const toggleMenu = () => {="overlay"></div>
-    <div class="dashboard-container" style="display: none;">
-        <aside sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
-                menuToggle.addEventListener('click class="sidebar" id="sidebar">
-            <button class="sidebar-close-btn" id="sidebar-', toggleMenu);
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                menuToggle.addEventListener('click', toggleMenu);
                 closeBtn.addEventListener('click', toggleMenu);
-                overlay.addEventListener('click',close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
             };
 
-            const initPage = async () => {
-                const urlParams = new URLSearchParams"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="I(window.location.search);
+            const initPage = async() => {
+                const urlParams = new URLSearchParams(window.location.search);
                 const subjectId = urlParams.get('subjectId');
-                if (htnas Logo" class="logo-image"></div>
-            <nav class="main-nav">
-                <ul>!subjectId) { window.location.href = 'manage-subjects.html'; return; }
+                if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
                 const subjectDoc = await db.collection('subjects').doc(subjectId).get();
-                if (!subjectDoc.exists
-                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
-                    ) { window.location.href = 'manage-subjects.html'; return; }
-                currentSubject = {<li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'> id: subjectId, ...subjectDoc.data() };
-                document.getElementById('page-title').textContent = `Ex</i> Subjects & Content</a></li>
-                    <li><a href="manage-colleges.html"><i class='bxams in ${currentSubject.name}`;
+                if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
+                currentSubject = { id: subjectId, ...subjectDoc.data() };
+                document.getElementById('page-title').textContent = `${currentSubject.name}`;
                 loadExams();
-                document.querySelector('.dashboard-container').style.display bxs-school'></i> Colleges</a></li>
-                </ul>
-            </nav>
-            <div class="profile-section" = 'grid';
+                document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
-            }; id="profile-section">
-                <img src="" alt="Profile Picture" class="profile-avatar">
-
+            };
 
             const formatDate = (timestamp) => {
                 if (!timestamp) return "No Deadline";
-                const date                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span> = new Date(timestamp.seconds * 1000);
-                return date.toLocaleDateString('en-US',</div>
-                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
-            </div> { month: 'short', day: 'numeric', year: 'numeric' });
+                const date = new Date(timestamp.seconds * 1000);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
             };
 
-            const load
-            <div class="profile-popup" id="profile-popup">
-                <div class="popup-header">Exams = () => {
-                const gridContainer = document.getElementById('exam-grid');
-                db.collection
-                    <img src="" alt="Profile Picture" class="profile-avatar">
-                    <div class="profile('exams').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
-                    grid-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                </div>Container.innerHTML = '';
+            const loadExams = () => {
+                const tbody = document.getElementById('exams-tbody');
+                const cardsContainer = document.getElementById('exams-cards');
+                db.collection('exams').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
+                    tbody.innerHTML = '';
+                    cardsContainer.innerHTML = '';
                     snapshot.forEach(doc => {
-                        const exam = doc.data();
-                        const card
-                <ul class="popup-list">
-                    <li><a href="#" class="logout" id="logout = document.createElement('div');
-                        card.className = 'exam-card';
-                        card.dataset.-btn"><i class='bx bx-log-out'></i> Logout</a></li>
-                </ul>
-            </div>
-        id = doc.id;
-                        
-                        const statusClass = exam.isLocked ? 'locked' : 'active</aside>
-        <main class="main-area">
-            <header class="main-header">
-                <';
-                        const statusText = exam.isLocked ? 'Locked' : 'Active';
+                        const exam = { id: doc.id, ...doc.data() };
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${exam.name}</td>
+                            <td>${exam.duration / 60} min</td>
+                            <td>${exam.questions.length}</td>
+                            <td>${formatDate(exam.deadline)}</td>
+                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${exam.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
+                            <td class="actions-cell">
+                                <button class="action-btn edit" data-id="${exam.id}" title="Edit Exam"><i class='bx bxs-edit-alt'></i></button>
+                                <button class="action-btn delete" data-id="${exam.id}" title="Delete Exam"><i class='bx bxs-trash'></i></button>
+                            </td>`;
+                        tbody.appendChild(row);
 
-                        card.innerHTMLi class='bx bx-menu menu-toggle' id="menu-toggle"></i>
-                <h1>Manage Exams</h1> = `
-                            <div class="exam-card-header">
-                                <h3 class="exam-card-title
-            </header>
-            <section class="content-body">
-                <a href="manage-subjects.html">${exam.name}</h3>
-                                <span class="exam-status ${statusClass}">${statusText}</span>
-" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
-                                            </div>
-                            <div class="exam-card-body">
-                                <div class="exam-info-<div class="admin-content-header">
-                    <h2 id="page-title">Exams in <spanitem">
-                                    <span>Duration</span>
-                                    <strong>${exam.duration / 60} min</strong>
-                                 class="subject-name"></span></h2>
-                    <button class="primary-btn" id="create-exam-</div>
-                                <div class="exam-info-item">
-                                    <span>Questions</span>
-                                    <strong>${btn"><i class='bx bx-plus'></i>Create New Exam</button>
-                </div>
-                <tableexam.questions.length}</strong>
+                        const card = document.createElement('div');
+                        card.className = 'exam-card';
+                        card.innerHTML = `
+                            <div class="card-main">
+                                <div class="card-status ${!exam.isLocked ? 'status-active' : 'status-locked'}">
+                                    <i class='bx bxs-${!exam.isLocked ? 'lock-open-alt' : 'lock-alt'}'></i>
                                 </div>
-                                <div class="exam-info-item">
-                                    <span> class="admin-table">
-                    <thead><tr><th>Exam Name</th><th>Duration</th><th>Questions</th><th>Deadline</th><th>Status</th>Deadline</span>
-                                    <strong>${formatDate(exam.deadline)}</strong>
-                                </div>
-                            </div>
-                            <th style="text-align: right;">Actions</th></tr></thead>
-                    <tbody id="exams-tbody"></tbody>
-                <div class="exam-card-footer">
-                                <div class="lock-control">
-                                </div>
-                                <</table>
-                <div class="mobile-card-view" id="exams-cards"></div>
-                <div class="div class="action-dropdown">
-                                    <button class="action-dropdown-btn"><i class='bxempty-state" id="empty-state">
-                    <i class='bx bx-file-blank'></i>
-                     bx-dots-vertical-rounded'></i></button>
-                                    <div class="action-dropdown-menu"><h3>No Exams Yet</h3>
-                    <p>Get started by creating the first exam for this subject.</p>
-                    <button
-                                        <button class="edit-exam-btn"><i class='bx bxs-edit-alt'></i> Edit class="primary-btn" id="create-exam-btn-empty"><i class='bx bx-plus'></button>
-                                        <button class="delete-exam-btn delete"><i class='bx bxs-trash'></i> Delete</button>
+                                <div class="card-info">
+                                    <h3>${exam.name}</h3>
+                                    <div class="card-meta">
+                                        <span><i class='bx bx-time-five'></i> ${exam.duration / 60} min</span>
+                                        <span><i class='bx bx-help-circle'></i> ${exam.questions.length} Qs</span>
+                                        <span><i class='bx bx-calendar-x'></i> ${formatDate(exam.deadline)}</span>
                                     </div>
                                 </div>
                             </div>
-                        `;
-                        gridContainer.appendChild</i>Create New Exam</button>
-                </div>
-            </section>
-        </main>
-    </div>
-    <div class="modal-overlay" id="exam-modal">
-        <div class="modal-content(card);
+                            <div class="card-actions">
+                                <button class="manage-mobile-btn" data-id="${exam.id}"><i class='bx bx-dots-vertical-rounded'></i></button>
+                            </div>`;
+                        cardsContainer.appendChild(card);
                     });
                 });
             };
-            
-            const openExamModal = (exam =">
-            <div class="modal-header"><h3 id="exam-modal-title"></h3><button class="close null) => {
+
+            const openExamModal = (exam = null) => {
                 const modal = document.getElementById('exam-modal');
-                modal.querySelector('#exam-btn">&times;</button></div>
-            <div class="modal-body">
-                <form id="-modal-title').textContent = exam ? 'Edit Exam' : 'Create New Exam';
-                modal.querySelector('#exam-exam-form">
-                    <input type="hidden" id="exam-id">
-                    <div class="form-gridid').value = exam ? exam.id : '';
+                modal.querySelector('#exam-modal-title').textContent = exam ? 'Edit Exam' : 'Create New Exam';
+                modal.querySelector('#exam-id').value = exam ? exam.id : '';
                 modal.querySelector('#exam-name').value = exam ? exam.name : '';
-                modal.querySelector('#exam-duration').value = exam ? exam.duration / 6">
-                        <div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div>
-                        <div class="form-field"><label for="exam0 : '';
-                modal.querySelector('#exam-deadline-date').value = (exam && exam.deadline) ? new-duration">Duration (minutes)</label><input type="number" id="exam-duration" required></div>
-                         Date(exam.deadline.seconds * 1000).toISOString().split('T')[0] : '';<div class="form-field full-width"><label for="exam-deadline-date">Deadline Date (Optional
-                
+                modal.querySelector('#exam-duration').value = exam ? exam.duration / 60 : '';
+                modal.querySelector('#exam-deadline-date').value = (exam && exam.deadline) ? new Date(exam.deadline.seconds * 1000).toISOString().split('T')[0] : '';
                 const questionsContainer = modal.querySelector('#questions-container');
-                questionsContainer.innerHTML = '';)</label><input type="date" id="exam-deadline-date"></div>
-                    </div>
-                    <div class="questions
-                if (exam) exam.questions.forEach((q, i) => addQuestionToForm(q, i-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn"><i));
+                questionsContainer.innerHTML = '';
+                if (exam && exam.questions) exam.questions.forEach((q, i) => addQuestionToForm(q, i));
                 modal.classList.add('show');
             };
 
-            const addQuestionToForm = (question class='bx bx-plus'></i>Add Question</button></div>
-                    <div id="questions-container"></div>
-                 = {}, index) => {
+            const addQuestionToForm = (question = {}, index) => {
                 const container = document.getElementById('questions-container');
-                const item =</form>
-            </div>
-            <div class="modal-footer"><button type="button" class="secondary-btn document.createElement('div');
+                const item = document.createElement('div');
                 item.className = 'accordion-item';
-                item.innerHTML = `">Cancel</button><button type="button" class="primary-btn" id="save-exam-btn">Save Exam</
-                    <button type="button" class="accordion-button">
-                        <h4>Question ${index + 1}: ${questionbutton></div>
-        </div>
-    </div>
-    <div class="actionsheet-overlay" id="actionsheet-overlay">.title || 'New Question'}</h4>
-                        <i class='bx bx-chevron-down accordion-icon'></i>
-        <div class="actionsheet" id="actionsheet">
-            <div class="actionsheet-header
-                    </button>
+                item.innerHTML = `
+                    <div class="accordion-header">
+                        <h4>Question ${index + 1}: ${question.title ? (question.title.substring(0,20) + '...') : 'New Question'}</h4>
+                        <i class='bx bx-chevron-down'></i>
+                    </div>
                     <div class="accordion-content">
-                        <div class="accordion-content-inner">
-                            <button type="button" class="remove-item-btn"><i class='bx bx"><h3 id="actionsheet-title" class="actionsheet-title"></h3></div>
-            <div class="-x'></i></button>
-                            <div class="form-field full-width"><label>Question Titleactionsheet-content">
-                <div class="actionsheet-details">
-                    <div><p>Duration</p><strong</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div> id="actionsheet-duration"></strong></div>
-                    <div><p>Questions</p><strong id="actionsheet-questions"></strong></div>
-                    <div><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
-                
-                            <div class="form-grid">
-                                ${[0, 1, 2, 3].map(</div>
-                <div class="actionsheet-status-control">
-                    <strong>Status</strong>
-                    <label classi => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input="lock-switch"><input type="checkbox" id="actionsheet-lock-toggle"><span class="slider"></span></label type="text" class="question-option" value="${(question.options && question.options[i]) || ''}">
-                </div>
-            </div>
-            <ul class="actionsheet-list">
-                <li><button class required></div>`).join('')}
-                                <div class="form-field"><label>Correct Answer (0-3)</label="edit-exam-btn edit"><i class='bx bxs-edit-alt'></i> Edit Exam</button></li>
-                <li><button class="delete-exam-btn delete"><i class='bx bxs-trash-alt'></i> Delete><input type="number" class="question-correct" min="0" max="3" value="${question.correct Exam</button></li>
-            </ul>
-            <div class="actionsheet-cancel"><button id="actionsheet-Answer ?? ''}" required></div>
-                                <div class="form-field"><label>Points</label><inputcancel-btn">Cancel</button></div>
-        </div>
-    </div>
-    <script src="https://www type="number" class="question-points" value="${question.points || 1}" required></div>
-                            .gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    </div>
+                        <button type="button" class="remove-item-btn" title="Remove Question">&times;</button>
+                        <div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div>
+                        <div class="form-grid">
+                            ${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
+                            <div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
+                            <div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div>
                         </div>
                     </div>`;
                 container.appendChild(item);
-                item.querySelector('.question-title').addEventListener<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth('input', (e) => {
-                    const title = item.querySelector('.accordion-button h4');
-                    title.-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/textContent = `Question ${index + 1}: ${e.target.value || 'New Question'}`;
-                9.6.1/firebase-firestore-compat.js"></script>
+                item.querySelector('.question-title').addEventListener('input', (e) => {
+                   const headerText = e.target.value ? (e.target.value.substring(0,20) + '...') : 'New Question';
+                   item.querySelector('h4').textContent = `Question ${index + 1}: ${headerText}`;
+                });
+            };
 
-    <script>
-        document});
+            const openActionsheet = async(examId) => {
+                const doc = await db.collection('exams').doc(examId).get();
+                if (!doc.exists) return;
+                const exam = doc.data();
+                document.getElementById('actionsheet-title').textContent = exam.name;
+                document.getElementById('actionsheet-duration').textContent = `${exam.duration / 60} min`;
+                document.getElementById('actionsheet-questions').textContent = exam.questions.length;
+                document.getElementById('actionsheet-deadline').textContent = formatDate(exam.deadline);
+                const toggle = document.getElementById('actionsheet-lock-toggle');
+                toggle.checked = !exam.isLocked;
+                toggle.dataset.id = examId;
+                const sheet = document.getElementById('actionsheet');
+                sheet.querySelector('.edit-exam-btn').dataset.id = examId;
+                sheet.querySelector('.delete-exam-btn').dataset.id = examId;
+                document.getElementById('actionsheet-overlay').classList.add('show');
+                sheet.classList.add('show');
+            };
+
+            const closeActionsheet = () => {
+                document.getElementById('actionsheet-overlay').classList.remove('show');
+                document.getElementById('actionsheet').classList.remove('show');
             };
 
             document.addEventListener('click', async e => {
-                const dropdownBtn = e.target.addEventListener('DOMContentLoaded', function () {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCS.closest('.action-dropdown-btn');
-                if (dropdownBtn) {
-                    const menu = dropdownBtn.W52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authnextElementSibling;
-                    const isVisible = menu.classList.contains('show');
-                    document.querySelectorAll('.action-dropdownDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e-menu').forEach(m => m.classList.remove('show'));
-                    if (!isVisible) menu.classList.add799",
-                storageBucket: "exam-2e799.firebasestorage.app('show');
-                    return;
-                }
-                
-                if (!e.target.closest('.action-dropdown')) {
-                     document.querySelectorAll('.action-dropdown-menu').forEach(m => m.classList.remove",
-                messagingSenderId: "472506328501",
-                app('show'));
-                }
-                
-                const card = e.target.closest('.exam-card');
-Id: "1:472506328501:web:f239c                
-                if (e.target.closest('.edit-exam-btn')) {
-                    const doc = await db42baed2f4b9f925fc",
-                measurementId: "G-NX.collection('exams').doc(card.dataset.id).get();
+                const button = e.target.closest('button');
+                if (!button) return;
+                if (button.id === 'create-exam-btn') openExamModal();
+                if (button.matches('.edit')) {
+                    closeActionsheet();
+                    const doc = await db.collection('exams').doc(button.dataset.id).get();
                     openExamModal({ id: doc.id, ...doc.data() });
                 }
-                if (e.target.closest('.delete-21HT3JKT"
-            };
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebaseexam-btn')) {
+                if (button.matches('.delete')) {
+                    closeActionsheet();
                     if (confirm('Are you sure you want to delete this exam?')) {
-                        await db.auth();
-            const db = firebase.firestore();
-            const ADMIN_EMAIL = "harshavardhanjw.collection('exams').doc(card.dataset.id).delete();
+                        await db.collection('exams').doc(button.dataset.id).delete();
                     }
                 }
-                if@gmail.com";
-
-            let currentSubject = null;
-
-            auth.onAuthStateChanged(async (user) (e.target.closest('#create-exam-btn')) openExamModal();
-                if (e.target.closest => {
-                if (user && user.email === ADMIN_EMAIL) {
-                    const userDoc = await db('#add-question-btn')) addQuestionToForm({}, document.querySelectorAll('.accordion-item').length);
-                if (e.collection('users').doc(user.uid).get();
-                    initSharedUI(userDoc.exists ?.target.closest('.remove-item-btn')) e.target.closest('.accordion-item').remove();
- userDoc.data() : {
-                        displayName: user.displayName,
-                        email: user.email,
-                if (e.target.closest('.accordion-button')) {
-                    const button = e.target.closest('.accordion                        photoURL: user.photoURL
-                    });
-                    initPage();
-                } else {
-                    window.location.-button');
+                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
+                if (button.id === 'add-question-btn') addQuestionToForm({}, document.querySelectorAll('.accordion-item').length);
+                if (button.matches('.remove-item-btn')) button.closest('.accordion-item').remove();
+                if (button.matches('.accordion-header')) {
                     button.classList.toggle('active');
-                    const content = button.nextElementSibling;
-href = 'index.html';
+                    button.nextElementSibling.classList.toggle('active');
+                }
+                if (button.matches('#exam-modal .close-btn, #exam-modal .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
+                if (button.id === 'actionsheet-cancel-btn') closeActionsheet();
+            });
+            
+            document.addEventListener('click', (e) => {
+                if(e.target.id === 'actionsheet-overlay') closeActionsheet();
+            });
+
+            document.querySelector('body').addEventListener('change', async e => {
+                if (e.target.matches('.lock-toggle, #actionsheet-lock-toggle')) {
+                    await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
                 }
             });
 
-            const initSharedUI = (adminProfile) => {                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + 'px';
-                
-                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
-                }
-                if (e.target.closest('.modal-overlay .close-btn, .modal-overlay .secondarydocument.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
-                document-btn') || e.target.matches('.modal-overlay')) {
-                    e.target.closest('.modal.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
-                document.getElementById('logout-overlay').classList.remove('show');
-                }
-            });
-
-            document.getElementById('save-exam-btn').addEventListener('click', () => auth.signOut());
-                const profileSection = document.getElementById('profile-section-btn').addEventListener('click', async () => {
-                const modal = document.getElementById('exam-modal');');
-                const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click',
+            document.getElementById('save-exam-btn').addEventListener('click', async() => {
                 const form = document.getElementById('exam-form');
-                if (!form.checkValidity()) {
+                if(!form.checkValidity()) {
                     form.reportValidity();
                     return;
                 }
-
-                const id = document.getElementById('exam-id').value e => {
-                    e.stopPropagation();
-                    profilePopup.classList.toggle('active');
-                    profileSection.classList;
+                const id = document.getElementById('exam-id').value;
                 const questions = [];
-                document.querySelectorAll('#questions-container .accordion-item').forEach(item.toggle('active');
-                });
-                document.addEventListener('click', e => {
-                    if (!profileSection.contains(e.target)) {
-                        profilePopup.classList.remove('active');
-                        profileSection.classList. => {
+                document.querySelectorAll('#questions-container .accordion-item').forEach(item => {
                     questions.push({
-                        title: item.querySelector('.question-title').value, 
-                        options:remove('active');
-                    }
-                });
-                const sidebar = document.getElementById('sidebar');
-                const menuToggle = [...item.querySelectorAll('.question-option')].map(opt => opt.value),
-                        correctAnswer: parseInt(item. document.getElementById('menu-toggle');
-                const closeBtn = document.getElementById('sidebar-close-btn');querySelector('.question-correct').value, 10), 
-                        points: parseInt(item.querySelector('.question-
-                const overlay = document.getElementById('overlay');
-                const toggleMenu = () => {
-                    sidebar.points').value, 10), 
+                        title: item.querySelector('.question-title').value,
+                        options: [...item.querySelectorAll('.question-option')].map(opt => opt.value),
+                        correctAnswer: parseInt(item.querySelector('.question-correct').value, 10),
+                        points: parseInt(item.querySelector('.question-points').value, 10),
                         type: 'Mcq'
                     });
                 });
-                constclassList.toggle('active');
-                    overlay.classList.toggle('active');
-                };
-                menuToggle.addEventListener('click', toggleMenu);
-                closeBtn.addEventListener('click', toggleMenu);
-                overlay.addEventListener date = document.getElementById('exam-deadline-date').value;
-                const deadline = date ? firebase.firestore.Timestamp('click', toggleMenu);
-            };
-
-            const initPage = async () => {
-                const urlParams.fromDate(new Date(`${date}T23:59:59`)) : null;
-                 = new URLSearchParams(window.location.search);
-                const subjectId = urlParams.get('subjectId');
-const data = {
-                    name: document.getElementById('exam-name').value, 
-                    duration: parseInt(document.                if (!subjectId) {
-                    window.location.href = 'manage-subjects.html';
-                    getElementById('exam-duration').value, 10) * 60,
-                    subjectId: currentSubject.idreturn;
-                }
-                const subjectDoc = await db.collection('subjects').doc(subjectId).get();, 
-                    questions, 
+                const date = document.getElementById('exam-deadline-date').value;
+                const deadline = date ? firebase.firestore.Timestamp.fromDate(new Date(`${date}T23:59:59`)) : null;
+                const data = {
+                    name: document.getElementById('exam-name').value.trim(),
+                    duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
+                    subjectId: currentSubject.id,
+                    questions,
                     deadline
                 };
                 if (id) {
-                    await db
-                if (!subjectDoc.exists) {
-                    window.location.href = 'manage-subjects.html.collection('exams').doc(id).update(data);
+                    await db.collection('exams').doc(id).update(data);
                 } else {
-                    data.isLocked';
-                    return;
-                }
-                currentSubject = {
-                    id: subjectId,
-                    ...subjectDoc. = true;
+                    data.isLocked = true;
                     await db.collection('exams').add(data);
                 }
-                modal.classList.data()
-                };
-                document.querySelector('.subject-name').textContent = currentSubject.name;
-                loadExams();
-                document.querySelector('.dashboard-container').style.display = 'grid';
-                documentremove('show');
+                document.getElementById('exam-modal').classList.remove('show');
             });
         });
     </script>
