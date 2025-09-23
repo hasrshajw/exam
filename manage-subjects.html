@@ -277,18 +277,24 @@
             };
 
             const deleteSubject = async (subjectId) => {
-                if (confirm('Are you sure? This will delete all associated courses, lessons, and exams.')) {
+                if (confirm('Are you sure? This will delete all associated courses, lessons, enrollments, and exams.')) {
                     closeActionsheet();
                     const batch = db.batch();
                     const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
                     const courseIds = coursesQuery.docs.map(d => d.id);
+
                     if (courseIds.length > 0) {
                         const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
                         lessonsQuery.forEach(doc => batch.delete(doc.ref));
+                        
+                        const enrollmentsQuery = await db.collection('enrollments').where('courseId', 'in', courseIds).get();
+                        enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
                     }
                     coursesQuery.forEach(doc => batch.delete(doc.ref));
+                    
                     const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
                     examsQuery.forEach(doc => batch.delete(doc.ref));
+                    
                     batch.delete(db.collection('subjects').doc(subjectId));
                     await batch.commit();
                 }
@@ -316,12 +322,10 @@
                 const id = document.getElementById('subject-id').value;
                 const subjectName = document.getElementById('subject-name').value.trim();
                 const subjectPage = document.getElementById('subject-page').value.trim();
-                
                 if (!subjectName || !subjectPage) { alert('All fields are required.'); return; }
 
                 const subjectData = { name: subjectName, page: subjectPage };
-                const courseData = { name: `${subjectName} Course`, chapters: ['Chapter 1: Getting Started'] };
-
+                
                 if (id) {
                     const subjectRef = db.collection('subjects').doc(id);
                     const subjectDoc = await subjectRef.get();
@@ -330,14 +334,14 @@
                     batch.update(subjectRef, subjectData);
                     if (existingCourseId) {
                         const courseRef = db.collection('courses').doc(existingCourseId);
-                        batch.update(courseRef, { name: courseData.name });
+                        batch.update(courseRef, { name: `${subjectName} Course` });
                     }
                     await batch.commit();
                 } else {
                     const newSubjectRef = db.collection('subjects').doc();
                     const newCourseRef = db.collection('courses').doc();
                     const batch = db.batch();
-                    batch.set(newCourseRef, { ...courseData, subjectId: newSubjectRef.id });
+                    batch.set(newCourseRef, { name: `${subjectName} Course`, subjectId: newSubjectRef.id, chapters: [] });
                     batch.set(newSubjectRef, { ...subjectData, courseId: newCourseRef.id });
                     await batch.commit();
                 }
