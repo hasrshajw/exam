@@ -86,6 +86,11 @@
         .actionsheet-cancel { margin-top: 0.5rem; }
         .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); }
         .mobile-card-view { display: none; }
+        .action-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+        .action-overlay.show { display: flex; }
+        .spinner { border: 4px solid var(--hover-bg); border-top: 4px solid var(--brand-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .action-overlay p { font-weight: 600; color: var(--text-primary); }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -108,6 +113,7 @@
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Authenticating...</div>
     <div class="overlay" id="overlay"></div>
+    <div class="action-overlay" id="action-overlay"><div class="spinner"></div><p>Deleting subject and all related data...</p></div>
     <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
@@ -279,45 +285,53 @@
             const deleteSubject = async (subjectId) => {
                 if (!confirm('Are you sure? This will delete the subject and ALL of its courses, lessons, enrollments, and exams permanently.')) return;
                 
+                const actionOverlay = document.getElementById('action-overlay');
+                actionOverlay.classList.add('show');
                 closeActionsheet();
-                const batch = db.batch();
-                
-                const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
-                const courseIds = coursesQuery.docs.map(d => d.id);
 
-                if (courseIds.length > 0) {
-                    const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
-                    lessonsQuery.forEach(doc => batch.delete(doc.ref));
+                try {
+                    const batch = db.batch();
+                    const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
+                    const courseIds = coursesQuery.docs.map(d => d.id);
 
-                    const enrollmentsQuery = await db.collection('enrollments').where('courseId', 'in', courseIds).get();
-                    enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
+                    if (courseIds.length > 0) {
+                        const [lessonsQuery, enrollmentsQuery] = await Promise.all([
+                            db.collection('lessons').where('courseId', 'in', courseIds).get(),
+                            db.collection('enrollments').where('courseId', 'in', courseIds).get()
+                        ]);
+                        lessonsQuery.forEach(doc => batch.delete(doc.ref));
+                        enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
 
-                    const allUsersQuery = await db.collection('users').get();
-                    for (const userDoc of allUsersQuery.docs) {
-                        const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
-                        progressQuery.forEach(doc => batch.delete(doc.ref));
+                        const allUsersQuery = await db.collection('users').get();
+                        for (const userDoc of allUsersQuery.docs) {
+                            const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
+                            progressQuery.forEach(doc => batch.delete(doc.ref));
+                        }
                     }
-                }
-                coursesQuery.forEach(doc => batch.delete(doc.ref));
-                
-                const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
-                const examIds = examsQuery.docs.map(d => d.id);
+                    coursesQuery.forEach(doc => batch.delete(doc.ref));
+                    
+                    const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
+                    const examIds = examsQuery.docs.map(d => d.id);
 
-                if (examIds.length > 0) {
-                     const scoresQuery = await db.collection('scores').where('examId', 'in', examIds).get();
-                     scoresQuery.forEach(doc => batch.delete(doc.ref));
+                    if (examIds.length > 0) {
+                        const scoresQuery = await db.collection('scores').where('examId', 'in', examIds).get();
+                        scoresQuery.forEach(doc => batch.delete(doc.ref));
+                    }
+                    examsQuery.forEach(doc => batch.delete(doc.ref));
+                    
+                    batch.delete(db.collection('subjects').doc(subjectId));
+                    await batch.commit();
+                } catch(error) {
+                    console.error("Deletion failed: ", error);
+                    alert("An error occurred during deletion. Please check the console.");
+                } finally {
+                    actionOverlay.classList.remove('show');
                 }
-                examsQuery.forEach(doc => batch.delete(doc.ref));
-                
-                batch.delete(db.collection('subjects').doc(subjectId));
-                
-                await batch.commit().catch(err => console.error("Deletion failed: ", err));
             };
 
             document.addEventListener('click', async e => {
                 const button = e.target.closest('button');
                 if (!button) return;
-
                 if (button.id === 'create-subject-btn') openSubjectModal();
                 if (button.matches('.edit')) {
                     const doc = await db.collection('subjects').doc(button.dataset.id).get();
@@ -337,7 +351,6 @@
                 const subjectName = document.getElementById('subject-name').value.trim();
                 const subjectPage = document.getElementById('subject-page').value.trim();
                 if (!subjectName || !subjectPage) { alert('All fields are required.'); return; }
-
                 const subjectData = { name: subjectName, page: subjectPage };
                 
                 if (id) {
