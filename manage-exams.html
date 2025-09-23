@@ -77,8 +77,16 @@
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .full-width { grid-column: 1 / -1; }
         .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
-        .question-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; position: relative; }
-        .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
+        .question-card { border: 1px solid var(--border-color); border-radius: 8px; margin-top: 1rem; }
+        .question-card-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; cursor: pointer; background-color: #F9FAFB; }
+        .question-card-header h5 { font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .question-card-header .q-number { font-size: 0.8rem; background-color: var(--hover-bg); border-radius: 50%; width: 24px; height: 24px; display: grid; place-items: center; }
+        .question-card-header .q-title { flex-grow: 1; }
+        .question-card-header i { transition: transform 0.2s ease; }
+        .question-card-body { padding: 1rem; display: none; }
+        .question-card.open .question-card-body { display: block; }
+        .question-card.open .question-card-header i { transform: rotate(180deg); }
+        .remove-item-btn { background: none; border: none; color: var(--danger-color); font-size: 1.2rem; cursor: pointer; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
         .actionsheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
@@ -88,12 +96,12 @@
         .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
         .actionsheet-title { font-size: 1.25rem; font-weight: 600; }
         .actionsheet-content { padding: 1rem 0; border-top: 1px solid var(--border-color); margin-top: 1rem; }
-        .actionsheet-content h4 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem; }
-        .actionsheet-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center; margin-bottom: 1rem; }
-        .actionsheet-details p { font-size: 0.9rem; }
-        .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+        .actionsheet-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: left; margin-bottom: 1rem; }
+        .actionsheet-details .detail-item { display: flex; justify-content: space-between; align-items: center; grid-column: 1 / -1; padding: 0.5rem 0;}
+        .actionsheet-details p { font-size: 0.9rem; color: var(--text-secondary); }
+        .actionsheet-details strong { font-size: 1rem; font-weight: 600; color: var(--text-primary); }
         .actionsheet-list { list-style: none; }
-        .actionsheet-list li, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
+        .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
         .actionsheet-list button:hover { background-color: var(--hover-bg); }
         .actionsheet-list i { font-size: 1.5rem; color: var(--brand-purple); width: 24px; text-align: center; }
         .actionsheet-list button.delete i { color: var(--danger-color); }
@@ -193,10 +201,10 @@
             <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
             <div class="actionsheet-content">
                 <div class="actionsheet-details">
-                    <div><p>Duration</p><strong id="actionsheet-duration"></strong></div>
-                    <div><p>Questions</p><strong id="actionsheet-questions"></strong></div>
-                    <div><p>Status</p><strong id="actionsheet-status"></strong></div>
-                    <div><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
+                    <div class="detail-item"><p>Duration</p><strong id="actionsheet-duration"></strong></div>
+                    <div class="detail-item"><p>Questions</p><strong id="actionsheet-questions"></strong></div>
+                    <div class="detail-item"><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
+                    <div class="detail-item"><p>Status</p><label class="lock-switch"><input type="checkbox" id="actionsheet-lock-toggle"><span class="slider"></span></label></div>
                 </div>
             </div>
             <ul class="actionsheet-list">
@@ -311,7 +319,6 @@
                 modal.querySelector('#exam-id').value = exam ? exam.id : '';
                 modal.querySelector('#exam-name').value = exam ? exam.name : '';
                 modal.querySelector('#exam-duration').value = exam ? exam.duration / 60 : '';
-                
                 if (exam && exam.deadline) {
                     const d = new Date(exam.deadline.seconds * 1000);
                     modal.querySelector('#exam-deadline-date').value = d.toISOString().split('T')[0];
@@ -320,20 +327,31 @@
                     modal.querySelector('#exam-deadline-date').value = '';
                     modal.querySelector('#exam-deadline-time').value = '';
                 }
-
                 const questionsContainer = modal.querySelector('#questions-container');
                 questionsContainer.innerHTML = '';
-                if (exam) exam.questions.forEach(addQuestionToForm);
+                if (exam) exam.questions.forEach((q, i) => addQuestionToForm(q, i + 1));
                 modal.classList.add('show');
             };
 
-            const addQuestionToForm = (question = {}) => {
+            const addQuestionToForm = (question = {}, index) => {
                 const card = document.createElement('div');
                 card.className = 'question-card';
-                card.innerHTML = `<button type="button" class="remove-item-btn">&times;</button><div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div><div class="form-grid">${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}<div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div>`;
+                card.innerHTML = `
+                    <div class="question-card-header">
+                        <h5><span class="q-number">${index}</span> <span class="q-title">${question.title || 'New Question'}</span></h5>
+                        <div><button type="button" class="remove-item-btn">&times;</button><i class='bx bx-chevron-down'></i></div>
+                    </div>
+                    <div class="question-card-body">
+                        <div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title-input">${question.title || ''}</textarea></div>
+                        <div class="form-grid">
+                            ${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
+                            <div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
+                            <div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div>
+                        </div>
+                    </div>`;
                 document.getElementById('questions-container').appendChild(card);
             };
-
+            
             const openActionsheet = async (examId) => {
                 const doc = await db.collection('exams').doc(examId).get();
                 if(!doc.exists) return;
@@ -342,7 +360,9 @@
                 document.getElementById('actionsheet-title').textContent = exam.name;
                 document.getElementById('actionsheet-duration').textContent = `${exam.duration / 60} min`;
                 document.getElementById('actionsheet-questions').textContent = exam.questions.length;
-                document.getElementById('actionsheet-status').textContent = exam.isLocked ? 'Locked' : 'Unlocked';
+                const lockToggle = document.getElementById('actionsheet-lock-toggle');
+                lockToggle.checked = !exam.isLocked;
+                lockToggle.dataset.id = examId;
                 document.getElementById('actionsheet-deadline').textContent = formatDate(exam.deadline);
                 
                 const sheet = document.getElementById('actionsheet');
@@ -360,6 +380,9 @@
             
             document.addEventListener('click', async e => {
                 const button = e.target.closest('button');
+                if (e.target.matches('.question-card-header') || e.target.closest('.question-card-header')) {
+                    e.target.closest('.question-card').classList.toggle('open');
+                }
                 if (!button) return;
                 
                 if (button.id === 'create-exam-btn') openExamModal();
@@ -375,15 +398,22 @@
                     }
                 }
                 if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
-                if (button.id === 'add-question-btn') addQuestionToForm();
+                if (button.id === 'add-question-btn') addQuestionToForm({}, document.querySelectorAll('.question-card').length + 1);
                 if (button.matches('.remove-item-btn')) button.closest('.question-card').remove();
                 if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
-                if(button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
+                if (button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
             });
             
-            document.getElementById('exams-tbody').addEventListener('change', async e => {
-                 if (e.target.classList.contains('lock-toggle')) {
+            document.addEventListener('change', async e => {
+                 if (e.target.matches('.lock-toggle, #actionsheet-lock-toggle')) {
                     await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+                }
+            });
+
+            document.getElementById('questions-container').addEventListener('input', e => {
+                if(e.target.matches('.question-title-input')) {
+                    const headerTitle = e.target.closest('.question-card').querySelector('.q-title');
+                    headerTitle.textContent = e.target.value || 'New Question';
                 }
             });
 
@@ -392,7 +422,7 @@
                 const questions = [];
                 document.querySelectorAll('#questions-container .question-card').forEach(card => {
                     questions.push({
-                        title: card.querySelector('.question-title').value, options: [...card.querySelectorAll('.question-option')].map(opt => opt.value),
+                        title: card.querySelector('.question-title-input').value, options: [...card.querySelectorAll('.question-option')].map(opt => opt.value),
                         correctAnswer: parseInt(card.querySelector('.question-correct').value, 10), points: parseInt(card.querySelector('.question-points').value, 10), type: 'Mcq'
                     });
                 });
@@ -404,11 +434,8 @@
                 }
 
                 const data = {
-                    name: document.getElementById('exam-name').value,
-                    duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
-                    subjectId: currentSubject.id,
-                    questions,
-                    deadline
+                    name: document.getElementById('exam-name').value, duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
+                    subjectId: currentSubject.id, questions, deadline
                 };
                 if (id) {
                     await db.collection('exams').doc(id).update(data);
