@@ -31,14 +31,12 @@
         a { text-decoration: none; }
         ul { list-style: none; }
 
-        /* --- DASHBOARD LAYOUT --- */
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
         .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .content-body { padding: 2rem 2.5rem; }
         
-        /* --- SIDEBAR & PROFILE (Unchanged as requested) --- */
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
         .logo-image { height: 40px; }
         .main-nav { flex-grow: 1; }
@@ -65,7 +63,6 @@
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
 
-        /* --- GENERAL COMPONENTS --- */
         .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
@@ -79,7 +76,6 @@
         .secondary-btn:hover { background-color: var(--hover-bg); }
         .menu-toggle, .sidebar-close-btn { display: none; }
 
-        /* --- DESKTOP TABLE --- */
         .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
@@ -92,10 +88,8 @@
         input:checked + .slider { background-color: var(--success-color); }
         input:checked + .slider:before { transform: translateX(20px); }
         
-        /* --- ACTIONS DROPDOWN UI/UX --- */
         .actions-cell { text-align: right !important; width: 1%; white-space: nowrap; }
         .actions-container { position: relative; display: inline-flex; }
-        /* --- FIX: Z-INDEX Stacking Context Fix --- */
         .actions-container.menu-open { z-index: 20; }
         .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
         .action-menu-btn:hover { background-color: var(--hover-bg); }
@@ -104,11 +98,10 @@
         .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
         .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.6rem 0.75rem; border-radius: 6px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
         .action-item:hover { background-color: var(--hover-bg); }
-        .action-item i { font-size: 1.1rem; }
-        .action-item.edit { color: var(--brand-purple); }
+        .action-item.edit { color: var(--text-primary); }
         .action-item.delete { color: var(--danger-color); }
+        .action-item svg { stroke-width: 2; flex-shrink: 0; }
 
-        /* --- MODAL --- */
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
@@ -138,7 +131,6 @@
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
         .modal-footer .secondary-btn { margin-right: 0.75rem; }
 
-        /* --- MOBILE ACTION SHEET --- */
         .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
         .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
@@ -160,7 +152,6 @@
         .actionsheet-cancel { margin-top: 0.5rem; }
         .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); border: none; cursor: pointer; }
 
-        /* --- RESPONSIVE & MOBILE CARD VIEW --- */
         .mobile-card-view { display: none; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -362,7 +353,6 @@
                     snapshot.docs.sort((a, b) => a.data().name.localeCompare(b.data().name)).forEach(doc => {
                         const exam = doc.data();
                         
-                        // Desktop Table Row
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${exam.name}</td>
@@ -374,14 +364,19 @@
                                 <div class="actions-container">
                                     <button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
                                     <div class="action-dropdown">
-                                        <button class="action-item edit" data-id="${doc.id}"><i class='bx bxs-edit-alt'></i> Edit</button>
-                                        <button class="action-item delete" data-id="${doc.id}"><i class='bx bxs-trash-alt'></i> Delete</button>
+                                        <button class="action-item edit" data-id="${doc.id}">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor"></path></svg>
+                                            Edit
+                                        </button>
+                                        <button class="action-item delete" data-id="${doc.id}">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor"></path></svg>
+                                            Delete
+                                        </button>
                                     </div>
                                 </div>
                             </td>`;
                         tbody.appendChild(row);
 
-                        // Mobile Card
                         const card = document.createElement('div');
                         card.className = 'exam-card-mobile';
                         const statusClass = !exam.isLocked ? 'active' : 'locked';
@@ -481,8 +476,9 @@
                 });
                 if (isDropdownButton) {
                     const dropdown = isDropdownButton.nextElementSibling;
+                    const container = isDropdownButton.closest('.actions-container');
                     dropdown.classList.toggle('active');
-                    isDropdownButton.closest('.actions-container').classList.toggle('menu-open', dropdown.classList.contains('active'));
+                    container.classList.toggle('menu-open', dropdown.classList.contains('active'));
                 }
                 
                 const button = e.target.closest('button');
