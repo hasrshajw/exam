@@ -77,19 +77,26 @@
         .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .secondary-btn:hover { background-color: var(--hover-bg); }
+        .menu-toggle, .sidebar-close-btn { display: none; } /* Hide mobile controls by default */
 
-        /* --- DESKTOP TABLE --- */
+        /* --- DESKTOP TABLE & NEW ACTIONS DROPDOWN --- */
         .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
         .admin-table td { color: var(--text-primary); font-weight: 500; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .actions-cell { display: flex; align-items: center; gap: 0.75rem; }
-        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
-        .action-btn i { font-size: 1.25rem; }
-        .action-btn:hover { background-color: var(--hover-bg); }
-        .action-btn.edit { color: var(--brand-purple); }
-        .action-btn.delete { color: var(--danger-color); }
+        .actions-cell { text-align: right !important; }
+        .actions-container { position: relative; display: inline-flex; }
+        .action-btn { background: none; border: none; cursor: pointer; width: 36px; height: 36px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; color: var(--text-secondary); }
+        .action-btn i { font-size: 1.5rem; }
+        .action-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
+        .actions-dropdown { position: absolute; top: 100%; right: 0; background-color: var(--widget-bg); border-radius: 8px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); z-index: 10; padding: 0.5rem; margin-top: 0.25rem; width: 160px; opacity: 0; visibility: hidden; transform: translateY(-10px); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .actions-dropdown.show { opacity: 1; visibility: visible; transform: translateY(0); }
+        .dropdown-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; padding: 0.6rem 0.75rem; border-radius: 6px; background: none; border: none; cursor: pointer; text-align: left; font-weight: 500; font-size: 0.9rem; color: var(--text-primary); }
+        .dropdown-item:hover { background-color: var(--hover-bg); }
+        .dropdown-item i { font-size: 1.25rem; }
+        .dropdown-item.edit { color: var(--brand-purple); }
+        .dropdown-item.delete { color: var(--danger-color); }
         .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .lock-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger-color); transition: .4s; border-radius: 24px; }
@@ -313,7 +320,6 @@
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
                 profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -360,8 +366,13 @@
                             <td>${formatDate(exam.deadline)}</td>
                             <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
                             <td class="actions-cell">
-                                <button class="action-btn edit" data-id="${doc.id}" aria-label="Edit"><i class='bx bxs-edit-alt'></i></button>
-                                <button class="action-btn delete" data-id="${doc.id}" aria-label="Delete"><i class='bx bxs-trash-alt'></i></button>
+                                <div class="actions-container">
+                                    <button class="action-btn kebab-menu" aria-label="More actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                    <div class="actions-dropdown">
+                                        <button class="dropdown-item edit" data-id="${doc.id}"><i class='bx bxs-edit-alt'></i> Edit</button>
+                                        <button class="dropdown-item delete" data-id="${doc.id}"><i class='bx bxs-trash-alt'></i> Delete</button>
+                                    </div>
+                                </div>
                             </td>`;
                         tbody.appendChild(row);
 
@@ -456,10 +467,17 @@
             };
             
             document.addEventListener('click', async e => {
+                // Close open dropdowns when clicking elsewhere
+                document.querySelectorAll('.actions-dropdown.show').forEach(dropdown => {
+                    if (!dropdown.parentElement.contains(e.target)) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+
                 const button = e.target.closest('button');
                 if (!button) return;
                 
-                if (button.id === 'create-exam-btn') openModal();
+                if (button.id === 'create-exam-btn') openExamModal();
                 if (button.matches('.edit-exam-btn, .edit')) {
                     closeActionsheet();
                     const doc = await db.collection('exams').doc(button.dataset.id).get();
@@ -472,10 +490,12 @@
                     }
                 }
                 if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
+                if (button.matches('.kebab-menu')) {
+                    button.nextElementSibling.classList.toggle('show');
+                }
                 if (button.id === 'add-question-btn') addQuestionToForm();
                 if (button.matches('.remove-item-btn')) {
                     button.closest('.accordion-item').remove();
-                    // Re-index accordion titles
                     document.querySelectorAll('#questions-container .accordion-button span').forEach((span, index) => {
                         const currentText = span.textContent.split('. ')[1];
                         span.textContent = `${index + 1}. ${currentText}`;
