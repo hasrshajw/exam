@@ -56,15 +56,21 @@
         .admin-table tr:last-child td { border-bottom: none; }
         .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; }
         .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
+        .branch-badges { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+        .badge { background-color: var(--hover-bg); color: var(--text-secondary); padding: 0.25rem 0.75rem; border-radius: 99px; font-size: 0.8rem; font-weight: 500; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); }
+        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
         .modal-header h3 { font-size: 1.5rem; }
         .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
         .form-field { margin-bottom: 1rem; }
         .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
         .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; }
+        .branch-checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+        .checkbox-item { display: flex; align-items: center; }
+        .checkbox-item input { margin-right: 0.5rem; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
         .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
         @media (max-width: 1024px) {
@@ -79,6 +85,13 @@
             .sidebar-close-btn:hover { color: #b91c1c; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+            .admin-table thead { display: none; }
+            .admin-table, .admin-table tbody, .admin-table tr, .admin-table td { display: block; }
+            .admin-table { border: none; box-shadow: none; }
+            .admin-table tr { background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); margin-bottom: 1rem; padding: 1rem; }
+            .admin-table td { padding: 0.5rem 0; border: none; display: flex; flex-direction: column; align-items: flex-start; }
+            .admin-table td:before { content: attr(data-label); font-weight: 600; color: var(--text-primary); margin-bottom: 0.5rem; font-size: 0.8rem; text-transform: uppercase; }
+            .branch-checkbox-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -122,13 +135,12 @@
                     <button class="primary-btn" id="create-college-btn">Create New College</button>
                 </div>
                 <table class="admin-table">
-                    <thead><tr><th>College Name</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>College Name</th><th>Branches Offered</th><th>Actions</th></tr></thead>
                     <tbody id="colleges-tbody"></tbody>
                 </table>
             </section>
         </main>
     </div>
-
     <div class="modal-overlay" id="college-modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -139,6 +151,7 @@
                 <form id="college-form">
                     <input type="hidden" id="college-id">
                     <div class="form-field"><label for="college-name">College Name</label><input type="text" id="college-name" required></div>
+                    <div class="form-field"><label>Branches</label><div class="branch-checkbox-grid" id="branch-checkbox-grid"></div></div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -147,7 +160,6 @@
             </div>
         </div>
     </div>
-
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -156,9 +168,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             const firebaseConfig = {
                 apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e799",
-                storageBucket: "exam-2e799.firebasestorage.app",
+                authDomain: "exam-2.firebaseapp.com",
+                projectId: "exam-2",
+                storageBucket: "exam-2.appspot.com",
                 messagingSenderId: "472506328501",
                 appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
                 measurementId: "G-NX21HT3JKT"
@@ -168,10 +180,12 @@
             const db = firebase.firestore();
             const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
+            const ALL_BRANCHES = ["Computer Science and Engineering (CSE)", "Electronics and Communication Engineering (ECE)", "Electrical and Electronics Engineering (EEE)", "Mechanical Engineering (ME)", "Civil Engineering (CE)", "Information Technology (IT)", "Artificial Intelligence & Machine Learning (AI/ML)", "Data Science / Data Engineering", "Robotics and Automation Engineering", "Biotechnology Engineering", "Chemical Engineering", "Aerospace Engineering", "Automobile Engineering", "Metallurgical Engineering", "Petroleum Engineering", "Environmental Engineering", "Agricultural Engineering", "Textile Engineering", "Marine Engineering", "Industrial & Production Engineering"];
+
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    initSharedUI(userDoc.exists() ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
                     loadColleges();
                 } else {
                     window.location.href = 'index.html';
@@ -205,10 +219,12 @@
                     tbody.innerHTML = '';
                     snapshot.forEach(doc => {
                         const college = doc.data();
+                        const branchesHtml = (college.branches || []).map(b => `<span class="badge">${b}</span>`).join('');
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${college.name}</td>
-                            <td>
+                            <td data-label="College Name">${college.name}</td>
+                            <td data-label="Branches"><div class="branch-badges">${branchesHtml || 'None'}</div></td>
+                            <td data-label="Actions">
                                 <button class="action-btn edit-college-btn" data-id="${doc.id}">Edit</button>
                                 <button class="delete-btn delete-college-btn" data-id="${doc.id}">Delete</button>
                             </td>
@@ -217,12 +233,25 @@
                     });
                 });
             };
+            
+            const populateBranchCheckboxes = (selectedBranches = []) => {
+                const container = document.getElementById('branch-checkbox-grid');
+                container.innerHTML = '';
+                ALL_BRANCHES.forEach(branch => {
+                    const isChecked = selectedBranches.includes(branch);
+                    const item = document.createElement('div');
+                    item.className = 'checkbox-item';
+                    item.innerHTML = `<input type="checkbox" id="branch-${branch.replace(/\s+/g, '')}" value="${branch}" ${isChecked ? 'checked' : ''}><label for="branch-${branch.replace(/\s+/g, '')}">${branch}</label>`;
+                    container.appendChild(item);
+                });
+            };
 
             const openCollegeModal = (college = null) => {
                 const modal = document.getElementById('college-modal');
                 modal.querySelector('#college-modal-title').textContent = college ? 'Edit College' : 'Create New College';
                 modal.querySelector('#college-id').value = college ? college.id : '';
                 modal.querySelector('#college-name').value = college ? college.name : '';
+                populateBranchCheckboxes(college ? college.branches : []);
                 modal.classList.add('show');
             };
 
@@ -246,11 +275,15 @@
             document.getElementById('save-college-btn').addEventListener('click', async () => {
                 const id = document.getElementById('college-id').value;
                 const name = document.getElementById('college-name').value.trim();
-                if (!name) {
-                    alert('College name cannot be empty.');
-                    return;
-                }
-                const data = { name: name };
+                if (!name) { alert('College name cannot be empty.'); return; }
+                
+                const selectedBranches = [];
+                document.querySelectorAll('#branch-checkbox-grid input:checked').forEach(checkbox => {
+                    selectedBranches.push(checkbox.value);
+                });
+                
+                const data = { name: name, branches: selectedBranches };
+
                 if (id) await db.collection('colleges').doc(id).update(data);
                 else await db.collection('colleges').add(data);
                 document.getElementById('college-modal').classList.remove('show');
