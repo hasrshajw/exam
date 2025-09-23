@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; --success-color: #33C375; }
+        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; --success-color: #10B981; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; }
@@ -40,23 +40,28 @@
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--widget-bg); }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
         .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .content-body { padding: 2rem 3rem; background-color: var(--body-bg); }
+        .content-body { padding: 2rem 3rem; }
         .menu-toggle { display: none; }
         .sidebar-close-btn { display: none; }
         .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
         .admin-content-header h2 { font-size: 2rem; font-weight: 700; }
         .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
         .primary-btn:hover { background-color: #5B21B6; }
+        .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
         .back-btn { margin-bottom: 1rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
         .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); }
         .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
         .admin-table th { background: #F9FAFB; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; }
-        .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
+        .actions-cell { display: flex; align-items: center; gap: 0.5rem; }
+        .action-btn { font-weight: 600; color: var(--text-primary); background-color: var(--hover-bg); border: 1px solid var(--border-color); cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-btn i { font-size: 1rem; }
+        .action-btn:hover { background-color: var(--border-color); }
+        .action-btn.edit { color: var(--brand-purple); }
+        .action-btn.delete { color: var(--danger-color); }
         .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .lock-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger-color); transition: .4s; border-radius: 24px; }
@@ -76,10 +81,15 @@
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .full-width { grid-column: 1 / -1; }
         .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
-        .question-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; position: relative; }
-        .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
+        .accordion-item { border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.5rem; }
+        .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; cursor: pointer; background-color: #F9FAFB; }
+        .accordion-header h4 { font-weight: 600; }
+        .accordion-header i { transition: transform 0.2s ease; }
+        .accordion-header.active i { transform: rotate(180deg); }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 1rem; }
+        .accordion-content.active { max-height: 500px; padding: 1.5rem 1rem; }
+        .remove-item-btn { background: none; border: none; color: var(--danger-color); font-size: 1.2rem; cursor: pointer; float: right; margin-bottom: 0.5rem; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
-        .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
         .actionsheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
         .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
@@ -91,8 +101,9 @@
         .actionsheet-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center; margin-bottom: 1rem; }
         .actionsheet-details p { font-size: 0.9rem; }
         .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+        .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: 8px; background-color: var(--hover-bg); margin-bottom: 1rem; }
         .actionsheet-list { list-style: none; }
-        .actionsheet-list li, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
+        .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
         .actionsheet-list button:hover { background-color: var(--hover-bg); }
         .actionsheet-list i { font-size: 1.5rem; color: var(--brand-purple); width: 24px; text-align: center; }
         .actionsheet-list button.delete i { color: var(--danger-color); }
@@ -113,8 +124,8 @@
             .overlay.active { opacity: 1; pointer-events: auto; }
             .admin-table { display: none; }
             .mobile-card-view { display: flex; flex-direction: column; gap: 1rem; }
-            .subject-card { display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 1rem 1.5rem; }
-            .subject-card h3 { font-size: 1.125rem; font-weight: 600; }
+            .exam-card { display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 1rem 1.5rem; }
+            .exam-card h3 { font-size: 1.125rem; font-weight: 600; }
         }
     </style>
 </head>
@@ -166,7 +177,6 @@
             </section>
         </main>
     </div>
-
     <div class="modal-overlay" id="exam-modal">
         <div class="modal-content">
             <div class="modal-header"><h3 id="exam-modal-title"></h3><button class="close-btn">&times;</button></div>
@@ -176,8 +186,7 @@
                     <div class="form-grid">
                         <div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div>
                         <div class="form-field"><label for="exam-duration">Duration (minutes)</label><input type="number" id="exam-duration" required></div>
-                        <div class="form-field"><label for="exam-deadline-date">Deadline Date (Optional)</label><input type="date" id="exam-deadline-date"></div>
-                        <div class="form-field"><label for="exam-deadline-time">Deadline Time</label><input type="time" id="exam-deadline-time"></div>
+                        <div class="form-field full-width"><label for="exam-deadline-date">Deadline Date (Optional)</label><input type="date" id="exam-deadline-date"></div>
                     </div>
                     <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn">Add Question</button></div>
                     <div id="questions-container"></div>
@@ -186,7 +195,6 @@
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-exam-btn">Save Exam</button></div>
         </div>
     </div>
-
     <div class="actionsheet-overlay" id="actionsheet-overlay">
         <div class="actionsheet" id="actionsheet">
             <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
@@ -194,8 +202,13 @@
                 <div class="actionsheet-details">
                     <div><p>Duration</p><strong id="actionsheet-duration"></strong></div>
                     <div><p>Questions</p><strong id="actionsheet-questions"></strong></div>
-                    <div><p>Status</p><strong id="actionsheet-status"></strong></div>
-                    <div><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
+                </div>
+                <div class="actionsheet-details">
+                    <div style="grid-column: 1 / -1;"><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
+                </div>
+                <div class="actionsheet-status-control">
+                    <strong>Status</strong>
+                    <label class="lock-switch"><input type="checkbox" id="actionsheet-lock-toggle"><span class="slider"></span></label>
                 </div>
             </div>
             <ul class="actionsheet-list">
@@ -205,7 +218,6 @@
             <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
         </div>
     </div>
-
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -261,21 +273,19 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const subjectId = urlParams.get('subjectId');
                 if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
-
                 const subjectDoc = await db.collection('subjects').doc(subjectId).get();
                 if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
-
                 currentSubject = { id: subjectId, ...subjectDoc.data() };
                 document.getElementById('page-title').textContent = `Exams in ${currentSubject.name}`;
                 loadExams();
-                
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
             const formatDate = (timestamp) => {
                 if (!timestamp) return "No Deadline";
-                return new Date(timestamp.seconds * 1000).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const date = new Date(timestamp.seconds * 1000);
+                return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
             };
 
             const loadExams = () => {
@@ -300,7 +310,7 @@
                         tbody.appendChild(row);
 
                         const card = document.createElement('div');
-                        card.className = 'subject-card';
+                        card.className = 'exam-card';
                         card.innerHTML = `<h3>${exam.name}</h3><button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button>`;
                         cardsContainer.appendChild(card);
                     });
@@ -313,27 +323,33 @@
                 modal.querySelector('#exam-id').value = exam ? exam.id : '';
                 modal.querySelector('#exam-name').value = exam ? exam.name : '';
                 modal.querySelector('#exam-duration').value = exam ? exam.duration / 60 : '';
+                modal.querySelector('#exam-deadline-date').value = (exam && exam.deadline) ? new Date(exam.deadline.seconds * 1000).toISOString().split('T')[0] : '';
                 
-                if (exam && exam.deadline) {
-                    const d = new Date(exam.deadline.seconds * 1000);
-                    modal.querySelector('#exam-deadline-date').value = d.toISOString().split('T')[0];
-                    modal.querySelector('#exam-deadline-time').value = d.toTimeString().split(' ')[0].substring(0, 5);
-                } else {
-                    modal.querySelector('#exam-deadline-date').value = '';
-                    modal.querySelector('#exam-deadline-time').value = '';
-                }
-
                 const questionsContainer = modal.querySelector('#questions-container');
                 questionsContainer.innerHTML = '';
-                if (exam) exam.questions.forEach(addQuestionToForm);
+                if (exam) exam.questions.forEach((q, i) => addQuestionToForm(q, i));
                 modal.classList.add('show');
             };
 
-            const addQuestionToForm = (question = {}) => {
-                const card = document.createElement('div');
-                card.className = 'question-card';
-                card.innerHTML = `<button type="button" class="remove-item-btn">&times;</button><div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div><div class="form-grid">${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}<div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div>`;
-                document.getElementById('questions-container').appendChild(card);
+            const addQuestionToForm = (question = {}, index) => {
+                const container = document.getElementById('questions-container');
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                item.innerHTML = `
+                    <div class="accordion-header">
+                        <h4>Question ${index + 1}: ${question.title || 'New Question'}</h4>
+                        <i class='bx bx-chevron-down'></i>
+                    </div>
+                    <div class="accordion-content">
+                        <button type="button" class="remove-item-btn">&times;</button>
+                        <div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div>
+                        <div class="form-grid">
+                            ${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
+                            <div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
+                            <div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div>
+                        </div>
+                    </div>`;
+                container.appendChild(item);
             };
 
             const openActionsheet = async (examId) => {
@@ -344,8 +360,10 @@
                 document.getElementById('actionsheet-title').textContent = exam.name;
                 document.getElementById('actionsheet-duration').textContent = `${exam.duration / 60} min`;
                 document.getElementById('actionsheet-questions').textContent = exam.questions.length;
-                document.getElementById('actionsheet-status').textContent = exam.isLocked ? 'Locked' : 'Unlocked';
                 document.getElementById('actionsheet-deadline').textContent = formatDate(exam.deadline);
+                const toggle = document.getElementById('actionsheet-lock-toggle');
+                toggle.checked = !exam.isLocked;
+                toggle.dataset.id = examId;
                 
                 const sheet = document.getElementById('actionsheet');
                 sheet.querySelector('.edit-exam-btn').dataset.id = examId;
@@ -377,14 +395,18 @@
                     }
                 }
                 if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
-                if (button.id === 'add-question-btn') addQuestionToForm();
-                if (button.matches('.remove-item-btn')) button.closest('.question-card').remove();
+                if (button.id === 'add-question-btn') addQuestionToForm({}, document.querySelectorAll('.accordion-item').length);
+                if (button.matches('.remove-item-btn')) button.closest('.accordion-item').remove();
+                if (button.matches('.accordion-header')) {
+                    button.classList.toggle('active');
+                    button.nextElementSibling.classList.toggle('active');
+                }
                 if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
                 if(button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
             });
             
-            document.getElementById('exams-tbody').addEventListener('change', async e => {
-                 if (e.target.classList.contains('lock-toggle')) {
+            document.querySelector('.admin-table tbody, .actionsheet-status-control').addEventListener('change', async e => {
+                 if (e.target.matches('.lock-toggle, #actionsheet-lock-toggle')) {
                     await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
                 }
             });
@@ -392,29 +414,18 @@
             document.getElementById('save-exam-btn').addEventListener('click', async () => {
                 const id = document.getElementById('exam-id').value;
                 const questions = [];
-                document.querySelectorAll('#questions-container .question-card').forEach(card => {
+                document.querySelectorAll('#questions-container .accordion-item').forEach(item => {
                     questions.push({
-                        title: card.querySelector('.question-title').value, options: [...card.querySelectorAll('.question-option')].map(opt => opt.value),
-                        correctAnswer: parseInt(card.querySelector('.question-correct').value, 10), points: parseInt(card.querySelector('.question-points').value, 10), type: 'Mcq'
+                        title: item.querySelector('.question-title').value, options: [...item.querySelectorAll('.question-option')].map(opt => opt.value),
+                        correctAnswer: parseInt(item.querySelector('.question-correct').value, 10), points: parseInt(item.querySelector('.question-points').value, 10), type: 'Mcq'
                     });
                 });
                 const date = document.getElementById('exam-deadline-date').value;
-                const time = document.getElementById('exam-deadline-time').value;
-                let deadline = null;
-                if(date && time) {
-                    deadline = firebase.firestore.Timestamp.fromDate(new Date(`${date}T${time}`));
-                } else if (date) {
-                    deadline = firebase.firestore.Timestamp.fromDate(new Date(date));
-                }
-
+                const deadline = date ? firebase.firestore.Timestamp.fromDate(new Date(`${date}T23:59:59`)) : null;
                 const data = {
-                    name: document.getElementById('exam-name').value,
-                    duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
-                    subjectId: currentSubject.id,
-                    questions,
-                    deadline
+                    name: document.getElementById('exam-name').value, duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
+                    subjectId: currentSubject.id, questions, deadline
                 };
-
                 if (id) {
                     await db.collection('exams').doc(id).update(data);
                 } else {
