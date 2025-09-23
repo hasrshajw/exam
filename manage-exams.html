@@ -94,13 +94,13 @@
         .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
         .action-menu-btn:hover { background-color: var(--hover-bg); }
         .action-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
-        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 8px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
         .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
-        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.6rem 0.75rem; border-radius: 6px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
         .action-item:hover { background-color: var(--hover-bg); }
+        .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         .action-item.edit { color: var(--text-primary); }
         .action-item.delete { color: var(--danger-color); }
-        .action-item svg { stroke-width: 2; flex-shrink: 0; }
 
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
@@ -146,9 +146,9 @@
         .actionsheet-list { padding-top: 1rem; }
         .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
         .actionsheet-list button:hover { background-color: var(--hover-bg); }
-        .actionsheet-list i { font-size: 1.5rem; width: 24px; text-align: center; color: var(--text-secondary); }
-        .actionsheet-list button.edit i { color: var(--brand-purple); }
-        .actionsheet-list button.delete i { color: var(--danger-color); }
+        .actionsheet-list button svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-secondary); }
+        .actionsheet-list button.edit svg { color: var(--text-primary); }
+        .actionsheet-list button.delete svg { color: var(--danger-color); }
         .actionsheet-cancel { margin-top: 0.5rem; }
         .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); border: none; cursor: pointer; }
 
@@ -268,8 +268,18 @@
                 </div>
             </div>
             <ul class="actionsheet-list">
-                <li><button class="edit-exam-btn"><i class='bx bxs-edit-alt' ></i> Edit Exam</button></li>
-                <li><button class="delete-exam-btn delete"><i class='bx bxs-trash-alt'></i> Delete Exam</button></li>
+                <li>
+                    <button class="edit-exam-btn edit">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                        Edit Exam
+                    </button>
+                </li>
+                <li>
+                    <button class="delete-exam-btn delete">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                        Delete Exam
+                    </button>
+                </li>
             </ul>
             <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
         </div>
@@ -365,11 +375,11 @@
                                     <button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
                                     <div class="action-dropdown">
                                         <button class="action-item edit" data-id="${doc.id}">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor"></path></svg>
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
                                             Edit
                                         </button>
                                         <button class="action-item delete" data-id="${doc.id}">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor"></path></svg>
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
                                             Delete
                                         </button>
                                     </div>
