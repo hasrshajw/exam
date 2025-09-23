@@ -9,51 +9,20 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root {
-            --body-bg: #F8F9FA;
-            --widget-bg: #FFFFFF;
-            --border-color: #E9ECEF;
-            --text-primary: #212529;
-            --text-secondary: #6C757D;
-            --brand-purple: #7C5DFA;
-            --brand-purple-dark: #6741d9;
-            --hover-bg: #F1F3F5;
-            --danger-color: #E03131;
-            --danger-hover: #c92a2a;
-            --success-color: #2F9E44;
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-            --radius-md: 8px;
-            --radius-lg: 12px;
-            --radius-xl: 16px;
-        }
-
+        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; --success-color: #10B981; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            font-family: 'IBM Plex Sans', sans-serif;
-            background-color: var(--body-bg);
-            color: var(--text-primary);
-            font-size: 14px;
-            overflow: hidden;
-        }
-
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; }
-        
-        button { cursor: pointer; }
-
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
-
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
         .logo-image { height: 40px; }
         .main-nav { flex-grow: 1; }
         .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
-        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: var(--radius-md); transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); }
-        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; color: var(--brand-purple); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
         .main-nav a.active i { color: var(--brand-purple); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
@@ -62,7 +31,7 @@
         .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
         .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
         .profile-section.active .profile-options i { transform: rotate(180deg); }
-        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
         .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
         .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
         .popup-list { list-style: none; padding-top: 0.5rem; }
@@ -72,116 +41,91 @@
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
-        .main-header { padding: 1.25rem 2rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
-        .main-header h1 { font-size: 1.25rem; font-weight: 600; }
-        .content-body { padding: 2rem; }
+        .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .content-body { padding: 2rem 3rem; }
         .menu-toggle { display: none; }
         .sidebar-close-btn { display: none; }
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
-        .primary-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1.25rem; border-radius: var(--radius-md); font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease, box-shadow 0.2s ease; border: none; font-size: 0.9rem; }
-        .primary-btn:hover { background-color: var(--brand-purple-dark); box-shadow: var(--shadow-md); }
-        .secondary-btn { padding: 0.65rem 1.25rem; border-radius: var(--radius-md); font-weight: 600; color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); font-size: 0.9rem; transition: background-color 0.2s ease; }
-        .secondary-btn:hover { background-color: var(--hover-bg); }
-        .back-btn { margin-bottom: 1.5rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; transition: color 0.2s ease; }
-        .back-btn:hover { color: var(--brand-purple-dark); }
-        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border-collapse: separate; border-spacing: 0; overflow: hidden; border: 1px solid var(--border-color); }
-        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); white-space: nowrap; }
-        .admin-table th { background: #F8F9FA; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h2 { font-size: 2rem; font-weight: 700; }
+        .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
+        .primary-btn:hover { background-color: #5B21B6; }
+        .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
+        .back-btn { margin-bottom: 1rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
+        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); }
+        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .admin-table th { background: #F9FAFB; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .admin-table td { font-size: 0.9rem; }
         .actions-cell { display: flex; align-items: center; gap: 0.5rem; }
-        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease, color 0.2s ease; }
-        .action-btn i { font-size: 1.25rem; }
-        .action-btn:hover { background-color: var(--hover-bg); }
+        .action-btn { font-weight: 600; color: var(--text-primary); background-color: var(--hover-bg); border: 1px solid var(--border-color); cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-btn i { font-size: 1rem; }
+        .action-btn:hover { background-color: var(--border-color); }
         .action-btn.edit { color: var(--brand-purple); }
-        .action-btn.edit:hover { color: var(--brand-purple-dark); }
         .action-btn.delete { color: var(--danger-color); }
-        .action-btn.delete:hover { color: var(--danger-hover); }
         .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .lock-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #CED4DA; transition: .4s; border-radius: 24px; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger-color); transition: .4s; border-radius: 24px; }
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success-color); }
-        input:not(:checked) + .slider { background-color: var(--danger-color); }
         input:checked + .slider:before { transform: translateX(20px); }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: var(--radius-xl); width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .modal-header h3 { font-size: 1.25rem; font-weight: 600; }
+        .modal-header h3 { font-size: 1.5rem; }
         .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
         .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
-        .form-field { margin-bottom: 1.25rem; }
-        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem; }
-        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-        .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 3px rgba(124, 93, 250, 0.2); }
+        .form-field { margin-bottom: 1rem; }
+        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
+        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .full-width { grid-column: 1 / -1; }
         .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
-        .accordion-item { border: 1px solid var(--border-color); border-radius: var(--radius-lg); margin-bottom: 0.75rem; overflow: hidden; }
-        .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.25rem; cursor: pointer; background-color: var(--body-bg); }
+        .accordion-item { border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 0.5rem; }
+        .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; cursor: pointer; background-color: #F9FAFB; }
         .accordion-header h4 { font-weight: 600; }
         .accordion-header i { transition: transform 0.2s ease; }
         .accordion-header.active i { transform: rotate(180deg); }
-        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 1.25rem; }
-        .accordion-content.active { max-height: 500px; padding: 1.5rem 1.25rem; }
+        .accordion-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease; padding: 0 1rem; }
+        .accordion-content.active { max-height: 500px; padding: 1.5rem 1rem; }
         .remove-item-btn { background: none; border: none; color: var(--danger-color); font-size: 1.2rem; cursor: pointer; float: right; margin-bottom: 0.5rem; }
-        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
         .actionsheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
-        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: var(--radius-xl); border-top-right-radius: var(--radius-xl); padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
         .actionsheet.show { transform: translateY(0); }
         .actionsheet-header { text-align: center; padding-bottom: 1rem; }
         .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
-        .actionsheet-title { font-size: 1.1rem; font-weight: 600; }
+        .actionsheet-title { font-size: 1.25rem; font-weight: 600; }
         .actionsheet-content { padding: 1rem 0; border-top: 1px solid var(--border-color); margin-top: 1rem; }
         .actionsheet-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center; margin-bottom: 1rem; }
-        .actionsheet-details p { font-size: 0.8rem; color: var(--text-secondary); }
-        .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); margin-top: 0.25rem; }
-        .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: var(--radius-md); background-color: var(--hover-bg); margin-bottom: 1rem; }
-        .actionsheet-status-control strong { font-weight: 600; }
+        .actionsheet-details p { font-size: 0.9rem; }
+        .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+        .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; border-radius: 8px; background-color: var(--hover-bg); margin-bottom: 1rem; }
         .actionsheet-list { list-style: none; }
-        .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: var(--radius-md); font-size: 1rem; font-weight: 500; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
+        .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
         .actionsheet-list button:hover { background-color: var(--hover-bg); }
-        .actionsheet-list i { font-size: 1.5rem; color: var(--text-secondary); width: 24px; text-align: center; }
-        .actionsheet-list button.edit i { color: var(--brand-purple); }
+        .actionsheet-list i { font-size: 1.5rem; color: var(--brand-purple); width: 24px; text-align: center; }
         .actionsheet-list button.delete i { color: var(--danger-color); }
-        .actionsheet-list button.delete { color: var(--danger-color); }
         .actionsheet-cancel { margin-top: 0.5rem; }
-        .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: var(--radius-md); font-weight: 600; color: var(--text-secondary); border: none; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); }
         .mobile-card-view { display: none; }
-        
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
-            .main-header { padding: 1rem 1.5rem; }
-            .main-header h1 { font-size: 1.1rem; }
+            .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; transition: background-color 0.2s ease; }
+            .menu-toggle:hover { background-color: var(--hover-bg); }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; transition: color 0.2s ease; }
+            .sidebar-close-btn:hover { color: #b91c1c; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
             .admin-table { display: none; }
             .mobile-card-view { display: flex; flex-direction: column; gap: 1rem; }
-            .exam-card { display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); padding: 1rem; gap: 0.5rem; }
-            .card-main { display: flex; align-items: center; gap: 1rem; flex-grow: 1; min-width: 0; }
-            .card-status { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; }
-            .card-status i { font-size: 1.25rem; }
-            .status-active { background-color: var(--success-color); }
-            .status-locked { background-color: var(--danger-color); }
-            .card-info { flex-grow: 1; min-width: 0; }
-            .card-info h3 { font-size: 1rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 0.25rem; }
-            .card-meta { display: flex; flex-wrap: wrap; gap: 0.25rem 0.75rem; font-size: 0.75rem; color: var(--text-secondary); }
-            .card-meta span { display: flex; align-items: center; gap: 0.25rem; }
-            .card-actions button { background: none; border: none; font-size: 1.5rem; color: var(--text-secondary); padding: 0.5rem; }
-        }
-        @media (max-width: 767px) {
-            .content-body { padding: 1rem; }
-            .main-header { padding: 1rem; }
-            .form-grid { grid-template-columns: 1fr; }
-            .modal-content { padding: 1.5rem; }
+            .exam-card { display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 1rem 1.5rem; }
+            .exam-card h3 { font-size: 1.125rem; font-weight: 600; }
         }
     </style>
 </head>
@@ -216,14 +160,14 @@
         </aside>
         <main class="main-area">
             <header class="main-header">
-                <button class="menu-toggle" id="menu-toggle"><i class='bx bx-menu'></i></button>
+                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
                 <h1>Manage Exams</h1>
             </header>
             <section class="content-body">
                 <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
                 <div class="admin-content-header">
                     <h2 id="page-title"></h2>
-                    <button class="primary-btn" id="create-exam-btn"><i class='bx bx-plus'></i>Create New Exam</button>
+                    <button class="primary-btn" id="create-exam-btn">Create New Exam</button>
                 </div>
                 <table class="admin-table">
                     <thead><tr><th>Exam Name</th><th>Duration</th><th>Questions</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
@@ -244,11 +188,11 @@
                         <div class="form-field"><label for="exam-duration">Duration (minutes)</label><input type="number" id="exam-duration" required></div>
                         <div class="form-field full-width"><label for="exam-deadline-date">Deadline Date (Optional)</label><input type="date" id="exam-deadline-date"></div>
                     </div>
-                    <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn"><i class='bx bx-plus'></i>Add</button></div>
+                    <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn">Add Question</button></div>
                     <div id="questions-container"></div>
                 </form>
             </div>
-            <div class="modal-footer"><button type="button" class="secondary-btn">Cancel</button><button type="button" class="primary-btn" id="save-exam-btn">Save Exam</button></div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-exam-btn">Save Exam</button></div>
         </div>
     </div>
     <div class="actionsheet-overlay" id="actionsheet-overlay">
@@ -268,7 +212,7 @@
                 </div>
             </div>
             <ul class="actionsheet-list">
-                <li><button class="edit-exam-btn edit"><i class='bx bxs-edit-alt'></i> Edit Exam</button></li>
+                <li><button class="edit-exam-btn"><i class='bx bxs-edit'></i> Edit Exam</button></li>
                 <li><button class="delete-exam-btn delete"><i class='bx bxs-trash'></i> Delete Exam</button></li>
             </ul>
             <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
@@ -277,6 +221,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const firebaseConfig = {
@@ -295,7 +240,7 @@
 
             let currentSubject = null;
 
-            auth.onAuthStateChanged(async(user) => {
+            auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
@@ -306,7 +251,7 @@
             });
 
             const initSharedUI = (adminProfile) => {
-                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || 'https://i.pravatar.cc/40');
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
                 document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
                 document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
@@ -324,14 +269,14 @@
                 overlay.addEventListener('click', toggleMenu);
             };
 
-            const initPage = async() => {
+            const initPage = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const subjectId = urlParams.get('subjectId');
                 if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
                 const subjectDoc = await db.collection('subjects').doc(subjectId).get();
                 if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
                 currentSubject = { id: subjectId, ...subjectDoc.data() };
-                document.getElementById('page-title').textContent = `${currentSubject.name}`;
+                document.getElementById('page-title').textContent = `Exams in ${currentSubject.name}`;
                 loadExams();
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
@@ -350,39 +295,23 @@
                     tbody.innerHTML = '';
                     cardsContainer.innerHTML = '';
                     snapshot.forEach(doc => {
-                        const exam = { id: doc.id, ...doc.data() };
+                        const exam = doc.data();
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${exam.name}</td>
                             <td>${exam.duration / 60} min</td>
                             <td>${exam.questions.length}</td>
                             <td>${formatDate(exam.deadline)}</td>
-                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${exam.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
+                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
                             <td class="actions-cell">
-                                <button class="action-btn edit" data-id="${exam.id}" title="Edit Exam"><i class='bx bxs-edit-alt'></i></button>
-                                <button class="action-btn delete" data-id="${exam.id}" title="Delete Exam"><i class='bx bxs-trash'></i></button>
+                                <button class="action-btn edit" data-id="${doc.id}"><i class='bx bxs-edit'></i> Edit</button>
+                                <button class="action-btn delete" data-id="${doc.id}"><i class='bx bxs-trash'></i> Delete</button>
                             </td>`;
                         tbody.appendChild(row);
 
                         const card = document.createElement('div');
                         card.className = 'exam-card';
-                        card.innerHTML = `
-                            <div class="card-main">
-                                <div class="card-status ${!exam.isLocked ? 'status-active' : 'status-locked'}">
-                                    <i class='bx bxs-${!exam.isLocked ? 'lock-open-alt' : 'lock-alt'}'></i>
-                                </div>
-                                <div class="card-info">
-                                    <h3>${exam.name}</h3>
-                                    <div class="card-meta">
-                                        <span><i class='bx bx-time-five'></i> ${exam.duration / 60} min</span>
-                                        <span><i class='bx bx-help-circle'></i> ${exam.questions.length} Qs</span>
-                                        <span><i class='bx bx-calendar-x'></i> ${formatDate(exam.deadline)}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="card-actions">
-                                <button class="manage-mobile-btn" data-id="${exam.id}"><i class='bx bx-dots-vertical-rounded'></i></button>
-                            </div>`;
+                        card.innerHTML = `<h3>${exam.name}</h3><button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button>`;
                         cardsContainer.appendChild(card);
                     });
                 });
@@ -395,9 +324,10 @@
                 modal.querySelector('#exam-name').value = exam ? exam.name : '';
                 modal.querySelector('#exam-duration').value = exam ? exam.duration / 60 : '';
                 modal.querySelector('#exam-deadline-date').value = (exam && exam.deadline) ? new Date(exam.deadline.seconds * 1000).toISOString().split('T')[0] : '';
+                
                 const questionsContainer = modal.querySelector('#questions-container');
                 questionsContainer.innerHTML = '';
-                if (exam && exam.questions) exam.questions.forEach((q, i) => addQuestionToForm(q, i));
+                if (exam) exam.questions.forEach((q, i) => addQuestionToForm(q, i));
                 modal.classList.add('show');
             };
 
@@ -407,11 +337,11 @@
                 item.className = 'accordion-item';
                 item.innerHTML = `
                     <div class="accordion-header">
-                        <h4>Question ${index + 1}: ${question.title ? (question.title.substring(0,20) + '...') : 'New Question'}</h4>
+                        <h4>Question ${index + 1}: ${question.title || 'New Question'}</h4>
                         <i class='bx bx-chevron-down'></i>
                     </div>
                     <div class="accordion-content">
-                        <button type="button" class="remove-item-btn" title="Remove Question">&times;</button>
+                        <button type="button" class="remove-item-btn">&times;</button>
                         <div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div>
                         <div class="form-grid">
                             ${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
@@ -420,16 +350,13 @@
                         </div>
                     </div>`;
                 container.appendChild(item);
-                item.querySelector('.question-title').addEventListener('input', (e) => {
-                   const headerText = e.target.value ? (e.target.value.substring(0,20) + '...') : 'New Question';
-                   item.querySelector('h4').textContent = `Question ${index + 1}: ${headerText}`;
-                });
             };
 
-            const openActionsheet = async(examId) => {
+            const openActionsheet = async (examId) => {
                 const doc = await db.collection('exams').doc(examId).get();
-                if (!doc.exists) return;
+                if(!doc.exists) return;
                 const exam = doc.data();
+                
                 document.getElementById('actionsheet-title').textContent = exam.name;
                 document.getElementById('actionsheet-duration').textContent = `${exam.duration / 60} min`;
                 document.getElementById('actionsheet-questions').textContent = exam.questions.length;
@@ -437,9 +364,11 @@
                 const toggle = document.getElementById('actionsheet-lock-toggle');
                 toggle.checked = !exam.isLocked;
                 toggle.dataset.id = examId;
+                
                 const sheet = document.getElementById('actionsheet');
                 sheet.querySelector('.edit-exam-btn').dataset.id = examId;
                 sheet.querySelector('.delete-exam-btn').dataset.id = examId;
+
                 document.getElementById('actionsheet-overlay').classList.add('show');
                 sheet.classList.add('show');
             };
@@ -448,17 +377,18 @@
                 document.getElementById('actionsheet-overlay').classList.remove('show');
                 document.getElementById('actionsheet').classList.remove('show');
             };
-
+            
             document.addEventListener('click', async e => {
                 const button = e.target.closest('button');
                 if (!button) return;
+                
                 if (button.id === 'create-exam-btn') openExamModal();
-                if (button.matches('.edit')) {
+                if (button.matches('.edit-exam-btn, .edit')) {
                     closeActionsheet();
                     const doc = await db.collection('exams').doc(button.dataset.id).get();
                     openExamModal({ id: doc.id, ...doc.data() });
                 }
-                if (button.matches('.delete')) {
+                if (button.matches('.delete-exam-btn, .delete')) {
                     closeActionsheet();
                     if (confirm('Are you sure you want to delete this exam?')) {
                         await db.collection('exams').doc(button.dataset.id).delete();
@@ -471,45 +401,30 @@
                     button.classList.toggle('active');
                     button.nextElementSibling.classList.toggle('active');
                 }
-                if (button.matches('#exam-modal .close-btn, #exam-modal .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
-                if (button.id === 'actionsheet-cancel-btn') closeActionsheet();
+                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
+                if(button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
             });
             
-            document.addEventListener('click', (e) => {
-                if(e.target.id === 'actionsheet-overlay') closeActionsheet();
-            });
-
-            document.querySelector('body').addEventListener('change', async e => {
-                if (e.target.matches('.lock-toggle, #actionsheet-lock-toggle')) {
+            document.querySelector('.admin-table tbody, .actionsheet-status-control').addEventListener('change', async e => {
+                 if (e.target.matches('.lock-toggle, #actionsheet-lock-toggle')) {
                     await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
                 }
             });
 
-            document.getElementById('save-exam-btn').addEventListener('click', async() => {
-                const form = document.getElementById('exam-form');
-                if(!form.checkValidity()) {
-                    form.reportValidity();
-                    return;
-                }
+            document.getElementById('save-exam-btn').addEventListener('click', async () => {
                 const id = document.getElementById('exam-id').value;
                 const questions = [];
                 document.querySelectorAll('#questions-container .accordion-item').forEach(item => {
                     questions.push({
-                        title: item.querySelector('.question-title').value,
-                        options: [...item.querySelectorAll('.question-option')].map(opt => opt.value),
-                        correctAnswer: parseInt(item.querySelector('.question-correct').value, 10),
-                        points: parseInt(item.querySelector('.question-points').value, 10),
-                        type: 'Mcq'
+                        title: item.querySelector('.question-title').value, options: [...item.querySelectorAll('.question-option')].map(opt => opt.value),
+                        correctAnswer: parseInt(item.querySelector('.question-correct').value, 10), points: parseInt(item.querySelector('.question-points').value, 10), type: 'Mcq'
                     });
                 });
                 const date = document.getElementById('exam-deadline-date').value;
                 const deadline = date ? firebase.firestore.Timestamp.fromDate(new Date(`${date}T23:59:59`)) : null;
                 const data = {
-                    name: document.getElementById('exam-name').value.trim(),
-                    duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
-                    subjectId: currentSubject.id,
-                    questions,
-                    deadline
+                    name: document.getElementById('exam-name').value, duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
+                    subjectId: currentSubject.id, questions, deadline
                 };
                 if (id) {
                     await db.collection('exams').doc(id).update(data);
