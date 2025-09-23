@@ -351,7 +351,7 @@
                     document.getElementById('featured-course-subject').textContent = `in ${subjects.get(featuredCourse.subjectId)?.name || ''}`;
                     document.getElementById('featured-course-progress').style.width = `${percent}%`;
                     document.getElementById('featured-course-percent').textContent = `${percent}% Complete`;
-                    document.getElementById('featured-course-link').href = `course.html?id=${featuredCourse.id}`;
+                    document.getElementById('featured-course-link').href = `course-view.html?id=${featuredCourse.id}`;
                     
                     const outlineList = document.getElementById('course-outline-list');
                     outlineList.innerHTML = '';
