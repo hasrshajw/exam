@@ -80,6 +80,26 @@
         .question-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; position: relative; }
         .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
+        .actionsheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
+        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .actionsheet.show { transform: translateY(0); }
+        .actionsheet-header { text-align: center; padding-bottom: 1rem; }
+        .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
+        .actionsheet-title { font-size: 1.25rem; font-weight: 600; }
+        .actionsheet-content { padding: 1rem 0; border-top: 1px solid var(--border-color); margin-top: 1rem; }
+        .actionsheet-content h4 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem; }
+        .actionsheet-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: center; margin-bottom: 1rem; }
+        .actionsheet-details p { font-size: 0.9rem; }
+        .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+        .actionsheet-list { list-style: none; }
+        .actionsheet-list li, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
+        .actionsheet-list button:hover { background-color: var(--hover-bg); }
+        .actionsheet-list i { font-size: 1.5rem; color: var(--brand-purple); width: 24px; text-align: center; }
+        .actionsheet-list button.delete i { color: var(--danger-color); }
+        .actionsheet-cancel { margin-top: 0.5rem; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); }
+        .mobile-card-view { display: none; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -92,6 +112,10 @@
             .sidebar-close-btn:hover { color: #b91c1c; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+            .admin-table { display: none; }
+            .mobile-card-view { display: flex; flex-direction: column; gap: 1rem; }
+            .subject-card { display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 1rem 1.5rem; }
+            .subject-card h3 { font-size: 1.125rem; font-weight: 600; }
         }
     </style>
 </head>
@@ -136,9 +160,10 @@
                     <button class="primary-btn" id="create-exam-btn">Create New Exam</button>
                 </div>
                 <table class="admin-table">
-                    <thead><tr><th>Exam Name</th><th>Duration</th><th>Questions</th><th>Status</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Exam Name</th><th>Duration</th><th>Questions</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
                     <tbody id="exams-tbody"></tbody>
                 </table>
+                <div class="mobile-card-view" id="exams-cards"></div>
             </section>
         </main>
     </div>
@@ -149,12 +174,36 @@
             <div class="modal-body">
                 <form id="exam-form">
                     <input type="hidden" id="exam-id">
-                    <div class="form-grid"><div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div><div class="form-field"><label for="exam-duration">Duration (minutes)</label><input type="number" id="exam-duration" required></div></div>
+                    <div class="form-grid">
+                        <div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div>
+                        <div class="form-field"><label for="exam-duration">Duration (minutes)</label><input type="number" id="exam-duration" required></div>
+                        <div class="form-field"><label for="exam-deadline-date">Deadline Date</label><input type="date" id="exam-deadline-date"></div>
+                        <div class="form-field"><label for="exam-deadline-time">Deadline Time</label><input type="time" id="exam-deadline-time"></div>
+                    </div>
                     <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn">Add Question</button></div>
                     <div id="questions-container"></div>
                 </form>
             </div>
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-exam-btn">Save Exam</button></div>
+        </div>
+    </div>
+
+    <div class="actionsheet-overlay" id="actionsheet-overlay">
+        <div class="actionsheet" id="actionsheet">
+            <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
+            <div class="actionsheet-content">
+                <div class="actionsheet-details">
+                    <div><p>Duration</p><strong id="actionsheet-duration"></strong></div>
+                    <div><p>Questions</p><strong id="actionsheet-questions"></strong></div>
+                    <div><p>Status</p><strong id="actionsheet-status"></strong></div>
+                    <div><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
+                </div>
+            </div>
+            <ul class="actionsheet-list">
+                <li><button class="edit-exam-btn"><i class='bx bxs-edit'></i> Edit Exam</button></li>
+                <li><button class="delete-exam-btn delete"><i class='bx bxs-trash'></i> Delete Exam</button></li>
+            </ul>
+            <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
         </div>
     </div>
 
@@ -213,22 +262,26 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const subjectId = urlParams.get('subjectId');
                 if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
-
                 const subjectDoc = await db.collection('subjects').doc(subjectId).get();
                 if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
-
                 currentSubject = { id: subjectId, ...subjectDoc.data() };
                 document.getElementById('page-title').textContent = `Exams in ${currentSubject.name}`;
                 loadExams();
-                
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
+            const formatDate = (timestamp) => {
+                if (!timestamp) return "No Deadline";
+                return new Date(timestamp.seconds * 1000).toLocaleString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            };
+
             const loadExams = () => {
                 const tbody = document.getElementById('exams-tbody');
+                const cardsContainer = document.getElementById('exams-cards');
                 db.collection('exams').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
                     tbody.innerHTML = '';
+                    cardsContainer.innerHTML = '';
                     snapshot.forEach(doc => {
                         const exam = doc.data();
                         const row = document.createElement('tr');
@@ -236,13 +289,18 @@
                             <td>${exam.name}</td>
                             <td>${exam.duration / 60} min</td>
                             <td>${exam.questions.length}</td>
+                            <td>${formatDate(exam.deadline)}</td>
                             <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
-                            <td>
-                                <button class="action-btn edit-exam-btn" data-id="${doc.id}">Edit</button>
-                                <button class="delete-btn delete-exam-btn" data-id="${doc.id}">Delete</button>
-                            </td>
-                        `;
+                            <td class="actions-cell">
+                                <button class="action-btn edit" data-id="${doc.id}"><i class='bx bxs-edit'></i> Edit</button>
+                                <button class="action-btn delete" data-id="${doc.id}"><i class='bx bxs-trash'></i> Delete</button>
+                            </td>`;
                         tbody.appendChild(row);
+
+                        const card = document.createElement('div');
+                        card.className = 'subject-card';
+                        card.innerHTML = `<h3>${exam.name}</h3><button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button>`;
+                        cardsContainer.appendChild(card);
                     });
                 });
             };
@@ -253,6 +311,16 @@
                 modal.querySelector('#exam-id').value = exam ? exam.id : '';
                 modal.querySelector('#exam-name').value = exam ? exam.name : '';
                 modal.querySelector('#exam-duration').value = exam ? exam.duration / 60 : '';
+                
+                if (exam && exam.deadline) {
+                    const d = new Date(exam.deadline.seconds * 1000);
+                    modal.querySelector('#exam-deadline-date').value = d.toISOString().split('T')[0];
+                    modal.querySelector('#exam-deadline-time').value = d.toTimeString().split(' ')[0].substring(0, 5);
+                } else {
+                    modal.querySelector('#exam-deadline-date').value = '';
+                    modal.querySelector('#exam-deadline-time').value = '';
+                }
+
                 const questionsContainer = modal.querySelector('#questions-container');
                 questionsContainer.innerHTML = '';
                 if (exam) exam.questions.forEach(addQuestionToForm);
@@ -262,32 +330,55 @@
             const addQuestionToForm = (question = {}) => {
                 const card = document.createElement('div');
                 card.className = 'question-card';
-                card.innerHTML = `
-                    <button type="button" class="remove-item-btn">&times;</button>
-                    <div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div>
-                    <div class="form-grid">
-                        ${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
-                        <div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
-                        <div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div>
-                    </div>`;
+                card.innerHTML = `<button type="button" class="remove-item-btn">&times;</button><div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div><div class="form-grid">${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}<div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div>`;
                 document.getElementById('questions-container').appendChild(card);
+            };
+
+            const openActionsheet = async (examId) => {
+                const doc = await db.collection('exams').doc(examId).get();
+                if(!doc.exists) return;
+                const exam = doc.data();
+                
+                document.getElementById('actionsheet-title').textContent = exam.name;
+                document.getElementById('actionsheet-duration').textContent = `${exam.duration / 60} min`;
+                document.getElementById('actionsheet-questions').textContent = exam.questions.length;
+                document.getElementById('actionsheet-status').textContent = exam.isLocked ? 'Locked' : 'Unlocked';
+                document.getElementById('actionsheet-deadline').textContent = formatDate(exam.deadline);
+                
+                const sheet = document.getElementById('actionsheet');
+                sheet.querySelector('.edit-exam-btn').dataset.id = examId;
+                sheet.querySelector('.delete-exam-btn').dataset.id = examId;
+
+                document.getElementById('actionsheet-overlay').classList.add('show');
+                sheet.classList.add('show');
+            };
+
+            const closeActionsheet = () => {
+                document.getElementById('actionsheet-overlay').classList.remove('show');
+                document.getElementById('actionsheet').classList.remove('show');
             };
             
             document.addEventListener('click', async e => {
-                const target = e.target;
-                if (target.id === 'create-exam-btn') openExamModal();
-                if (target.matches('.edit-exam-btn')) {
-                    const doc = await db.collection('exams').doc(target.dataset.id).get();
+                const button = e.target.closest('button');
+                if (!button) return;
+                
+                if (button.id === 'create-exam-btn') openExamModal();
+                if (button.matches('.edit-exam-btn, .edit')) {
+                    closeActionsheet();
+                    const doc = await db.collection('exams').doc(button.dataset.id).get();
                     openExamModal({ id: doc.id, ...doc.data() });
                 }
-                if (target.matches('.delete-exam-btn')) {
+                if (button.matches('.delete-exam-btn, .delete')) {
+                    closeActionsheet();
                     if (confirm('Are you sure you want to delete this exam?')) {
-                        await db.collection('exams').doc(target.dataset.id).delete();
+                        await db.collection('exams').doc(button.dataset.id).delete();
                     }
                 }
-                if (target.id === 'add-question-btn') addQuestionToForm();
-                if (target.matches('.remove-item-btn')) target.closest('.question-card').remove();
-                if (target.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) target.closest('.modal-overlay').classList.remove('show');
+                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
+                if (button.id === 'add-question-btn') addQuestionToForm();
+                if (button.matches('.remove-item-btn')) button.closest('.question-card').remove();
+                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
+                if(button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
             });
             
             document.getElementById('exams-tbody').addEventListener('change', async e => {
@@ -300,20 +391,24 @@
                 const id = document.getElementById('exam-id').value;
                 const questions = [];
                 document.querySelectorAll('#questions-container .question-card').forEach(card => {
-                    const options = [...card.querySelectorAll('.question-option')].map(opt => opt.value);
                     questions.push({
-                        title: card.querySelector('.question-title').value,
-                        options: options,
-                        correctAnswer: parseInt(card.querySelector('.question-correct').value, 10),
-                        points: parseInt(card.querySelector('.question-points').value, 10),
-                        type: 'Mcq'
+                        title: card.querySelector('.question-title').value, options: [...card.querySelectorAll('.question-option')].map(opt => opt.value),
+                        correctAnswer: parseInt(card.querySelector('.question-correct').value, 10), points: parseInt(card.querySelector('.question-points').value, 10), type: 'Mcq'
                     });
                 });
+                const date = document.getElementById('exam-deadline-date').value;
+                const time = document.getElementById('exam-deadline-time').value;
+                let deadline = null;
+                if(date && time) {
+                    deadline = firebase.firestore.Timestamp.fromDate(new Date(`${date}T${time}`));
+                }
+
                 const data = {
                     name: document.getElementById('exam-name').value,
                     duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
                     subjectId: currentSubject.id,
-                    questions
+                    questions,
+                    deadline
                 };
                 if (id) {
                     await db.collection('exams').doc(id).update(data);
