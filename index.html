@@ -143,16 +143,45 @@
         .actionsheet-details p { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
         .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
         .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: var(--hover-bg); border-radius: 12px; }
-        .actionsheet-list { padding-top: 1rem; }
-        .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
-
-        .delete-exam-btn delete { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; color: var(--text-primary); width: 100%; background: none; border: 0.5px solid black; cursor: pointer; text-align: left; margin-bottom: 2px; }
-        .actionsheet-list button:hover { background-color: var(--hover-bg); }
-        .actionsheet-list button svg { width: 20px; height: 20px; flex-shrink: 0; color: var(--text-secondary); }
-        .actionsheet-list button.edit svg { color: var(--text-primary); }
+.actionsheet-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+.actionsheet-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.85rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.actionsheet-btn:active {
+    transform: scale(0.98);
+}
+.actionsheet-btn svg {
+    width: 20px;
+    height: 20px;
+}
+.actionsheet-btn.edit {
+    background-color: var(--hover-bg);
+    color: var(--text-primary);
+}
+.actionsheet-btn.delete {
+    background-color: var(--danger-color);
+    color: white;
+}
+.actionsheet-btn.delete:hover {
+    background-color: var(--danger-hover);
+}
         .actionsheet-list button.delete svg { color: var(--danger-color); }
         .actionsheet-cancel { margin-top: 0.5rem; }
-        
         .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); border: none; cursor: pointer; }
 
         .mobile-card-view { display: none; }
@@ -270,20 +299,16 @@
                     <label class="lock-switch"><input type="checkbox" id="actionsheet-lock-toggle"><span class="slider"></span></label>
                 </div>
             </div>
-            <ul class="actionsheet-list">
-                <li>
-                    <button class="edit-exam-btn edit">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
-                        Edit Exam
-                    </button>
-                </li>
-                <li>
-                    <button class="delete-exam-btn delete">
-                        <svg viewBox="0 0 24 24" fill="#ffffff" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
-                        Delete Exam
-                    </button>
-                </li>
-            </ul>
+<div class="actionsheet-actions">
+    <button class="actionsheet-btn edit-exam-btn edit">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+        Edit Exam
+    </button>
+    <button class="actionsheet-btn delete-exam-btn delete">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+        Delete
+    </button>
+</div>
             <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
         </div>
     </div>
