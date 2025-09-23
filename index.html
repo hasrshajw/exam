@@ -20,6 +20,8 @@
             --hover-bg: #F3F4F6;
             --danger-color: #EF4444;
             --danger-hover: #DC2626;
+            --danger-bg-light: #FEE2E2;
+            --danger-text-dark: #B91C1C;
             --success-color: #10B981;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
@@ -145,14 +147,14 @@
         .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: var(--hover-bg); border-radius: 12px; }
         
         .actionsheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem 0 0.5rem 0; }
-        .actionsheet-btn { padding: 0.85rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: background-color 0.2s ease, transform 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .actionsheet-btn svg { width: 16px; height: 16px; }
-        .actionsheet-btn:active { transform: scale(0.98); }
-        .actionsheet-btn--primary { background-color: var(--hover-bg); color: var(--text-primary); }
-        .actionsheet-btn--primary:hover { background-color: var(--border-color); }
-        .actionsheet-btn--delete { background-color: var(--danger-color); color: white; }
-        .actionsheet-btn--delete:hover { background-color: var(--danger-hover); }
-        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); color: var(--text-secondary); font-weight: 600; padding: 0.85rem; border: none; cursor: pointer; border-radius: 8px; }
+        .actionsheet-btn { padding: 0.9rem 1rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .actionsheet-btn svg { width: 18px; height: 18px; }
+        .actionsheet-btn:active { transform: scale(0.97); }
+        .actionsheet-btn--edit { background-color: var(--hover-bg); color: var(--text-primary); }
+        .actionsheet-btn--edit:hover { background-color: var(--border-color); }
+        .actionsheet-btn--delete { background-color: var(--danger-bg-light); color: var(--danger-text-dark); }
+        .actionsheet-btn--delete:hover { background-color: #FECACA; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); color: var(--text-secondary); font-weight: 600; padding: 0.9rem; border: none; cursor: pointer; border-radius: 12px; transition: background-color 0.2s ease; }
         .actionsheet-cancel button:hover { background-color: var(--hover-bg); }
 
         .mobile-card-view { display: none; }
@@ -173,7 +175,7 @@
             .card-header h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; flex-grow: 1; }
             .status-badge { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 99px; flex-shrink: 0; }
             .status-badge.active { background-color: #D1FAE5; color: #065F46; }
-            .status-badge.locked { background-color: #FEE2E2; color: #991B1B; }
+            .status-badge.locked { background-color: var(--danger-bg-light); color: var(--danger-text-dark); }
             .card-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; color: var(--text-secondary); font-size: 0.875rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
             .info-item { display: flex; align-items: center; gap: 0.5rem; }
             .info-item i { font-size: 1.1rem; }
@@ -271,7 +273,7 @@
                 </div>
             </div>
             <div class="actionsheet-actions">
-                <button class="actionsheet-btn actionsheet-btn--primary edit-exam-btn">
+                <button class="actionsheet-btn actionsheet-btn--edit edit-exam-btn">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
                     Edit
                 </button>
