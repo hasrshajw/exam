@@ -277,27 +277,42 @@
             };
 
             const deleteSubject = async (subjectId) => {
-                if (confirm('Are you sure? This will delete all associated courses, lessons, enrollments, and exams.')) {
-                    closeActionsheet();
-                    const batch = db.batch();
-                    const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
-                    const courseIds = coursesQuery.docs.map(d => d.id);
+                if (!confirm('Are you sure? This will delete the subject and ALL of its courses, lessons, enrollments, and exams permanently.')) return;
+                
+                closeActionsheet();
+                const batch = db.batch();
+                
+                const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
+                const courseIds = coursesQuery.docs.map(d => d.id);
 
-                    if (courseIds.length > 0) {
-                        const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
-                        lessonsQuery.forEach(doc => batch.delete(doc.ref));
-                        
-                        const enrollmentsQuery = await db.collection('enrollments').where('courseId', 'in', courseIds).get();
-                        enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
+                if (courseIds.length > 0) {
+                    const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
+                    lessonsQuery.forEach(doc => batch.delete(doc.ref));
+
+                    const enrollmentsQuery = await db.collection('enrollments').where('courseId', 'in', courseIds).get();
+                    enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
+
+                    const usersQuery = await db.collection('users').get();
+                    for (const userDoc of usersQuery.docs) {
+                        const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
+                        progressQuery.forEach(doc => batch.delete(doc.ref));
                     }
-                    coursesQuery.forEach(doc => batch.delete(doc.ref));
-                    
-                    const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
-                    examsQuery.forEach(doc => batch.delete(doc.ref));
-                    
-                    batch.delete(db.collection('subjects').doc(subjectId));
-                    await batch.commit();
                 }
+                
+                coursesQuery.forEach(doc => batch.delete(doc.ref));
+                
+                const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
+                const examIds = examsQuery.docs.map(d => d.id);
+
+                if (examIds.length > 0) {
+                     const scoresQuery = await db.collection('scores').where('examId', 'in', examIds).get();
+                     scoresQuery.forEach(doc => batch.delete(doc.ref));
+                }
+                examsQuery.forEach(doc => batch.delete(doc.ref));
+                
+                batch.delete(db.collection('subjects').doc(subjectId));
+                
+                await batch.commit().catch(err => console.error("Deletion failed: ", err));
             };
 
             document.addEventListener('click', async e => {
