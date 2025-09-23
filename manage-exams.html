@@ -3,16 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Exams - Admin</title>
+    <title>Course & Content - Exam Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; --success-color: #10B981; }
+        :root {
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #002726;
+            --text-secondary: #6B7280;
+            --brand-green: #33C375;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
-        a { text-decoration: none; }
+        a { text-decoration: none; color: inherit; }
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
@@ -23,7 +33,7 @@
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); }
         .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
-        .main-nav a.active i { color: var(--brand-purple); }
+        .main-nav a.active i { color: var(--brand-green); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .profile-details { flex-grow: 1; min-width: 0; }
@@ -40,93 +50,75 @@
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--widget-bg); }
         .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .content-body { padding: 2rem 3rem; }
+        .content-body { padding: 0; background-color: #FFFFFF; }
         .menu-toggle { display: none; }
         .sidebar-close-btn { display: none; }
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 2rem; font-weight: 700; }
-        .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
-        .primary-btn:hover { background-color: #5B21B6; }
-        .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
-        .back-btn { margin-bottom: 1rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
-        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); }
-        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .admin-table th { background: #F9FAFB; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; }
-        .admin-table tr:last-child td { border-bottom: none; }
-        .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; }
-        .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
-        .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .lock-switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger-color); transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--success-color); }
-        input:checked + .slider:before { transform: translateX(20px); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
-        .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .modal-header h3 { font-size: 1.5rem; }
-        .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
-        .form-field { margin-bottom: 1rem; }
-        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
-        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .full-width { grid-column: 1 / -1; }
-        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
-        .question-accordion-item { border: 1px solid var(--border-color); border-radius: 8px; margin-top: 1rem; overflow: hidden; }
-        .accordion-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem; cursor: pointer; background-color: #F9FAFB; }
-        .accordion-header h5 { font-weight: 600; }
-        .accordion-header i { transition: transform 0.3s ease; }
-        .accordion-item-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; padding: 0 1rem; }
-        .accordion-item-content.open { max-height: 1000px; padding: 1.5rem 1rem; }
-        .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; z-index: 5; }
-        .question-card { position: relative; }
-        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
-        .actionsheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
-        .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
-        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
-        .actionsheet.show { transform: translateY(0); }
-        .actionsheet-header { text-align: center; padding-bottom: 1rem; }
-        .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
-        .actionsheet-title { font-size: 1.25rem; font-weight: 600; }
-        .actionsheet-content { padding: 1rem 0; border-top: 1px solid var(--border-color); margin-top: 1rem; }
-        .actionsheet-content h4 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem; }
-        .actionsheet-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; text-align: left; margin-bottom: 1rem; }
-        .actionsheet-details p { font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); }
-        .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
-        .actionsheet-list { list-style: none; }
-        .actionsheet-list li, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
-        .actionsheet-list button:hover { background-color: var(--hover-bg); }
-        .actionsheet-list i { font-size: 1.5rem; color: var(--brand-purple); width: 24px; text-align: center; }
-        .actionsheet-list button.delete i { color: var(--danger-color); }
-        .actionsheet-cancel { margin-top: 0.5rem; }
-        .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); }
-        .mobile-card-view { display: none; }
+        
+        .sec-1-container { width: 100%; max-width: 1100px; padding: 2rem 1.5rem; margin: 0 auto; }
+        .sec-1-heading { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); text-align: left; margin-bottom: 1.5rem; }
+        .sec-1-cards-grid { display: flex; flex-direction: column; gap: 1.25rem; }
+        .sec-1-card { background-color: #FFFFFF; border-radius: 1rem; padding: 1.5rem; border: 1px solid var(--border-color); position: relative; overflow: hidden; display: flex; flex-direction: column; }
+        .sec-1-card__title { font-size: 1.0625rem; font-weight: 700; line-height: 1.4; color: var(--text-primary); margin-bottom: 0.5rem; }
+        .sec-1-card__text { font-size: 0.875rem; color: #6A6A6A; line-height: 1.6; flex-grow: 1; margin-bottom: 1rem; }
+        .sec-1-card__link { font-size: 0.8125rem; font-weight: 600; color: var(--brand-green); }
+        .sec-1-card::before { font-family: 'Vazirmatn', sans-serif; position: absolute; font-size: 120px; font-weight: 700; color: var(--hover-bg); z-index: 1; user-select: none; line-height: 1; bottom: -20px; }
+        .sec-1-card--one::before { content: '1'; right: 5px; } .sec-1-card--two::before { content: '2'; right: 10px; } .sec-1-card--three::before { content: '3'; right: 10px; }
+        .sec-1-card > * { position: relative; z-index: 2; }
+
+        .sec-2-container { width: 100%; max-width: 1300px; margin: 0 auto; padding: 2rem 1rem; }
+        .sec-2-heading { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.5rem; }
+        .sec-2-grid { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .sec-2-panel { display: flex; align-items: center; gap: 0.75rem; background-color: var(--hover-bg); border: 1px solid var(--border-color); padding: 0.75rem 1rem; border-radius: 1rem; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .sec-2-panel:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); }
+        .sec-2-panel__icon-wrapper { flex-shrink: 0; width: 40px; height: 40px; background-color: #e0ebea; border-radius: 0.75rem; display: flex; justify-content: center; align-items: center; }
+        .sec-2-panel__icon { width: 20px; height: 20px; color: var(--brand-green); }
+        .sec-2-panel__title { font-size: 0.9375rem; font-weight: 500; color: var(--text-primary); white-space: nowrap; }
+        
+        .lower-half { background-color: var(--text-primary); padding: 190px 40px 60px 40px; margin-top: -150px; position: relative;}
+        .subscribe-card { background: linear-gradient(135deg, #003d3b, #002726); color: #ffffff; border-radius: 24px; padding: 60px; display: flex; justify-content: space-between; align-items: center; gap: 40px; box-shadow: 0 10px 40px rgba(0, 39, 38, 0.2); border: 1px solid rgba(255, 255, 255, 0.1); position: relative; width: 90%; max-width: 1200px; margin: 0 auto; top: -150px; }
+        .subscribe-info h2 { font-size: 2.8rem; font-weight: 600; line-height: 1.2; margin-bottom: 1rem; }
+        .subscribe-info p { font-size: 1rem; color: #d1d5db; line-height: 1.6; max-width: 90%; }
+        .subscribe-form-area { flex-basis: 45%; }
+        .subscribe-form-area label { display: block; font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; color: #ffffff; }
+        .subscribe-form { display: flex; gap: 12px; }
+        .input-with-prefix { flex-grow: 1; display: flex; align-items: center; background-color: rgba(255, 255, 255, 0.1); border: 2px solid transparent; border-radius: 12px; padding: 0 20px; transition: border-color 0.3s ease; }
+        .input-with-prefix .prefix { color: #ffffff; font-size: 1rem; margin-right: 8px; }
+        .subscribe-form input[type="tel"] { width: 100%; background-color: transparent; border: none; color: #ffffff; padding: 16px 0; font-size: 1rem; outline: none; }
+        .subscribe-form input[type="tel"]::placeholder { color: #b3d1d0; }
+        .input-with-prefix:focus-within { border-color: var(--brand-green); }
+        .subscribe-form button { background-color: var(--brand-green); color: var(--text-primary); border: none; padding: 16px 32px; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; white-space: nowrap; transition: background-color 0.3s ease; }
+        .subscribe-form button:hover { background-color: #2da765; }
+
+        @media (min-width: 1024px) {
+            .sec-1-heading { font-size: 1.875rem; margin-bottom: 2.5rem; }
+            .sec-1-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.75rem; }
+            .sec-2-heading { font-size: 2rem; margin-bottom: 2rem; }
+            .sec-2-grid { gap: 1rem; }
+        }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
-            .content-body { padding: 1.5rem; }
             .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; transition: background-color 0.2s ease; }
             .menu-toggle:hover { background-color: var(--hover-bg); }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; transition: color 0.2s ease; }
             .sidebar-close-btn:hover { color: #b91c1c; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .admin-table { display: none; }
-            .mobile-card-view { display: flex; flex-direction: column; gap: 1rem; }
-            .subject-card { display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 1rem 1.5rem; }
-            .subject-card h3 { font-size: 1.125rem; font-weight: 600; }
+        }
+        @media (max-width: 768px) {
+            .subscribe-card { flex-direction: column; align-items: flex-start; padding: 40px 24px; }
+            .subscribe-form { flex-direction: column; }
+            .lower-half { padding: 280px 20px 40px 20px; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Authenticating...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
     <div class="overlay" id="overlay"></div>
     <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
@@ -134,9 +126,12 @@
             <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
-                    <li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
-                    <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
+                    <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
+                    <li><a href="course.html" class="active"><i class='bx bx-book-open'></i> Course & Content</a></li>
+                    <li><a href="leaderboard.html"><i class='bx bx-bar-chart-alt-2'></i> Leaderboard</a></li>
+                    <li><a href="programs.html"><i class='bx bx-briefcase-alt-2'></i> Explore Programs</a></li>
+                    <li><a href="community.html"><i class='bx bx-group'></i> Community</a></li>
+                    <li><a href="help.html"><i class='bx bx-help-circle'></i> Help & Support</a></li>
                 </ul>
             </nav>
             <div class="profile-section" id="profile-section">
@@ -150,6 +145,7 @@
                     <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
                 </div>
                 <ul class="popup-list">
+                    <li><a href="profile.html"><i class='bx bx-user'></i> Profile</a></li>
                     <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
                 </ul>
             </div>
@@ -157,64 +153,38 @@
         <main class="main-area">
             <header class="main-header">
                 <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
-                <h1>Manage Exams</h1>
+                <h1>Course & Content</h1>
             </header>
-            <section class="content-body">
-                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
-                <div class="admin-content-header">
-                    <h2 id="page-title"></h2>
-                    <button class="primary-btn" id="create-exam-btn">Create New Exam</button>
-                </div>
-                <table class="admin-table">
-                    <thead><tr><th>Exam Name</th><th>Duration</th><th>Questions</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody id="exams-tbody"></tbody>
-                </table>
-                <div class="mobile-card-view" id="exams-cards"></div>
-            </section>
-        </main>
-    </div>
-
-    <div class="modal-overlay" id="exam-modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="exam-modal-title"></h3><button class="close-btn">&times;</button></div>
-            <div class="modal-body">
-                <form id="exam-form">
-                    <input type="hidden" id="exam-id">
-                    <div class="form-grid">
-                        <div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div>
-                        <div class="form-field"><label for="exam-duration">Duration (minutes)</label><input type="number" id="exam-duration" required></div>
-                        <div class="form-field full-width"><label for="exam-deadline-date">Deadline Date (Optional)</label><input type="date" id="exam-deadline-date"></div>
+            <div class="content-body">
+                <section class="sec-1-container">
+                    <h2 class="sec-1-heading">What you'll learn</h2>
+                    <div class="sec-1-cards-grid">
+                        <div class="sec-1-card sec-1-card--one"><h3 class="sec-1-card__title">Comprehensive Curriculum</h3><p class="sec-1-card__text">Master subjects with structured courses and hands-on lessons.</p><a href="#subjects-section" class="sec-1-card__link">View Courses &gt;</a></div>
+                        <div class="sec-1-card sec-1-card--two"><h3 class="sec-1-card__title">Practice Exams</h3><p class="sec-1-card__text">Test your knowledge with high-quality practice questions.</p><a href="#subjects-section" class="sec-1-card__link">View Exams &gt;</a></div>
+                        <div class="sec-1-card sec-1-card--three"><h3 class="sec-1-card__title">Career Readiness</h3><p class="sec-1-card__text">Prepare for interviews with curated questions and real-world scenarios.</p><a href="#subjects-section" class="sec-1-card__link">Explore Subjects &gt;</a></div>
                     </div>
-                    <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn">Add Question</button></div>
-                    <div id="questions-container"></div>
-                </form>
-            </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-exam-btn">Save Exam</button></div>
-        </div>
-    </div>
-
-    <div class="actionsheet-overlay" id="actionsheet-overlay">
-        <div class="actionsheet" id="actionsheet">
-            <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
-            <div class="actionsheet-content">
-                <div class="actionsheet-details">
-                    <div><p>Duration</p><strong id="actionsheet-duration"></strong></div>
-                    <div><p>Questions</p><strong id="actionsheet-questions"></strong></div>
-                </div>
-                <div class="actionsheet-details">
-                    <div style="text-align: left;"><p>Status</p><strong id="actionsheet-status-text"></strong></div>
-                    <div style="display: flex; justify-content: flex-end; align-items: center;"><label class="lock-switch"><input type="checkbox" id="actionsheet-status-toggle"><span class="slider"></span></label></div>
-                </div>
-                 <div class="actionsheet-details">
-                     <div style="grid-column: 1 / -1; text-align: left;"><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
+                </section>
+                <section class="sec-2-container" id="subjects-section">
+                    <h2 class="sec-2-heading">Learn the skills that matter most</h2>
+                    <div class="sec-2-grid" id="subjects-grid"></div>
+                </section>
+                <div class="lower-half">
+                    <div class="subscribe-card">
+                        <div class="subscribe-info">
+                            <h2>Need Assistance?</h2>
+                            <p>From web development to digital services, we’re here to turn your vision into reality. Let’s collaborate today.</p>
+                        </div>
+                        <div class="subscribe-form-area">
+                            <label for="mobile">Request a callback</label>
+                            <form class="subscribe-form">
+                                <div class="input-with-prefix"><span class="prefix">+91</span><input type="tel" id="mobile" name="mobile" placeholder="Enter your mobile number" required maxlength="10" pattern="\d{10}"></div>
+                                <button type="submit">Get a Call</button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <ul class="actionsheet-list">
-                <li><button class="edit-exam-btn"><i class='bx bxs-edit'></i> Edit Exam</button></li>
-                <li><button class="delete-exam-btn delete"><i class='bx bxs-trash'></i> Delete Exam</button></li>
-            </ul>
-            <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
-        </div>
+        </main>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -235,24 +205,22 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-            const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
-
-            let currentSubject = null;
 
             auth.onAuthStateChanged(async (user) => {
-                if (user && user.email === ADMIN_EMAIL) {
+                if (user) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
-                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
-                    initPage();
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                    initSharedUI(userDoc.data());
+                    loadSubjects();
                 } else {
                     window.location.href = 'index.html';
                 }
             });
 
-            const initSharedUI = (adminProfile) => {
-                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
-                document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
-                document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
+            const initSharedUI = (userProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
@@ -266,175 +234,31 @@
                 menuToggle.addEventListener('click', toggleMenu);
                 closeBtn.addEventListener('click', toggleMenu);
                 overlay.addEventListener('click', toggleMenu);
-            };
-
-            const initPage = async () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const subjectId = urlParams.get('subjectId');
-                if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
-                const subjectDoc = await db.collection('subjects').doc(subjectId).get();
-                if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
-                currentSubject = { id: subjectId, ...subjectDoc.data() };
-                document.getElementById('page-title').textContent = `Exams in ${currentSubject.name}`;
-                loadExams();
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
-            const formatDate = (timestamp) => {
-                if (!timestamp) return "No Deadline";
-                return new Date(timestamp.seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-            };
-
-            const loadExams = () => {
-                const tbody = document.getElementById('exams-tbody');
-                const cardsContainer = document.getElementById('exams-cards');
-                db.collection('exams').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
-                    tbody.innerHTML = '';
-                    cardsContainer.innerHTML = '';
+            const loadSubjects = () => {
+                const grid = document.getElementById('subjects-grid');
+                db.collection('subjects').orderBy('name').onSnapshot(snapshot => {
+                    grid.innerHTML = '';
                     snapshot.forEach(doc => {
-                        const exam = doc.data();
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${exam.name}</td><td>${exam.duration / 60} min</td><td>${exam.questions.length}</td>
-                            <td>${formatDate(exam.deadline)}</td>
-                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
-                            <td class="actions-cell">
-                                <button class="action-btn edit" data-id="${doc.id}"><i class='bx bxs-edit'></i> Edit</button>
-                                <button class="action-btn delete" data-id="${doc.id}"><i class='bx bxs-trash'></i> Delete</button>
-                            </td>`;
-                        tbody.appendChild(row);
-
-                        const card = document.createElement('div');
-                        card.className = 'subject-card';
-                        card.innerHTML = `<h3>${exam.name}</h3><button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button>`;
-                        cardsContainer.appendChild(card);
-                    });
-                });
-            };
-
-            const openExamModal = (exam = null) => {
-                const modal = document.getElementById('exam-modal');
-                modal.querySelector('#exam-modal-title').textContent = exam ? 'Edit Exam' : 'Create New Exam';
-                modal.querySelector('#exam-id').value = exam ? exam.id : '';
-                modal.querySelector('#exam-name').value = exam ? exam.name : '';
-                modal.querySelector('#exam-duration').value = exam ? exam.duration / 60 : '';
-                modal.querySelector('#exam-deadline-date').value = exam && exam.deadline ? new Date(exam.deadline.seconds * 1000).toISOString().split('T')[0] : '';
-                const questionsContainer = modal.querySelector('#questions-container');
-                questionsContainer.innerHTML = '';
-                if (exam) exam.questions.forEach(addQuestionToForm);
-                modal.classList.add('show');
-            };
-
-            const addQuestionToForm = (question = {}) => {
-                const index = document.querySelectorAll('#questions-container .question-accordion-item').length + 1;
-                const item = document.createElement('div');
-                item.className = 'question-accordion-item';
-                item.innerHTML = `
-                    <div class="accordion-header">
-                        <h5>Question ${index}: ${question.title || 'New Question'}</h5>
-                        <i class='bx bx-chevron-down'></i>
-                    </div>
-                    <div class="accordion-item-content">
-                        <div class="question-card">
-                            <button type="button" class="remove-item-btn">&times;</button>
-                            <div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div>
-                            <div class="form-grid">
-                                ${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
-                                <div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
-                                <div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div>
+                        const subject = doc.data();
+                        const panel = document.createElement('a');
+                        panel.href = subject.page;
+                        panel.className = 'sec-2-panel';
+                        panel.innerHTML = `
+                            <div class="sec-2-panel__icon-wrapper">
+                                <svg class="sec-2-panel__icon" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>
                             </div>
-                        </div>
-                    </div>`;
-                document.getElementById('questions-container').appendChild(item);
-            };
-
-            const openActionsheet = async (examId) => {
-                const doc = await db.collection('exams').doc(examId).get();
-                if(!doc.exists) return;
-                const exam = doc.data();
-                document.getElementById('actionsheet-title').textContent = exam.name;
-                document.getElementById('actionsheet-duration').textContent = `${exam.duration / 60} min`;
-                document.getElementById('actionsheet-questions').textContent = exam.questions.length;
-                document.getElementById('actionsheet-status-text').textContent = exam.isLocked ? 'Locked' : 'Unlocked';
-                document.getElementById('actionsheet-deadline').textContent = formatDate(exam.deadline);
-                const toggle = document.getElementById('actionsheet-status-toggle');
-                toggle.checked = !exam.isLocked;
-                toggle.dataset.id = examId;
-                const sheet = document.getElementById('actionsheet');
-                sheet.querySelector('.edit-exam-btn').dataset.id = examId;
-                sheet.querySelector('.delete-exam-btn').dataset.id = examId;
-                document.getElementById('actionsheet-overlay').classList.add('show');
-                sheet.classList.add('show');
-            };
-
-            const closeActionsheet = () => {
-                document.getElementById('actionsheet-overlay').classList.remove('show');
-                document.getElementById('actionsheet').classList.remove('show');
-            };
-            
-            document.addEventListener('click', async e => {
-                const button = e.target.closest('button');
-                if (!button) return;
-                if (button.id === 'create-exam-btn') openExamModal();
-                if (button.matches('.edit-exam-btn, .edit')) {
-                    closeActionsheet();
-                    const doc = await db.collection('exams').doc(button.dataset.id).get();
-                    openExamModal({ id: doc.id, ...doc.data() });
-                }
-                if (button.matches('.delete-exam-btn, .delete')) {
-                    closeActionsheet();
-                    if (confirm('Are you sure you want to delete this exam?')) {
-                        await db.collection('exams').doc(button.dataset.id).delete();
-                    }
-                }
-                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
-                if (button.id === 'add-question-btn') addQuestionToForm();
-                if (button.matches('.remove-item-btn')) button.closest('.question-accordion-item').remove();
-                if (button.matches('.accordion-header')) {
-                    const content = button.nextElementSibling;
-                    button.querySelector('i').style.transform = content.classList.contains('open') ? 'rotate(0deg)' : 'rotate(180deg)';
-                    content.classList.toggle('open');
-                }
-                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
-                if(button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
-            });
-            
-            document.getElementById('exams-tbody').addEventListener('change', async e => {
-                 if (e.target.classList.contains('lock-toggle')) {
-                    await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
-                }
-            });
-
-            document.getElementById('actionsheet-status-toggle').addEventListener('change', async e => {
-                await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
-            });
-
-            document.getElementById('save-exam-btn').addEventListener('click', async () => {
-                const id = document.getElementById('exam-id').value;
-                const questions = [];
-                document.querySelectorAll('#questions-container .question-accordion-item').forEach(item => {
-                    const card = item.querySelector('.question-card');
-                    questions.push({
-                        title: card.querySelector('.question-title').value, options: [...card.querySelectorAll('.question-option')].map(opt => opt.value),
-                        correctAnswer: parseInt(card.querySelector('.question-correct').value, 10), points: parseInt(card.querySelector('.question-points').value, 10), type: 'Mcq'
+                            <div class="sec-2-panel__text-content">
+                                <h3 class="sec-2-panel__title">${subject.name}</h3>
+                            </div>
+                        `;
+                        grid.appendChild(panel);
                     });
                 });
-                const date = document.getElementById('exam-deadline-date').value;
-                const deadline = date ? firebase.firestore.Timestamp.fromDate(new Date(date)) : null;
-
-                const data = {
-                    name: document.getElementById('exam-name').value, duration: parseInt(document.getElementById('exam-duration').value, 10) * 60,
-                    subjectId: currentSubject.id, questions, deadline
-                };
-                if (id) {
-                    await db.collection('exams').doc(id).update(data);
-                } else {
-                    data.isLocked = true;
-                    await db.collection('exams').add(data);
-                }
-                document.getElementById('exam-modal').classList.remove('show');
-            });
+            };
         });
     </script>
 </body>
