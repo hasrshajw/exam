@@ -9,16 +9,39 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; }
+        :root {
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --danger-hover: #DC2626;
+            --danger-bg-light: #FEE2E2;
+            --danger-text-dark: #B91C1C;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
-        a { text-decoration: none; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
         .logo-image { height: 40px; }
         .main-nav { flex-grow: 1; }
-        .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
         .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); }
@@ -34,84 +57,108 @@
         .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
         .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
         .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .popup-list { list-style: none; padding-top: 0.5rem; }
+        .popup-list { padding-top: 0.5rem; }
         .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
         .popup-list a:hover { background-color: var(--hover-bg); }
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
-        .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .content-body { padding: 2rem 3rem; }
-        .menu-toggle { display: none; }
-        .sidebar-close-btn { display: none; }
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 2rem; font-weight: 700; }
-        .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
-        .primary-btn:hover { background-color: #5B21B6; }
-        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); }
-        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .admin-table th { background: #F9FAFB; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; }
+        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .primary-btn { background-color: var(--brand-purple); color: white; }
+        .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .secondary-btn:hover { background-color: var(--hover-bg); }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+
+        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
+        .admin-table td { color: var(--text-primary); font-weight: 500; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .actions-cell { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-        .action-btn { font-weight: 600; color: var(--text-primary); background-color: var(--hover-bg); border: 1px solid var(--border-color); cursor: pointer; padding: 0.5rem 1rem; border-radius: 6px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: background-color 0.2s ease, color 0.2s ease; }
-        .action-btn i { font-size: 1rem; }
-        .action-btn:hover { background-color: var(--border-color); }
-        .action-btn.edit { color: var(--brand-purple); }
-        .action-btn.delete { color: var(--danger-color); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
-        .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .modal-header h3 { font-size: 1.5rem; }
-        .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
-        .form-field { margin-bottom: 1rem; }
-        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
-        .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; }
-        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
-        .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
-        .actionsheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        
+        .actions-cell { text-align: right !important; width: 1%; white-space: nowrap; }
+        .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .action-menu-btn:hover { background-color: var(--hover-bg); }
+        .action-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
+        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 200px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-item:hover { background-color: var(--hover-bg); }
+        .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .action-item.delete { color: var(--danger-color); }
+        
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
+        .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
+        .close-btn:hover { background-color: var(--hover-bg); }
+        .modal-body { padding: 1.5rem 2rem; }
+        .form-field { margin-bottom: 1.25rem; }
+        .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field input:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
+        .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        
+        .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
-        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: #F9FAFB; border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
         .actionsheet.show { transform: translateY(0); }
-        .actionsheet-header { text-align: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+        .actionsheet-header { text-align: center; padding-bottom: 1rem; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
         .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
-        .actionsheet-title { font-size: 1.25rem; font-weight: 600; }
-        .actionsheet-list { list-style: none; padding: 1rem 0; }
-        .actionsheet-list a, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; }
-        .actionsheet-list a:hover, .actionsheet-list button:hover { background-color: var(--hover-bg); }
-        .actionsheet-list i { font-size: 1.5rem; color: var(--brand-purple); }
-        .actionsheet-list button.delete i { color: var(--danger-color); }
+        .actionsheet-title { font-size: 1.25rem; font-weight: 700; }
+        .actionsheet-list { background-color: var(--widget-bg); border-radius: 1rem; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+        .actionsheet-list a, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; transition: background-color 0.2s ease; }
+        .actionsheet-list a:active, .actionsheet-list button:active { background-color: var(--hover-bg); }
+        .actionsheet-list svg { width: 20px; height: 20px; color: var(--brand-purple); }
+        .actionsheet-list button.delete svg { color: var(--danger-color); }
         .actionsheet-cancel { margin-top: 0.5rem; }
-        .actionsheet-cancel button { width: 100%; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); }
-        .mobile-card-view { display: none; }
-        .action-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); padding: 1rem; border-radius: 12px; font-weight: 600; color: var(--text-secondary); border: none; cursor: pointer; }
+        .actionsheet-cancel button:active { background-color: var(--border-color); }
+        
+        .action-overlay { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
         .action-overlay.show { display: flex; }
         .spinner { border: 4px solid var(--hover-bg); border-top: 4px solid var(--brand-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .action-overlay p { font-weight: 600; color: var(--text-primary); }
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; transition: background-color 0.2s ease; }
-            .menu-toggle:hover { background-color: var(--hover-bg); }
-            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; transition: color 0.2s ease; }
-            .sidebar-close-btn:hover { color: #b91c1c; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: none; background: none; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
             .admin-table { display: none; }
-            .mobile-card-view { display: flex; flex-direction: column; gap: 1rem; }
-            .subject-card { display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); padding: 1rem 1.5rem; }
-            .subject-card h3 { font-size: 1.125rem; font-weight: 600; }
+            .mobile-card-view { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+            .subject-card { background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+            .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+            .card-header h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; flex-grow: 1; }
+            .card-body { color: var(--text-secondary); font-size: 0.875rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+            .card-footer { display: flex; justify-content: flex-end; }
+            .card-footer .primary-btn { width: 100%; }
+        }
+         @media (min-width: 640px) and (max-width: 1023px) {
+            .mobile-card-view { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 480px) {
+            .admin-content-header { flex-direction: column; align-items: stretch; }
+            .admin-content-header h2 { font-size: 1.5rem; text-align: center; }
+            .admin-content-header .primary-btn { width: 100%; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Authenticating...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
     <div class="overlay" id="overlay"></div>
     <div class="action-overlay" id="action-overlay"><div class="spinner"></div><p>Deleting subject and all related data...</p></div>
     <div class="dashboard-container" style="display: none;">
@@ -142,13 +189,13 @@
         </aside>
         <main class="main-area">
             <header class="main-header">
-                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
                 <h1>Manage Subjects</h1>
             </header>
             <section class="content-body">
                 <div class="admin-content-header">
                     <h2>All Subjects</h2>
-                    <button class="primary-btn" id="create-subject-btn">Create New Subject</button>
+                    <button class="primary-btn" id="create-subject-btn"><i class='bx bx-plus'></i> Create New Subject</button>
                 </div>
                 <table class="admin-table">
                     <thead><tr><th>Subject Name</th><th>Page Filename</th><th>Actions</th></tr></thead>
@@ -168,13 +215,16 @@
                     <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
                 </form>
             </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-subject-btn">Save Subject</button></div>
+            <div class="modal-footer">
+                <button class="secondary-btn">Cancel</button>
+                <button class="primary-btn" id="save-subject-btn">Save Subject</button>
+            </div>
         </div>
     </div>
     <div class="actionsheet-overlay" id="actionsheet-overlay">
         <div class="actionsheet" id="actionsheet">
             <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
-            <ul class="actionsheet-list"></ul>
+            <div class="actionsheet-list"></div>
             <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
         </div>
     </div>
@@ -241,16 +291,36 @@
                             <td>${subject.name}</td>
                             <td>${subject.page}</td>
                             <td class="actions-cell">
-                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-btn"><i class='bx bxs-book-content'></i> Courses & Lessons</a>
-                                <a href="manage-exams.html?subjectId=${doc.id}" class="action-btn"><i class='bx bxs-graduation'></i> Exams</a>
-                                <button class="action-btn edit" data-id="${doc.id}"><i class='bx bxs-edit'></i> Edit</button>
-                                <button class="action-btn delete" data-id="${doc.id}"><i class='bx bxs-trash'></i> Delete</button>
+                                <div class="actions-container">
+                                    <button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                    <div class="action-dropdown">
+                                        <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-item">
+                                            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"></path></svg>
+                                            Courses & Lessons
+                                        </a>
+                                        <a href="manage-exams.html?subjectId=${doc.id}" class="action-item">
+                                            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l15.482 0A50.697 50.697 0 0112 13.489a50.697 50.697 0 01-7.74-3.342z"></path></svg>
+                                            Exams
+                                        </a>
+                                        <button class="action-item edit" data-id="${doc.id}">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                            Edit
+                                        </button>
+                                        <button class="action-item delete" data-id="${doc.id}">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
                             </td>`;
                         tbody.appendChild(row);
 
                         const card = document.createElement('div');
                         card.className = 'subject-card';
-                        card.innerHTML = `<h3>${subject.name}</h3><button class="primary-btn manage-mobile-btn" data-subject-id="${doc.id}" data-course-id="${subject.courseId}" data-name="${subject.name}">Manage</button>`;
+                        card.innerHTML = `
+                            <div class="card-header"><h3>${subject.name}</h3></div>
+                            <div class="card-body"><p>${subject.page}</p></div>
+                            <div class="card-footer"><button class="primary-btn manage-mobile-btn" data-subject-id="${doc.id}" data-course-id="${subject.courseId}" data-name="${subject.name}">Manage</button></div>`;
                         cardsContainer.appendChild(card);
                     });
                 });
@@ -269,10 +339,10 @@
                 const list = document.querySelector('.actionsheet-list');
                 document.getElementById('actionsheet-title').textContent = subjectName;
                 list.innerHTML = `
-                    <li><a href="manage-lessons.html?courseId=${courseId}"><i class='bx bxs-book-content'></i> Manage Courses & Lessons</a></li>
-                    <li><a href="manage-exams.html?subjectId=${subjectId}"><i class='bx bxs-graduation'></i> Manage Exams</a></li>
-                    <li><button class="edit" data-id="${subjectId}"><i class='bx bxs-edit'></i> Edit Subject</button></li>
-                    <li><button class="delete" data-id="${subjectId}"><i class='bx bxs-trash'></i> Delete Subject</button></li>`;
+                    <li><a href="manage-lessons.html?courseId=${courseId}"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"></path></svg> Manage Courses & Lessons</a></li>
+                    <li><a href="manage-exams.html?subjectId=${subjectId}"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l15.482 0A50.697 50.697 0 0112 13.489a50.697 50.697 0 01-7.74-3.342z"></path></svg> Manage Exams</a></li>
+                    <li><button class="edit" data-id="${subjectId}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg> Edit Subject</button></li>
+                    <li><button class="delete" data-id="${subjectId}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg> Delete Subject</button></li>`;
                 document.getElementById('actionsheet-overlay').classList.add('show');
                 document.getElementById('actionsheet').classList.add('show');
             };
@@ -330,20 +400,32 @@
             };
 
             document.addEventListener('click', async e => {
+                 const isDropdownButton = e.target.closest('.action-menu-btn');
+                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
+                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+                if (isDropdownButton) {
+                    isDropdownButton.nextElementSibling.classList.toggle('active');
+                }
+
                 const button = e.target.closest('button');
-                if (!button) return;
-                if (button.id === 'create-subject-btn') openSubjectModal();
-                if (button.matches('.edit')) {
-                    const doc = await db.collection('subjects').doc(button.dataset.id).get();
+                if (!button && !e.target.closest('a.action-item')) return;
+                const target = button || e.target.closest('a.action-item');
+
+                if (target.id === 'create-subject-btn') openSubjectModal();
+                if (target.matches('.edit')) {
+                    const doc = await db.collection('subjects').doc(target.dataset.id).get();
                     openSubjectModal({ id: doc.id, ...doc.data() });
                     closeActionsheet();
                 }
-                if (button.matches('.delete')) deleteSubject(button.dataset.id);
-                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.subjectId, button.dataset.courseId, button.dataset.name);
-                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
-                    button.closest('.modal-overlay').classList.remove('show');
+                if (target.matches('.delete')) deleteSubject(target.dataset.id);
+                if (target.matches('.manage-mobile-btn')) openActionsheet(target.dataset.subjectId, target.dataset.courseId, target.dataset.name);
+                if (target.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
+                    target.closest('.modal-overlay').classList.remove('show');
                 }
-                if(button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
+                if(target.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
             });
 
             document.getElementById('save-subject-btn').addEventListener('click', async () => {
