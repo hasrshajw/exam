@@ -57,55 +57,58 @@
         .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
         .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
         .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .popup-list { list-style: none; padding-top: 0.5rem; }
+        .popup-list { padding-top: 0.5rem; }
         .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
         .popup-list a:hover { background-color: var(--hover-bg); }
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
 
-        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .admin-content-header { margin-bottom: 2rem; }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .back-btn { margin-bottom: 1.5rem; font-weight: 600; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; }
-        .back-btn:hover { color: #5B21B6; }
+        .back-btn:hover { color: var(--brand-purple-hover); }
         .back-btn i { font-size: 1.25rem; }
-        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; justify-content: center; }
+        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .primary-btn { background-color: var(--brand-purple); color: white; }
         .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .secondary-btn:hover { background-color: var(--hover-bg); }
+        .danger-btn { background-color: var(--danger-color); color: white; }
+        .danger-btn:hover { background-color: var(--danger-hover); }
         .menu-toggle, .sidebar-close-btn { display: none; }
-        
+
         .chapter-block { background-color: var(--widget-bg); border-radius: 12px; margin-bottom: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
-        .chapter-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .chapter-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
         .chapter-title-display { font-size: 1.25rem; font-weight: 600; flex-grow: 1; }
-        .chapter-actions { display: flex; gap: 0.5rem; }
-        .chapter-actions button { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 1.25rem; padding: 0.5rem; border-radius: 50%; transition: background-color 0.2s ease; }
-        .chapter-actions button:hover { background-color: var(--hover-bg); }
-        .lessons-list { padding: 0.5rem; }
-        .lesson-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px; margin: 0.5rem; transition: background-color 0.2s ease; }
-        .lesson-item:hover { background-color: var(--hover-bg); }
-        .lesson-item .lesson-info { flex: 1; }
-        .lesson-item .lesson-title { font-weight: 600; display: block; }
-        .lesson-item .lesson-duration { font-size: 0.8rem; color: var(--text-secondary); }
-        .lesson-actions { display: flex; gap: 0.5rem; }
+        .chapter-actions { position: relative; }
+        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-item:hover { background-color: var(--hover-bg); }
+        .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .action-item.delete { color: var(--danger-color); }
+        .lessons-list { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+        .lesson-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px; }
+        .lesson-item:hover { background-color: #F9FAFB; }
+        .lesson-icon { color: var(--text-secondary); font-size: 1.25rem; }
+        .lesson-details { flex: 1; }
+        .lesson-details .title { font-weight: 500; color: var(--text-primary); }
+        .lesson-details .duration { font-size: 0.8rem; color: var(--text-secondary); }
         .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
-        .action-btn i { font-size: 1.25rem; }
-        .action-btn:hover { background-color: var(--border-color); }
-        .action-btn.edit { color: var(--brand-purple); }
+        .action-btn:hover { background-color: var(--hover-bg); }
+        .action-btn svg { width: 18px; height: 18px; }
+        .action-btn.edit { color: var(--text-primary); }
         .action-btn.delete { color: var(--danger-color); }
         .add-lesson-container { padding: 1rem 1.5rem 1.5rem; border-top: 1px solid var(--border-color); margin-top: 0.5rem; }
-        .add-lesson-btn { width: 100%; }
-        .add-chapter-container { text-align: center; padding: 1rem 0; }
-        .add-chapter-btn { width: 100%; padding: 1rem; background-color: var(--widget-bg); border: 2px dashed var(--border-color); color: var(--text-secondary); font-weight: 600; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; }
+        .add-chapter-container { padding: 1rem 0; }
+        .add-chapter-btn { width: 100%; padding: 1rem; background-color: var(--widget-bg); border: 2px dashed var(--border-color); color: var(--text-secondary); font-weight: 600; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.9rem; }
         .add-chapter-btn:hover { background-color: var(--hover-bg); border-color: var(--brand-purple); color: var(--brand-purple); }
-
+        
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
-        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
-        #lesson-modal .modal-content { max-width: 700px; }
-        #chapter-modal .modal-content { max-width: 500px; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
         .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
         .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
@@ -119,22 +122,30 @@
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; }
         .modal-footer .secondary-btn { margin-right: 0.75rem; }
         
+        .confirm-modal .modal-content { max-width: 420px; }
+        .confirm-modal .modal-body { text-align: center; }
+        .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background-color: var(--danger-bg-light); color: var(--danger-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+        .confirm-icon i { font-size: 1.5rem; }
+        .confirm-modal h4 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; }
+        .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: none; background: none; }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
         }
-        @media (max-width: 768px) {
-            .content-body { padding: 1rem; }
-            .admin-content-header h2 { font-size: 1.5rem; }
-            .lesson-item { flex-direction: column; align-items: stretch; gap: 0.5rem; }
-            .lesson-actions { justify-content: flex-end; padding-top: 0.5rem; }
+        @media (max-width: 480px) {
+             .admin-content-header { flex-direction: column; align-items: stretch; }
+            .admin-content-header h2 { font-size: 1.5rem; text-align: center; }
+            .primary-btn, .secondary-btn { width: 100%; justify-content: center; }
+            .confirm-modal .modal-footer { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -187,9 +198,9 @@
 
     <div class="modal-overlay" id="lesson-modal">
         <div class="modal-content">
-            <div class="modal-header"><h3 id="lesson-modal-title"></h3><button class="close-btn" aria-label="Close">&times;</button></div>
+            <div class="modal-header"><h3 id="lesson-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
-                <form id="lesson-form" novalidate>
+                <form id="lesson-form">
                     <input type="hidden" id="lesson-id">
                     <div class="form-field"><label for="lesson-title">Lesson Title</label><input type="text" id="lesson-title" required></div>
                     <div class="form-field"><label for="lesson-duration">Duration (e.g., 5 min)</label><input type="text" id="lesson-duration" required></div>
@@ -200,16 +211,27 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="chapter-modal">
+    <div class="modal-overlay" id="edit-chapter-modal">
         <div class="modal-content">
-            <div class="modal-header"><h3 id="chapter-modal-title"></h3><button class="close-btn" aria-label="Close">&times;</button></div>
+            <div class="modal-header"><h3 id="edit-chapter-modal-title">Rename Chapter</h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
-                <form id="chapter-form" novalidate>
-                    <input type="hidden" id="chapter-index">
-                    <div class="form-field"><label for="chapter-name">Chapter Name</label><input type="text" id="chapter-name" required></div>
-                </form>
+                <div class="form-field"><label for="new-chapter-name">Chapter Name</label><input type="text" id="new-chapter-name" required></div>
             </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-chapter-btn">Save Chapter</button></div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-chapter-name-btn">Save Changes</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay confirm-modal" id="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="confirm-icon"><i class='bx bxs-trash'></i></div>
+                <h4 id="confirm-title">Are you sure?</h4>
+                <p id="confirm-text">Do you really want to delete this item? This process cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="confirm-cancel-btn">Cancel</button>
+                <button class="danger-btn" id="confirm-delete-btn">Delete</button>
+            </div>
         </div>
     </div>
 
@@ -294,8 +316,17 @@
                                 <div class="chapter-header" data-chapter-index="${index}">
                                     <span class="chapter-title-display">${index + 1}. ${chapter}</span>
                                     <div class="chapter-actions">
-                                        <button class="edit-chapter-btn" aria-label="Edit Chapter"><i class='bx bxs-edit'></i></button>
-                                        <button class="delete-chapter-btn" aria-label="Delete Chapter"><i class='bx bxs-trash'></i></button>
+                                        <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                        <div class="action-dropdown">
+                                            <button class="action-item edit-chapter-btn" data-chapter-index="${index}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Rename
+                                            </button>
+                                            <button class="action-item delete delete-chapter-btn" data-chapter-index="${index}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="lessons-list" id="chapter-${index}-lessons"></div>
@@ -314,20 +345,25 @@
                 db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', chapterIndex).orderBy('order').onSnapshot(snapshot => {
                     container.innerHTML = '';
                     if (snapshot.empty) {
-                        container.innerHTML = '<p style="padding: 0 1rem 0.5rem; color: var(--text-secondary); text-align: center;">No lessons in this chapter yet.</p>';
+                        container.innerHTML = '<p style="padding: 1rem 1rem; color: var(--text-secondary); text-align: center;">No lessons in this chapter yet.</p>';
                     }
                     snapshot.forEach(doc => {
                         const lesson = doc.data();
                         const item = document.createElement('div');
                         item.className = 'lesson-item';
                         item.innerHTML = `
-                            <div class="lesson-info">
-                                <span class="lesson-title">${lesson.title}</span>
-                                <span class="lesson-duration">${lesson.duration}</span>
+                            <i class='bx bx-file lesson-icon'></i>
+                            <div class="lesson-details">
+                                <div class="title">${lesson.title}</div>
+                                <div class="duration">${lesson.duration}</div>
                             </div>
                             <div class="lesson-actions">
-                                <button class="action-btn edit edit-lesson-btn" data-id="${doc.id}" aria-label="Edit Lesson"><i class='bx bxs-edit-alt'></i></button>
-                                <button class="action-btn delete delete-lesson-btn" data-id="${doc.id}" aria-label="Delete Lesson"><i class='bx bxs-trash-alt'></i></button>
+                                <button class="action-btn edit edit-lesson-btn" data-id="${doc.id}" aria-label="Edit Lesson">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                </button>
+                                <button class="action-btn delete delete-lesson-btn" data-id="${doc.id}" aria-label="Delete Lesson">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                </button>
                             </div>`;
                         container.appendChild(item);
                     });
@@ -344,59 +380,89 @@
                 modal.querySelector('#lesson-content').value = lesson ? lesson.content : '';
                 modal.classList.add('show');
             };
-
-            const openChapterModal = (chapterIndex = null) => {
-                const modal = document.getElementById('chapter-modal');
-                const isEditing = chapterIndex !== null;
-                modal.querySelector('#chapter-modal-title').textContent = isEditing ? 'Edit Chapter Name' : 'Add New Chapter';
-                modal.querySelector('#chapter-index').value = isEditing ? chapterIndex : '';
-                modal.querySelector('#chapter-name').value = isEditing ? currentCourse.chapters[chapterIndex] : '';
+            
+            const openEditChapterModal = (index, currentName) => {
+                const modal = document.getElementById('edit-chapter-modal');
+                modal.dataset.chapterIndex = index;
+                modal.querySelector('#new-chapter-name').value = currentName;
                 modal.classList.add('show');
             };
 
-            document.getElementById('add-chapter-btn').addEventListener('click', () => openChapterModal());
+            let confirmCallback = null;
+            const openConfirmationModal = (title, text, onConfirm) => {
+                const modal = document.getElementById('confirm-modal');
+                modal.querySelector('#confirm-title').textContent = title;
+                modal.querySelector('#confirm-text').textContent = text;
+                confirmCallback = onConfirm;
+                modal.classList.add('show');
+            };
+
+            const closeModal = (modalId) => {
+                document.getElementById(modalId).classList.remove('show');
+            };
+
+            document.getElementById('add-chapter-btn').addEventListener('click', () => openEditChapterModal(null, ''));
 
             document.getElementById('lesson-editor-container').addEventListener('click', async e => {
                 const target = e.target.closest('button');
                 if (!target) return;
                 
-                const chapterHeader = target.closest('.chapter-header');
-
                 if (target.matches('.add-lesson-btn')) { openLessonModal(null, target.dataset.chapterIndex); }
                 else if (target.matches('.edit-lesson-btn')) {
                     const doc = await db.collection('lessons').doc(target.dataset.id).get();
                     openLessonModal({ id: doc.id, ...doc.data() });
                 }
                 else if (target.matches('.delete-lesson-btn')) {
-                    if (confirm('Are you sure you want to delete this lesson?')) {
+                    openConfirmationModal('Delete Lesson', 'Are you sure you want to delete this lesson?', async () => {
                         await db.collection('lessons').doc(target.dataset.id).delete();
-                    }
+                    });
                 }
                 else if (target.matches('.edit-chapter-btn')) {
-                    openChapterModal(parseInt(chapterHeader.dataset.chapterIndex, 10));
+                    const index = parseInt(target.dataset.chapterIndex, 10);
+                    openEditChapterModal(index, currentCourse.chapters[index]);
                 }
                 else if (target.matches('.delete-chapter-btn')) {
-                    const index = parseInt(chapterHeader.dataset.chapterIndex, 10);
+                    const index = parseInt(target.dataset.chapterIndex, 10);
                     const lessonsQuery = await db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', index).limit(1).get();
                     if (!lessonsQuery.empty) {
                         alert("Cannot delete a chapter that still contains lessons. Please delete all lessons from this chapter first.");
                         return;
                     }
-                    if (confirm(`Are you sure you want to delete the chapter "${currentCourse.chapters[index]}"?`)) {
+                    openConfirmationModal('Delete Chapter', `Are you sure you want to delete "${currentCourse.chapters[index]}"?`, async () => {
                         const updatedChapters = currentCourse.chapters.filter((_, i) => i !== index);
                         await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
-                    }
+                    });
                 }
             });
 
-            document.querySelectorAll('.modal-overlay .close-btn, .modal-overlay .secondary-btn').forEach(btn => {
+            document.querySelectorAll('.modal-overlay .close-btn, .modal-footer .secondary-btn').forEach(btn => {
                 btn.addEventListener('click', () => btn.closest('.modal-overlay').classList.remove('show'));
+            });
+            
+            document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal('confirm-modal'));
+            document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+                if (confirmCallback) confirmCallback();
+                closeModal('confirm-modal');
+            });
+
+            document.getElementById('save-chapter-name-btn').addEventListener('click', async () => {
+                const modal = document.getElementById('edit-chapter-modal');
+                const index = modal.dataset.chapterIndex;
+                const newName = modal.querySelector('#new-chapter-name').value.trim();
+                if (!newName) { alert("Chapter name cannot be empty."); return; }
+                
+                const updatedChapters = [...currentCourse.chapters];
+                if (index !== null && index !== undefined && index !== 'null') {
+                    updatedChapters[parseInt(index, 10)] = newName;
+                } else {
+                    updatedChapters.push(newName);
+                }
+                await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
+                closeModal('edit-chapter-modal');
             });
 
             document.getElementById('save-lesson-btn').addEventListener('click', async () => {
                 const modal = document.getElementById('lesson-modal');
-                const form = document.getElementById('lesson-form');
-                if (!form.checkValidity()) { form.reportValidity(); return; }
                 const id = modal.querySelector('#lesson-id').value;
                 const chapterIndex = parseInt(modal.dataset.chapterIndex, 10);
                 const data = {
@@ -406,6 +472,7 @@
                     courseId: currentCourse.id,
                     chapterIndex: chapterIndex,
                 };
+                if (!data.title || !data.duration) { alert('Title and Duration are required.'); return; }
                 if (id) {
                     await db.collection('lessons').doc(id).update(data);
                 } else {
@@ -413,27 +480,19 @@
                     data.order = query.size;
                     await db.collection('lessons').add(data);
                 }
-                modal.classList.remove('show');
+                closeModal('lesson-modal');
             });
 
-            document.getElementById('save-chapter-btn').addEventListener('click', async () => {
-                const modal = document.getElementById('chapter-modal');
-                const form = document.getElementById('chapter-form');
-                if (!form.checkValidity()) { form.reportValidity(); return; }
-                const index = modal.querySelector('#chapter-index').value;
-                const newName = modal.querySelector('#chapter-name').value.trim();
-                if (newName === "") return;
-
-                const isEditing = index !== "";
-                let updatedChapters;
-                if (isEditing) {
-                    updatedChapters = [...currentCourse.chapters];
-                    updatedChapters[parseInt(index, 10)] = newName;
-                } else {
-                    updatedChapters = [...currentCourse.chapters, newName];
+            document.addEventListener('click', e => {
+                const isDropdownButton = e.target.closest('.chapter-actions .menu-btn');
+                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
+                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+                if (isDropdownButton) {
+                    isDropdownButton.nextElementSibling.classList.toggle('active');
                 }
-                await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
-                modal.classList.remove('show');
             });
         });
     </script>
