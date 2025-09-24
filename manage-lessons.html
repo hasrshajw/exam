@@ -9,16 +9,39 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; }
+        :root {
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --danger-hover: #DC2626;
+            --danger-bg-light: #FEE2E2;
+            --danger-text-dark: #B91C1C;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; }
+        ul { list-style: none; }
+
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
         .logo-image { height: 40px; }
         .main-nav { flex-grow: 1; }
-        .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
         .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); }
@@ -34,67 +57,96 @@
         .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
         .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
         .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .popup-list { list-style: none; padding-top: 0.5rem; }
+        .popup-list { padding-top: 0.5rem; }
         .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
         .popup-list a:hover { background-color: var(--hover-bg); }
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
-        .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+
+        .admin-content-header { margin-bottom: 2rem; }
+        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .content-body { padding: 2rem 3rem; }
-        .menu-toggle { display: none; }
-        .sidebar-close-btn { display: none; }
-        .admin-content-header h2 { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; }
-        .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
-        .primary-btn:hover { background-color: #5B21B6; }
-        .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
-        .back-btn { margin-bottom: 1rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; }
-        .lesson-editor .chapter-block { background-color: var(--widget-bg); border-radius: 12px; margin-bottom: 2rem; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
-        .lesson-editor .chapter-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .back-btn { margin-bottom: 1.5rem; font-weight: 600; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; }
+        .back-btn:hover { color: var(--brand-purple-hover); }
+        .back-btn i { font-size: 1.25rem; }
+        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .primary-btn { background-color: var(--brand-purple); color: white; }
+        .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .secondary-btn:hover { background-color: var(--hover-bg); }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+
+        .chapter-block { background-color: var(--widget-bg); border-radius: 12px; margin-bottom: 2rem; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .chapter-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
         .chapter-title-display { font-size: 1.25rem; font-weight: 600; flex-grow: 1; }
-        .chapter-header input { font-size: 1.25rem; font-weight: 600; padding: 0.5rem; border: 1px solid var(--border-color); border-radius: 6px; flex-grow: 1; }
-        .chapter-actions button { background: none; border: none; cursor: pointer; color: var(--text-secondary); font-size: 1.25rem; padding: 0.25rem; }
-        .lesson-editor .lessons-list { padding: 1.5rem; }
-        .lesson-editor .lesson-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; }
-        .lesson-editor .lesson-item:hover { background-color: #F9FAFB; }
-        .lesson-editor .lesson-item span { flex: 1; font-weight: 500; }
-        .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; }
-        .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
-        .add-chapter-container { text-align: center; padding: 1rem; }
-        .add-chapter-btn { width: 100%; padding: 1rem; background-color: var(--widget-bg); border: 2px dashed var(--border-color); color: var(--text-secondary); font-weight: 600; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; }
+        .chapter-actions { position: relative; }
+        .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .action-menu-btn:hover { background-color: var(--hover-bg); }
+        .action-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
+        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-item:hover { background-color: var(--hover-bg); }
+        .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .action-item.edit { color: var(--text-primary); }
+        .action-item.delete { color: var(--danger-color); }
+
+        .lessons-list { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+        .lesson-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; border-radius: 8px; transition: background-color 0.2s ease; }
+        .lesson-item:hover { background-color: var(--hover-bg); }
+        .lesson-item i.lesson-icon { font-size: 1.5rem; color: var(--brand-purple); }
+        .lesson-info { flex-grow: 1; }
+        .lesson-info .title { font-weight: 600; display: block; }
+        .lesson-info .duration { font-size: 0.8rem; color: var(--text-secondary); }
+        .lesson-actions { display: flex; align-items: center; gap: 0.5rem; }
+        .action-btn { background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 0.5rem; border-radius: 50%; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
+        .action-btn i { font-size: 1.25rem; }
+
+        .add-lesson-container { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); }
+        .add-chapter-container { text-align: center; padding-top: 1rem; }
+        .add-chapter-btn { width: 100%; padding: 1.25rem; background-color: var(--widget-bg); border: 2px dashed var(--border-color); color: var(--text-secondary); font-weight: 600; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 1rem; }
         .add-chapter-btn:hover { background-color: var(--hover-bg); border-color: var(--brand-purple); color: var(--brand-purple); }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
-        .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .modal-header h3 { font-size: 1.5rem; }
-        .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
-        .form-field { margin-bottom: 1rem; }
-        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
-        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; }
-        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
+        .add-chapter-btn i { font-size: 1.25rem; }
+        
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
+        .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
+        .close-btn:hover { background-color: var(--hover-bg); }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem 2rem; }
+        .form-field { margin-bottom: 1.25rem; }
+        .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
+        .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
+        .modal-footer .secondary-btn { margin-right: 0.75rem; }
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; transition: background-color 0.2s ease; }
-            .menu-toggle:hover { background-color: var(--hover-bg); }
-            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; transition: color 0.2s ease; }
-            .sidebar-close-btn:hover { color: #b91c1c; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .lesson-item { flex-direction: column; align-items: flex-start; }
-            .lesson-item div { margin-top: 0.75rem; }
+            .add-lesson-container .primary-btn { width: 100%; }
+        }
+        @media (max-width: 480px) {
+            .content-body { padding: 1rem; }
+            .admin-content-header h2 { font-size: 1.5rem; }
+            .chapter-title-display { font-size: 1.125rem; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Authenticating...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
     <div class="overlay" id="overlay"></div>
     <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
@@ -124,7 +176,7 @@
         </aside>
         <main class="main-area">
             <header class="main-header">
-                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
+                <button class="menu-toggle" id="menu-toggle"><i class='bx bx-menu'></i></button>
                 <h1>Manage Course Content</h1>
             </header>
             <section class="content-body">
@@ -236,13 +288,22 @@
                                 <div class="chapter-header" data-chapter-index="${index}">
                                     <span class="chapter-title-display">${index + 1}. ${chapter}</span>
                                     <div class="chapter-actions">
-                                        <button class="edit-chapter-btn"><i class='bx bxs-edit'></i></button>
-                                        <button class="delete-chapter-btn"><i class='bx bxs-trash'></i></button>
+                                        <button class="action-menu-btn" aria-label="Chapter Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                        <div class="action-dropdown">
+                                            <button class="action-item edit-chapter-btn">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Rename
+                                            </button>
+                                            <button class="action-item delete-chapter-btn">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                                 <div class="lessons-list" id="chapter-${index}-lessons"></div>
-                                <div style="padding: 0 1.5rem 1.5rem;">
-                                    <button class="primary-btn add-lesson-btn" data-chapter-index="${index}">+ Add Lesson</button>
+                                <div class="add-lesson-container">
+                                    <button class="primary-btn add-lesson-btn" data-chapter-index="${index}"><i class='bx bx-plus'></i> Add Lesson</button>
                                 </div>`;
                             container.appendChild(chapterBlock);
                             loadLessonsForChapter(index);
@@ -256,13 +317,22 @@
                 db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', chapterIndex).orderBy('order').onSnapshot(snapshot => {
                     container.innerHTML = '';
                     if (snapshot.empty) {
-                        container.innerHTML = '<p style="padding: 0 1rem 1rem; color: var(--text-secondary);">No lessons in this chapter yet.</p>';
+                        container.innerHTML = '<p style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">No lessons in this chapter yet.</p>';
                     }
                     snapshot.forEach(doc => {
                         const lesson = doc.data();
                         const item = document.createElement('div');
                         item.className = 'lesson-item';
-                        item.innerHTML = `<span>${lesson.title}</span><div><button class="action-btn edit-lesson-btn" data-id="${doc.id}">Edit</button><button class="delete-btn delete-lesson-btn" data-id="${doc.id}">Delete</button></div>`;
+                        item.innerHTML = `
+                            <i class='bx bx-play-circle lesson-icon'></i>
+                            <div class="lesson-info">
+                                <span class="title">${lesson.title}</span>
+                                <span class="duration">${lesson.duration}</span>
+                            </div>
+                            <div class="lesson-actions">
+                                <button class="action-btn edit-lesson-btn" data-id="${doc.id}" aria-label="Edit Lesson"><i class='bx bxs-edit-alt'></i></button>
+                                <button class="action-btn delete-lesson-btn" data-id="${doc.id}" aria-label="Delete Lesson"><i class='bx bxs-trash-alt'></i></button>
+                            </div>`;
                         container.appendChild(item);
                     });
                 });
@@ -288,10 +358,19 @@
             });
 
             document.getElementById('lesson-editor-container').addEventListener('click', async e => {
+                const isDropdownButton = e.target.closest('.action-menu-btn');
+                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
+                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+                if (isDropdownButton) {
+                    isDropdownButton.nextElementSibling.classList.toggle('active');
+                }
+
                 const target = e.target.closest('button');
                 if (!target) return;
                 
-                const chapterBlock = target.closest('.chapter-block');
                 const chapterHeader = target.closest('.chapter-header');
 
                 if (target.matches('.add-lesson-btn')) { openLessonModal(null, target.dataset.chapterIndex); }
@@ -328,7 +407,7 @@
                 }
             });
 
-            document.querySelectorAll('.modal-overlay .close-btn, .modal-overlay .secondary-btn').forEach(btn => {
+            document.querySelectorAll('.modal-overlay .close-btn, .modal-footer .secondary-btn').forEach(btn => {
                 btn.addEventListener('click', () => btn.closest('.modal-overlay').classList.remove('show'));
             });
 
