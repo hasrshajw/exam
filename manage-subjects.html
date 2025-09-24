@@ -29,7 +29,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
-        a { text-decoration: none; }
+        a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
 
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
@@ -65,72 +65,77 @@
         .popup-list a.logout { color: var(--danger-color); }
 
         .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; }
+        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .primary-btn, .secondary-btn, .danger-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .primary-btn { background-color: var(--brand-purple); color: white; }
         .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .secondary-btn:hover { background-color: var(--hover-bg); }
+        .danger-btn { background-color: var(--danger-color); color: white; }
+        .danger-btn:hover { background-color: var(--danger-hover); }
         .menu-toggle, .sidebar-close-btn { display: none; }
 
-        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
         .subject-card { background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease; }
         .subject-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
-        .card-header { padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
-        .card-header h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; flex-grow: 1; }
-        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
-        .action-btn:hover { background-color: var(--hover-bg); }
-        .action-btn i { font-size: 1.5rem; color: var(--text-secondary); }
-        .action-dropdown { position: absolute; right: 1rem; top: calc(100% - 0.5rem); background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem; }
+        .card-header h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; flex-grow: 1; }
+        .card-header p { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .action-menu-btn:hover { background-color: var(--hover-bg); }
+        .action-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
+        .card-actions { position: relative; }
+        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
         .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
         .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
         .action-item:hover { background-color: var(--hover-bg); }
         .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         .action-item.delete { color: var(--danger-color); }
-        
-        .card-body { padding: 1.25rem; color: var(--text-secondary); font-size: 0.875rem; }
-        .card-body p { display: flex; align-items: center; gap: 0.5rem; }
-        .card-body i { font-size: 1.1rem; }
-        
-        .card-footer { padding: 1.25rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.75rem; flex-wrap: wrap; }
-        .card-footer a { flex-grow: 1; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; text-align: center; color: var(--text-primary); background-color: var(--hover-bg); transition: background-color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; }
-        .card-footer a:hover { background-color: var(--border-color); }
-        .card-footer a i { font-size: 1.2rem; }
-        
+        .card-footer { padding: 1.25rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.75rem; }
+        .card-footer a { flex: 1; }
+        .footer-btn { width: 100%; }
+
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
-        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
         .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
         .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
         .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
         .close-btn:hover { background-color: var(--hover-bg); }
-        .modal-body { padding: 1.5rem 2rem; }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem 2rem; }
         .form-field { margin-bottom: 1.25rem; }
         .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
         .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
         .form-field input:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
-
+        
+        .confirm-modal .modal-content { max-width: 420px; }
+        .confirm-modal .modal-body { text-align: center; padding-top: 2rem; }
+        .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background-color: var(--danger-bg-light); color: var(--danger-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+        .confirm-icon i { font-size: 1.5rem; }
+        .confirm-modal h4 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
+        .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
+        
         .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
         .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: #F9FAFB; border-top-left-radius: 1rem; border-top-right-radius: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
         .actionsheet.show { transform: translateY(0); }
-        .actionsheet-header { text-align: center; padding: 1rem 1rem 1.5rem 1rem; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; border-bottom: 1px solid var(--border-color); }
+        .actionsheet-header { text-align: center; padding: 1rem; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
         .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
         .actionsheet-title { font-size: 1.25rem; font-weight: 700; }
-        .actionsheet-list { background-color: var(--widget-bg); padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; border-bottom: 1px solid var(--border-color); }
-        .actionsheet-list a, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; }
+        .actionsheet-list { padding: 0.5rem; background-color: var(--widget-bg); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.25rem; }
+        .actionsheet-list a, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
         .actionsheet-list a:hover, .actionsheet-list button:hover { background-color: var(--hover-bg); }
         .actionsheet-list svg { width: 20px; height: 20px; color: var(--text-secondary); }
-        .actionsheet-list button.delete { color: var(--danger-color); }
-        .actionsheet-list button.delete svg { color: var(--danger-color); }
+        .actionsheet-list .delete svg { color: var(--danger-color); }
         .actionsheet-cancel { padding: 1rem; }
         .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); color: var(--text-secondary); font-weight: 600; padding: 0.9rem; border: 1px solid var(--border-color); cursor: pointer; border-radius: 12px; transition: background-color 0.2s ease; }
         .actionsheet-cancel button:hover { background-color: var(--hover-bg); }
 
-        .action-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+        .action-overlay { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
         .action-overlay.show { display: flex; }
         .spinner { border: 4px solid var(--hover-bg); border-top: 4px solid var(--brand-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -146,13 +151,15 @@
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .subjects-grid { grid-template-columns: 1fr; gap: 1rem; }
-            .card-footer { flex-direction: column; }
         }
         @media (max-width: 480px) {
-             .admin-content-header { flex-direction: column; align-items: stretch; }
+            .admin-content-header { flex-direction: column; align-items: stretch; }
             .admin-content-header h2 { font-size: 1.5rem; text-align: center; }
             .primary-btn { width: 100%; }
+            .subjects-grid { grid-template-columns: 1fr; }
+            .confirm-modal .modal-footer { grid-template-columns: 1fr; }
+            .content-body { padding: 1rem; }
+            .main-header { padding: 1rem; }
         }
     </style>
 </head>
@@ -216,10 +223,24 @@
     <div class="actionsheet-overlay" id="actionsheet-overlay">
         <div class="actionsheet" id="actionsheet">
             <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
-            <div class="actionsheet-list"></div>
+            <ul class="actionsheet-list"></ul>
             <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
         </div>
     </div>
+    <div class="modal-overlay confirm-modal" id="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="confirm-icon"><i class='bx bxs-trash'></i></div>
+                <h4 id="confirm-title">Are you sure?</h4>
+                <p id="confirm-text">This will permanently delete the subject and all related data. This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="confirm-cancel-btn">Cancel</button>
+                <button class="danger-btn" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -274,15 +295,21 @@
                 const gridContainer = document.getElementById('subjects-grid');
                 db.collection('subjects').orderBy('name').onSnapshot(snapshot => {
                     gridContainer.innerHTML = '';
+                    if (snapshot.empty) {
+                        gridContainer.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">No subjects created yet. Click "Create New Subject" to start.</p>';
+                    }
                     snapshot.forEach(doc => {
                         const subject = doc.data();
                         const card = document.createElement('div');
                         card.className = 'subject-card';
                         card.innerHTML = `
                             <div class="card-header">
-                                <h3>${subject.name}</h3>
+                                <div class="card-info">
+                                    <h3>${subject.name}</h3>
+                                    <p>${subject.page}</p>
+                                </div>
                                 <div class="card-actions">
-                                    <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                    <button class="action-menu-btn" data-subject-id="${doc.id}" data-course-id="${subject.courseId}" data-name="${subject.name}" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
                                     <div class="action-dropdown">
                                         <button class="action-item edit" data-id="${doc.id}">
                                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
@@ -295,19 +322,15 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="card-body">
-                                <p><i class='bx bx-link-alt'></i> ${subject.page}</p>
-                            </div>
                             <div class="card-footer">
-                                <a href="manage-lessons.html?courseId=${subject.courseId}"><i class='bx bxs-book-content'></i> Content</a>
-                                <a href="manage-exams.html?subjectId=${doc.id}"><i class='bx bxs-graduation'></i> Exams</a>
-                            </div>
-                        `;
+                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="secondary-btn footer-btn">Courses</a>
+                                <a href="manage-exams.html?subjectId=${doc.id}" class="secondary-btn footer-btn">Exams</a>
+                            </div>`;
                         gridContainer.appendChild(card);
                     });
                 });
             };
-
+            
             const openSubjectModal = (subject = null) => {
                 const modal = document.getElementById('subject-modal');
                 modal.querySelector('#subject-modal-title').textContent = subject ? 'Edit Subject' : 'Create New Subject';
@@ -322,11 +345,11 @@
                 document.getElementById('actionsheet-title').textContent = subjectName;
                 list.innerHTML = `
                     <li><a href="manage-lessons.html?courseId=${courseId}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: currentColor;"><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM5 19V5h14l.002 14H5z"></path><path d="M7 7h10v2H7zm0 4h10v2H7z"></path></svg>
-                        Manage Content
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
+                        Manage Courses
                     </a></li>
                     <li><a href="manage-exams.html?subjectId=${subjectId}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: currentColor;"><path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8.009 8.009 0 0 1-8 8z"></path><path d="M12 11.5a1 1 0 1 0 1 1 1 1 0 0 0-1-1zm0-5a1 1 0 1 0 1 1 1 1 0 0 0-1-1zm0 10a1 1 0 1 0 1 1 1 1 0 0 0-1-1z"></path></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-2.072-1.036A59.922 59.922 0 0112 3.493a59.922 59.922 0 0110.072 5.617l-2.072 1.036m0 0a60.002 60.002 0 00-4.502-2.234" /></svg>
                         Manage Exams
                     </a></li>
                     <li><button class="edit" data-id="${subjectId}">
@@ -346,55 +369,64 @@
                 document.getElementById('actionsheet').classList.remove('show');
             };
 
+            let confirmCallback = null;
+            const openConfirmationModal = (title, text, onConfirm) => {
+                const modal = document.getElementById('confirm-modal');
+                modal.querySelector('#confirm-title').textContent = title;
+                modal.querySelector('#confirm-text').textContent = text;
+                confirmCallback = onConfirm;
+                modal.classList.add('show');
+            };
+            const closeModal = (modalId) => document.getElementById(modalId).classList.remove('show');
+
             const deleteSubject = async (subjectId) => {
-                if (!confirm('Are you sure? This will delete the subject and ALL of its courses, lessons, enrollments, and exams permanently.')) return;
-                
-                const actionOverlay = document.getElementById('action-overlay');
-                actionOverlay.classList.add('show');
                 closeActionsheet();
+                openConfirmationModal('Delete Subject', 'Are you sure? This will permanently delete the subject and ALL of its courses, lessons, enrollments, and exams.', async () => {
+                    const actionOverlay = document.getElementById('action-overlay');
+                    actionOverlay.classList.add('show');
+                    try {
+                        const batch = db.batch();
+                        const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
+                        const courseIds = coursesQuery.docs.map(d => d.id);
 
-                try {
-                    const batch = db.batch();
-                    const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
-                    const courseIds = coursesQuery.docs.map(d => d.id);
+                        if (courseIds.length > 0) {
+                            const [lessonsQuery, enrollmentsQuery] = await Promise.all([
+                                db.collection('lessons').where('courseId', 'in', courseIds).get(),
+                                db.collection('enrollments').where('courseId', 'in', courseIds).get()
+                            ]);
+                            lessonsQuery.forEach(doc => batch.delete(doc.ref));
+                            enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
 
-                    if (courseIds.length > 0) {
-                        const [lessonsQuery, enrollmentsQuery] = await Promise.all([
-                            db.collection('lessons').where('courseId', 'in', courseIds).get(),
-                            db.collection('enrollments').where('courseId', 'in', courseIds).get()
-                        ]);
-                        lessonsQuery.forEach(doc => batch.delete(doc.ref));
-                        enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
-
-                        const allUsersQuery = await db.collection('users').get();
-                        for (const userDoc of allUsersQuery.docs) {
-                            const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
-                            progressQuery.forEach(doc => batch.delete(doc.ref));
+                            const allUsersQuery = await db.collection('users').get();
+                            for (const userDoc of allUsersQuery.docs) {
+                                const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
+                                progressQuery.forEach(doc => batch.delete(doc.ref));
+                            }
                         }
-                    }
-                    coursesQuery.forEach(doc => batch.delete(doc.ref));
-                    
-                    const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
-                    const examIds = examsQuery.docs.map(d => d.id);
+                        coursesQuery.forEach(doc => batch.delete(doc.ref));
+                        
+                        const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
+                        const examIds = examsQuery.docs.map(d => d.id);
 
-                    if (examIds.length > 0) {
-                        const scoresQuery = await db.collection('scores').where('examId', 'in', examIds).get();
-                        scoresQuery.forEach(doc => batch.delete(doc.ref));
+                        if (examIds.length > 0) {
+                            const scoresQuery = await db.collection('scores').where('examId', 'in', examIds).get();
+                            scoresQuery.forEach(doc => batch.delete(doc.ref));
+                        }
+                        examsQuery.forEach(doc => batch.delete(doc.ref));
+                        
+                        batch.delete(db.collection('subjects').doc(subjectId));
+                        await batch.commit();
+                    } catch(error) {
+                        console.error("Deletion failed: ", error);
+                        alert("An error occurred during deletion. Please check the console.");
+                    } finally {
+                        actionOverlay.classList.remove('show');
                     }
-                    examsQuery.forEach(doc => batch.delete(doc.ref));
-                    
-                    batch.delete(db.collection('subjects').doc(subjectId));
-                    await batch.commit();
-                } catch(error) {
-                    console.error("Deletion failed: ", error);
-                    alert("An error occurred during deletion. Please check the console.");
-                } finally {
-                    actionOverlay.classList.remove('show');
-                }
+                });
             };
 
             document.addEventListener('click', async e => {
-                const isDropdownButton = e.target.closest('.menu-btn');
+                const isDropdownButton = e.target.closest('.action-menu-btn');
                 document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
                     if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
                         dropdown.classList.remove('active');
@@ -404,9 +436,9 @@
                     isDropdownButton.nextElementSibling.classList.toggle('active');
                 }
 
-                const button = e.target.closest('button, a');
+                const button = e.target.closest('button');
                 if (!button) return;
-
+                
                 if (button.id === 'create-subject-btn') openSubjectModal();
                 if (button.matches('.edit')) {
                     const doc = await db.collection('subjects').doc(button.dataset.id).get();
@@ -414,11 +446,16 @@
                     closeActionsheet();
                 }
                 if (button.matches('.delete')) deleteSubject(button.dataset.id);
-                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.subjectId, button.dataset.courseId, button.dataset.name);
-                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
-                    button.closest('.modal-overlay').classList.remove('show');
+                if (button.matches('.action-menu-btn')) openActionsheet(button.dataset.subjectId, button.dataset.courseId, button.dataset.name);
+                if (button.matches('.close-btn') || button.matches('.secondary-btn')) {
+                    button.closest('.modal-overlay')?.classList.remove('show');
                 }
-                if(button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
+                if(button.id === 'actionsheet-cancel-btn') closeActionsheet();
+                if(button.id === 'confirm-cancel-btn') closeModal('confirm-modal');
+                if(button.id === 'confirm-delete-btn') {
+                    if(confirmCallback) confirmCallback();
+                    closeModal('confirm-modal');
+                }
             });
 
             document.getElementById('save-subject-btn').addEventListener('click', async () => {
@@ -447,7 +484,7 @@
                     batch.set(newSubjectRef, { ...subjectData, courseId: newCourseRef.id });
                     await batch.commit();
                 }
-                document.getElementById('subject-modal').classList.remove('show');
+                closeModal('subject-modal');
             });
         });
     </script>
