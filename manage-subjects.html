@@ -65,7 +65,7 @@
         .popup-list a.logout { color: var(--danger-color); }
 
         .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
+        .admin-content-header h1 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .primary-btn, .secondary-btn, .danger-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .primary-btn { background-color: var(--brand-purple); color: white; }
@@ -76,35 +76,38 @@
         .danger-btn:hover { background-color: var(--danger-hover); }
         .menu-toggle, .sidebar-close-btn { display: none; }
 
-        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-        .subject-card { background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .subject-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: all 0.2s ease; }
         .subject-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 1.25rem; }
-        .card-header h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; flex-grow: 1; }
-        .card-header p { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; }
-        .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
-        .action-menu-btn:hover { background-color: var(--hover-bg); }
-        .action-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
-        .card-actions { position: relative; }
+        .card-content { padding: 1.5rem; flex-grow: 1; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; }
+        .card-header h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
+        .card-menu { position: relative; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .action-btn:hover { background-color: var(--hover-bg); }
+        .action-btn i { font-size: 1.5rem; color: var(--text-secondary); }
         .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
         .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
         .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
         .action-item:hover { background-color: var(--hover-bg); }
         .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         .action-item.delete { color: var(--danger-color); }
-        .card-footer { padding: 1.25rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.75rem; }
-        .card-footer a { flex: 1; }
-        .footer-btn { width: 100%; }
-
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .card-filename { color: var(--text-secondary); font-size: 0.875rem; font-family: monospace; }
+        .card-actions { border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; display: flex; gap: 0.75rem; background-color: #F9FAFB; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+        .card-actions .action-link { flex: 1; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.2s ease; text-align: center; }
+        .card-actions .action-link svg { width: 16px; height: 16px; }
+        .card-actions .action-link--primary { background-color: var(--hover-bg); color: var(--text-primary); }
+        .card-actions .action-link--primary:hover { background-color: var(--border-color); }
+        
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
-        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
         .modal-overlay.show .modal-content { transform: scale(1); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
         .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
         .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
         .close-btn:hover { background-color: var(--hover-bg); }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem 2rem; }
+        .modal-body { padding: 1.5rem 2rem; }
         .form-field { margin-bottom: 1.25rem; }
         .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
         .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
@@ -112,35 +115,19 @@
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
         
         .confirm-modal .modal-content { max-width: 420px; }
-        .confirm-modal .modal-body { text-align: center; padding-top: 2rem; }
+        .confirm-modal .modal-body { text-align: center; padding: 2rem 1.5rem 1.5rem; }
         .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background-color: var(--danger-bg-light); color: var(--danger-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
-        .confirm-icon i { font-size: 1.5rem; }
+        .confirm-icon svg { width: 24px; height: 24px; }
         .confirm-modal h4 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
         .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
         .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
-        
-        .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
-        .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
-        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: #F9FAFB; border-top-left-radius: 1rem; border-top-right-radius: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
-        .actionsheet.show { transform: translateY(0); }
-        .actionsheet-header { text-align: center; padding: 1rem; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
-        .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
-        .actionsheet-title { font-size: 1.25rem; font-weight: 700; }
-        .actionsheet-list { padding: 0.5rem; background-color: var(--widget-bg); border-bottom: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 0.25rem; }
-        .actionsheet-list a, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; text-align: left; }
-        .actionsheet-list a:hover, .actionsheet-list button:hover { background-color: var(--hover-bg); }
-        .actionsheet-list svg { width: 20px; height: 20px; color: var(--text-secondary); }
-        .actionsheet-list .delete svg { color: var(--danger-color); }
-        .actionsheet-cancel { padding: 1rem; }
-        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); color: var(--text-secondary); font-weight: 600; padding: 0.9rem; border: 1px solid var(--border-color); cursor: pointer; border-radius: 12px; transition: background-color 0.2s ease; }
-        .actionsheet-cancel button:hover { background-color: var(--hover-bg); }
 
         .action-overlay { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
         .action-overlay.show { display: flex; }
         .spinner { border: 4px solid var(--hover-bg); border-top: 4px solid var(--brand-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .action-overlay p { font-weight: 600; color: var(--text-primary); }
-
+        
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -154,12 +141,11 @@
         }
         @media (max-width: 480px) {
             .admin-content-header { flex-direction: column; align-items: stretch; }
-            .admin-content-header h2 { font-size: 1.5rem; text-align: center; }
+            .admin-content-header h1 { text-align: center; }
             .primary-btn { width: 100%; }
-            .subjects-grid { grid-template-columns: 1fr; }
-            .confirm-modal .modal-footer { grid-template-columns: 1fr; }
             .content-body { padding: 1rem; }
             .main-header { padding: 1rem; }
+            .confirm-modal .modal-footer { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -200,7 +186,7 @@
             </header>
             <section class="content-body">
                 <div class="admin-content-header">
-                    <h2>All Subjects</h2>
+                    <h1>All Subjects</h1>
                     <button class="primary-btn" id="create-subject-btn"><i class='bx bx-plus'></i> Create New Subject</button>
                 </div>
                 <div class="subjects-grid" id="subjects-grid"></div>
@@ -217,22 +203,18 @@
                     <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
                 </form>
             </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-subject-btn">Save Subject</button></div>
-        </div>
-    </div>
-    <div class="actionsheet-overlay" id="actionsheet-overlay">
-        <div class="actionsheet" id="actionsheet">
-            <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
-            <ul class="actionsheet-list"></ul>
-            <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
+            <div class="modal-footer">
+                <button class="secondary-btn">Cancel</button>
+                <button class="primary-btn" id="save-subject-btn">Save Subject</button>
+            </div>
         </div>
     </div>
     <div class="modal-overlay confirm-modal" id="confirm-modal">
         <div class="modal-content">
             <div class="modal-body">
-                <div class="confirm-icon"><i class='bx bxs-trash'></i></div>
+                <div class="confirm-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg></div>
                 <h4 id="confirm-title">Are you sure?</h4>
-                <p id="confirm-text">This will permanently delete the subject and all related data. This action cannot be undone.</p>
+                <p id="confirm-text">Do you really want to delete this item? This process cannot be undone.</p>
             </div>
             <div class="modal-footer">
                 <button class="secondary-btn" id="confirm-cancel-btn">Cancel</button>
@@ -240,7 +222,6 @@
             </div>
         </div>
     </div>
-
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -295,42 +276,43 @@
                 const gridContainer = document.getElementById('subjects-grid');
                 db.collection('subjects').orderBy('name').onSnapshot(snapshot => {
                     gridContainer.innerHTML = '';
-                    if (snapshot.empty) {
-                        gridContainer.innerHTML = '<p style="color: var(--text-secondary); grid-column: 1 / -1; text-align: center;">No subjects created yet. Click "Create New Subject" to start.</p>';
-                    }
                     snapshot.forEach(doc => {
                         const subject = doc.data();
                         const card = document.createElement('div');
                         card.className = 'subject-card';
                         card.innerHTML = `
-                            <div class="card-header">
-                                <div class="card-info">
+                            <div class="card-content">
+                                <div class="card-header">
                                     <h3>${subject.name}</h3>
-                                    <p>${subject.page}</p>
-                                </div>
-                                <div class="card-actions">
-                                    <button class="action-menu-btn" data-subject-id="${doc.id}" data-course-id="${subject.courseId}" data-name="${subject.name}" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
-                                    <div class="action-dropdown">
-                                        <button class="action-item edit" data-id="${doc.id}">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
-                                            Edit
-                                        </button>
-                                        <button class="action-item delete" data-id="${doc.id}">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
-                                            Delete
-                                        </button>
+                                    <div class="card-menu">
+                                        <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                        <div class="action-dropdown">
+                                            <button class="action-item edit-btn" data-id="${doc.id}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Edit
+                                            </button>
+                                            <button class="action-item delete delete-btn" data-id="${doc.id}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+                                <p class="card-filename">${subject.page}</p>
                             </div>
-                            <div class="card-footer">
-                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="secondary-btn footer-btn">Courses</a>
-                                <a href="manage-exams.html?subjectId=${doc.id}" class="secondary-btn footer-btn">Exams</a>
+                            <div class="card-actions">
+                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-link action-link--primary">
+                                    <i class='bx bxs-book-content'></i> Content
+                                </a>
+                                <a href="manage-exams.html?subjectId=${doc.id}" class="action-link action-link--primary">
+                                    <i class='bx bxs-graduation'></i> Exams
+                                </a>
                             </div>`;
                         gridContainer.appendChild(card);
                     });
                 });
             };
-            
+
             const openSubjectModal = (subject = null) => {
                 const modal = document.getElementById('subject-modal');
                 modal.querySelector('#subject-modal-title').textContent = subject ? 'Edit Subject' : 'Create New Subject';
@@ -339,36 +321,7 @@
                 modal.querySelector('#subject-page').value = subject ? subject.page : '';
                 modal.classList.add('show');
             };
-
-            const openActionsheet = (subjectId, courseId, subjectName) => {
-                const list = document.querySelector('.actionsheet-list');
-                document.getElementById('actionsheet-title').textContent = subjectName;
-                list.innerHTML = `
-                    <li><a href="manage-lessons.html?courseId=${courseId}">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>
-                        Manage Courses
-                    </a></li>
-                    <li><a href="manage-exams.html?subjectId=${subjectId}">
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l-2.072-1.036A59.922 59.922 0 0112 3.493a59.922 59.922 0 0110.072 5.617l-2.072 1.036m0 0a60.002 60.002 0 00-4.502-2.234" /></svg>
-                        Manage Exams
-                    </a></li>
-                    <li><button class="edit" data-id="${subjectId}">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
-                        Edit Subject
-                    </button></li>
-                    <li><button class="delete" data-id="${subjectId}">
-                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
-                        Delete Subject
-                    </button></li>`;
-                document.getElementById('actionsheet-overlay').classList.add('show');
-                document.getElementById('actionsheet').classList.add('show');
-            };
-
-            const closeActionsheet = () => {
-                document.getElementById('actionsheet-overlay').classList.remove('show');
-                document.getElementById('actionsheet').classList.remove('show');
-            };
-
+            
             let confirmCallback = null;
             const openConfirmationModal = (title, text, onConfirm) => {
                 const modal = document.getElementById('confirm-modal');
@@ -377,18 +330,18 @@
                 confirmCallback = onConfirm;
                 modal.classList.add('show');
             };
-            const closeModal = (modalId) => document.getElementById(modalId).classList.remove('show');
+            const closeModal = (modalId) => {
+                document.getElementById(modalId).classList.remove('show');
+            };
 
             const deleteSubject = async (subjectId) => {
-                closeActionsheet();
-                openConfirmationModal('Delete Subject', 'Are you sure? This will permanently delete the subject and ALL of its courses, lessons, enrollments, and exams.', async () => {
+                openConfirmationModal('Delete Subject?', 'This will delete the subject and ALL of its courses, lessons, enrollments, and exams permanently. This action cannot be undone.', async () => {
                     const actionOverlay = document.getElementById('action-overlay');
                     actionOverlay.classList.add('show');
                     try {
                         const batch = db.batch();
                         const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
                         const courseIds = coursesQuery.docs.map(d => d.id);
-
                         if (courseIds.length > 0) {
                             const [lessonsQuery, enrollmentsQuery] = await Promise.all([
                                 db.collection('lessons').where('courseId', 'in', courseIds).get(),
@@ -396,7 +349,6 @@
                             ]);
                             lessonsQuery.forEach(doc => batch.delete(doc.ref));
                             enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
-
                             const allUsersQuery = await db.collection('users').get();
                             for (const userDoc of allUsersQuery.docs) {
                                 const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
@@ -407,7 +359,6 @@
                         
                         const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
                         const examIds = examsQuery.docs.map(d => d.id);
-
                         if (examIds.length > 0) {
                             const scoresQuery = await db.collection('scores').where('examId', 'in', examIds).get();
                             scoresQuery.forEach(doc => batch.delete(doc.ref));
@@ -426,7 +377,7 @@
             };
 
             document.addEventListener('click', async e => {
-                const isDropdownButton = e.target.closest('.action-menu-btn');
+                const isDropdownButton = e.target.closest('.card-menu .menu-btn');
                 document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
                     if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
                         dropdown.classList.remove('active');
@@ -435,25 +386,22 @@
                 if (isDropdownButton) {
                     isDropdownButton.nextElementSibling.classList.toggle('active');
                 }
-
+                
                 const button = e.target.closest('button');
                 if (!button) return;
                 
                 if (button.id === 'create-subject-btn') openSubjectModal();
-                if (button.matches('.edit')) {
+                if (button.matches('.edit-btn')) {
                     const doc = await db.collection('subjects').doc(button.dataset.id).get();
                     openSubjectModal({ id: doc.id, ...doc.data() });
-                    closeActionsheet();
                 }
-                if (button.matches('.delete')) deleteSubject(button.dataset.id);
-                if (button.matches('.action-menu-btn')) openActionsheet(button.dataset.subjectId, button.dataset.courseId, button.dataset.name);
-                if (button.matches('.close-btn') || button.matches('.secondary-btn')) {
-                    button.closest('.modal-overlay')?.classList.remove('show');
+                if (button.matches('.delete-btn')) deleteSubject(button.dataset.id);
+                if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) {
+                    button.closest('.modal-overlay').classList.remove('show');
                 }
-                if(button.id === 'actionsheet-cancel-btn') closeActionsheet();
                 if(button.id === 'confirm-cancel-btn') closeModal('confirm-modal');
                 if(button.id === 'confirm-delete-btn') {
-                    if(confirmCallback) confirmCallback();
+                    if (confirmCallback) confirmCallback();
                     closeModal('confirm-modal');
                 }
             });
