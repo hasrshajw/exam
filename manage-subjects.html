@@ -29,7 +29,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
-        a { text-decoration: none; color: inherit; }
+        a { text-decoration: none; }
         ul { list-style: none; }
 
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
@@ -65,7 +65,7 @@
         .popup-list a.logout { color: var(--danger-color); }
 
         .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
+        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .primary-btn { background-color: var(--brand-purple); color: white; }
@@ -74,22 +74,29 @@
         .secondary-btn:hover { background-color: var(--hover-bg); }
         .menu-toggle, .sidebar-close-btn { display: none; }
 
-        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-        .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
-        .admin-table td { color: var(--text-primary); font-weight: 500; }
-        .admin-table tr:last-child td { border-bottom: none; }
-        
-        .actions-cell { text-align: right !important; width: 1%; white-space: nowrap; }
-        .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
-        .action-menu-btn:hover { background-color: var(--hover-bg); }
-        .action-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
-        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 200px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .subject-card { background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); display: flex; flex-direction: column; transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .subject-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .card-header { padding: 1.25rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+        .card-header h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; flex-grow: 1; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .action-btn:hover { background-color: var(--hover-bg); }
+        .action-btn i { font-size: 1.5rem; color: var(--text-secondary); }
+        .action-dropdown { position: absolute; right: 1rem; top: calc(100% - 0.5rem); background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
         .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
         .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
         .action-item:hover { background-color: var(--hover-bg); }
         .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         .action-item.delete { color: var(--danger-color); }
+        
+        .card-body { padding: 1.25rem; color: var(--text-secondary); font-size: 0.875rem; }
+        .card-body p { display: flex; align-items: center; gap: 0.5rem; }
+        .card-body i { font-size: 1.1rem; }
+        
+        .card-footer { padding: 1.25rem; border-top: 1px solid var(--border-color); display: flex; gap: 0.75rem; flex-wrap: wrap; }
+        .card-footer a { flex-grow: 1; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; text-align: center; color: var(--text-primary); background-color: var(--hover-bg); transition: background-color 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.85rem; }
+        .card-footer a:hover { background-color: var(--border-color); }
+        .card-footer a i { font-size: 1.2rem; }
         
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
@@ -105,24 +112,25 @@
         .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
         .form-field input:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
-        
+
         .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
         .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
-        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: #F9FAFB; border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: #F9FAFB; border-top-left-radius: 1rem; border-top-right-radius: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
         .actionsheet.show { transform: translateY(0); }
-        .actionsheet-header { text-align: center; padding-bottom: 1rem; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
+        .actionsheet-header { text-align: center; padding: 1rem 1rem 1.5rem 1rem; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; border-bottom: 1px solid var(--border-color); }
         .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
         .actionsheet-title { font-size: 1.25rem; font-weight: 700; }
-        .actionsheet-list { background-color: var(--widget-bg); border-radius: 1rem; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
-        .actionsheet-list a, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; transition: background-color 0.2s ease; }
-        .actionsheet-list a:active, .actionsheet-list button:active { background-color: var(--hover-bg); }
-        .actionsheet-list svg { width: 20px; height: 20px; color: var(--brand-purple); }
+        .actionsheet-list { background-color: var(--widget-bg); padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; border-bottom: 1px solid var(--border-color); }
+        .actionsheet-list a, .actionsheet-list button { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: 8px; font-size: 1rem; font-weight: 500; text-decoration: none; color: var(--text-primary); width: 100%; background: none; border: none; cursor: pointer; }
+        .actionsheet-list a:hover, .actionsheet-list button:hover { background-color: var(--hover-bg); }
+        .actionsheet-list svg { width: 20px; height: 20px; color: var(--text-secondary); }
+        .actionsheet-list button.delete { color: var(--danger-color); }
         .actionsheet-list button.delete svg { color: var(--danger-color); }
-        .actionsheet-cancel { margin-top: 0.5rem; }
-        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); padding: 1rem; border-radius: 12px; font-weight: 600; color: var(--text-secondary); border: none; cursor: pointer; }
-        .actionsheet-cancel button:active { background-color: var(--border-color); }
-        
-        .action-overlay { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+        .actionsheet-cancel { padding: 1rem; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); color: var(--text-secondary); font-weight: 600; padding: 0.9rem; border: 1px solid var(--border-color); cursor: pointer; border-radius: 12px; transition: background-color 0.2s ease; }
+        .actionsheet-cancel button:hover { background-color: var(--hover-bg); }
+
+        .action-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
         .action-overlay.show { display: flex; }
         .spinner { border: 4px solid var(--hover-bg); border-top: 4px solid var(--brand-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -134,26 +142,17 @@
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: none; background: none; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .admin-table { display: none; }
-            .mobile-card-view { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-            .subject-card { background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
-            .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
-            .card-header h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; flex-grow: 1; }
-            .card-body { color: var(--text-secondary); font-size: 0.875rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
-            .card-footer { display: flex; justify-content: flex-end; }
-            .card-footer .primary-btn { width: 100%; }
-        }
-         @media (min-width: 640px) and (max-width: 1023px) {
-            .mobile-card-view { grid-template-columns: repeat(2, 1fr); }
+            .subjects-grid { grid-template-columns: 1fr; gap: 1rem; }
+            .card-footer { flex-direction: column; }
         }
         @media (max-width: 480px) {
-            .admin-content-header { flex-direction: column; align-items: stretch; }
+             .admin-content-header { flex-direction: column; align-items: stretch; }
             .admin-content-header h2 { font-size: 1.5rem; text-align: center; }
-            .admin-content-header .primary-btn { width: 100%; }
+            .primary-btn { width: 100%; }
         }
     </style>
 </head>
@@ -197,11 +196,7 @@
                     <h2>All Subjects</h2>
                     <button class="primary-btn" id="create-subject-btn"><i class='bx bx-plus'></i> Create New Subject</button>
                 </div>
-                <table class="admin-table">
-                    <thead><tr><th>Subject Name</th><th>Page Filename</th><th>Actions</th></tr></thead>
-                    <tbody id="subjects-tbody"></tbody>
-                </table>
-                <div class="mobile-card-view" id="subjects-cards"></div>
+                <div class="subjects-grid" id="subjects-grid"></div>
             </section>
         </main>
     </div>
@@ -215,10 +210,7 @@
                     <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button class="secondary-btn">Cancel</button>
-                <button class="primary-btn" id="save-subject-btn">Save Subject</button>
-            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-subject-btn">Save Subject</button></div>
         </div>
     </div>
     <div class="actionsheet-overlay" id="actionsheet-overlay">
@@ -279,29 +271,19 @@
             };
 
             const loadSubjects = () => {
-                const tbody = document.getElementById('subjects-tbody');
-                const cardsContainer = document.getElementById('subjects-cards');
+                const gridContainer = document.getElementById('subjects-grid');
                 db.collection('subjects').orderBy('name').onSnapshot(snapshot => {
-                    tbody.innerHTML = '';
-                    cardsContainer.innerHTML = '';
+                    gridContainer.innerHTML = '';
                     snapshot.forEach(doc => {
                         const subject = doc.data();
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${subject.name}</td>
-                            <td>${subject.page}</td>
-                            <td class="actions-cell">
-                                <div class="actions-container">
-                                    <button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                        const card = document.createElement('div');
+                        card.className = 'subject-card';
+                        card.innerHTML = `
+                            <div class="card-header">
+                                <h3>${subject.name}</h3>
+                                <div class="card-actions">
+                                    <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
                                     <div class="action-dropdown">
-                                        <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-item">
-                                            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"></path></svg>
-                                            Courses & Lessons
-                                        </a>
-                                        <a href="manage-exams.html?subjectId=${doc.id}" class="action-item">
-                                            <svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l15.482 0A50.697 50.697 0 0112 13.489a50.697 50.697 0 01-7.74-3.342z"></path></svg>
-                                            Exams
-                                        </a>
                                         <button class="action-item edit" data-id="${doc.id}">
                                             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
                                             Edit
@@ -312,16 +294,16 @@
                                         </button>
                                     </div>
                                 </div>
-                            </td>`;
-                        tbody.appendChild(row);
-
-                        const card = document.createElement('div');
-                        card.className = 'subject-card';
-                        card.innerHTML = `
-                            <div class="card-header"><h3>${subject.name}</h3></div>
-                            <div class="card-body"><p>${subject.page}</p></div>
-                            <div class="card-footer"><button class="primary-btn manage-mobile-btn" data-subject-id="${doc.id}" data-course-id="${subject.courseId}" data-name="${subject.name}">Manage</button></div>`;
-                        cardsContainer.appendChild(card);
+                            </div>
+                            <div class="card-body">
+                                <p><i class='bx bx-link-alt'></i> ${subject.page}</p>
+                            </div>
+                            <div class="card-footer">
+                                <a href="manage-lessons.html?courseId=${subject.courseId}"><i class='bx bxs-book-content'></i> Content</a>
+                                <a href="manage-exams.html?subjectId=${doc.id}"><i class='bx bxs-graduation'></i> Exams</a>
+                            </div>
+                        `;
+                        gridContainer.appendChild(card);
                     });
                 });
             };
@@ -339,10 +321,22 @@
                 const list = document.querySelector('.actionsheet-list');
                 document.getElementById('actionsheet-title').textContent = subjectName;
                 list.innerHTML = `
-                    <li><a href="manage-lessons.html?courseId=${courseId}"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"></path></svg> Manage Courses & Lessons</a></li>
-                    <li><a href="manage-exams.html?subjectId=${subjectId}"><svg fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0l15.482 0A50.697 50.697 0 0112 13.489a50.697 50.697 0 01-7.74-3.342z"></path></svg> Manage Exams</a></li>
-                    <li><button class="edit" data-id="${subjectId}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg> Edit Subject</button></li>
-                    <li><button class="delete" data-id="${subjectId}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg> Delete Subject</button></li>`;
+                    <li><a href="manage-lessons.html?courseId=${courseId}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: currentColor;"><path d="M19 3H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2h14c1.103 0 2-.897 2-2V5c0-1.103-.897-2-2-2zM5 19V5h14l.002 14H5z"></path><path d="M7 7h10v2H7zm0 4h10v2H7z"></path></svg>
+                        Manage Content
+                    </a></li>
+                    <li><a href="manage-exams.html?subjectId=${subjectId}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="fill: currentColor;"><path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8.009 8.009 0 0 1-8 8z"></path><path d="M12 11.5a1 1 0 1 0 1 1 1 1 0 0 0-1-1zm0-5a1 1 0 1 0 1 1 1 1 0 0 0-1-1zm0 10a1 1 0 1 0 1 1 1 1 0 0 0-1-1z"></path></svg>
+                        Manage Exams
+                    </a></li>
+                    <li><button class="edit" data-id="${subjectId}">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                        Edit Subject
+                    </button></li>
+                    <li><button class="delete" data-id="${subjectId}">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                        Delete Subject
+                    </button></li>`;
                 document.getElementById('actionsheet-overlay').classList.add('show');
                 document.getElementById('actionsheet').classList.add('show');
             };
@@ -400,7 +394,7 @@
             };
 
             document.addEventListener('click', async e => {
-                 const isDropdownButton = e.target.closest('.action-menu-btn');
+                const isDropdownButton = e.target.closest('.menu-btn');
                 document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
                     if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
                         dropdown.classList.remove('active');
@@ -410,22 +404,21 @@
                     isDropdownButton.nextElementSibling.classList.toggle('active');
                 }
 
-                const button = e.target.closest('button');
-                if (!button && !e.target.closest('a.action-item')) return;
-                const target = button || e.target.closest('a.action-item');
+                const button = e.target.closest('button, a');
+                if (!button) return;
 
-                if (target.id === 'create-subject-btn') openSubjectModal();
-                if (target.matches('.edit')) {
-                    const doc = await db.collection('subjects').doc(target.dataset.id).get();
+                if (button.id === 'create-subject-btn') openSubjectModal();
+                if (button.matches('.edit')) {
+                    const doc = await db.collection('subjects').doc(button.dataset.id).get();
                     openSubjectModal({ id: doc.id, ...doc.data() });
                     closeActionsheet();
                 }
-                if (target.matches('.delete')) deleteSubject(target.dataset.id);
-                if (target.matches('.manage-mobile-btn')) openActionsheet(target.dataset.subjectId, target.dataset.courseId, target.dataset.name);
-                if (target.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
-                    target.closest('.modal-overlay').classList.remove('show');
+                if (button.matches('.delete')) deleteSubject(button.dataset.id);
+                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.subjectId, button.dataset.courseId, button.dataset.name);
+                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
+                    button.closest('.modal-overlay').classList.remove('show');
                 }
-                if(target.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
+                if(button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
             });
 
             document.getElementById('save-subject-btn').addEventListener('click', async () => {
