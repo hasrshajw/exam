@@ -123,12 +123,13 @@
         .modal-footer .secondary-btn { margin-right: 0.75rem; }
         
         .confirm-modal .modal-content { max-width: 420px; }
-        .confirm-modal .modal-body { text-align: center; }
+        .confirm-modal .modal-body { text-align: center; padding: 2rem 2rem 1.5rem; }
         .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background-color: var(--danger-bg-light); color: var(--danger-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
-        .confirm-icon i { font-size: 1.5rem; }
+        .confirm-icon svg { width: 24px; height: 24px; }
         .confirm-modal h4 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; }
-        .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
+        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
+        .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; text-align: center; }
+        .confirm-modal .modal-footer .secondary-btn, .confirm-modal .modal-footer .danger-btn { width: 100%; justify-content: center; }
 
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -213,7 +214,7 @@
 
     <div class="modal-overlay" id="edit-chapter-modal">
         <div class="modal-content">
-            <div class="modal-header"><h3 id="edit-chapter-modal-title">Rename Chapter</h3><button class="close-btn">&times;</button></div>
+            <div class="modal-header"><h3 id="edit-chapter-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
                 <div class="form-field"><label for="new-chapter-name">Chapter Name</label><input type="text" id="new-chapter-name" required></div>
             </div>
@@ -224,7 +225,9 @@
     <div class="modal-overlay confirm-modal" id="confirm-modal">
         <div class="modal-content">
             <div class="modal-body">
-                <div class="confirm-icon"><i class='bx bxs-trash'></i></div>
+                <div class="confirm-icon">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                </div>
                 <h4 id="confirm-title">Are you sure?</h4>
                 <p id="confirm-text">Do you really want to delete this item? This process cannot be undone.</p>
             </div>
@@ -331,7 +334,7 @@
                                 </div>
                                 <div class="lessons-list" id="chapter-${index}-lessons"></div>
                                 <div class="add-lesson-container">
-                                    <button class="primary-btn add-lesson-btn" data-chapter-index="${index}"><i class='bx bx-plus'></i> Add Lesson</button>
+                                    <button class="secondary-btn add-lesson-btn" data-chapter-index="${index}"><i class='bx bx-plus'></i> Add Lesson</button>
                                 </div>`;
                             container.appendChild(chapterBlock);
                             loadLessonsForChapter(index);
@@ -383,6 +386,7 @@
             
             const openEditChapterModal = (index, currentName) => {
                 const modal = document.getElementById('edit-chapter-modal');
+                modal.querySelector('#edit-chapter-modal-title').textContent = currentName ? 'Rename Chapter' : 'Add New Chapter';
                 modal.dataset.chapterIndex = index;
                 modal.querySelector('#new-chapter-name').value = currentName;
                 modal.classList.add('show');
@@ -425,13 +429,18 @@
                     const index = parseInt(target.dataset.chapterIndex, 10);
                     const lessonsQuery = await db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', index).limit(1).get();
                     if (!lessonsQuery.empty) {
-                        alert("Cannot delete a chapter that still contains lessons. Please delete all lessons from this chapter first.");
-                        return;
+                        openConfirmationModal('Cannot Delete Chapter', 'This chapter still contains lessons. Please delete all lessons before deleting the chapter.', () => {});
+                        document.querySelector('#confirm-modal #confirm-delete-btn').style.display = 'none';
+                        document.querySelector('#confirm-modal #confirm-cancel-btn').textContent = 'OK';
+
+                    } else {
+                        openConfirmationModal('Delete Chapter', `Are you sure you want to delete "${currentCourse.chapters[index]}"?`, async () => {
+                            const updatedChapters = currentCourse.chapters.filter((_, i) => i !== index);
+                            await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
+                        });
+                        document.querySelector('#confirm-modal #confirm-delete-btn').style.display = 'inline-flex';
+                        document.querySelector('#confirm-modal #confirm-cancel-btn').textContent = 'Cancel';
                     }
-                    openConfirmationModal('Delete Chapter', `Are you sure you want to delete "${currentCourse.chapters[index]}"?`, async () => {
-                        const updatedChapters = currentCourse.chapters.filter((_, i) => i !== index);
-                        await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
-                    });
                 }
             });
 
