@@ -30,7 +30,7 @@
         html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; color: inherit; }
-        ul { list-style: none; }
+        ul, ol { list-style: none; }
 
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
@@ -75,15 +75,16 @@
         .danger-btn { background-color: var(--danger-color); color: white; }
         .danger-btn:hover { background-color: var(--danger-hover); }
         .menu-toggle, .sidebar-close-btn { display: none; }
-
-        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
-        .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
-        .admin-table td { color: var(--text-primary); font-weight: 500; }
-        .admin-table tr:last-child td { border-bottom: none; }
-        .college-name-cell { position: relative; cursor: default; }
-        .actions-cell { text-align: right !important; width: 1%; white-space: nowrap; }
-        .actions-container { position: relative; display: inline-flex; }
+        
+        .college-list-view { display: flex; flex-direction: column; }
+        .college-list-item { background-color: var(--widget-bg); border-bottom: 1px solid var(--border-color); display: flex; align-items: center; padding: 1rem 1.5rem; transition: background-color 0.2s ease; }
+        .college-list-item:first-child { border-top-left-radius: 12px; border-top-right-radius: 12px; }
+        .college-list-item:last-child { border-bottom: none; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+        .college-list-item-content { flex-grow: 1; display: flex; align-items: center; gap: 1rem; }
+        .college-icon { width: 40px; height: 40px; flex-shrink: 0; background-color: var(--hover-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--brand-purple); font-size: 1.5rem; }
+        .college-info h3 { font-size: 1rem; font-weight: 600; }
+        .college-info p { color: var(--text-secondary); font-size: 0.875rem; font-weight: 500; }
+        .college-actions { position: relative; }
         .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
         .action-btn:hover { background-color: var(--hover-bg); }
         .action-btn i { font-size: 1.5rem; color: var(--text-secondary); }
@@ -93,15 +94,15 @@
         .action-item:hover { background-color: var(--hover-bg); }
         .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         .action-item.delete { color: var(--danger-color); }
-
-        .colleges-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-        .college-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: all 0.2s ease; }
-        .college-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
-        .card-content { padding: 1.5rem; flex-grow: 1; }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; }
-        .card-header h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
-        .card-branch-count { color: var(--text-secondary); font-size: 0.875rem; font-weight: 500; }
         
+        #branch-popover { position: absolute; right: 2.5rem; width: 320px; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 20; padding: 1.5rem; opacity: 0; pointer-events: none; transform: scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        #branch-popover.active { opacity: 1; pointer-events: auto; transform: scale(1); }
+        #branch-popover h4 { font-size: 1rem; font-weight: 600; margin-bottom: 1rem; }
+        #branch-popover .branch-list { display: flex; flex-direction: column; gap: 0.75rem; max-height: 300px; overflow-y: auto; }
+        #branch-popover .branch-list li { padding-left: 1.5rem; position: relative; }
+        #branch-popover .branch-list li::before { content: counter(item) "."; counter-increment: item; position: absolute; left: 0; font-weight: 500; color: var(--text-secondary); }
+        #branch-popover .branch-list { counter-reset: item; }
+
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
@@ -116,13 +117,19 @@
         .form-field input[type="text"] { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
         .form-field input[type="text"]:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .branch-checkbox-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 0.75rem; }
-        .checkbox-item { display: flex; align-items: center; background-color: #F9FAFB; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); cursor: pointer; }
+        .checkbox-item { display: flex; align-items: center; background-color: #F9FAFB; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); }
         .checkbox-item input { margin-right: 0.75rem; width: 1rem; height: 1rem; accent-color: var(--brand-purple); }
-        .checkbox-item label { font-weight: 500; font-size: 0.875rem; cursor: pointer; }
+        .checkbox-item label { font-weight: 500; font-size: 0.875rem; }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        
+        #branch-view-modal .modal-content { max-width: 500px; }
+        #branch-view-modal .branch-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        #branch-view-modal .branch-list li { background-color: var(--hover-bg); padding: 0.75rem 1rem; border-radius: 8px; font-weight: 500; position: relative; padding-left: 2rem; }
+        #branch-view-modal .branch-list li::before { content: counter(item) "."; counter-increment: item; position: absolute; left: 0.75rem; color: var(--text-secondary); font-weight: 600; }
+        #branch-view-modal .branch-list { counter-reset: item; }
 
-        .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
-        .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
+        .actionsheet-overlay, .confirm-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        .actionsheet-overlay.show, .confirm-overlay.show { opacity: 1; pointer-events: auto; }
         .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: #F9FAFB; border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
         .actionsheet.show { transform: translateY(0); }
         .actionsheet-header { text-align: center; padding-bottom: 1rem; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; }
@@ -148,14 +155,6 @@
         .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
         .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
         
-        .branch-popup { position: fixed; background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); border-radius: 8px; padding: 1rem; z-index: 100; max-width: 300px; opacity: 0; visibility: hidden; transition: opacity 0.2s ease, transform 0.2s ease; transform: translateY(5px); pointer-events: none; }
-        .branch-popup.show { opacity: 1; visibility: visible; transform: translateY(0); }
-        .branch-popup h5 { font-weight: 600; margin-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
-        .branch-popup ul { list-style-position: inside; padding-left: 0.25rem; }
-        .branch-popup ul li { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
-        .branch-popup .no-branches { font-style: italic; color: var(--text-secondary); }
-
-        @media (min-width: 1025px) { .colleges-grid { display: none; } }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -166,9 +165,12 @@
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .admin-table { display: none; }
+            .college-list-item { cursor: pointer; }
+            #branch-popover { display: none; }
         }
-        @media (max-width: 640px) { .branch-checkbox-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 640px) {
+            .branch-checkbox-grid { grid-template-columns: 1fr; }
+        }
         @media (max-width: 480px) {
             .admin-content-header { flex-direction: column; align-items: stretch; }
             .admin-content-header h1 { text-align: center; }
@@ -218,16 +220,15 @@
                     <h1>All Colleges</h1>
                     <button class="primary-btn" id="create-college-btn"><i class='bx bx-plus'></i> Create New College</button>
                 </div>
-                <table class="admin-table">
-                    <thead><tr><th>College Name</th><th>Branches Offered</th><th>Actions</th></tr></thead>
-                    <tbody id="colleges-tbody"></tbody>
-                </table>
-                <div class="colleges-grid" id="colleges-grid"></div>
+                <div class="college-list-view" id="colleges-list"></div>
             </section>
         </main>
     </div>
-
-    <div id="branch-popup" class="branch-popup"></div>
+    
+    <div id="branch-popover">
+        <h4 id="popover-title"></h4>
+        <ol class="branch-list" id="popover-branch-list"></ol>
+    </div>
 
     <div class="modal-overlay" id="college-modal">
         <div class="modal-content">
@@ -245,12 +246,17 @@
             </div>
         </div>
     </div>
-    
+    <div class="modal-overlay" id="branch-view-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="branch-view-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body"><ol class="branch-list" id="branch-view-list"></ol></div>
+        </div>
+    </div>
     <div class="actionsheet-overlay" id="actionsheet-overlay">
         <div class="actionsheet" id="actionsheet">
             <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
             <div class="actionsheet-actions">
-                <button class="actionsheet-btn actionsheet-btn--edit edit-college-btn">
+                 <button class="actionsheet-btn actionsheet-btn--edit edit-college-btn">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
                     Edit College
                 </button>
@@ -262,7 +268,6 @@
             <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
         </div>
     </div>
-
     <div class="modal-overlay confirm-modal" id="confirm-modal">
         <div class="modal-content">
             <div class="modal-body">
@@ -331,51 +336,40 @@
             };
 
             const loadColleges = () => {
-                const tbody = document.getElementById('colleges-tbody');
-                const gridContainer = document.getElementById('colleges-grid');
+                const listContainer = document.getElementById('colleges-list');
                 db.collection('colleges').orderBy('name').onSnapshot(snapshot => {
-                    tbody.innerHTML = '';
-                    gridContainer.innerHTML = '';
+                    listContainer.innerHTML = '';
                     snapshot.forEach(doc => {
                         const college = doc.data();
                         const branchCount = college.branches ? college.branches.length : 0;
-                        const branches = college.branches ? college.branches.join(',') : '';
-
-                        const row = document.createElement('tr');
-                        row.dataset.branches = branches;
-                        row.innerHTML = `
-                            <td class="college-name-cell">${college.name}</td>
-                            <td>${branchCount} ${branchCount === 1 ? 'Branch' : 'Branches'}</td>
-                            <td class="actions-cell">
-                                <div class="actions-container">
-                                    <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
-                                    <div class="action-dropdown">
-                                        <button class="action-item edit-college-btn" data-id="${doc.id}">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
-                                            Edit
-                                        </button>
-                                        <button class="action-item delete delete-college-btn" data-id="${doc.id}">
-                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </td>`;
-                        tbody.appendChild(row);
-
                         const card = document.createElement('div');
-                        card.className = 'college-card';
+                        card.className = 'college-list-item';
+                        card.dataset.id = doc.id;
+                        card.dataset.name = college.name;
+                        card.dataset.branches = JSON.stringify(college.branches || []);
+
                         card.innerHTML = `
-                            <div class="card-content">
-                                <div class="card-header">
+                            <div class="college-list-item-content">
+                                <div class="college-icon"><i class='bx bxs-school'></i></div>
+                                <div class="college-info">
                                     <h3>${college.name}</h3>
-                                    <div class="card-menu">
-                                        <button class="action-btn menu-btn" aria-label="Actions" data-id="${doc.id}"><i class='bx bx-dots-vertical-rounded'></i></button>
-                                    </div>
+                                    <p>${branchCount} ${branchCount === 1 ? 'Branch' : 'Branches'} Offered</p>
                                 </div>
-                                <p class="card-branch-count">${branchCount} ${branchCount === 1 ? 'Branch' : 'Branches'} Offered</p>
+                            </div>
+                            <div class="college-actions">
+                                <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                <div class="action-dropdown">
+                                    <button class="action-item edit-college-btn">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                        Edit
+                                    </button>
+                                    <button class="action-item delete delete-college-btn">
+                                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                        Delete
+                                    </button>
+                                </div>
                             </div>`;
-                        gridContainer.appendChild(card);
+                        listContainer.appendChild(card);
                     });
                 });
             };
@@ -402,16 +396,24 @@
                 modal.classList.add('show');
             };
 
-            const openActionsheet = async (collegeId) => {
-                const doc = await db.collection('colleges').doc(collegeId).get();
-                if(!doc.exists) return;
-                const college = doc.data();
+            const openBranchViewModal = (collegeName, branches) => {
+                const modal = document.getElementById('branch-view-modal');
+                modal.querySelector('#branch-view-title').textContent = `${collegeName} Branches`;
+                const list = modal.querySelector('#branch-view-list');
                 
-                document.getElementById('actionsheet-title').textContent = college.name;
+                if (branches && branches.length > 0) {
+                    list.innerHTML = branches.map(b => `<li>${b}</li>`).join('');
+                } else {
+                    list.innerHTML = `<p style="color: var(--text-secondary); text-align: center;">No branches specified for this college.</p>`;
+                }
+                modal.classList.add('show');
+            };
+
+            const openActionsheet = (collegeId, collegeName) => {
+                document.getElementById('actionsheet-title').textContent = collegeName;
                 const sheet = document.getElementById('actionsheet');
                 sheet.querySelector('.edit-college-btn').dataset.id = collegeId;
                 sheet.querySelector('.delete-college-btn').dataset.id = collegeId;
-
                 document.getElementById('actionsheet-overlay').classList.add('show');
                 sheet.classList.add('show');
             };
@@ -420,7 +422,7 @@
                 document.getElementById('actionsheet-overlay').classList.remove('show');
                 document.getElementById('actionsheet').classList.remove('show');
             };
-            
+
             let confirmCallback = null;
             const openConfirmationModal = (title, text, onConfirm) => {
                 const modal = document.getElementById('confirm-modal');
@@ -438,17 +440,52 @@
                     await db.collection('colleges').doc(collegeId).delete();
                 });
             };
+            
+            document.getElementById('colleges-list').addEventListener('mouseover', e => {
+                if (window.innerWidth <= 1024) return;
+                const item = e.target.closest('.college-list-item');
+                if (item) {
+                    const popover = document.getElementById('branch-popover');
+                    const branches = JSON.parse(item.dataset.branches);
+                    document.getElementById('popover-title').textContent = `${item.dataset.name} Branches`;
+                    const list = document.getElementById('popover-branch-list');
+                    if(branches.length > 0) {
+                        list.innerHTML = branches.map(b => `<li>${b}</li>`).join('');
+                    } else {
+                        list.innerHTML = `<p class="no-branches">No branches specified</p>`;
+                    }
+                    const rect = item.getBoundingClientRect();
+                    popover.style.top = `${rect.top}px`;
+                    popover.classList.add('active');
+                }
+            });
+            document.getElementById('colleges-list').addEventListener('mouseout', e => {
+                if (window.innerWidth <= 1024) return;
+                const item = e.target.closest('.college-list-item');
+                if (item) {
+                    document.getElementById('branch-popover').classList.remove('active');
+                }
+            });
 
             document.addEventListener('click', async e => {
-                const isDropdownButton = e.target.closest('.action-btn.menu-btn');
+                const isDropdownButton = e.target.closest('.college-actions .menu-btn');
                 document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
-                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                    if (!isDropdownButton || dropdown !== dropdown.previousElementSibling) {
                         dropdown.classList.remove('active');
                     }
                 });
+                
+                const collegeListItem = e.target.closest('.college-list-item');
+                const isActionButton = e.target.closest('.college-actions');
+
+                if (collegeListItem && !isActionButton && window.innerWidth <= 1024) {
+                    const branches = JSON.parse(collegeListItem.dataset.branches);
+                    openBranchViewModal(collegeListItem.dataset.name, branches);
+                }
+
                 if (isDropdownButton) {
                     if (window.innerWidth <= 1024) {
-                        openActionsheet(isDropdownButton.dataset.id);
+                        openActionsheet(isDropdownButton.closest('.college-list-item').dataset.id, isDropdownButton.closest('.college-list-item').dataset.name);
                     } else {
                         isDropdownButton.nextElementSibling.classList.toggle('active');
                     }
@@ -460,12 +497,14 @@
                 if (button.id === 'create-college-btn') openCollegeModal();
                 if (button.matches('.edit-college-btn')) {
                     closeActionsheet();
-                    const doc = await db.collection('colleges').doc(button.dataset.id).get();
+                    const collegeId = button.closest('[data-id]').dataset.id;
+                    const doc = await db.collection('colleges').doc(collegeId).get();
                     openCollegeModal({ id: doc.id, ...doc.data() });
                 }
                 if (button.matches('.delete-college-btn')) {
                     closeActionsheet();
-                    deleteCollege(button.dataset.id);
+                    const collegeId = button.closest('[data-id]').dataset.id;
+                    deleteCollege(collegeId);
                 }
                 if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) {
                     button.closest('.modal-overlay').classList.remove('show');
@@ -495,30 +534,6 @@
                 if (id) await db.collection('colleges').doc(id).update(data);
                 else await db.collection('colleges').add(data);
                 closeModal('college-modal');
-            });
-            
-            const popup = document.getElementById('branch-popup');
-            document.getElementById('colleges-tbody').addEventListener('mouseover', e => {
-                const cell = e.target.closest('.college-name-cell');
-                if (!cell) return;
-
-                const branchesStr = cell.parentElement.dataset.branches;
-                if (!branchesStr) {
-                    popup.innerHTML = `<p class="no-branches">No branches specified.</p>`;
-                } else {
-                    const branches = branchesStr.split(',');
-                    popup.innerHTML = `<h5>Branches Offered</h5><ul>${branches.map(b => `<li>${b}</li>`).join('')}</ul>`;
-                }
-
-                const rect = cell.getBoundingClientRect();
-                popup.style.left = `${rect.left}px`;
-                popup.style.top = `${rect.bottom + 8}px`;
-                popup.classList.add('show');
-            });
-            
-            document.getElementById('colleges-tbody').addEventListener('mouseout', e => {
-                const cell = e.target.closest('.college-name-cell');
-                if(cell) popup.classList.remove('show');
             });
         });
     </script>
