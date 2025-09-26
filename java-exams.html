@@ -37,6 +37,7 @@
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-content-wrapper { display: flex; align-items: center; gap: 0.75rem; width: 100%; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .profile-details { flex-grow: 1; min-width: 0; }
         .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
@@ -108,19 +109,14 @@
             .card-title { font-size: 0.95rem; }
             .card-meta { font-size: 0.8rem; }
         }
-    </style>
-     <style>
-        .skeleton {
-            animation: shimmer 1.5s infinite linear;
-            background-color: #f3f4f6;
-            background-image: linear-gradient(90deg, #f3f4f6 0px, #e5e7eb 40px, #f3f4f6 80px);
-            background-size: 600px;
-            border-radius: 4px;
-        }
-        @keyframes shimmer {
-            0% { background-position: -300px 0; }
-            100% { background-position: 300px 0; }
-        }
+
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
+        .skeleton-line { height: 14px; border-radius: 4px; }
+        .skeleton-pill-nav { display: flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; width: fit-content; }
+        .skeleton-pill { width: 110px; height: 32px; border-radius: 99px; margin: 2px; }
     </style>
 </head>
 <body>
@@ -128,7 +124,7 @@
     <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
@@ -140,14 +136,29 @@
                 </ul>
             </nav>
             <div class="profile-section" id="profile-section">
-                <img src="" alt="Profile Picture" class="profile-avatar">
-                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                <div class="profile-skeleton" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                    <div class="skeleton skeleton-avatar"></div>
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
+                    </div>
+                </div>
+                <div class="profile-content-wrapper" style="display: none;">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details">
+                        <span class="profile-name"></span>
+                        <span class="profile-email"></span>
+                    </div>
+                    <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                </div>
             </div>
             <div class="profile-popup" id="profile-popup">
                 <div class="popup-header">
                     <img src="" alt="Profile Picture" class="profile-avatar">
-                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                    <div class="profile-details">
+                        <span class="profile-name"></span>
+                        <span class="profile-email"></span>
+                    </div>
                 </div>
                 <ul class="popup-list">
                     <li><a href="profile.html"><i class='bx bx-user'></i> Profile</a></li>
@@ -161,49 +172,48 @@
                 <h1>Course & Content</h1>
             </header>
 
-            <div id="skeleton-loader" style="display: block;">
+            <div id="skeleton-loader" style="display: contents;">
                 <section class="hero-section">
                     <div class="container">
-                        <p class="breadcrumbs"><span class="skeleton" style="width: 200px; height: 16px; display: inline-block;"></span></p>
-                        <h1 class="hero-title"><span class="skeleton" style="width: 350px; height: 48px; display: inline-block; border-radius: 8px;"></span></h1>
+                        <p class="breadcrumbs"><span class="skeleton skeleton-line" style="width: 200px; height: 16px; display: inline-block; background-color: rgba(255,255,255,0.1);"></span></p>
+                        <h1 class="hero-title"><span class="skeleton" style="width: 350px; height: 48px; display: inline-block; border-radius: 8px; background-color: rgba(255,255,255,0.1);"></span></h1>
                     </div>
                 </section>
                 <div class="content-body">
                     <div class="main-content">
-                        <div class="pill-nav">
-                            <div id="pill-slider-skeleton" style="position: absolute; top: 0.25rem; bottom: 0.25rem; width: 115px; left: 4px; border-radius: 99px; background-color: white; box-shadow: var(--shadow);"></div>
-                            <button class="nav-tab active">Curriculum</button>
-                            <button class="nav-tab">Assessments</button>
+                        <div class="skeleton-pill-nav">
+                           <div class="skeleton skeleton-pill"></div>
+                           <div class="skeleton skeleton-pill"></div>
                         </div>
-                        <div class="chapter-group" style="margin-bottom: 2rem;">
-                            <div class="chapter-title skeleton" style="width: 250px; height: 24px; border-bottom: none;"></div>
+                        <div class="chapter-group" style="margin-bottom: 2.5rem;">
+                            <div class="skeleton skeleton-line" style="width: 250px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
                             <div class="chapter-lessons">
-                                <div class="card" style="border: none;">
-                                    <div class="card-prefix skeleton" style="border-radius: 50%;"></div>
+                                <div class="card" style="border-color: transparent; box-shadow: none;">
+                                    <div class="skeleton skeleton-avatar"></div>
                                     <div class="card-info" style="flex-grow: 1;">
-                                        <p class="skeleton" style="height: 16px; width: 80%; margin-bottom: 0.5rem;"></p>
-                                        <p class="skeleton" style="height: 14px; width: 40%;"></p>
+                                        <p class="skeleton skeleton-line" style="height: 16px; width: 80%; margin-bottom: 0.5rem;"></p>
+                                        <p class="skeleton skeleton-line" style="height: 14px; width: 40%;"></p>
                                     </div>
                                     <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
                                 </div>
-                                <div class="card" style="border: none;">
-                                    <div class="card-prefix skeleton" style="border-radius: 50%;"></div>
+                                <div class="card" style="border-color: transparent; box-shadow: none;">
+                                    <div class="skeleton skeleton-avatar"></div>
                                     <div class="card-info" style="flex-grow: 1;">
-                                        <p class="skeleton" style="height: 16px; width: 75%; margin-bottom: 0.5rem;"></p>
-                                        <p class="skeleton" style="height: 14px; width: 35%;"></p>
+                                        <p class="skeleton skeleton-line" style="height: 16px; width: 75%; margin-bottom: 0.5rem;"></p>
+                                        <p class="skeleton skeleton-line" style="height: 14px; width: 35%;"></p>
                                     </div>
                                     <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
                                 </div>
                             </div>
                         </div>
                          <div class="chapter-group">
-                            <div class="chapter-title skeleton" style="width: 300px; height: 24px; border-bottom: none;"></div>
+                            <div class="skeleton skeleton-line" style="width: 300px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
                             <div class="chapter-lessons">
-                                <div class="card" style="border: none;">
-                                    <div class="card-prefix skeleton" style="border-radius: 50%;"></div>
+                                <div class="card" style="border-color: transparent; box-shadow: none;">
+                                    <div class="skeleton skeleton-avatar"></div>
                                     <div class="card-info" style="flex-grow: 1;">
-                                        <p class="skeleton" style="height: 16px; width: 70%; margin-bottom: 0.5rem;"></p>
-                                        <p class="skeleton" style="height: 14px; width: 30%;"></p>
+                                        <p class="skeleton skeleton-line" style="height: 16px; width: 70%; margin-bottom: 0.5rem;"></p>
+                                        <p class="skeleton skeleton-line" style="height: 14px; width: 30%;"></p>
                                     </div>
                                     <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
                                 </div>
@@ -211,24 +221,24 @@
                         </div>
                     </div>
                     <aside class="content-sidebar">
-                        <div class="sidebar-card" style="border: none;">
-                            <h4 class="skeleton" style="height: 20px; width: 150px; margin-bottom: 1.5rem;"></h4>
+                        <div class="sidebar-card" style="background-color: var(--widget-bg); border-color: var(--widget-bg); box-shadow: var(--shadow);">
+                            <h4 class="skeleton skeleton-line" style="height: 20px; width: 150px; margin-bottom: 1.5rem; border-radius: 8px;"></h4>
                             <div class="stat-grid">
                                 <div class="stat-item">
-                                    <div class="stat-value skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem;"></div>
-                                    <div class="stat-label skeleton" style="width: 60px; height: 14px; margin: 0 auto;"></div>
+                                    <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
+                                    <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-value skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem;"></div>
-                                    <div class="stat-label skeleton" style="width: 60px; height: 14px; margin: 0 auto;"></div>
+                                    <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
+                                    <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-value skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem;"></div>
-                                    <div class="stat-label skeleton" style="width: 60px; height: 14px; margin: 0 auto;"></div>
+                                    <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
+                                    <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
                                 </div>
                                 <div class="stat-item">
-                                    <div class="stat-value skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem;"></div>
-                                    <div class="stat-label skeleton" style="width: 60px; height: 14px; margin: 0 auto;"></div>
+                                    <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
+                                    <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
                                 </div>
                             </div>
                         </div>
@@ -287,28 +297,33 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-
+            const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
             const CURRENT_PAGE_FILENAME = "java-exams.html";
 
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                    const userProfile = userDoc.data();
-                    initSharedUI(userProfile);
-                    await loadAndRenderContent(user.uid);
-                } else { window.location.href = 'index.html'; }
-            });
-
             const initSharedUI = (userProfile) => {
-                document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
-                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
-                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
+                const logoUrl = localStorage.getItem('dashboardLogoUrl');
+                if (logoUrl) {
+                    document.querySelector('.logo-image').src = logoUrl;
+                }
+                const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
+
+                if(profileToUse) {
+                    document.querySelectorAll('.profile-avatar').forEach(el => {
+                        el.src = profileToUse.photoURL || DEFAULT_AVATAR;
+                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
+                    });
+                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
+                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
+                    document.querySelector('.profile-skeleton').style.display = 'none';
+                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
+                }
+
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
                 profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
                 document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -334,6 +349,17 @@
                     });
                 });
             };
+            initSharedUI();
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                    const userProfile = userDoc.data();
+                    initSharedUI(userProfile);
+                    await loadAndRenderContent(user.uid);
+                } else { window.location.href = 'index.html'; }
+            });
 
             const loadAndRenderContent = async (userId) => {
                 const skeletonLoader = document.getElementById('skeleton-loader');
@@ -386,10 +412,8 @@
 
                 coursesSnapshot.forEach(courseDoc => {
                     const course = courseDoc.data();
-                    const lessons = (lessonsByCourse[courseDoc.id] || []);
-
                     course.chapters.forEach((chapterName, chapterIndex) => {
-                        const lessonsInChapter = lessons.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
+                        const lessonsInChapter = (lessonsByCourse[courseDoc.id] || []).filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
                         if (lessonsInChapter.length === 0) return;
 
                         const chapterGroup = document.createElement('div');
@@ -411,7 +435,7 @@
                             } else if (isNext) {
                                 status = 'next'; prefixClass = 'card-prefix--default'; buttonHtml = '<button class="card-button">Start Lesson</button>';
                             } else {
-                                status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
+                                status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = '<button class="card-button card-button--locked" disabled>Locked</button>';
                             }
 
                             if (status === 'locked') card.style.pointerEvents = 'none';
@@ -453,7 +477,7 @@
                         status = exam.isLocked ? 'locked' : 'next';
                         prefixClass = exam.isLocked ? 'card-prefix--locked' : 'card-prefix--default';
                         meta = `${exam.questions.length} Questions`;
-                        buttonHtml = `<button class="card-button ${exam.isLocked ? 'card-button--locked' : ''}">${exam.isLocked ? 'Locked' : 'Start Exam'}</button>`;
+                        buttonHtml = `<button class="card-button ${exam.isLocked ? 'card-button--locked' : ''}" ${exam.isLocked ? 'disabled' : ''}>${exam.isLocked ? 'Locked' : 'Start Exam'}</button>`;
                     }
                     if(status === 'locked') card.style.pointerEvents = 'none';
                     card.dataset.status = status;
