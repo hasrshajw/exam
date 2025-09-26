@@ -113,6 +113,13 @@
         
         @keyframes spin-spotlight { 100% { transform: rotate(360deg); } }
         .menu-toggle, .sidebar-close-btn { display: none; }
+
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; border-radius: 6px; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        .skeleton-line { height: 1em; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -130,16 +137,6 @@
             .rank-summary-card { grid-template-columns: 1fr; }
             .rank-item:first-child { border-right: none; border-bottom: 1px solid var(--border-color); }
         }
-
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; border-radius: 8px; }
-        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
-        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
-        .skeleton-line { height: 14px; border-radius: 4px; }
-        .skeleton-pill-nav { display: flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; width: fit-content; }
-        .skeleton-pill { width: 100px; height: 32px; border-radius: 99px; margin: 2px; }
-        .skeleton-list-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; }
-
     </style>
 </head>
 <body>
@@ -147,7 +144,7 @@
     <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
@@ -191,54 +188,28 @@
             <div class="content-body" id="skeleton-loader">
                 <div class="rank-summary-card">
                     <div class="rank-item">
-                        <div class="skeleton skeleton-line" style="width: 120px; height: 14px; margin: 0 auto 0.75rem;"></div>
-                        <div class="skeleton" style="width: 80px; height: 36px; margin: 0 auto; border-radius: 8px;"></div>
+                        <p>Your College Rank</p>
+                        <div class="rank-value">
+                            <div class="skeleton skeleton-line" style="width: 70px; height: 36px; border-radius: 8px; margin: 0 auto;"></div>
+                        </div>
                     </div>
                     <div class="rank-item">
-                        <div class="skeleton skeleton-line" style="width: 110px; height: 14px; margin: 0 auto 0.75rem;"></div>
-                        <div class="skeleton" style="width: 80px; height: 36px; margin: 0 auto; border-radius: 8px;"></div>
+                        <p>Your Overall Rank</p>
+                        <div class="rank-value">
+                            <div class="skeleton skeleton-line" style="width: 70px; height: 36px; border-radius: 8px; margin: 0 auto;"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="leaderboard-widget">
-                    <div class="skeleton-pill-nav">
-                        <div class="skeleton skeleton-pill"></div>
-                        <div class="skeleton skeleton-pill"></div>
+                    <div class="pill-nav">
+                         <div class="skeleton skeleton-line" style="width: 220px; height: 40px; border-radius: 99px;"></div>
                     </div>
-                    <div>
-                        <div class="skeleton" style="height: 80px; margin-bottom: 2rem; border-radius: 12px;"></div>
-                        <div class="skeleton-list-item">
-                            <div class="skeleton skeleton-line" style="width: 24px;"></div>
-                            <div class="skeleton skeleton-avatar" style="margin: 0 1rem;"></div>
-                            <div style="flex-grow: 1;">
-                                <div class="skeleton skeleton-line" style="width: 60%;"></div>
-                            </div>
-                            <div class="skeleton skeleton-line" style="width: 50px;"></div>
-                        </div>
-                        <div class="skeleton-list-item">
-                            <div class="skeleton skeleton-line" style="width: 24px;"></div>
-                            <div class="skeleton skeleton-avatar" style="margin: 0 1rem;"></div>
-                            <div style="flex-grow: 1;">
-                                <div class="skeleton skeleton-line" style="width: 55%;"></div>
-                            </div>
-                            <div class="skeleton skeleton-line" style="width: 50px;"></div>
-                        </div>
-                        <div class="skeleton-list-item">
-                            <div class="skeleton skeleton-line" style="width: 24px;"></div>
-                            <div class="skeleton skeleton-avatar" style="margin: 0 1rem;"></div>
-                            <div style="flex-grow: 1;">
-                                <div class="skeleton skeleton-line" style="width: 70%;"></div>
-                            </div>
-                            <div class="skeleton skeleton-line" style="width: 50px;"></div>
-                        </div>
-                        <div class="skeleton-list-item">
-                            <div class="skeleton skeleton-line" style="width: 24px;"></div>
-                            <div class="skeleton skeleton-avatar" style="margin: 0 1rem;"></div>
-                            <div style="flex-grow: 1;">
-                                <div class="skeleton skeleton-line" style="width: 65%;"></div>
-                            </div>
-                            <div class="skeleton skeleton-line" style="width: 50px;"></div>
-                        </div>
-                    </div>
+                    <div class="podium-stacked-card skeleton" style="height: 180px; margin-bottom: 2rem;"></div>
+                    <ul class="leaderboard-list">
+                        <li style="gap: 1rem;"><div class="skeleton skeleton-line" style="width: 20px;"></div><div class="skeleton skeleton-avatar" style="margin:0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 50%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
+                        <li style="gap: 1rem;"><div class="skeleton skeleton-line" style="width: 20px;"></div><div class="skeleton skeleton-avatar" style="margin:0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 60%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
+                        <li style="gap: 1rem;"><div class="skeleton skeleton-line" style="width: 20px;"></div><div class="skeleton skeleton-avatar" style="margin:0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 45%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
+                    </ul>
                 </div>
             </div>
             <div class="content-body" id="real-content" style="display: none;">
@@ -287,24 +258,13 @@
 
             let currentUserProfile = null;
             let currentUserId = null;
-
+            
             const setupEventListeners = () => {
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-                
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { 
-                    e.stopPropagation(); 
-                    profilePopup.classList.toggle('active'); 
-                    profileSection.classList.toggle('active'); 
-                });
-                document.addEventListener('click', e => { 
-                    if (profileSection && !profileSection.contains(e.target) && profilePopup) { 
-                        profilePopup.classList.remove('active'); 
-                        profileSection.classList.remove('active'); 
-                    } 
-                });
-                
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -329,14 +289,13 @@
                     });
                 });
             };
-
+            
             const updateProfileUI = (userProfile) => {
                 const logoUrl = localStorage.getItem('dashboardLogoUrl');
-                if (logoUrl) {
-                    document.querySelector('.logo-image').src = logoUrl;
-                }
+                if(logoUrl) document.querySelector('.logo-image').src = logoUrl;
+
                 const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
-                
+
                 if(profileToUse) {
                     document.querySelectorAll('.profile-avatar').forEach(el => {
                         el.src = profileToUse.photoURL || DEFAULT_AVATAR;
@@ -388,9 +347,8 @@
                     renderLeaderboard('overall-content', rankedList, true);
                     renderLeaderboard('college-content', collegeList, false);
                     renderRankSummary(rankedList, collegeList);
-
-                } catch (error) {
-                    console.error("Error loading leaderboard:", error);
+                } catch(error) {
+                    console.error("Error loading leaderboard data: ", error);
                 } finally {
                     document.getElementById('skeleton-loader').style.display = 'none';
                     document.getElementById('real-content').style.display = 'block';
@@ -404,42 +362,47 @@
                     return;
                 }
                 
-                let html = '';
-                const top3 = userList.slice(0, 3).filter(u => u.points > 0);
-                const rest = userList.slice(top3.length);
+                let topPerformersHtml = '';
+                const topPerformers = userList.slice(0, 3).filter(u => u.points > 0);
+                
+                let startIndexForList = 0;
 
-                if (isOverall && top3.length > 0) {
-                    const winner = top3[0];
+                if (isOverall && topPerformers.length > 0) {
+                    const winner = topPerformers[0];
                     const winnerPhoto = winner.profile.photoURL || DEFAULT_AVATAR;
-                    html += `<div class="winner-spotlight-card"><div class="winner-content"><i class='bx bxs-trophy winner-trophy'></i><img src="${winnerPhoto}" alt="Avatar" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}';"><div class="winner-info"><h2>${winner.profile.displayName}</h2><p>${winner.profile.college}</p></div><div class="winner-score"><strong>${winner.points}</strong><span>XP</span></div></div></div>`;
-                } else if (!isOverall && top3.length > 0) {
-                    html += '<div class="podium-stacked-card">';
-                    top3.forEach((user, index) => {
-                        const rank = userList.indexOf(user) + 1;
+                    topPerformersHtml = `<div class="winner-spotlight-card"><div class="winner-content"><i class='bx bxs-trophy winner-trophy'></i><img src="${winnerPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="winner-info"><h2>${winner.profile.displayName}</h2><p>${winner.profile.college}</p></div><div class="winner-score"><strong>${winner.points}</strong><span>XP</span></div></div></div>`;
+                    startIndexForList = 1; // For overall list, start from rank 2
+                } else if (!isOverall && topPerformers.length > 0) {
+                    topPerformersHtml = '<div class="podium-stacked-card">';
+                    topPerformers.forEach((user, index) => {
+                        const rank = index + 1;
+                        const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
                         let rankIcon = rank;
                         if(rank === 1) rankIcon = `<i class='bx bxs-trophy'></i>`;
                         if(rank === 2) rankIcon = `<i class='bx bxs-medal'></i>`;
                         if(rank === 3) rankIcon = `<i class='bx bxs-medal'></i>`;
-                        const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
-                        html += `<div class="podium-stacked-item rank-${rank}">
+                        topPerformersHtml += `<div class="podium-stacked-item rank-${rank}">
                                     <div class="podium-rank-badge">${rankIcon}</div>
-                                    <img src="${userPhoto}" alt="Avatar" class="podium-avatar" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}';">
+                                    <img src="${userPhoto}" alt="Avatar" class="podium-avatar" onerror="this.src='${DEFAULT_AVATAR}'">
                                     <div class="podium-info"><p class="podium-name">${user.profile.displayName}</p></div>
                                     <p class="podium-score">${user.points} XP</p>
                                  </div>`;
                     });
-                    html += '</div>';
+                    topPerformersHtml += '</div>';
+                    startIndexForList = topPerformers.length; // For college list, start after the top performers
                 }
+                
+                let listHtml = '<ul class="leaderboard-list">';
+                const listToRender = userList.slice(startIndexForList);
 
-                html += '<ul class="leaderboard-list">';
-                rest.forEach((user) => {
+                listToRender.forEach((user) => {
                     const rank = userList.indexOf(user) + 1;
                     const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
-                    html += `<li class="${user.id === currentUserId ? 'current-user' : ''}"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}';"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
+                    listHtml += `<li class="${user.id === currentUserId ? 'current-user' : ''}"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
                 });
-                html += '</ul>';
+                listHtml += '</ul>';
 
-                container.innerHTML = html;
+                container.innerHTML = topPerformersHtml + listHtml;
             };
 
             const renderRankSummary = (overallList, collegeList) => {
