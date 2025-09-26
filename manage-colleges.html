@@ -77,9 +77,9 @@
         .menu-toggle, .sidebar-close-btn { display: none; }
 
         .colleges-list { display: flex; flex-direction: column; gap: 0.75rem; }
-        .college-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; align-items: center; padding: 1.25rem 1.5rem; transition: all 0.2s ease; cursor: pointer; }
+        .college-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; align-items: center; padding: 1.25rem 1.5rem; transition: all 0.2s ease; cursor: pointer; position: relative; }
         .college-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--brand-purple); }
-        .college-card.menu-open { z-index: 5; position: relative; }
+        .college-card.menu-open { z-index: 5; }
         .college-card-content { flex-grow: 1; display: flex; align-items: center; gap: 1rem; }
         .college-icon { width: 40px; height: 40px; flex-shrink: 0; background-color: var(--hover-bg); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--brand-purple); font-size: 1.5rem; }
         .college-info h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; }
@@ -435,10 +435,9 @@
             document.addEventListener('click', async e => {
                 const isDropdownButton = e.target.closest('.college-actions .menu-btn');
                 document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
-                    const menuButton = dropdown.previousElementSibling;
-                    if (!isDropdownButton || dropdown !== menuButton.nextElementSibling) {
+                    if (!isDropdownButton || dropdown !== dropdown.previousElementSibling) {
                         dropdown.classList.remove('active');
-                        menuButton.closest('.college-card').classList.remove('menu-open');
+                        dropdown.closest('.college-card')?.classList.remove('menu-open');
                     }
                 });
 
@@ -486,27 +485,6 @@
                     if (confirmCallback) confirmCallback();
                     closeModal('confirm-modal');
                 }
-            });
-
-            const tooltip = document.getElementById('branch-tooltip');
-            document.getElementById('colleges-list').addEventListener('mouseover', e => {
-                if(window.innerWidth <= 1024) return;
-                const card = e.target.closest('.college-card');
-                if (card) {
-                    const branches = JSON.parse(card.dataset.branches);
-                    if (branches && branches.length > 0) {
-                        tooltip.innerHTML = `<h4>Branches Offered</h4><ol>${branches.map(b => `<li>${b}</li>`).join('')}</ol>`;
-                    } else {
-                        tooltip.innerHTML = `<p class="no-branches">No branches specified</p>`;
-                    }
-                    const rect = card.getBoundingClientRect();
-                    tooltip.style.top = `${rect.top}px`;
-                    tooltip.style.left = `${rect.right + 10}px`;
-                    tooltip.classList.add('visible');
-                }
-            });
-            document.getElementById('colleges-list').addEventListener('mouseout', () => {
-                tooltip.classList.remove('visible');
             });
 
             document.getElementById('save-college-btn').addEventListener('click', async () => {
