@@ -9,12 +9,33 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375; --hover-bg: #F3F4F6; --danger-color: #EF4444; --warning-color: #F59E0B; --info-color: #3B82F6; }
+        :root {
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-green: #10B981;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --info-color: #3B82F6;
+            --seen-blue: #34B7F1;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
         .main-nav { flex-grow: 1; } .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
         .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
@@ -27,68 +48,101 @@
         .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
         .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
         .profile-section.active .profile-options i { transform: rotate(180deg); }
-        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
         .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
         .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
         .popup-list { list-style: none; padding-top: 0.5rem; }
         .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
         .popup-list a:hover { background-color: var(--hover-bg); } .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
-        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
-        .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .content-body { padding: 2rem 3rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; align-items: flex-start; }
-        .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02); }
-        .widget-header { margin-bottom: 1.5rem; } .widget-header h2 { font-size: 1.25rem; font-weight: 600; }
+        .support-layout { display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; align-items: flex-start; max-width: 1400px; margin: 0 auto; }
+        .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .widget-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .widget-header h2 { font-size: 1.25rem; font-weight: 600; }
+        .widget-body { padding: 1.5rem; }
         .form-field { margin-bottom: 1.25rem; }
-        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.9rem; }
-        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'IBM Plex Sans', sans-serif; font-size: 1rem; background-color: var(--body-bg); outline: none; }
+        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'IBM Plex Sans', sans-serif; font-size: 1rem; outline: none; transition: all 0.2s ease; }
+        .form-field input:focus, .form-field textarea:focus { border-color: var(--brand-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
         .form-field textarea { resize: vertical; min-height: 120px; }
-        .btn-submit { background: var(--text-primary); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; }
-        .btn-submit:hover { background: #001A19; }
+        .btn-submit { background: var(--brand-green); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn-submit:hover { background-color: #059669; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-submit:disabled { background-color: #D1D5DB; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-submit .spinner { display: none; }
+        .btn-submit.loading .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+        .btn-submit.loading .btn-text { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .ticket-list-widget .widget-body { padding: 0.5rem; }
         .ticket-list { list-style: none; display: flex; flex-direction: column; }
-        .ticket-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border-color); }
-        .ticket-item:last-child { border-bottom: none; }
-        .ticket-info { display: flex; flex-direction: column; gap: 0.25rem; }
+        .ticket-item { display: flex; align-items: center; padding: 1rem; border-radius: 8px; transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease; cursor: pointer; border: 1px solid transparent; }
+        .ticket-item:hover { background-color: var(--hover-bg); }
+        .ticket-item.new-message { border-color: var(--danger-color); background-color: #FEF2F2; font-weight: 600; }
+        .new-message-dot { width: 8px; height: 8px; border-radius: 50%; background-color: var(--danger-color); flex-shrink: 0; margin-right: 1rem; }
+        .ticket-info { flex-grow: 1; }
         .ticket-subject { font-weight: 600; }
         .ticket-meta { font-size: 0.8rem; color: var(--text-secondary); }
         .status-badge { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 99px; text-transform: uppercase; letter-spacing: 0.05em; }
         .status-badge.open { background-color: #DBEAFE; color: #2563EB; }
         .status-badge.in-progress { background-color: #FEF3C7; color: #D97706; }
         .status-badge.closed { background-color: #D1FAE5; color: #065F46; }
-        .btn-view { background: var(--hover-bg); color: var(--text-primary); border-radius: 6px; font-weight: 500; font-size: 0.85rem; padding: 0.5rem 1rem; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
-        .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 700px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .modal-header h3 { font-size: 1.5rem; }
-        .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
-        .conversation-thread { list-style: none; display: flex; flex-direction: column; gap: 1.5rem; }
-        .message { display: flex; gap: 1rem; }
-        .message-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; background-color: var(--hover-bg); object-fit: cover; }
-        .message-content { background-color: var(--hover-bg); padding: 1rem; border-radius: 12px; }
-        .message-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-        .message-sender { font-weight: 600; }
-        .message-timestamp { font-size: 0.8rem; color: var(--text-secondary); }
-        .message-text { line-height: 1.6; }
-        .message.from-support .message-content { background-color: #E0E7FF; }
-        .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
+
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 700px; height: 90vh; max-height: 800px; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 600; }
+        .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
+        .close-btn:hover { background-color: var(--hover-bg); }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem; background-color: var(--body-bg); }
+        .conversation-thread { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
+        .message { display: flex; max-width: 80%; margin-bottom: 0.75rem; gap: 0.75rem; }
+        .message-avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .message-content { padding: 0.75rem 1rem; border-radius: 12px; }
+        .message-text { line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
+        .message-meta { display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem; margin-top: 0.25rem; }
+        .message-timestamp { font-size: 0.75rem; color: var(--text-secondary); }
+        .message-status i { font-size: 1rem; }
+        .from-user { align-self: flex-end; } .from-user .message-content { background-color: var(--brand-green); color: white; border-bottom-right-radius: 4px; } .from-user .message-timestamp { color: rgba(255,255,255,0.7); }
+        .from-support { align-self: flex-start; } .from-support .message-content { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-bottom-left-radius: 4px; }
+        .typing-indicator { display: none; align-items: center; gap: 0.5rem; padding: 0.6rem 0.8rem; }
+        .typing-indicator.show { display: flex; }
+        .typing-dot { width: 8px; height: 8px; background-color: #ccc; border-radius: 50%; animation: typing 1.4s infinite; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; } .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+        .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); margin-top: auto; flex-shrink: 0; background: var(--widget-bg); }
+        .reply-form { display: flex; gap: 0.75rem; align-items: flex-start; }
+        .reply-input-wrapper { flex-grow: 1; position: relative; }
+        .reply-input-wrapper textarea { width: 100%; padding: 0.75rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'IBM Plex Sans', sans-serif; font-size: 1rem; outline: none; transition: all 0.2s ease; resize: none; min-height: 46px; max-height: 120px; }
+        .reply-input-wrapper textarea:focus { border-color: var(--brand-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        .reply-form .btn-submit { padding: 0.7rem; border-radius: 8px; height: 46px; width: 46px; } .reply-form .btn-submit i { font-size: 1.25rem; }
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); padding: 1rem 1.5rem; border-radius: 8px; color: white; font-weight: 500; box-shadow: var(--shadow-lg); transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 1001; display: flex; align-items: center; gap: 0.75rem; }
+        #toast.show { bottom: 30px; }
+        #toast.success { background-color: #059669; }
+        #toast.error { background-color: var(--danger-color); }
+        #toast i { font-size: 1.25rem; }
+        
+        .menu-toggle, .sidebar-close-btn { display: none; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
-            .content-body { grid-template-columns: 1fr; padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; }
+            .content-body, .support-layout { grid-template-columns: 1fr; padding: 1.5rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+            .content-body { padding: 1rem; }
+            .main-header { padding: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Loading...</div>
     <div class="overlay" id="overlay"></div>
     <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
@@ -122,21 +176,30 @@
         </aside>
         <main class="main-area">
             <header class="main-header">
-                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
                 <h1>Help & Support</h1>
             </header>
             <section class="content-body">
-                <div class="widget">
-                    <div class="widget-header"><h2>Create a New Support Request</h2></div>
-                    <form id="support-form">
-                        <div class="form-field"><label for="ticket-subject">Subject</label><input type="text" id="ticket-subject" placeholder="e.g., Issue with course video" required></div>
-                        <div class="form-field"><label for="ticket-description">Description</label><textarea id="ticket-description" placeholder="Please describe your issue in detail..." required></textarea></div>
-                        <button type="submit" class="btn-submit" id="submit-ticket-btn">Submit Request</button>
-                    </form>
-                </div>
-                <div class="widget">
-                    <div class="widget-header"><h2>Your Support Tickets</h2></div>
-                    <ul class="ticket-list" id="ticket-list"></ul>
+                <div class="support-layout">
+                    <div class="widget ticket-list-widget">
+                        <div class="widget-header"><h2>Your Support Tickets</h2></div>
+                        <div class="widget-body">
+                           <ul class="ticket-list" id="ticket-list"></ul>
+                        </div>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-header"><h2>Create a New Request</h2></div>
+                        <div class="widget-body">
+                             <form id="support-form">
+                                <div class="form-field"><label for="ticket-subject">Subject</label><input type="text" id="ticket-subject" placeholder="e.g., Issue with course video" required></div>
+                                <div class="form-field"><label for="ticket-description">Description</label><textarea id="ticket-description" placeholder="Please describe your issue in detail..." required></textarea></div>
+                                <button type="submit" class="btn-submit" id="submit-ticket-btn">
+                                    <span class="btn-text">Submit Request</span>
+                                    <span class="spinner"></span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
@@ -144,9 +207,28 @@
     <div class="modal-overlay" id="ticket-details-modal">
         <div class="modal-content">
             <div class="modal-header"><h3 id="modal-ticket-subject"></h3><button class="close-btn">&times;</button></div>
-            <div class="modal-body"><ul class="conversation-thread" id="conversation-thread"></ul></div>
+            <div class="modal-body">
+                <ul class="conversation-thread" id="conversation-thread"></ul>
+                <div class="message from-support typing-indicator" id="typing-indicator">
+                     <img src="https://i.ibb.co/gvztfks/Screenshot-2024-05-13-at-5-06-03-PM.png" alt="Support" class="message-avatar">
+                    <div class="message-content">
+                        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <form id="reply-form">
+                    <div class="reply-form">
+                        <div class="reply-input-wrapper">
+                            <textarea id="reply-message" placeholder="Type your message..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit" id="send-reply-btn"><i class='bx bxs-paper-plane'></i></button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
+    <div id="toast"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -168,6 +250,7 @@
 
             let currentUser = null;
             let currentUserProfile = null;
+            let unsubscribeTicketListener = null;
             
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
@@ -177,9 +260,7 @@
                     currentUserProfile = userDoc.data();
                     initSharedUI(currentUserProfile);
                     loadTickets();
-                } else {
-                    window.location.href = 'index.html';
-                }
+                } else { window.location.href = 'index.html'; }
             });
 
             const initSharedUI = (userProfile) => {
@@ -205,28 +286,36 @@
 
             const loadTickets = () => {
                 const list = document.getElementById('ticket-list');
-                db.collection('tickets').where('userId', '==', currentUser.uid).orderBy('createdAt', 'desc')
+                db.collection('tickets').where('userId', '==', currentUser.uid).orderBy('lastActivity', 'desc')
                     .onSnapshot(snapshot => {
                         list.innerHTML = '';
                         if (snapshot.empty) {
-                            list.innerHTML = '<p style="padding: 1rem 0; color: var(--text-secondary);">You have no support tickets.</p>';
+                            list.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">You have no support tickets.</p>';
                             return;
                         }
                         snapshot.forEach(doc => {
                             const ticket = doc.data();
                             const item = document.createElement('li');
                             item.className = 'ticket-item';
+                            item.dataset.id = doc.id;
                             const statusClass = ticket.status.toLowerCase().replace(' ', '-');
                             const date = new Date(ticket.createdAt.seconds * 1000).toLocaleDateString();
+                            
+                            const lastMessage = ticket.conversation[ticket.conversation.length - 1];
+                            const isSupportLastSender = lastMessage.senderId === 'support_team';
+                            const hasNewMessage = ticket.studentLastSeen === null || (ticket.lastActivity && ticket.studentLastSeen.seconds < ticket.lastActivity.seconds);
+                            
+                            if(isSupportLastSender && hasNewMessage) {
+                                item.classList.add('new-message');
+                            }
+
                             item.innerHTML = `
+                                ${isSupportLastSender && hasNewMessage ? '<div class="new-message-dot"></div>' : ''}
                                 <div class="ticket-info">
                                     <span class="ticket-subject">${ticket.subject}</span>
-                                    <span class="ticket-meta">Ticket #${doc.id.substring(0,6)} • Created on ${date}</span>
+                                    <span class="ticket-meta">#${doc.id.substring(0,6)} • ${date}</span>
                                 </div>
-                                <div>
-                                    <span class="status-badge ${statusClass}">${ticket.status}</span>
-                                    <button class="btn-view" data-id="${doc.id}">View Details</button>
-                                </div>`;
+                                <span class="status-badge ${statusClass}">${ticket.status}</span>`;
                             list.appendChild(item);
                         });
                     });
@@ -235,73 +324,149 @@
             document.getElementById('support-form').addEventListener('submit', async e => {
                 e.preventDefault();
                 const btn = document.getElementById('submit-ticket-btn');
-                btn.disabled = true;
-                btn.textContent = 'Submitting...';
-
-                const subject = document.getElementById('ticket-subject').value.trim();
-                const description = document.getElementById('ticket-description').value.trim();
-
+                btn.disabled = true; btn.classList.add('loading');
                 try {
                     await db.collection('tickets').add({
-                        userId: currentUser.uid,
-                        userName: currentUserProfile.displayName,
-                        userEmail: currentUserProfile.email,
-                        subject: subject,
-                        status: 'Open',
+                        userId: currentUser.uid, userName: currentUserProfile.displayName, userEmail: currentUserProfile.email, userPhotoURL: currentUserProfile.photoURL || '',
+                        subject: document.getElementById('ticket-subject').value.trim(), status: 'Open',
                         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        lastActivity: firebase.firestore.FieldValue.serverTimestamp(),
+                        studentLastSeen: new Date(), adminLastSeen: null,
+                        studentIsTyping: false, adminIsTyping: false,
                         conversation: [{
-                            sender: currentUserProfile.displayName,
-                            senderId: currentUser.uid,
-                            message: description,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                            sender: currentUserProfile.displayName, senderId: currentUser.uid,
+                            message: document.getElementById('ticket-description').value.trim(),
+                            timestamp: new Date()
                         }]
                     });
-                    document.getElementById('support-form').reset();
+                    e.target.reset();
+                    showToast('Support request created!', 'success');
                 } catch (error) {
                     console.error("Error creating ticket: ", error);
-                    alert('Could not create ticket. Please try again.');
+                    showToast('Could not create ticket. Please try again.', 'error');
                 } finally {
-                    btn.disabled = false;
-                    btn.textContent = 'Submit Request';
+                    btn.disabled = false; btn.classList.remove('loading');
                 }
             });
 
-            document.getElementById('ticket-list').addEventListener('click', async e => {
-                const button = e.target.closest('button');
-                if (button && button.matches('.btn-view')) {
-                    const ticketId = button.dataset.id;
-                    const ticketDoc = await db.collection('tickets').doc(ticketId).get();
-                    if (!ticketDoc.exists) return;
-                    const ticket = ticketDoc.data();
-                    
+            const openTicketModal = (ticketId) => {
+                document.getElementById('reply-form').dataset.id = ticketId;
+                const modal = document.getElementById('ticket-details-modal');
+                const thread = document.getElementById('conversation-thread');
+                const typingIndicator = document.getElementById('typing-indicator');
+                if (unsubscribeTicketListener) unsubscribeTicketListener();
+                
+                db.collection('tickets').doc(ticketId).update({ studentLastSeen: new Date() });
+
+                unsubscribeTicketListener = db.collection('tickets').doc(ticketId).onSnapshot(async (doc) => {
+                    if (!doc.exists) { closeTicketModal(); return; }
+                    const ticket = doc.data();
                     document.getElementById('modal-ticket-subject').textContent = ticket.subject;
-                    const thread = document.getElementById('conversation-thread');
                     thread.innerHTML = '';
                     
                     ticket.conversation.forEach(msg => {
                         const messageItem = document.createElement('li');
                         const isSupportReply = msg.senderId === 'support_team';
                         messageItem.className = `message ${isSupportReply ? 'from-support' : 'from-user'}`;
-                        const date = new Date(msg.timestamp.seconds * 1000).toLocaleString();
+                        const time = new Date(msg.timestamp.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        
+                        let statusIcon = '';
+                        if (!isSupportReply) {
+                            const isSeen = ticket.adminLastSeen && ticket.adminLastSeen.seconds >= msg.timestamp.seconds;
+                            statusIcon = `<i class='bx bx-check${isSeen ? '-double' : ''}' style="color:${isSeen ? 'var(--seen-blue)' : 'rgba(255,255,255,0.7)'}"></i>`;
+                        }
 
                         messageItem.innerHTML = `
-                            <img src="${isSupportReply ? 'https://i.pravatar.cc/150?u=support' : currentUserProfile.photoURL}" alt="avatar" class="message-avatar">
+                             ${isSupportReply ? `<img src="https://i.ibb.co/gvztfks/Screenshot-2024-05-13-at-5-06-03-PM.png" alt="Support" class="message-avatar">` : ''}
                             <div class="message-content">
-                                <div class="message-header">
-                                    <span class="message-sender">${isSupportReply ? 'Support Team' : msg.sender}</span>
-                                    <span class="message-timestamp">${date}</span>
-                                </div>
                                 <p class="message-text">${msg.message.replace(/\n/g, '<br>')}</p>
+                                <div class="message-meta">
+                                    <span class="message-timestamp">${time}</span>
+                                    <span class="message-status">${statusIcon}</span>
+                                </div>
                             </div>`;
                         thread.appendChild(messageItem);
                     });
-                    document.getElementById('ticket-details-modal').classList.add('show');
+                    typingIndicator.classList.toggle('show', ticket.adminIsTyping || false);
+                    thread.parentElement.scrollTop = thread.parentElement.scrollHeight;
+                });
+                modal.classList.add('show');
+            };
+
+            const closeTicketModal = () => {
+                if (unsubscribeTicketListener) unsubscribeTicketListener();
+                unsubscribeTicketListener = null;
+                const ticketId = document.getElementById('reply-form').dataset.id;
+                if(ticketId) db.collection('tickets').doc(ticketId).update({ studentIsTyping: false });
+                document.getElementById('ticket-details-modal').classList.remove('show');
+            };
+
+            document.getElementById('ticket-list').addEventListener('click', e => {
+                const item = e.target.closest('.ticket-item');
+                if (item) {
+                    openTicketModal(item.dataset.id);
                 }
             });
             
-            document.querySelector('#ticket-details-modal .close-btn').addEventListener('click', () => {
-                document.getElementById('ticket-details-modal').classList.remove('show');
+            document.querySelector('#ticket-details-modal .close-btn').addEventListener('click', closeTicketModal);
+
+            document.getElementById('reply-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const ticketId = e.currentTarget.dataset.id;
+                const btn = document.getElementById('send-reply-btn');
+                const messageInput = document.getElementById('reply-message');
+                const replyMessage = messageInput.value.trim();
+                
+                if (!replyMessage || !ticketId) return;
+                btn.disabled = true;
+                
+                const newReply = {
+                    sender: currentUserProfile.displayName, senderId: currentUser.uid,
+                    message: replyMessage, timestamp: new Date()
+                };
+
+                const ticketRef = db.collection('tickets').doc(ticketId);
+                try {
+                    await ticketRef.update({
+                        conversation: firebase.firestore.FieldValue.arrayUnion(newReply),
+                        status: 'In Progress',
+                        lastActivity: firebase.firestore.FieldValue.serverTimestamp(),
+                        studentIsTyping: false
+                    });
+                    messageInput.value = '';
+                    messageInput.style.height = 'auto';
+                } catch (error) {
+                    console.error("Error sending reply:", error);
+                    showToast('Failed to send reply.', 'error');
+                } finally {
+                    btn.disabled = false;
+                }
             });
+
+            let typingTimeout = null;
+            document.getElementById('reply-message').addEventListener('input', e => {
+                e.target.style.height = 'auto';
+                e.target.style.height = (e.target.scrollHeight) + 'px';
+                
+                const ticketId = document.getElementById('reply-form').dataset.id;
+                if (!ticketId) return;
+                const ticketRef = db.collection('tickets').doc(ticketId);
+                
+                if(!typingTimeout) {
+                    ticketRef.update({ studentIsTyping: true });
+                }
+                clearTimeout(typingTimeout);
+                typingTimeout = setTimeout(() => {
+                    ticketRef.update({ studentIsTyping: false });
+                    typingTimeout = null;
+                }, 2000);
+            });
+            const showToast = (message, type = 'success') => {
+                const toast = document.getElementById('toast');
+                toast.innerHTML = `<i class='bx bxs-${type === 'success' ? 'check-circle' : 'error-circle'}'></i> ${message}`;
+                toast.className = `show ${type}`;
+                setTimeout(() => { toast.className = ''; }, 3000);
+            };
         });
     </script>
 </body>
