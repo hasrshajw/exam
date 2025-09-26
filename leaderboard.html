@@ -159,6 +159,13 @@
                 </ul>
             </nav>
             <div class="profile-section" id="profile-section">
+                <div class="profile-skeleton" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                    <div class="skeleton skeleton-avatar"></div>
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
+                    </div>
+                </div>
                 <div class="profile-content-wrapper" style="display: none;">
                     <img src="" alt="Profile Picture" class="profile-avatar">
                     <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
@@ -281,41 +288,23 @@
             let currentUserProfile = null;
             let currentUserId = null;
 
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    currentUserId = user.uid;
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                    currentUserProfile = userDoc.data();
-                    initSharedUI(currentUserProfile);
-                    await loadLeaderboardData();
-                } else { window.location.href = 'index.html'; }
-            });
-
-            const initSharedUI = (userProfile) => {
-                const logoUrl = localStorage.getItem('dashboardLogoUrl');
-                if (logoUrl) {
-                    document.querySelector('.logo-image').src = logoUrl;
-                }
-
-                const storedProfile = JSON.parse(localStorage.getItem('dashboardUserProfile'));
-                const profileToUse = userProfile || storedProfile;
-
-                if (profileToUse) {
-                    document.querySelectorAll('.profile-avatar').forEach(el => {
-                        el.src = profileToUse.photoURL || DEFAULT_AVATAR;
-                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
-                    });
-                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
-                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
-                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
-                }
-
+            const setupEventListeners = () => {
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                profileSection.addEventListener('click', e => { 
+                    e.stopPropagation(); 
+                    profilePopup.classList.toggle('active'); 
+                    profileSection.classList.toggle('active'); 
+                });
+                document.addEventListener('click', e => { 
+                    if (profileSection && !profileSection.contains(e.target) && profilePopup) { 
+                        profilePopup.classList.remove('active'); 
+                        profileSection.classList.remove('active'); 
+                    } 
+                });
+                
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -340,7 +329,39 @@
                     });
                 });
             };
-            initSharedUI();
+
+            const updateProfileUI = (userProfile) => {
+                const logoUrl = localStorage.getItem('dashboardLogoUrl');
+                if (logoUrl) {
+                    document.querySelector('.logo-image').src = logoUrl;
+                }
+                const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
+                
+                if(profileToUse) {
+                    document.querySelectorAll('.profile-avatar').forEach(el => {
+                        el.src = profileToUse.photoURL || DEFAULT_AVATAR;
+                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
+                    });
+                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
+                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
+                    document.querySelector('.profile-skeleton').style.display = 'none';
+                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
+                }
+            };
+
+            setupEventListeners();
+            updateProfileUI();
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUserId = user.uid;
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                    currentUserProfile = userDoc.data();
+                    updateProfileUI(currentUserProfile);
+                    await loadLeaderboardData();
+                } else { window.location.href = 'index.html'; }
+            });
 
             const loadLeaderboardData = async () => {
                 try {
