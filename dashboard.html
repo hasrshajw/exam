@@ -343,3 +343,260 @@ border-radius: 4px;
 </section>
 </main>
 </div>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+            authDomain: "exam-2e799.firebaseapp.com",
+            projectId: "exam-2e799",
+            storageBucket: "exam-2e799.firebasestorage.app",
+            messagingSenderId: "472506328501",
+            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+            measurementId: "G-NX21HT3JKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                if (user.email === ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                
+                const userProfile = userDoc.data();
+                initUI(userProfile);
+                loadDashboardData(user.uid, userProfile);
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        const initUI = (userProfile) => {
+            document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
+            document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
+            document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
+            
+            document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+            
+            const tabs = document.querySelectorAll('.tab-btn');
+            const activeLine = document.querySelector('.active-line');
+            function moveActiveLine(tabElement) { if (tabElement) { activeLine.style.width = `${tabElement.offsetWidth}px`; activeLine.style.left = `${tabElement.offsetLeft}px`; } }
+            moveActiveLine(document.querySelector('.tab-btn.active'));
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.querySelector(tab.dataset.target).classList.add('active');
+                    moveActiveLine(tab);
+                });
+            });
+
+            const profileSection = document.getElementById('profile-section');
+            const profilePopup = document.getElementById('profile-popup');
+            profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+            document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+            
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeBtn = document.getElementById('sidebar-close-btn');
+            const overlay = document.getElementById('overlay');
+            const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+            menuToggle.addEventListener('click', toggleMenu);
+            closeBtn.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+        };
+
+        const loadDashboardData = async (userId, userProfile) => {
+            const skeletonLoader = document.getElementById('skeleton-loader');
+            const realContent = document.getElementById('real-content');
+            try {
+                const enrollmentsSnap = await db.collection('enrollments').where('userId', '==', userId).get();
+
+                const [coursesSnap, examsSnap, progressSnap, scoresSnap, usersSnap, subjectsSnap, notificationsSnap] = await Promise.all([
+                    db.collection('courses').get(), db.collection('exams').get(),
+                    db.collection('users').doc(userId).collection('progress').get(),
+                    db.collection('scores').get(), db.collection('users').get(), db.collection('subjects').get(),
+                    db.collection('notifications').orderBy('createdAt', 'desc').get()
+                ]);
+
+                const allExams = examsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                const userScores = new Map(scoresSnap.docs.filter(d => d.data().userId === userId).map(d => [d.data().examId, d.data()]));
+                renderNotifications(notificationsSnap, allExams, userScores);
+
+                if (enrollmentsSnap.empty) {
+                    document.getElementById('enrollment-prompt').style.display = 'block';
+                    document.getElementById('featured-course-widget').style.display = 'none';
+                    document.getElementById('course-outline-widget').style.display = 'none';
+                } else {
+                    document.getElementById('enrollment-prompt').style.display = 'none';
+                    const allCourses = coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const userProgress = new Set(progressSnap.docs.map(doc => doc.data().lessonId));
+                    const allSubjects = new Map(subjectsSnap.docs.map(doc => [doc.id, doc.data()]));
+                    const lessonsPromises = allCourses.map(c => db.collection('lessons').where('courseId', '==', c.id).get());
+                    const lessonsSnaps = await Promise.all(lessonsPromises);
+                    const allLessons = lessonsSnaps.flatMap(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                    renderFeaturedCourse(allCourses, allLessons, allSubjects, userProgress);
+                }
+                
+                const allUsers = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
+                renderOverallProgress(progressSnap.size, allExams.length, userScores.size);
+                renderLeaderboards(scoresSnap, allUsers, userId, userProfile);
+            } finally {
+                skeletonLoader.style.display = 'none';
+                realContent.style.display = 'contents';
+            }
+        };
+
+        const renderFeaturedCourse = (courses, lessons, subjects, progress) => {
+            const startedCourses = courses.filter(course => lessons.some(l => l.courseId === course.id && progress.has(l.id)));
+            let featuredCourse = startedCourses.find(c => {
+                const courseLessons = lessons.filter(l => l.courseId === c.id);
+                return courseLessons.length > 0 && courseLessons.some(l => !progress.has(l.id));
+            });
+            if (!featuredCourse && courses.length > 0) { featuredCourse = courses[0]; }
+            
+            if (featuredCourse) {
+                document.getElementById('featured-course-widget').style.display = 'block';
+                document.getElementById('course-outline-widget').style.display = 'block';
+                const courseLessons = lessons.filter(l => l.courseId === featuredCourse.id).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
+                const completed = courseLessons.filter(l => progress.has(l.id)).length;
+                const percent = courseLessons.length > 0 ? Math.round((completed / courseLessons.length) * 100) : 0;
+                
+                document.getElementById('featured-course-title').textContent = featuredCourse.name;
+                document.getElementById('featured-course-subject').textContent = `in ${subjects.get(featuredCourse.subjectId)?.name || ''}`;
+                document.getElementById('featured-course-progress').style.width = `${percent}%`;
+                document.getElementById('featured-course-percent').textContent = `${percent}% Complete`;
+                document.getElementById('featured-course-link').href = `course-view.html?id=${featuredCourse.id}`;
+                
+                const outlineList = document.getElementById('course-outline-list');
+                outlineList.innerHTML = '';
+                featuredCourse.chapters.forEach((chapterName, index) => {
+                    const lessonsInChapter = courseLessons.filter(l => l.chapterIndex === index);
+                    if (lessonsInChapter.length === 0) return;
+                    const completedInChapter = lessonsInChapter.filter(l => progress.has(l.id)).length;
+                    const isChapterCompleted = completedInChapter === lessonsInChapter.length;
+                    const firstUncompleted = courseLessons.find(l => !progress.has(l.id));
+                    const isCurrentChapter = firstUncompleted && firstUncompleted.chapterIndex === index;
+                    const item = document.createElement('li');
+                    item.className = `outline-item ${isChapterCompleted ? 'completed' : ''} ${isCurrentChapter ? 'current' : ''}`;
+                    item.innerHTML = `<div class="outline-marker">${isChapterCompleted ? "<i class='bx bx-check'></i>" : ''}</div><div class="outline-info"><h4>${chapterName}</h4><p>${completedInChapter} / ${lessonsInChapter.length} lessons</p></div>`;
+                    outlineList.appendChild(item);
+                });
+            }
+        };
+        
+        const renderOverallProgress = (completedLessons, totalExams, completedExams) => {
+            db.collection('lessons').get().then(lessonsSnap => {
+                const totalLessons = lessonsSnap.size;
+                const overallPercent = (totalLessons + totalExams > 0) ? Math.round(((completedLessons + completedExams) / (totalLessons + totalExams)) * 100) : 0;
+                document.getElementById('lessons-completed-stat').textContent = `${completedLessons} / ${totalLessons}`;
+                document.getElementById('assessments-completed-stat').textContent = `${completedExams} / ${totalExams}`;
+                document.getElementById('overall-progress-percent').textContent = `${overallPercent}%`;
+                const ring = document.getElementById('overall-progress-ring');
+                const radius = ring.r.baseVal.value;
+                const circumference = 2 * Math.PI * radius;
+                ring.style.strokeDasharray = `${circumference} ${circumference}`;
+                const offset = circumference - (overallPercent / 100) * circumference;
+                ring.style.strokeDashoffset = offset;
+            });
+        };
+
+        const renderLeaderboards = (scoresSnap, users, currentUserId, currentUserProfile) => {
+            const userPoints = {};
+            scoresSnap.forEach(doc => {
+                const score = doc.data();
+                userPoints[score.userId] = (userPoints[score.userId] || 0) + score.pointsReceived;
+            });
+            const sortedUsers = Object.keys(userPoints).sort((a,b) => userPoints[b] - userPoints[a]);
+            const createLeaderboardHTML = (userList) => {
+                if (userList.length === 0) {
+                    return `<li class="profile-item"><span class="rank">1</span><img src="${currentUserProfile.photoURL}" alt="${currentUserProfile.displayName}"><div class="profile-info"><p class="profile-name">${currentUserProfile.displayName} (You)</p><p class="profile-affiliation">${currentUserProfile.college}</p></div><span class="score">0 XP</span></li>`;
+                }
+                let html = '';
+                userList.slice(0, 3).forEach((userId, index) => {
+                    const user = users.get(userId);
+                    if(user) html += `<li class="profile-item"><span class="rank">${index + 1}</span><img src="${user.photoURL}" alt="${user.displayName}"><div class="profile-info"><p class="profile-name">${user.displayName}</p><p class="profile-affiliation">${user.college}</p></div><span class="score">${index === 0 ? "<i class='bx bxs-crown crown'></i>": ""} ${userPoints[userId]} XP</span></li>`;
+                });
+                const currentUserRank = userList.indexOf(currentUserId);
+                if (currentUserRank >= 3) {
+                     const user = users.get(currentUserId);
+                     html += `<hr class="user-separator"><li class="profile-item"><span class="rank">${currentUserRank + 1}</span><img src="${user.photoURL}" alt="${user.displayName}"><div class="profile-info"><p class="profile-name">${user.displayName} (You)</p><p class="profile-affiliation">${user.college}</p></div><span class="score">${userPoints[currentUserId]} XP</span></li>`;
+                }
+                return html;
+            };
+            document.getElementById('overall-leaderboard-list').innerHTML = createLeaderboardHTML(sortedUsers);
+            const collegeUsers = sortedUsers.filter(userId => users.get(userId)?.college === currentUserProfile.college);
+            document.getElementById('college-leaderboard-list').innerHTML = createLeaderboardHTML(collegeUsers);
+        };
+
+        const renderNotifications = (notificationsSnap, allExams, userScores) => {
+            const list = document.getElementById('notification-list');
+            const oneDay = 1000 * 60 * 60 * 24;
+            const threeDays = oneDay * 3;
+            const now = new Date();
+            
+            const items = [];
+            notificationsSnap.forEach(doc => { items.push({ type: 'general', data: doc.data(), docId: doc.id, timestamp: doc.data().createdAt }); });
+
+            allExams.forEach(exam => {
+                if (exam.deadline && !exam.isLocked && !userScores.has(exam.id)) {
+                    const deadlineDate = new Date(exam.deadline.seconds * 1000);
+                    const diff = deadlineDate - now;
+                    if (diff > 0 && diff <= threeDays) {
+                        items.push({ type: 'exam', data: exam, docId: exam.id, timestamp: exam.deadline, diff: diff });
+                    }
+                }
+            });
+
+            items.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+            list.innerHTML = '';
+            
+            if (items.length === 0) {
+                list.parentElement.innerHTML = '<p class="placeholder-text">No notifications at this time.</p>';
+                return;
+            }
+
+            items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'notification-item';
+                let iconClass, icon, heading, text, buttonHtml = '';
+
+                if (item.type === 'general') {
+                    iconClass = 'general'; icon = "<i class='bx bxs-bell'></i>"; heading = item.data.heading; text = item.data.text;
+                    if (item.data.buttonText && item.data.buttonLink) {
+                        buttonHtml = `<a href="${item.data.buttonLink}" class="btn-notification">${item.data.buttonText}</a>`;
+                    }
+                } else if (item.type === 'exam') {
+                    const daysLeft = Math.ceil(item.diff / oneDay);
+                    if (item.diff <= oneDay) {
+                        iconClass = 'danger'; icon = "<i class='bx bxs-error-circle'></i>"; text = `Deadline is in less than 24 hours.`;
+                    } else {
+                        iconClass = 'warning'; icon = "<i class='bx bxs-error-alt'></i>"; text = `Deadline is in ${daysLeft} days.`;
+                    }
+                    heading = `${item.data.name} Deadline`;
+                }
+                
+                li.innerHTML = `
+                    <div class="notification-content">
+                        <div class="notification-icon ${iconClass}">${icon}</div>
+                        <div class="notification-info">
+                            <h4>${heading}</h4>
+                            <p>${text}</p>
+                        </div>
+                    </div>
+                    ${buttonHtml}
+                `;
+                list.appendChild(li);
+            });
+        };
+    });
+</script>
+</body>
+</html>
