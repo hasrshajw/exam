@@ -42,6 +42,7 @@
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-content-wrapper { display: flex; align-items: center; gap: 0.75rem; width: 100%; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .profile-details { flex-grow: 1; min-width: 0; }
         .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
@@ -139,15 +140,21 @@
             .content-body { padding: 1rem; }
             .main-header { padding: 1rem; }
         }
+
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        .skeleton-line { height: 14px; border-radius: 4px; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Loading...</div>
     <div class="overlay" id="overlay"></div>
-    <div class="dashboard-container" style="display: none;">
+    <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
@@ -159,9 +166,18 @@
                 </ul>
             </nav>
             <div class="profile-section" id="profile-section">
-                <img src="" alt="Profile Picture" class="profile-avatar">
-                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                 <div class="profile-skeleton" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                    <div class="skeleton skeleton-avatar"></div>
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
+                    </div>
+                </div>
+                <div class="profile-content-wrapper" style="display: none;">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                    <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                </div>
             </div>
             <div class="profile-popup" id="profile-popup">
                 <div class="popup-header">
@@ -179,7 +195,55 @@
                 <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
                 <h1>Help & Support</h1>
             </header>
-            <section class="content-body">
+            <section class="content-body" id="skeleton-loader">
+                <div class="support-layout">
+                    <div class="widget">
+                        <div class="widget-header">
+                            <div class="skeleton skeleton-line" style="width: 200px; height: 20px; border-radius: 6px;"></div>
+                        </div>
+                        <div class="widget-body" style="padding: 0.5rem;">
+                            <div class="ticket-item" style="cursor: default;">
+                                <div class="ticket-info">
+                                    <div class="skeleton skeleton-line" style="width: 70%; height: 16px; margin-bottom: 0.5rem;"></div>
+                                    <div class="skeleton skeleton-line" style="width: 40%; height: 12px;"></div>
+                                </div>
+                                <div class="skeleton" style="width: 60px; height: 22px; border-radius: 99px;"></div>
+                            </div>
+                            <div class="ticket-item" style="cursor: default;">
+                                <div class="ticket-info">
+                                    <div class="skeleton skeleton-line" style="width: 60%; height: 16px; margin-bottom: 0.5rem;"></div>
+                                    <div class="skeleton skeleton-line" style="width: 50%; height: 12px;"></div>
+                                </div>
+                                <div class="skeleton" style="width: 70px; height: 22px; border-radius: 99px;"></div>
+                            </div>
+                            <div class="ticket-item" style="cursor: default;">
+                                <div class="ticket-info">
+                                    <div class="skeleton skeleton-line" style="width: 80%; height: 16px; margin-bottom: 0.5rem;"></div>
+                                    <div class="skeleton skeleton-line" style="width: 45%; height: 12px;"></div>
+                                </div>
+                                <div class="skeleton" style="width: 65px; height: 22px; border-radius: 99px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-header">
+                            <div class="skeleton skeleton-line" style="width: 240px; height: 20px; border-radius: 6px;"></div>
+                        </div>
+                        <div class="widget-body">
+                            <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 80px; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+                            </div>
+                            <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 100px; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 120px; border-radius: 8px;"></div>
+                            </div>
+                            <div class="skeleton" style="width: 150px; height: 42px; border-radius: 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="content-body" id="real-content" style="display: none;">
                 <div class="support-layout">
                     <div class="widget ticket-list-widget">
                         <div class="widget-header"><h2>Your Support Tickets</h2></div>
@@ -247,31 +311,29 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
+            const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
 
             let currentUser = null;
             let currentUserProfile = null;
             let unsubscribeTicketListener = null;
-            
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    currentUser = user;
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                    currentUserProfile = userDoc.data();
-                    initSharedUI(currentUserProfile);
-                    loadTickets();
-                } else { window.location.href = 'index.html'; }
-            });
 
-            const initSharedUI = (userProfile) => {
-                document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
-                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
-                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
+            const setupEventListeners = () => {
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                profileSection.addEventListener('click', e => { 
+                    e.stopPropagation(); 
+                    profilePopup.classList.toggle('active'); 
+                    profileSection.classList.toggle('active'); 
+                });
+                document.addEventListener('click', e => { 
+                    if (!profileSection.contains(e.target)) { 
+                        profilePopup.classList.remove('active'); 
+                        profileSection.classList.remove('active'); 
+                    } 
+                });
+
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -280,9 +342,38 @@
                 menuToggle.addEventListener('click', toggleMenu);
                 closeBtn.addEventListener('click', toggleMenu);
                 overlay.addEventListener('click', toggleMenu);
-                document.querySelector('.dashboard-container').style.display = 'grid';
-                document.getElementById('loading-overlay').style.display = 'none';
             };
+
+            const updateProfileUI = (userProfile) => {
+                const logoUrl = localStorage.getItem('dashboardLogoUrl');
+                if (logoUrl) { document.querySelector('.logo-image').src = logoUrl; }
+                const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
+
+                if(profileToUse) {
+                    document.querySelectorAll('.profile-avatar').forEach(el => {
+                        el.src = profileToUse.photoURL || DEFAULT_AVATAR;
+                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
+                    });
+                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
+                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
+                    document.querySelector('.profile-skeleton').style.display = 'none';
+                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
+                }
+            };
+            
+            setupEventListeners();
+            updateProfileUI();
+            
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                    currentUserProfile = userDoc.data();
+                    updateProfileUI(currentUserProfile);
+                    loadTickets();
+                } else { window.location.href = 'index.html'; }
+            });
 
             const loadTickets = () => {
                 const list = document.getElementById('ticket-list');
@@ -291,33 +382,35 @@
                         list.innerHTML = '';
                         if (snapshot.empty) {
                             list.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">You have no support tickets.</p>';
-                            return;
-                        }
-                        snapshot.forEach(doc => {
-                            const ticket = doc.data();
-                            const item = document.createElement('li');
-                            item.className = 'ticket-item';
-                            item.dataset.id = doc.id;
-                            const statusClass = ticket.status.toLowerCase().replace(' ', '-');
-                            const date = new Date(ticket.createdAt.seconds * 1000).toLocaleDateString();
-                            
-                            const lastMessage = ticket.conversation[ticket.conversation.length - 1];
-                            const isSupportLastSender = lastMessage.senderId === 'support_team';
-                            const hasNewMessage = ticket.studentLastSeen === null || (ticket.lastActivity && ticket.studentLastSeen.seconds < ticket.lastActivity.seconds);
-                            
-                            if(isSupportLastSender && hasNewMessage) {
-                                item.classList.add('new-message');
-                            }
+                        } else {
+                            snapshot.forEach(doc => {
+                                const ticket = doc.data();
+                                const item = document.createElement('li');
+                                item.className = 'ticket-item';
+                                item.dataset.id = doc.id;
+                                const statusClass = ticket.status.toLowerCase().replace(' ', '-');
+                                const date = new Date(ticket.createdAt.seconds * 1000).toLocaleDateString();
+                                
+                                const lastMessage = ticket.conversation[ticket.conversation.length - 1];
+                                const isSupportLastSender = lastMessage.senderId === 'support_team';
+                                const hasNewMessage = ticket.studentLastSeen === null || (ticket.lastActivity && ticket.studentLastSeen.seconds < ticket.lastActivity.seconds);
+                                
+                                if(isSupportLastSender && hasNewMessage) {
+                                    item.classList.add('new-message');
+                                }
 
-                            item.innerHTML = `
-                                ${isSupportLastSender && hasNewMessage ? '<div class="new-message-dot"></div>' : ''}
-                                <div class="ticket-info">
-                                    <span class="ticket-subject">${ticket.subject}</span>
-                                    <span class="ticket-meta">#${doc.id.substring(0,6)} • ${date}</span>
-                                </div>
-                                <span class="status-badge ${statusClass}">${ticket.status}</span>`;
-                            list.appendChild(item);
-                        });
+                                item.innerHTML = `
+                                    ${isSupportLastSender && hasNewMessage ? '<div class="new-message-dot"></div>' : ''}
+                                    <div class="ticket-info">
+                                        <span class="ticket-subject">${ticket.subject}</span>
+                                        <span class="ticket-meta">#${doc.id.substring(0,6)} • ${date}</span>
+                                    </div>
+                                    <span class="status-badge ${statusClass}">${ticket.status}</span>`;
+                                list.appendChild(item);
+                            });
+                        }
+                        document.getElementById('skeleton-loader').style.display = 'none';
+                        document.getElementById('real-content').style.display = 'block';
                     });
             };
 
@@ -401,7 +494,7 @@
                 document.getElementById('ticket-details-modal').classList.remove('show');
             };
 
-            document.getElementById('ticket-list').addEventListener('click', e => {
+            document.getElementById('real-content').addEventListener('click', e => {
                 const item = e.target.closest('.ticket-item');
                 if (item) {
                     openTicketModal(item.dataset.id);
