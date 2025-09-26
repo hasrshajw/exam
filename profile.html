@@ -4,247 +4,527 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Profile - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
-            --color-background: #f4f7fa; --color-surface: #ffffff; --color-text-primary: #111827; --color-text-secondary: #6b7280;
-            --color-border: #e5e7eb; --color-success: #10b981;
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-green: #10B981;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --border-radius-md: 8px; --border-radius-lg: 16px;
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; }
-        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; display: flex; flex-direction: column; }
-        button { font-family: inherit; cursor: pointer; border: none; background: none; }
-        .page { display: flex; flex-direction: column; width: 100%; min-height: 100%; }
-        .portal-header { width: 100%; background: var(--color-surface); padding: 16px 48px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); flex-shrink: 0; }
-        .user-profile { display: flex; align-items: center; gap: 12px; }
-        .user-profile img { width: 40px; height: 40px; border-radius: 50%; }
-        .user-info .user-name { font-weight: 600; }
-        .user-info .user-email { font-size: 0.8rem; color: var(--color-text-secondary); }
-        .header-nav { display: flex; align-items: center; gap: 8px; }
-        .header-nav a, .logout-btn { color: var(--color-text-secondary); font-weight: 500; text-decoration: none; padding: 8px 16px; border-radius: var(--border-radius-md); transition: background-color var(--transition-fast); }
-        .header-nav a:hover, .logout-btn:hover { background-color: var(--color-background); }
-        .dashboard-content { padding: 40px; width: 100%; max-width: 800px; margin: 0 auto; flex-grow: 1; }
-        .profile-card { background: var(--color-surface); border-radius: var(--border-radius-lg); padding: 40px; box-shadow: var(--shadow-lg); }
-        .profile-card-header { border-bottom: 1px solid var(--color-border); padding-bottom: 16px; margin-bottom: 24px; }
-        .profile-card-header h2 { font-size: 1.5rem; }
-        .profile-card-header p { color: var(--color-text-secondary); margin-top: 4px; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; } .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-content-wrapper { display: flex; align-items: center; gap: 0.75rem; width: 100%; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { list-style: none; padding-top: 0.5rem; } .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; text-decoration: none; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); } .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
+
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+
+        .profile-layout { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem; }
+        .profile-card { background: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .profile-card-header { padding: 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 1rem; }
+        .header-icon { width: 40px; height: 40px; border-radius: 8px; background-color: var(--hover-bg); color: var(--brand-green); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+        .profile-card-header h2 { font-size: 1.25rem; font-weight: 600; }
+        .profile-card-header p { color: var(--text-secondary); font-size: 0.875rem; margin-top: 0.125rem; }
+        .profile-card-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
         .form-field { display: flex; flex-direction: column; }
-        .form-field.full-width { grid-column: 1 / -1; }
-        .form-field label { font-size: 0.9rem; font-weight: 500; margin-bottom: 8px; }
-        .form-field input, .form-field select { padding: 12px; border-radius: var(--border-radius-md); border: 1px solid var(--color-border); font-size: 1rem; transition: border-color var(--transition-fast), box-shadow var(--transition-fast); }
-        .form-field input:focus, .form-field select:focus { border-color: var(--color-primary); box-shadow: 0 0 0 3px var(--color-primary-light); outline: none; }
-        .form-field input[readonly] { background-color: var(--color-background); color: var(--color-text-secondary); cursor: not-allowed; }
-        .form-field .gender-options { display: flex; gap: 16px; align-items: center; padding-top: 8px; }
-        .form-field .gender-options label { margin-bottom: 0; font-weight: normal; }
-        .profile-card-footer { border-top: 1px solid var(--color-border); padding-top: 24px; margin-top: 32px; text-align: right; }
-        .save-btn { padding: 12px 28px; border-radius: var(--border-radius-md); font-weight: 600; transition: all var(--transition-fast); background-color: var(--color-primary); color: white; }
-        .save-btn:hover { background-color: var(--color-primary-dark); }
-        .save-btn:disabled { background-color: #a5b4fc; cursor: not-allowed; }
-        .toast-notification { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background-color: #2c3e50; color: white; padding: 12px 24px; border-radius: var(--border-radius-md); box-shadow: var(--shadow-lg); z-index: 2000; opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
-        .toast-notification.show { opacity: 1; bottom: 40px; }
-        @media (max-width: 800px) {
-            .portal-header { padding: 16px; }
-            .user-info .user-email { display: none; }
-            .dashboard-content { padding: 24px; }
-            .profile-card { padding: 24px; }
-            .form-grid { grid-template-columns: 1fr; }
-            .profile-card-footer { text-align: center; }
-            .save-btn { width: 100%; }
+        .form-field label { font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: var(--text-secondary); }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1.25rem; color: var(--text-secondary); }
+        .form-field input, .custom-select-trigger { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border-color); background-color: var(--widget-bg); border-radius: 8px; font-size: 1rem; transition: all 0.2s ease; }
+        .form-field input { padding-left: 3rem; }
+        .form-field input:focus, .custom-select-trigger:focus, .custom-select-wrapper.open .custom-select-trigger { outline: none; border-color: var(--brand-green); box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        .form-field input[readonly] { background-color: var(--hover-bg); color: var(--text-secondary); cursor: not-allowed; }
+        
+        .custom-select-wrapper { position: relative; }
+        .custom-select-trigger { text-align: left; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .custom-select-trigger i { transition: transform 0.2s ease; }
+        .custom-select-wrapper.open .custom-select-trigger i { transform: rotate(180deg); }
+        .custom-select-trigger.disabled { background-color: var(--hover-bg); color: var(--text-secondary); cursor: not-allowed; }
+        .custom-select-options { position: absolute; top: 105%; left: 0; right: 0; background: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 8px; margin-top: 0.25rem; max-height: 200px; overflow-y: auto; z-index: 10; opacity: 0; transform: scaleY(0.98) translateY(-0.5rem); pointer-events: none; transition: all 0.2s ease; box-shadow: var(--shadow-md); }
+        .custom-select-wrapper.open .custom-select-options { opacity: 1; transform: scaleY(1) translateY(0); pointer-events: auto; }
+        .custom-select-option { padding: 0.75rem 1rem; cursor: pointer; font-weight: 500; }
+        .custom-select-option:hover { background-color: var(--hover-bg); }
+        .custom-select-option.selected { background-color: #ECFDF5; color: var(--brand-green); }
+
+        .form-actions { grid-column: 1 / -1; margin-top: 1rem; }
+        .btn-submit { background: var(--brand-green); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; width: 100%; font-size: 1rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .btn-submit:hover { background-color: #059669; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .btn-submit:disabled { background-color: #D1D5DB; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-submit .spinner { display: none; }
+        .btn-submit.loading .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+        .btn-submit.loading .btn-text { display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); padding: 1rem 1.5rem; border-radius: 8px; color: white; font-weight: 500; box-shadow: var(--shadow-lg); transition: bottom 0.5s cubic-bezier(0.68, -0.55, 0.27, 1.55); z-index: 1001; display: flex; align-items: center; gap: 0.75rem; }
+        #toast.show { bottom: 30px; }
+        #toast.success { background-color: #059669; }
+        #toast.error { background-color: var(--danger-color); }
+        #toast i { font-size: 1.25rem; }
+        
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 1.25rem 1.5rem; }
+            .content-body { padding: 1.5rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
         }
+        @media (max-width: 768px) {
+            .profile-layout { grid-template-columns: 1fr; }
+            .content-body { padding: 1rem; }
+            .main-header { padding: 1rem; }
+        }
+
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        .skeleton-line { height: 14px; border-radius: 4px; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--color-text-secondary);">Loading Profile...</div>
-
-    <div class="page" id="profile-page" style="display: none;">
-        <header class="portal-header">
-            <div class="user-profile">
-                <img id="user-photo" src="" alt="User photo">
-                <div class="user-info">
-                    <div class="user-name" id="user-name"></div>
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
+                    <li><a href="course.html"><i class='bx bx-book-open'></i> Course & Content</a></li>
+                    <li><a href="leaderboard.html"><i class='bx bx-bar-chart-alt-2'></i> Leaderboard</a></li>
+                    <li><a href="programs.html"><i class='bx bx-briefcase-alt-2'></i> Explore Programs</a></li>
+                    <li><a href="community.html"><i class='bx bx-group'></i> Community</a></li>
+                    <li><a href="help.html"><i class='bx bx-help-circle'></i> Help & Support</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section" id="profile-section">
+                <div class="profile-skeleton" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                    <div class="skeleton skeleton-avatar"></div>
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
+                    </div>
+                </div>
+                <div class="profile-content-wrapper" style="display: none;">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                    <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
                 </div>
             </div>
-            <nav class="header-nav">
-                <a href="dashboard.html">Exams</a>
-                <a href="scores.html">Scores</a>
-                <button class="logout-btn" id="logout-btn">Logout</button>
-            </nav>
-        </header>
-        <main class="dashboard-content">
-            <div class="profile-card">
-                <div class="profile-card-header">
-                    <h2>Personal Information</h2>
-                    <p>Update your photo and personal details here.</p>
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-header">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
                 </div>
-                <form id="user-details-form">
-                    <div class="form-grid">
-                        <div class="form-field full-width">
-                            <label for="user-detail-name">Full Name</label>
-                            <input type="text" id="user-detail-name" required>
+                <ul class="popup-list">
+                    <li><a href="profile.html" class="active"><i class='bx bx-user'></i> Profile</a></li>
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
+        </aside>
+        <main class="main-area">
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
+                <h1>My Profile</h1>
+            </header>
+            <section class="content-body" id="skeleton-loader">
+                <div class="profile-layout">
+                    <div class="profile-card">
+                        <div class="profile-card-header">
+                            <div class="skeleton header-icon"></div>
+                            <div style="flex-grow: 1;">
+                                <div class="skeleton skeleton-line" style="width: 60%; height: 20px; margin-bottom: 0.5rem; border-radius: 6px;"></div>
+                                <div class="skeleton skeleton-line" style="width: 80%; height: 14px; border-radius: 4px;"></div>
+                            </div>
                         </div>
-                        <div class="form-field full-width">
-                            <label for="user-detail-email">Email Address</label>
-                            <input type="email" id="user-detail-email" readonly>
-                        </div>
-                        <div class="form-field">
-                            <label for="user-detail-rollno">Roll No.</label>
-                            <input type="text" id="user-detail-rollno" required>
-                        </div>
-                        <div class="form-field">
-                            <label for="user-detail-dob">Date of Birth</label>
-                            <input type="date" id="user-detail-dob" required>
-                        </div>
-                        <div class="form-field full-width">
-                             <label>Gender</label>
-                             <div class="gender-options">
-                                <input type="radio" id="gender-male" name="gender" value="Male" required><label for="gender-male">Male</label>
-                                <input type="radio" id="gender-female" name="gender" value="Female"><label for="gender-female">Female</label>
-                                <input type="radio" id="gender-other" name="gender" value="Other"><label for="gender-other">Other</label>
-                             </div>
-                        </div>
-                        <div class="form-field full-width">
-                            <label for="user-detail-college">College</label>
-                            <select id="user-detail-college" required>
-                                <option value="">-- Select your college --</option>
-                            </select>
+                        <div class="profile-card-body">
+                            <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 30%; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+                            </div>
+                            <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 40%; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+                            </div>
+                            <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 35%; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+                            </div>
+                             <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 45%; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+                            </div>
                         </div>
                     </div>
-                    <div class="profile-card-footer">
-                        <button type="submit" class="save-btn" id="save-btn">Save Changes</button>
+                    <div class="profile-card">
+                         <div class="profile-card-header">
+                            <div class="skeleton header-icon"></div>
+                            <div style="flex-grow: 1;">
+                                <div class="skeleton skeleton-line" style="width: 55%; height: 20px; margin-bottom: 0.5rem; border-radius: 6px;"></div>
+                                <div class="skeleton skeleton-line" style="width: 75%; height: 14px; border-radius: 4px;"></div>
+                            </div>
+                        </div>
+                         <div class="profile-card-body">
+                            <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 25%; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+                            </div>
+                             <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 20%; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+                            </div>
+                             <div class="form-field">
+                                <div class="skeleton skeleton-line" style="width: 22%; height: 14px; margin-bottom: 0.5rem;"></div>
+                                <div class="skeleton" style="width: 100%; height: 44px; border-radius: 8px;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions profile-layout">
+                    <div class="skeleton" style="width: 100%; height: 48px; border-radius: 8px;"></div>
+                </div>
+            </section>
+            <section class="content-body" id="real-content" style="display: none;">
+                <form id="profile-form">
+                    <div class="profile-layout">
+                        <div class="profile-card">
+                            <div class="profile-card-header">
+                                <div class="header-icon"><i class='bx bxs-user-detail'></i></div>
+                                <div>
+                                    <h2>Personal Information</h2>
+                                    <p>Update your personal details here.</p>
+                                </div>
+                            </div>
+                            <div class="profile-card-body">
+                                <div class="form-field">
+                                    <label for="user-detail-name">Full Name</label>
+                                    <div class="input-wrapper">
+                                        <i class='bx bxs-user'></i>
+                                        <input type="text" id="user-detail-name" required>
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="user-detail-email">Email Address</label>
+                                    <div class="input-wrapper">
+                                        <i class='bx bxs-envelope'></i>
+                                        <input type="email" id="user-detail-email" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="user-detail-dob">Date of Birth</label>
+                                    <div class="input-wrapper">
+                                        <i class='bx bxs-calendar'></i>
+                                        <input type="date" id="user-detail-dob">
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label for="user-detail-phone">Mobile Number</label>
+                                    <div class="input-wrapper">
+                                        <i class='bx bxs-phone'></i>
+                                        <input type="tel" id="user-detail-phone" placeholder="9876543210">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="profile-card">
+                            <div class="profile-card-header">
+                                <div class="header-icon"><i class='bx bxs-school'></i></div>
+                                <div>
+                                    <h2>Academic Details</h2>
+                                    <p>Manage your college and branch information.</p>
+                                </div>
+                            </div>
+                            <div class="profile-card-body">
+                                <div class="form-field">
+                                    <label for="user-detail-rollno">Roll No.</label>
+                                    <div class="input-wrapper">
+                                        <i class='bx bxs-id-card'></i>
+                                        <input type="text" id="user-detail-rollno" required>
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label>College</label>
+                                    <div class="custom-select-wrapper" id="college-select-wrapper">
+                                        <div class="custom-select-trigger" data-value="">Select your college <i class='bx bx-chevron-down'></i></div>
+                                        <div class="custom-select-options"></div>
+                                    </div>
+                                </div>
+                                <div class="form-field">
+                                    <label>Branch</label>
+                                    <div class="custom-select-wrapper" id="branch-select-wrapper">
+                                        <div class="custom-select-trigger disabled" data-value="">Select a college first <i class='bx bx-chevron-down'></i></div>
+                                        <div class="custom-select-options"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions profile-layout">
+                        <button type="submit" class="btn-submit" id="save-btn">
+                            <span class="btn-text">Save Changes</span>
+                            <span class="spinner"></span>
+                        </button>
                     </div>
                 </form>
-            </div>
+            </section>
         </main>
     </div>
 
-    <div class="toast-notification" id="toast-notification"></div>
+<div id="toast"></div>
 
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e799",
-                storageBucket: "exam-2e799.firebasestorage.app",
-                messagingSenderId: "472506328501",
-                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-                measurementId: "G-NX21HT3JKT"
-            };
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+            authDomain: "exam-2e799.firebaseapp.com",
+            projectId: "exam-2e799",
+            storageBucket: "exam-2e799.firebasestorage.app",
+            messagingSenderId: "472506328501",
+            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+            measurementId: "G-NX21HT3JKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
 
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+        const dom = {
+            skeletonLoader: document.getElementById('skeleton-loader'),
+            realContent: document.getElementById('real-content'),
+            profileForm: document.getElementById('profile-form'),
+            saveBtn: document.getElementById('save-btn'),
+            collegeSelectWrapper: document.getElementById('college-select-wrapper'),
+            branchSelectWrapper: document.getElementById('branch-select-wrapper'),
+            toast: document.getElementById('toast'),
+        };
+
+        let collegesData = [];
+        let currentUserProfile = null;
+        
+        const setupEventListeners = () => {
+            document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
             
-            const COLLEGES = ["Stanford University", "MIT", "Harvard University", "Caltech", "University of Oxford", "Other"];
-
-            const dom = {
-                loadingOverlay: document.getElementById('loading-overlay'),
-                profilePage: document.getElementById('profile-page'),
-                userPhoto: document.getElementById('user-photo'),
-                userName: document.getElementById('user-name'),
-                logoutBtn: document.getElementById('logout-btn'),
-                userDetailsForm: document.getElementById('user-details-form'),
-                collegeSelect: document.getElementById('user-detail-college'),
-                saveBtn: document.getElementById('save-btn'),
-                toast: document.getElementById('toast-notification')
-            };
-            
-            let currentUserProfile = null;
-
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) {
-                        window.location.href = 'index.html';
-                        return;
-                    }
-                    currentUserProfile = userDoc.data();
-                    setupUserUI(currentUserProfile);
-                    populateForm(currentUserProfile);
-                    dom.profilePage.style.display = 'flex';
-                    dom.loadingOverlay.style.display = 'none';
-                } else {
-                    window.location.href = 'index.html';
+            const profileSection = document.getElementById('profile-section');
+            const profilePopup = document.getElementById('profile-popup');
+            profileSection.addEventListener('click', e => {
+                e.stopPropagation();
+                profilePopup.classList.toggle('active');
+                profileSection.classList.toggle('active');
+            });
+            document.addEventListener('click', e => {
+                if (!profileSection.contains(e.target)) {
+                    profilePopup.classList.remove('active');
+                    profileSection.classList.remove('active');
                 }
             });
-            
-            const setupUserUI = (profile) => {
-                dom.userName.textContent = profile.displayName; 
-                dom.userPhoto.src = profile.photoURL || 'data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';
-            };
 
-            const populateColleges = () => {
-                COLLEGES.forEach(college => {
-                    const option = document.createElement('option');
-                    option.value = college;
-                    option.textContent = college;
-                    dom.collegeSelect.appendChild(option);
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeBtn = document.getElementById('sidebar-close-btn');
+            const overlay = document.getElementById('overlay');
+            const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+            menuToggle.addEventListener('click', toggleMenu);
+            closeBtn.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+        };
+
+        const updateProfileUI = (userProfile) => {
+            const logoUrl = localStorage.getItem('dashboardLogoUrl');
+            if (logoUrl) { document.querySelector('.logo-image').src = logoUrl; }
+
+            const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
+            if (profileToUse) {
+                document.querySelectorAll('.profile-avatar').forEach(el => {
+                    el.src = profileToUse.photoURL || DEFAULT_AVATAR;
+                    el.onerror = () => { el.src = DEFAULT_AVATAR; };
                 });
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
+                document.querySelector('.profile-skeleton').style.display = 'none';
+                document.querySelector('.profile-content-wrapper').style.display = 'flex';
+            }
+        };
+
+        setupEventListeners();
+        updateProfileUI();
+
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                currentUserProfile = { id: user.uid, ...userDoc.data() };
+                updateProfileUI(currentUserProfile);
+                await populateCollegesAndBranches();
+                populateForm();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+        
+        const createCustomDropdown = (wrapper, onSelect, placeholder, disabledPlaceholder) => {
+            const trigger = wrapper.querySelector('.custom-select-trigger');
+            const optionsContainer = wrapper.querySelector('.custom-select-options');
+            
+            const updateSelection = (value, text) => {
+                trigger.innerHTML = `${text} <i class='bx bx-chevron-down'></i>`;
+                trigger.dataset.value = value;
+                wrapper.classList.remove('open');
+                if (onSelect) onSelect(value);
             };
 
-            const populateForm = (profile) => {
-                document.getElementById('user-detail-name').value = profile.displayName || '';
-                document.getElementById('user-detail-email').value = profile.email || '';
-                document.getElementById('user-detail-rollno').value = profile.rollNo || '';
-                document.getElementById('user-detail-dob').value = profile.dob || '';
-                if (profile.gender) {
-                    document.querySelector(`input[name="gender"][value="${profile.gender}"]`).checked = true;
+            const populate = (opts, isEnabled, preselectedVal = null) => {
+                optionsContainer.innerHTML = '';
+                let preselectedText = isEnabled ? placeholder : disabledPlaceholder;
+                
+                if(isEnabled) {
+                    opts.forEach(opt => {
+                        const optionEl = document.createElement('div');
+                        optionEl.className = 'custom-select-option';
+                        optionEl.textContent = opt.text;
+                        optionEl.dataset.value = opt.value;
+                        if (preselectedVal && opt.value === preselectedVal) {
+                            preselectedText = opt.text;
+                            optionEl.classList.add('selected');
+                        }
+                        optionEl.addEventListener('click', () => updateSelection(opt.value, opt.text));
+                        optionsContainer.appendChild(optionEl);
+                    });
                 }
-                dom.collegeSelect.value = profile.college || '';
+                trigger.innerHTML = `${preselectedText} <i class='bx bx-chevron-down'></i>`;
+                trigger.dataset.value = preselectedVal || '';
+                trigger.classList.toggle('disabled', !isEnabled);
             };
 
-            dom.userDetailsForm.addEventListener('submit', async (e) => {
+            trigger.addEventListener('click', (e) => {
                 e.preventDefault();
-                dom.saveBtn.disabled = true;
-                dom.saveBtn.textContent = 'Saving...';
-                
-                const currentUser = auth.currentUser;
-                if (!currentUser) return;
-                
-                const updatedData = {
-                    displayName: document.getElementById('user-detail-name').value.trim(),
-                    rollNo: document.getElementById('user-detail-rollno').value.trim(),
-                    dob: document.getElementById('user-detail-dob').value,
-                    gender: document.querySelector('input[name="gender"]:checked').value,
-                    college: dom.collegeSelect.value
-                };
-
-                try {
-                    await db.collection('users').doc(currentUser.uid).update(updatedData);
-                    dom.userName.textContent = updatedData.displayName; 
-                    showToast('Profile updated successfully!');
-                } catch (error) {
-                    console.error("Error updating profile:", error);
-                    alert("Could not update profile. Please try again.");
-                } finally {
-                    dom.saveBtn.disabled = false;
-                    dom.saveBtn.textContent = 'Save Changes';
+                if (!trigger.classList.contains('disabled')) {
+                    wrapper.classList.toggle('open');
                 }
             });
 
-            const showToast = (message) => {
-                dom.toast.textContent = message;
-                dom.toast.classList.add('show');
-                setTimeout(() => dom.toast.classList.remove('show'), 3000);
-            };
+            return { populate, getValue: () => trigger.dataset.value };
+        };
+
+        const collegeDropdown = createCustomDropdown(dom.collegeSelectWrapper, (collegeName) => {
+            populateBranches(collegeName);
+        }, 'Select your college');
+
+        const branchDropdown = createCustomDropdown(dom.branchSelectWrapper, null, 'Select your branch', 'Select a college first');
+
+        const populateCollegesAndBranches = async () => {
+            const collegesSnap = await db.collection('colleges').orderBy('name').get();
+            collegesData = collegesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            const options = collegesData.map(c => ({ value: c.name, text: c.name }));
+            collegeDropdown.populate(options, true, currentUserProfile.college);
+            if (currentUserProfile.college) {
+                populateBranches(currentUserProfile.college, currentUserProfile.branch);
+            }
+        };
+        
+        const populateBranches = (collegeName, selectedBranch = null) => {
+            const college = collegesData.find(c => c.name === collegeName);
+            if (college && college.branches && college.branches.length > 0) {
+                const options = college.branches.sort().map(b => ({ value: b, text: b }));
+                branchDropdown.populate(options, true, selectedBranch);
+            } else {
+                branchDropdown.populate([], false, null);
+            }
+        };
+
+        const populateForm = () => {
+            document.getElementById('user-detail-name').value = currentUserProfile.displayName || '';
+            document.getElementById('user-detail-email').value = currentUserProfile.email || '';
+            document.getElementById('user-detail-rollno').value = currentUserProfile.rollNo || '';
+            document.getElementById('user-detail-dob').value = currentUserProfile.dob || '';
+            document.getElementById('user-detail-phone').value = (currentUserProfile.phone || '').replace('+91', '');
+            dom.skeletonLoader.style.display = 'none';
+            dom.realContent.style.display = 'block';
+        };
+        
+        dom.profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            dom.saveBtn.disabled = true;
+            dom.saveBtn.classList.add('loading');
             
-            const signOutUser = () => {
-                auth.signOut();
+            const updatedData = {
+                displayName: document.getElementById('user-detail-name').value.trim(),
+                rollNo: document.getElementById('user-detail-rollno').value.trim(),
+                dob: document.getElementById('user-detail-dob').value,
+                phone: `+91${document.getElementById('user-detail-phone').value.trim()}`,
+                college: collegeDropdown.getValue(),
+                branch: branchDropdown.getValue()
             };
 
-            dom.logoutBtn.addEventListener('click', signOutUser);
-            
-            populateColleges();
+            try {
+                await db.collection('users').doc(currentUserProfile.id).update(updatedData);
+                showToast('Profile updated successfully!', 'success');
+            } catch (error) {
+                console.error("Error updating profile:", error);
+                showToast("Could not update profile. Please try again.", "error");
+            } finally {
+                dom.saveBtn.disabled = false;
+                dom.saveBtn.classList.remove('loading');
+            }
         });
-    </script>
+
+        const showToast = (message, type = 'success') => {
+            dom.toast.innerHTML = `<i class='bx bxs-${type === 'success' ? 'check-circle' : 'error-circle'}'></i> ${message}`;
+            dom.toast.className = `show ${type}`;
+            setTimeout(() => { dom.toast.className = ''; }, 3000);
+        };
+        
+        document.addEventListener('click', e => {
+            if (!e.target.closest('.custom-select-wrapper')) {
+                document.querySelectorAll('.custom-select-wrapper.open').forEach(el => el.classList.remove('open'));
+            }
+        });
+    });
+</script>
 </body>
 </html>
