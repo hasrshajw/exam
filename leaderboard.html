@@ -58,9 +58,9 @@
         .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
         
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .rank-summary-card { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr; gap: 0; margin-bottom: 2rem; box-shadow: var(--shadow-sm); }
+        .rank-summary-card { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); }
         .rank-item { text-align: center; padding: 1.5rem 1rem; }
-        .rank-item:first-child { border-bottom: 1px solid var(--border-color); }
+        .rank-item:first-child { border-right: 1px solid var(--border-color); }
         .rank-item p { color: var(--text-secondary); font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; }
         .rank-value { font-size: 2.25rem; font-weight: 700; color: var(--text-primary); position: relative; display: inline-block; }
         .rank-value.rank-value--shining { color: var(--gold); }
@@ -70,10 +70,10 @@
         @keyframes shine { to { background-position: -200% center; } }
 
         .leaderboard-widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; }
-        .pill-nav { position: relative; display: grid; grid-template-columns: 1fr 1fr; background-color: var(--hover-bg); border-radius: 99px; padding: 4px; margin-bottom: 2rem; width: 100%; max-width: 300px; }
-        .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 1; transition: color 0.3s ease; text-align: center; }
+        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; }
+        .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 2; transition: color 0.3s ease; }
         .nav-tab.active { color: var(--text-primary); }
-        #pill-slider { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 99px; background-color: var(--widget-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--border-color); }
+        #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; border-radius: 99px; background-color: var(--widget-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; border: 1px solid var(--border-color); }
         .tab-content { display: none; width: 100%; } .tab-content.active { display: block; }
         
         .podium-stacked-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem; overflow: hidden; box-shadow: var(--shadow-sm); }
@@ -120,18 +120,14 @@
         .skeleton-line { height: 1em; }
         .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
 
-        @media (min-width: 640px) {
-            .rank-summary-card { grid-template-columns: 1fr 1fr; }
-            .rank-item:first-child { border-bottom: none; border-right: 1px solid var(--border-color); }
-        }
-
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; transition: background-color 0.2s ease; }
+            .menu-toggle:hover { background-color: var(--hover-bg); }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
@@ -142,8 +138,6 @@
             .rank-item { padding: 1rem; }
             .rank-item p { font-size: 0.8rem; margin-bottom: 0.25rem; }
             .rank-value { font-size: 1.875rem; }
-            .rank-summary-card { grid-template-columns: 1fr 1fr; }
-            .rank-item:first-child { border-bottom: none; border-right: 1px solid var(--border-color); }
         }
     </style>
 </head>
@@ -209,7 +203,7 @@
                     </div>
                 </div>
                 <div class="leaderboard-widget">
-                    <div class="pill-nav skeleton" style="width: 100%; max-width: 300px; height: 40px;"></div>
+                    <div class="pill-nav skeleton" style="width: 220px; height: 40px;"></div>
                     <div class="podium-stacked-card skeleton" style="height: 180px; margin-bottom: 2rem; width: 100%;"></div>
                     <ul class="leaderboard-list" style="width: 100%;">
                         <li style="gap: 1rem;"><div class="skeleton skeleton-line" style="width: 20px;"></div><div class="skeleton skeleton-avatar" style="margin:0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 50%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
@@ -270,7 +264,7 @@
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
                 profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                document.addEventListener('click', e => { if (profileSection && !profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
@@ -283,13 +277,16 @@
                 
                 const tabs = document.querySelectorAll('.nav-tab');
                 const slider = document.getElementById('pill-slider');
-                tabs.forEach((tab, index) => {
-                    tab.addEventListener('click', () => {
+                
+                function moveSlider(tab) { if(tab) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
+                
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
                         tabs.forEach(t => t.classList.remove('active'));
-                        tab.classList.add('active');
-                        slider.style.transform = `translateX(${index * 100}%)`;
+                        e.currentTarget.classList.add('active');
+                        moveSlider(e.currentTarget);
                         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                        document.querySelector(tab.dataset.target).classList.add('active');
+                        document.querySelector(e.currentTarget.dataset.target).classList.add('active');
                     });
                 });
             };
@@ -356,6 +353,12 @@
                 } finally {
                     document.getElementById('skeleton-loader').style.display = 'none';
                     document.getElementById('real-content').style.display = 'block';
+                    const slider = document.getElementById('pill-slider');
+                    const activeTab = document.querySelector('.nav-tab.active');
+                    if(activeTab) {
+                        slider.style.width = `${activeTab.offsetWidth}px`;
+                        slider.style.left = `${activeTab.offsetLeft}px`;
+                    }
                 }
             };
             
