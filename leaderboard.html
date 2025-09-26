@@ -70,10 +70,10 @@
         @keyframes shine { to { background-position: -200% center; } }
 
         .leaderboard-widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; }
-        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; }
-        .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 2; transition: color 0.3s ease; }
-        .nav-tab.active { color: var(--text-primary); }
-        #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; border-radius: 99px; background-color: var(--widget-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; border: 1px solid var(--border-color); }
+        .leaderboard-tabs { display: flex; gap: 0.5rem; background-color: var(--hover-bg); padding: 0.25rem; border-radius: 99px; margin-bottom: 2rem; }
+        .tab-btn { padding: 0.6rem 1.25rem; border: none; background-color: transparent; border-radius: 99px; font-weight: 600; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; transition: all 0.3s ease; }
+        .tab-btn.active { background-color: var(--widget-bg); color: var(--text-primary); box-shadow: var(--shadow-sm); }
+
         .tab-content { display: none; width: 100%; } .tab-content.active { display: block; }
         
         .podium-stacked-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem; overflow: hidden; box-shadow: var(--shadow-sm); }
@@ -135,9 +135,11 @@
          @media (max-width: 640px) {
             .winner-content { flex-direction: column; text-align: center; }
             .winner-score { margin-left: 0; text-align: center; }
+            .rank-summary-card { grid-template-columns: 1fr 1fr; gap: 0; }
             .rank-item { padding: 1rem; }
             .rank-item p { font-size: 0.8rem; margin-bottom: 0.25rem; }
             .rank-value { font-size: 1.875rem; }
+            .rank-item:first-child { border-right: 1px solid var(--border-color); }
         }
     </style>
 </head>
@@ -203,7 +205,7 @@
                     </div>
                 </div>
                 <div class="leaderboard-widget">
-                    <div class="pill-nav skeleton" style="width: 220px; height: 40px;"></div>
+                    <div class="leaderboard-tabs skeleton" style="width: 240px; height: 44px; padding: 0;"></div>
                     <div class="podium-stacked-card skeleton" style="height: 180px; margin-bottom: 2rem; width: 100%;"></div>
                     <ul class="leaderboard-list" style="width: 100%;">
                         <li style="gap: 1rem;"><div class="skeleton skeleton-line" style="width: 20px;"></div><div class="skeleton skeleton-avatar" style="margin:0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 50%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
@@ -224,10 +226,9 @@
                     </div>
                 </div>
                 <div class="leaderboard-widget">
-                    <div class="pill-nav">
-                        <div id="pill-slider"></div>
-                        <button id="collegeTab" class="nav-tab active" data-target="#college-content">My College</button>
-                        <button id="overallTab" class="nav-tab" data-target="#overall-content">Overall</button>
+                    <div class="leaderboard-tabs">
+                        <button id="collegeTab" class="tab-btn active" data-target="#college-content">My College</button>
+                        <button id="overallTab" class="tab-btn" data-target="#overall-content">Overall</button>
                     </div>
                     <div id="college-content" class="tab-content active"></div>
                     <div id="overall-content" class="tab-content"></div>
@@ -264,8 +265,7 @@
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
                 profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (profileSection && !profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
-                
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -275,28 +275,21 @@
                 closeBtn.addEventListener('click', toggleMenu);
                 overlay.addEventListener('click', toggleMenu);
                 
-                const tabs = document.querySelectorAll('.nav-tab');
-                const slider = document.getElementById('pill-slider');
-                
-                function moveSlider(tab) { if(tab) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
-                
+                const tabs = document.querySelectorAll('.tab-btn');
                 tabs.forEach(tab => {
                     tab.addEventListener('click', (e) => {
                         tabs.forEach(t => t.classList.remove('active'));
                         e.currentTarget.classList.add('active');
-                        moveSlider(e.currentTarget);
                         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                         document.querySelector(e.currentTarget.dataset.target).classList.add('active');
                     });
                 });
             };
-
+            
             const updateProfileUI = (userProfile) => {
                 const logoUrl = localStorage.getItem('dashboardLogoUrl');
                 if(logoUrl) document.querySelector('.logo-image').src = logoUrl;
-
                 const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
-
                 if(profileToUse) {
                     document.querySelectorAll('.profile-avatar').forEach(el => {
                         el.src = profileToUse.photoURL || DEFAULT_AVATAR;
@@ -353,12 +346,6 @@
                 } finally {
                     document.getElementById('skeleton-loader').style.display = 'none';
                     document.getElementById('real-content').style.display = 'block';
-                    const slider = document.getElementById('pill-slider');
-                    const activeTab = document.querySelector('.nav-tab.active');
-                    if(activeTab) {
-                        slider.style.width = `${activeTab.offsetWidth}px`;
-                        slider.style.left = `${activeTab.offsetLeft}px`;
-                    }
                 }
             };
             
