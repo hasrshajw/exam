@@ -3,39 +3,235 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Loading Course...</title>
+    <title>Course & Content - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #F9FAFB;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            opacity: 0;
-            animation: fadeIn 0.3s 0.1s forwards;
+        :root {
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #002726;
+            --text-secondary: #6B7280;
+            --brand-green: #33C375;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --c-primary: #002726;
+            --c-primary-dark: #001A19;
+            --c-accent: #33C375;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --radius-lg: 0.75rem;
+            --space-md: 1rem; --space-lg: 1.5rem;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .loading-spinner {
-            border: 4px solid #E5E7EB;
-            border-top: 4px solid #33C375;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; } .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { list-style: none; padding-top: 0.5rem; } .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; text-decoration: none; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); } .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; }
+        .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .hero-section { background-color: var(--text-primary); color: #FFFFFF; padding: 4rem 3rem; }
+        .breadcrumbs { font-weight: 500; color: var(--brand-green); margin-bottom: 1rem; }
+        .breadcrumbs a { color: rgba(255, 255, 255, 0.7); text-decoration: none; } .breadcrumbs a:hover { text-decoration: underline; }
+        .hero-title { font-size: 3rem; font-weight: 700; letter-spacing: -0.02em; }
+        .content-body { padding: 2rem 3rem 3rem 3rem; display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: flex-start; }
+        .main-content { min-width: 0; }
+        .content-sidebar { position: sticky; top: calc(2rem + 73px); }
+        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; }
+        .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 2; transition: color 0.3s ease; }
+        .nav-tab.active { color: var(--text-primary); }
+        #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; border-radius: 99px; background-color: var(--widget-bg); box-shadow: var(--shadow); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
+        .chapter-group { margin-bottom: var(--space-xl); }
+        .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color); }
+        .chapter-lessons { display: flex; flex-direction: column; gap: 0.75rem; }
+        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; text-decoration: none; }
+        .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; font-weight: 600; }
+        .card-info { flex-grow: 1; } .card-title { font-weight: 600; font-size: 1rem; color: var(--text-primary); }
+        .card-meta { font-size: 0.85rem; color: var(--text-secondary); }
+        .card-button { background-color: var(--c-primary); color: #FFFFFF; border: none; border-radius: 0.75rem; padding: 0.6rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; }
+        .sidebar-card { background-color: var(--widget-bg); border-radius: 1rem; padding: 1.5rem; border: 2px solid var(--border-color); }
+        .sidebar-card h4 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary); }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .stat-item { text-align: center; } .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
+        .stat-label { font-size: 0.875rem; color: var(--text-secondary); }
+        .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 1.25rem 1.5rem; } .main-header h1 { font-size: 1.25rem; }
+            .hero-section { padding: 2rem 1.5rem; } .hero-title { font-size: 2.25rem; }
+            .content-body { grid-template-columns: 1fr; padding: 1.5rem; }
+            .content-sidebar { position: static; width: 100%; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; transition: background-color 0.2s ease; }
+            .menu-toggle:hover { background-color: var(--hover-bg); }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; transition: color 0.2s ease; }
+            .sidebar-close-btn:hover { color: #b91c1c; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+            .chapter-title { font-size: 1.25rem; }
+            .card-title { font-size: 0.95rem; }
+            .card-meta { font-size: 0.8rem; }
         }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes fadeIn { to { opacity: 1; } }
+        .skeleton {
+            animation: shimmer 1.5s infinite linear;
+            background-color: #f3f4f6;
+            background-image: linear-gradient(90deg, #f3f4f6 0px, #e5e7eb 40px, #f3f4f6 80px);
+            background-size: 600px;
+            border-radius: 4px;
+        }
+        @keyframes shimmer {
+            0% { background-position: -300px 0; }
+            100% { background-position: 300px 0; }
+        }
     </style>
 </head>
 <body>
-    <div class="loading-spinner"></div>
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
+                    <li><a href="course.html" class="active"><i class='bx bx-book-open'></i> Course & Content</a></li>
+                    <li><a href="leaderboard.html"><i class='bx bx-bar-chart-alt-2'></i> Leaderboard</a></li>
+                    <li><a href="programs.html"><i class='bx bx-briefcase-alt-2'></i> Explore Programs</a></li>
+                    <li><a href="community.html"><i class='bx bx-group'></i> Community</a></li>
+                    <li><a href="help.html"><i class='bx bx-help-circle'></i> Help & Support</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section" id="profile-section">
+                <div class="profile-avatar skeleton"></div>
+                <div class="profile-details">
+                    <span class="profile-name skeleton" style="height: 16px; width: 100px; margin-bottom: 6px; display: block;"></span>
+                    <span class="profile-email skeleton" style="height: 12px; width: 140px; display: block;"></span>
+                </div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+            </div>
+        </aside>
+        <main class="main-area">
+            <header class="main-header">
+                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
+                <h1>Course & Content</h1>
+            </header>
+            <section class="hero-section">
+                <div class="container">
+                    <p class="breadcrumbs"><span class="skeleton" style="width: 200px; height: 16px; display: inline-block;"></span></p>
+                    <h1 class="hero-title"><span class="skeleton" style="width: 350px; height: 48px; display: inline-block; border-radius: 8px;"></span></h1>
+                </div>
+            </section>
+            <div class="content-body">
+                <div class="main-content">
+                    <div class="pill-nav">
+                        <div style="position: absolute; top: 0.25rem; bottom: 0.25rem; width: 115px; left: 4px; border-radius: 99px; background-color: white; box-shadow: var(--shadow);"></div>
+                        <button class="nav-tab active">Curriculum</button>
+                        <button class="nav-tab">Assessments</button>
+                    </div>
+                    <div class="chapter-group" style="margin-bottom: 2rem;">
+                        <div class="chapter-title skeleton" style="width: 250px; height: 24px; border-bottom: none;"></div>
+                        <div class="chapter-lessons">
+                            <div class="card" style="border: none;">
+                                <div class="card-prefix skeleton" style="border-radius: 50%;"></div>
+                                <div class="card-info" style="flex-grow: 1;">
+                                    <p class="skeleton" style="height: 16px; width: 80%; margin-bottom: 0.5rem;"></p>
+                                    <p class="skeleton" style="height: 14px; width: 40%;"></p>
+                                </div>
+                                <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
+                            </div>
+                            <div class="card" style="border: none;">
+                                <div class="card-prefix skeleton" style="border-radius: 50%;"></div>
+                                <div class="card-info" style="flex-grow: 1;">
+                                    <p class="skeleton" style="height: 16px; width: 75%; margin-bottom: 0.5rem;"></p>
+                                    <p class="skeleton" style="height: 14px; width: 35%;"></p>
+                                </div>
+                                <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="chapter-group">
+                        <div class="chapter-title skeleton" style="width: 300px; height: 24px; border-bottom: none;"></div>
+                        <div class="chapter-lessons">
+                            <div class="card" style="border: none;">
+                                <div class="card-prefix skeleton" style="border-radius: 50%;"></div>
+                                <div class="card-info" style="flex-grow: 1;">
+                                    <p class="skeleton" style="height: 16px; width: 70%; margin-bottom: 0.5rem;"></p>
+                                    <p class="skeleton" style="height: 14px; width: 30%;"></p>
+                                </div>
+                                <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <aside class="content-sidebar">
+                    <div class="sidebar-card" style="border: none;">
+                        <h4 class="skeleton" style="height: 20px; width: 150px; margin-bottom: 1.5rem;"></h4>
+                        <div class="stat-grid">
+                            <div class="stat-item">
+                                <div class="stat-value skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem;"></div>
+                                <div class="stat-label skeleton" style="width: 60px; height: 14px; margin: 0 auto;"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem;"></div>
+                                <div class="stat-label skeleton" style="width: 60px; height: 14px; margin: 0 auto;"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem;"></div>
+                                <div class="stat-label skeleton" style="width: 60px; height: 14px; margin: 0 auto;"></div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem;"></div>
+                                <div class="stat-label skeleton" style="width: 60px; height: 14px; margin: 0 auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </main>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeBtn = document.getElementById('sidebar-close-btn');
+            const overlay = document.getElementById('overlay');
+            const toggleMenu = () => {
+                sidebar.classList.toggle('active');
+                overlay.classList.toggle('active');
+            };
+            menuToggle.addEventListener('click', toggleMenu);
+            closeBtn.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+        });
+
         (async function() {
             const firebaseConfig = {
                 apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
