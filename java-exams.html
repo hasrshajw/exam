@@ -109,7 +109,7 @@
             .card-title { font-size: 0.95rem; }
             .card-meta { font-size: 0.8rem; }
         }
-
+        
         @keyframes shimmer { 100% { transform: translateX(100%); } }
         .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
         .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
@@ -117,6 +117,7 @@
         .skeleton-line { height: 14px; border-radius: 4px; }
         .skeleton-pill-nav { display: flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; width: fit-content; }
         .skeleton-pill { width: 110px; height: 32px; border-radius: 99px; margin: 2px; }
+
     </style>
 </head>
 <body>
@@ -300,7 +301,50 @@
             const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
             const CURRENT_PAGE_FILENAME = "java-exams.html";
 
-            const initSharedUI = (userProfile) => {
+            const setupEventListeners = () => {
+                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                
+                const profileSection = document.getElementById('profile-section');
+                const profilePopup = document.getElementById('profile-popup');
+                profileSection.addEventListener('click', e => { 
+                    e.stopPropagation(); 
+                    profilePopup.classList.toggle('active'); 
+                    profileSection.classList.toggle('active'); 
+                });
+                document.addEventListener('click', e => { 
+                    if (profileSection && !profileSection.contains(e.target) && profilePopup) { 
+                        profilePopup.classList.remove('active'); 
+                        profileSection.classList.remove('active'); 
+                    } 
+                });
+                
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
+                const overlay = document.getElementById('overlay');
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                menuToggle.addEventListener('click', toggleMenu);
+                closeBtn.addEventListener('click', toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
+                
+                const tabs = document.querySelectorAll('#real-content .nav-tab');
+                const slider = document.getElementById('pill-slider');
+                const activeTab = document.querySelector('#real-content .nav-tab.active');
+                function moveSlider(tab) { if(tab && slider) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
+                moveSlider(activeTab);
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        tabs.forEach(t => t.classList.remove('active'));
+                        e.currentTarget.classList.add('active');
+                        moveSlider(e.currentTarget);
+                        const isCourseTab = e.currentTarget.id === 'courseTab';
+                        document.getElementById('courseContent').classList.toggle('active', isCourseTab);
+                        document.getElementById('assessmentsContent').classList.toggle('active', !isCourseTab);
+                    });
+                });
+            };
+            
+            const updateProfileUI = (userProfile) => {
                 const logoUrl = localStorage.getItem('dashboardLogoUrl');
                 if (logoUrl) {
                     document.querySelector('.logo-image').src = logoUrl;
@@ -317,46 +361,17 @@
                     document.querySelector('.profile-skeleton').style.display = 'none';
                     document.querySelector('.profile-content-wrapper').style.display = 'flex';
                 }
-
-                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-                const profileSection = document.getElementById('profile-section');
-                const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
-                
-                const sidebar = document.getElementById('sidebar');
-                const menuToggle = document.getElementById('menu-toggle');
-                const closeBtn = document.getElementById('sidebar-close-btn');
-                const overlay = document.getElementById('overlay');
-                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
-                menuToggle.addEventListener('click', toggleMenu);
-                closeBtn.addEventListener('click', toggleMenu);
-                overlay.addEventListener('click', toggleMenu);
-                
-                const tabs = document.querySelectorAll('#real-content .nav-tab');
-                const slider = document.getElementById('pill-slider');
-                const activeTab = document.querySelector('#real-content .nav-tab.active');
-                function moveSlider(tab) { if(tab) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
-                moveSlider(activeTab);
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        tabs.forEach(t => t.classList.remove('active'));
-                        e.currentTarget.classList.add('active');
-                        moveSlider(e.currentTarget);
-                        const isCourseTab = e.currentTarget.id === 'courseTab';
-                        document.getElementById('courseContent').classList.toggle('active', isCourseTab);
-                        document.getElementById('assessmentsContent').classList.toggle('active', !isCourseTab);
-                    });
-                });
             };
-            initSharedUI();
+
+            setupEventListeners();
+            updateProfileUI();
 
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (!userDoc.exists) { window.location.href = 'index.html'; return; }
                     const userProfile = userDoc.data();
-                    initSharedUI(userProfile);
+                    updateProfileUI(userProfile);
                     await loadAndRenderContent(user.uid);
                 } else { window.location.href = 'index.html'; }
             });
