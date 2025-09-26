@@ -58,9 +58,9 @@
         .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
         
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .rank-summary-card { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); }
+        .rank-summary-card { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr; gap: 0; margin-bottom: 2rem; box-shadow: var(--shadow-sm); }
         .rank-item { text-align: center; padding: 1.5rem 1rem; }
-        .rank-item:first-child { border-right: 1px solid var(--border-color); }
+        .rank-item:first-child { border-bottom: 1px solid var(--border-color); }
         .rank-item p { color: var(--text-secondary); font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; }
         .rank-value { font-size: 2.25rem; font-weight: 700; color: var(--text-primary); position: relative; display: inline-block; }
         .rank-value.rank-value--shining { color: var(--gold); }
@@ -69,12 +69,12 @@
         .rank-value.bronze { color: var(--bronze); }
         @keyframes shine { to { background-position: -200% center; } }
 
-        .leaderboard-widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: var(--shadow-sm); }
-        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; }
-        .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 2; transition: color 0.3s ease; }
+        .leaderboard-widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; align-items: center; }
+        .pill-nav { position: relative; display: grid; grid-template-columns: 1fr 1fr; background-color: var(--hover-bg); border-radius: 99px; padding: 4px; margin-bottom: 2rem; width: 100%; max-width: 300px; }
+        .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 1; transition: color 0.3s ease; text-align: center; }
         .nav-tab.active { color: var(--text-primary); }
-        #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; border-radius: 99px; background-color: var(--widget-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; border: 1px solid var(--border-color); }
-        .tab-content { display: none; } .tab-content.active { display: block; }
+        #pill-slider { position: absolute; top: 4px; bottom: 4px; left: 4px; width: calc(50% - 4px); border-radius: 99px; background-color: var(--widget-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid var(--border-color); }
+        .tab-content { display: none; width: 100%; } .tab-content.active { display: block; }
         
         .podium-stacked-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem; overflow: hidden; box-shadow: var(--shadow-sm); }
         .podium-stacked-item { display: flex; align-items: center; padding: 0.75rem 1rem; gap: 1rem; position: relative; }
@@ -120,6 +120,11 @@
         .skeleton-line { height: 1em; }
         .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
 
+        @media (min-width: 640px) {
+            .rank-summary-card { grid-template-columns: 1fr 1fr; }
+            .rank-item:first-child { border-bottom: none; border-right: 1px solid var(--border-color); }
+        }
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -134,8 +139,11 @@
          @media (max-width: 640px) {
             .winner-content { flex-direction: column; text-align: center; }
             .winner-score { margin-left: 0; text-align: center; }
-            .rank-summary-card { grid-template-columns: 1fr; }
-            .rank-item:first-child { border-right: none; border-bottom: 1px solid var(--border-color); }
+            .rank-item { padding: 1rem; }
+            .rank-item p { font-size: 0.8rem; margin-bottom: 0.25rem; }
+            .rank-value { font-size: 1.875rem; }
+            .rank-summary-card { grid-template-columns: 1fr 1fr; }
+            .rank-item:first-child { border-bottom: none; border-right: 1px solid var(--border-color); }
         }
     </style>
 </head>
@@ -201,11 +209,9 @@
                     </div>
                 </div>
                 <div class="leaderboard-widget">
-                    <div class="pill-nav">
-                         <div class="skeleton skeleton-line" style="width: 220px; height: 40px; border-radius: 99px;"></div>
-                    </div>
-                    <div class="podium-stacked-card skeleton" style="height: 180px; margin-bottom: 2rem;"></div>
-                    <ul class="leaderboard-list">
+                    <div class="pill-nav skeleton" style="width: 100%; max-width: 300px; height: 40px;"></div>
+                    <div class="podium-stacked-card skeleton" style="height: 180px; margin-bottom: 2rem; width: 100%;"></div>
+                    <ul class="leaderboard-list" style="width: 100%;">
                         <li style="gap: 1rem;"><div class="skeleton skeleton-line" style="width: 20px;"></div><div class="skeleton skeleton-avatar" style="margin:0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 50%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
                         <li style="gap: 1rem;"><div class="skeleton skeleton-line" style="width: 20px;"></div><div class="skeleton skeleton-avatar" style="margin:0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 60%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
                         <li style="gap: 1rem;"><div class="skeleton skeleton-line" style="width: 20px;"></div><div class="skeleton skeleton-avatar" style="margin:0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 45%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
@@ -265,6 +271,7 @@
                 const profilePopup = document.getElementById('profile-popup');
                 profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
                 document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -276,20 +283,17 @@
                 
                 const tabs = document.querySelectorAll('.nav-tab');
                 const slider = document.getElementById('pill-slider');
-                const activeTab = document.querySelector('.nav-tab.active');
-                function moveSlider(tab) { if(tab) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
-                moveSlider(activeTab);
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', (e) => {
+                tabs.forEach((tab, index) => {
+                    tab.addEventListener('click', () => {
                         tabs.forEach(t => t.classList.remove('active'));
-                        e.currentTarget.classList.add('active');
-                        moveSlider(e.currentTarget);
+                        tab.classList.add('active');
+                        slider.style.transform = `translateX(${index * 100}%)`;
                         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                        document.querySelector(e.currentTarget.dataset.target).classList.add('active');
+                        document.querySelector(tab.dataset.target).classList.add('active');
                     });
                 });
             };
-            
+
             const updateProfileUI = (userProfile) => {
                 const logoUrl = localStorage.getItem('dashboardLogoUrl');
                 if(logoUrl) document.querySelector('.logo-image').src = logoUrl;
@@ -371,7 +375,7 @@
                     const winner = topPerformers[0];
                     const winnerPhoto = winner.profile.photoURL || DEFAULT_AVATAR;
                     topPerformersHtml = `<div class="winner-spotlight-card"><div class="winner-content"><i class='bx bxs-trophy winner-trophy'></i><img src="${winnerPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="winner-info"><h2>${winner.profile.displayName}</h2><p>${winner.profile.college}</p></div><div class="winner-score"><strong>${winner.points}</strong><span>XP</span></div></div></div>`;
-                    startIndexForList = 1; // For overall list, start from rank 2
+                    startIndexForList = 1;
                 } else if (!isOverall && topPerformers.length > 0) {
                     topPerformersHtml = '<div class="podium-stacked-card">';
                     topPerformers.forEach((user, index) => {
@@ -389,7 +393,7 @@
                                  </div>`;
                     });
                     topPerformersHtml += '</div>';
-                    startIndexForList = topPerformers.length; // For college list, start after the top performers
+                    startIndexForList = topPerformers.length;
                 }
                 
                 let listHtml = '<ul class="leaderboard-list">';
