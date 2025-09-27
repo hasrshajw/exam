@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam In Progress - Exam Portal</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root { --font-family: 'IBM Plex Sans', sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --color-primary: #6D28D9; --color-primary-light: #EDE9FE; --color-sidebar-bg: #111827; --color-sidebar-text: #F9FAFB; --color-sidebar-text-muted: #9CA3AF; --color-sidebar-hover: #1F2937; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color-dark: #4B5563; --color-background: #F9FAFB; --color-surface: #FFFFFF; --color-text-primary: #111827; --color-text-secondary: #6B7280; --color-border: #E5E7EB; --color-success: #10B981; --color-danger: #EF4444; --color-warning: #F59E0B; --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); --border-radius-md: 8px; --border-radius-lg: 16px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -160,25 +156,29 @@
                 finalSubmitBtn: document.getElementById('final-submit-btn'), resultsView: document.getElementById('results-view')
             };
 
-            const showView = (viewId) => { dom.views.forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); };
+            const showView = (viewId) => {
+                dom.views.forEach(v => v.classList.remove('active'));
+                document.getElementById(viewId).classList.add('active');
+            };
 
             const initEnvironment = async () => {
                 try {
                     pyodide = await loadPyodide();
                     dom.loadingOverlay.querySelector('p').textContent = 'Initializing Editor...';
-                    
-                    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-                    window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
-                    
-                    require(['vs/editor/editor.main'], () => {
-                        editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
-                        auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
+                    await new Promise((resolve, reject) => {
+                        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+                        window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
+                        require(['vs/editor/editor.main'], resolve, reject);
                     });
+                    editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
+                    auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
                 } catch (error) {
                     console.error("Initialization failed:", error);
                     dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
                 }
             };
+            
+            initEnvironment();
 
             const initializePage = async () => {
                 const examId = new URLSearchParams(window.location.search).get('id');
@@ -311,9 +311,11 @@
                 clearInterval(examState.timerInterval);
                 dom.loadingOverlay.querySelector('p').textContent = 'Submitting...';
                 dom.loadingOverlay.style.display = 'flex';
+                handleNext(); 
 
                 let pointsReceived = 0;
                 let totalPoints = 0;
+
                 for(const q of examState.questions) {
                     totalPoints += q.points;
                     if (q.type === 'Mcq' && q.userAnswer === q.correctAnswer) {
@@ -361,15 +363,7 @@
             };
 
             const handleNext = () => {
-                const q = examState.questions[examState.currentQuestionIndex];
-                if (q.type === 'Coding') {
-                    const code = editor.getValue();
-                    if (code.trim() !== (q.starterCode || '').trim()) {
-                        q.userAnswer = code;
-                        q.isAnswered = true;
-                    }
-                }
-                if (examState.currentQuestionIndex < examState.questions.length - 1) {
+                if (examState.currentQuestionIndex < examState.questions.length) {
                     navigateToQuestion(examState.currentQuestionIndex + 1);
                 }
             };
