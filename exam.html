@@ -4,10 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam In Progress - Exam Portal</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root { --font-family: 'IBM Plex Sans', sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --color-primary: #6D28D9; --color-primary-light: #EDE9FE; --color-sidebar-bg: #111827; --color-sidebar-text: #F9FAFB; --color-sidebar-text-muted: #9CA3AF; --color-sidebar-hover: #1F2937; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color-dark: #4B5563; --color-background: #F9FAFB; --color-surface: #FFFFFF; --color-text-primary: #111827; --color-text-secondary: #6B7280; --color-border: #E5E7EB; --color-success: #10B981; --color-danger: #EF4444; --color-warning: #F59E0B; --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); --border-radius-md: 8px; --border-radius-lg: 16px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -38,7 +34,7 @@
         .timer svg { width: 20px; height: 20px; }
         .end-round-btn { color: var(--text-secondary); border: 1px solid var(--color-border); padding: 8px 20px; border-radius: 999px; font-weight: 500; }
         .question-area { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
-        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .question-header { margin-bottom: 1.5rem; }
         .question-title-text { font-size: 1.5rem; font-weight: 600; }
         #mcq-container { background-color: var(--color-surface); border-radius: var(--border-radius-lg); padding: 2.5rem; box-shadow: var(--shadow-lg); }
         .options-container { display: flex; flex-direction: column; gap: 1rem; }
@@ -62,7 +58,6 @@
         #run-controls { display: flex; gap: 1rem; margin-top: 1rem; }
         .btn { padding: 10px 24px; border-radius: var(--border-radius-md); font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .btn.run-btn { background-color: var(--surface-light); color: var(--color-sidebar-text); }
-        .btn.submit-code-btn { background-color: var(--color-success); color: white; }
         .question-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem; border-top: 1px solid var(--color-border); padding-top: 1.5rem; }
         .nav-btn { padding: 12px 28px; border-radius: var(--border-radius-md); font-weight: 600; }
         .nav-btn.next-btn, .nav-btn.submit-btn { background-color: var(--color-primary); color: white; }
@@ -95,8 +90,14 @@
                     <div class="question-header"><h2 class="question-title-text" id="question-title"></h2></div>
                     <div id="mcq-container" style="display: none;"><div class="options-container" id="options-container"></div></div>
                     <div id="coding-container" style="display: none;">
-                        <div class="top-panel"><div id="problem-details"></div><div id="editor-container"></div></div>
-                        <div class="bottom-panel"><div class="tabs"><div class="tab active" data-tab="console">Console</div></div><div id="console" class="tab-content active"><pre id="console-output"></pre></div></div>
+                        <div class="top-panel">
+                            <div id="problem-details"></div>
+                            <div id="editor-container"></div>
+                        </div>
+                        <div class="bottom-panel">
+                            <div class="tabs"><div class="tab active" data-tab="console">Console</div></div>
+                            <div id="console" class="tab-content active"><pre id="console-output"></pre></div>
+                        </div>
                         <div id="run-controls"><button id="run-code-btn" class="btn run-btn">Run Code</button></div>
                     </div>
                     <footer class="question-footer">
@@ -110,7 +111,7 @@
     
     <div class="view-container" id="review-view">
         <div class="review-card">
-            <div class="review-header"><h2>Review Your Answers</h2><p>Click a number to jump to that question. Submit when you are ready.</p></div>
+            <div class="review-header"><h2>Review Your Answers</h2><p>Click a number to jump to that question. Submit when ready.</p></div>
             <div class="review-grid" id="review-grid"></div>
             <div class="review-footer"><button class="nav-btn submit-btn" id="final-submit-btn">Confirm & Submit Test</button></div>
         </div>
@@ -143,42 +144,57 @@
 
             const dom = {
                 loadingOverlay: document.getElementById('loading-overlay'),
-                views: document.querySelectorAll('.view-container'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
-                questionNav: document.getElementById('question-nav'), timer: document.getElementById('timer'),
-                timerDisplay: document.getElementById('timer-display'), endRoundBtn: document.getElementById('end-round-btn'),
-                questionTitle: document.getElementById('question-title'), mcqContainer: document.getElementById('mcq-container'),
-                optionsContainer: document.getElementById('options-container'), codingContainer: document.getElementById('coding-container'),
-                problemDetails: document.getElementById('problem-details'), editorContainer: document.getElementById('editor-container'),
-                consoleOutput: document.getElementById('console-output'), runCodeBtn: document.getElementById('run-code-btn'),
-                prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'),
-                submitBtn: document.getElementById('submit-btn'), reviewGrid: document.getElementById('review-grid'),
-                finalSubmitBtn: document.getElementById('final-submit-btn'), resultsView: document.getElementById('results-view')
+                views: document.querySelectorAll('.view-container'),
+                examTitleSidebar: document.getElementById('exam-title-sidebar'),
+                questionNav: document.getElementById('question-nav'),
+                timer: document.getElementById('timer'),
+                timerDisplay: document.getElementById('timer-display'),
+                endRoundBtn: document.getElementById('end-round-btn'),
+                questionTitle: document.getElementById('question-title'),
+                mcqContainer: document.getElementById('mcq-container'),
+                optionsContainer: document.getElementById('options-container'),
+                codingContainer: document.getElementById('coding-container'),
+                problemDetails: document.getElementById('problem-details'),
+                editorContainer: document.getElementById('editor-container'),
+                consoleOutput: document.getElementById('console-output'),
+                runCodeBtn: document.getElementById('run-code-btn'),
+                prevBtn: document.getElementById('prev-btn'),
+                nextBtn: document.getElementById('next-btn'),
+                submitBtn: document.getElementById('submit-btn'),
+                reviewGrid: document.getElementById('review-grid'),
+                finalSubmitBtn: document.getElementById('final-submit-btn'),
+                resultsView: document.getElementById('results-view')
             };
 
-            const showView = (viewId) => { dom.views.forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); };
+            const showView = (viewId) => {
+                dom.views.forEach(v => v.classList.remove('active'));
+                document.getElementById(viewId).classList.add('active');
+            };
 
             const initEnvironment = async () => {
                 try {
                     pyodide = await loadPyodide();
+                    dom.loadingOverlay.querySelector('p').textContent = 'Initializing Editor...';
                     await new Promise((resolve, reject) => {
                         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-                        require(['vs/editor/editor.main'], () => {
-                            editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
-                            resolve();
-                        }, (err) => reject(err));
+                        window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
+                        require(['vs/editor/editor.main'], resolve, reject);
                     });
+                    editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
                     auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
                 } catch (error) {
                     console.error("Initialization failed:", error);
                     dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
                 }
             };
+            initEnvironment();
 
             const initializePage = async () => {
                 const examId = new URLSearchParams(window.location.search).get('id');
                 if (!examId) { alert('Invalid exam ID.'); window.location.href = 'dashboard.html'; return; }
                 const examDoc = await db.collection('exams').doc(examId).get();
                 if (!examDoc.exists) { alert('Exam not found.'); window.location.href = 'dashboard.html'; return; }
+                
                 const examData = { id: examDoc.id, ...examDoc.data() };
                 examState = {
                     currentExamData: examData,
@@ -187,6 +203,7 @@
                     timeLeft: examData.duration,
                     timerInterval: null
                 };
+                
                 dom.examTitleSidebar.textContent = examData.name;
                 renderSidebar();
                 renderQuestion();
@@ -209,6 +226,7 @@
             const renderQuestion = () => {
                 const question = examState.questions[examState.currentQuestionIndex];
                 dom.questionTitle.textContent = `${examState.currentQuestionIndex + 1}. ${question.title}`;
+                
                 const isCoding = question.type === 'Coding';
                 dom.mcqContainer.style.display = isCoding ? 'none' : 'block';
                 dom.codingContainer.style.display = isCoding ? 'flex' : 'none';
@@ -234,12 +252,16 @@
                 q.userAnswer = index;
                 q.isAnswered = true;
                 renderQuestion();
+                renderSidebar();
             };
 
             const navigateToQuestion = (index) => {
                 const currentQuestion = examState.questions[examState.currentQuestionIndex];
-                if (currentQuestion.type === 'Coding') {
+                if (currentQuestion.type === 'Coding' && editor) {
                     currentQuestion.userAnswer = editor.getValue();
+                    if (currentQuestion.userAnswer.trim() !== (currentQuestion.starterCode || '').trim()) {
+                        currentQuestion.isAnswered = true;
+                    }
                 }
                 examState.currentQuestionIndex = index;
                 renderQuestion();
@@ -272,18 +294,20 @@
                 dom.consoleOutput.textContent = 'Executing...';
                 
                 try {
+                    const testCases = question.testCases.filter(tc => !tc.hidden);
                     let resultsHTML = '';
-                    for (const tc of question.testCases) {
+                    for (const tc of testCases) {
                         const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
                         const fullCode = `${code}\nprint(${question.functionName}(${inputArgs}))`;
                         let output = await pyodide.runPythonAsync(fullCode);
+                        
                         if (JSON.stringify(output) === JSON.stringify(tc.expected)) {
-                            resultsHTML += `<p style="color: var(--color-success);">Test Case Passed</p>`;
+                             resultsHTML += `<p style="color: var(--color-success);">Test Case Passed</p>`;
                         } else {
                             resultsHTML += `<p style="color: var(--color-danger);">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
                         }
                     }
-                    dom.consoleOutput.innerHTML = resultsHTML;
+                    dom.consoleOutput.innerHTML = resultsHTML || "Execution finished with no output.";
                 } catch(e) {
                     dom.consoleOutput.textContent = `Error: ${e.message}`;
                 }
@@ -295,7 +319,8 @@
                 dom.loadingOverlay.querySelector('p').textContent = 'Submitting...';
                 dom.loadingOverlay.style.display = 'flex';
 
-                let pointsReceived = 0, totalPoints = 0;
+                let pointsReceived = 0;
+                let totalPoints = 0;
                 for(const q of examState.questions) {
                     totalPoints += q.points;
                     if (q.type === 'Mcq' && q.userAnswer === q.correctAnswer) {
@@ -307,9 +332,7 @@
                                 const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
                                 const fullCode = `${q.userAnswer}\nprint(${q.functionName}(${inputArgs}))`;
                                 let output = await pyodide.runPythonAsync(fullCode);
-                                if (JSON.stringify(output) !== JSON.stringify(tc.expected)) {
-                                    allPassed = false; break;
-                                }
+                                if (JSON.stringify(output) !== JSON.stringify(tc.expected)) { allPassed = false; break; }
                             } catch(e) { allPassed = false; break; }
                         }
                         if(allPassed) pointsReceived += q.points;
@@ -328,18 +351,32 @@
 
             const renderResultsPage = (scoreData) => {
                 const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is ${percentage}%.</p><a href="dashboard.html" class="nav-btn">Back to Dashboard</a></div>`;
+                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is ${percentage}%.</p><p>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</p><a href="dashboard.html" class="nav-btn">Back to Dashboard</a></div>`;
                 showView('results-view');
             };
 
-            const handleNext = () => {
-                if (examState.questions[examState.currentQuestionIndex].type === 'Coding') {
-                    examState.questions[examState.currentQuestionIndex].userAnswer = editor.getValue();
-                    examState.questions[examState.currentQuestionIndex].isAnswered = true;
-                }
-                navigateToQuestion(examState.currentQuestionIndex + 1);
+            const renderReviewGrid = () => {
+                dom.reviewGrid.innerHTML = '';
+                examState.questions.forEach((q, index) => {
+                    const btn = document.createElement('button');
+                    btn.className = `review-item-btn ${q.isAnswered ? 'answered' : 'unanswered'}`;
+                    btn.textContent = index + 1;
+                    btn.onclick = () => { navigateToQuestion(index); showView('exam-view'); };
+                    dom.reviewGrid.appendChild(btn);
+                });
             };
 
+            const handleNext = () => {
+                const q = examState.questions[examState.currentQuestionIndex];
+                if (q.type === 'Coding') {
+                    q.userAnswer = editor.getValue();
+                    if(q.userAnswer.trim() !== (q.starterCode || '').trim()) q.isAnswered = true;
+                }
+                if (examState.currentQuestionIndex < examState.questions.length - 1) {
+                    navigateToQuestion(examState.currentQuestionIndex + 1);
+                }
+            };
+            
             dom.prevBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex - 1));
             dom.nextBtn.addEventListener('click', handleNext);
             dom.submitBtn.addEventListener('click', () => { renderReviewGrid(); showView('review-view'); });
