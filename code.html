@@ -18,9 +18,9 @@
         .sidebar { width: 320px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
         .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
         .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
-        .sidebar nav { flex-grow: 1; overflow-y: auto; }
+        .sidebar nav { flex-grow: 1; overflow-y: auto; padding-right: 8px; }
         .problem-nav { list-style: none; }
-        .problem-item { display: flex; flex-direction: column; align-items: stretch; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), border-color var(--transition); border: 1px solid transparent; background-color: var(--surface-dark); }
+        .problem-item { display: flex; flex-direction: column; align-items: stretch; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), border-color var(--transition); border: 1px solid var(--surface-dark); background-color: var(--surface-dark); }
         .problem-item:hover { background-color: var(--surface-light); }
         .problem-item.active { background-color: var(--surface-light); border-color: var(--accent-start); box-shadow: 0 0 15px rgba(var(--accent-glow-rgb), 0.2); }
         .problem-item-header { display: flex; align-items: center; }
@@ -28,7 +28,7 @@
         .problem-item.active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
         .problem-item.solved .p-number { background-image: none; background-color: var(--success); color: white; }
         .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
-        .p-status { font-size: 1.5rem; color: var(--success); opacity: 0; }
+        .p-status { font-size: 1.5rem; color: var(--success); opacity: 0; transition: opacity 0.3s; }
         .problem-item.solved .p-status { opacity: 1; }
         .problem-item-footer { margin-top: 12px; display: none; }
         .problem-item.active .problem-item-footer { display: block; }
@@ -38,6 +38,7 @@
         .header-title { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
         .controls { display: flex; gap: 12px; }
         .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); }
+        .btn svg { width: 18px; height: 18px; }
         .btn.run-btn { background-color: var(--surface-light); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: var(--border-color); }
         .btn.submit-problem-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; width: 100%; justify-content: center; }
         .btn.submit-problem-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
@@ -62,13 +63,13 @@
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 8px; }
         .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
         .status-pass { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); } .status-fail { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
-        .results-page { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; }
+        .results-page { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; padding: 1rem; }
         .results-page.active { display: flex; }
-        .results-card { background-color: var(--surface-dark); padding: 4rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+        .results-card { background-color: var(--surface-dark); padding: 2rem 4rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
         .results-card h1 { font-size: 2.5rem; font-weight: 700; }
         .results-card .score { font-size: 4rem; font-weight: 800; margin: 1rem 0; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; color: transparent; }
         .results-card p { color: var(--text-secondary); }
-        .results-card .back-btn { margin-top: 2rem; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; border: none; }
+        .results-card .back-btn { margin-top: 2rem; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; border: none; justify-content: center; }
         .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 800px) {
             .main-content { padding: 16px; }
@@ -84,6 +85,7 @@
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
             .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--border-color); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
             .header-title { display: none; }
+            .results-card { padding: 2rem; } .results-card h1 { font-size: 2rem; } .results-card .score { font-size: 3rem; }
         }
     </style>
 </head>
@@ -104,7 +106,7 @@
             <div class="sidebar-header"><h1 class="test-title" id="assignment-title"></h1></div>
             <nav><ul class="problem-nav" id="problem-list"></ul></nav>
             <div class="sidebar-footer">
-                <button id="submit-assignment-btn" class="btn submit-btn" disabled>Submit Assignment & View Results</button>
+                <button id="submit-assignment-btn" class="btn submit-problem-btn" disabled>Submit Assignment</button>
             </div>
         </aside>
         <div class="main-content" id="main-content-ide">
@@ -185,11 +187,11 @@
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     currentUser = user;
-                    await fetchData();
                     const isCompleted = await checkIfAssignmentCompleted();
                     if (isCompleted) {
-                        showResultsPage(isCompleted);
+                        await showResultsPage(isCompleted);
                     } else {
+                        await fetchData();
                         await initPyodideAndEditor();
                     }
                 } else { window.location.href = 'index.html'; }
@@ -220,13 +222,18 @@
             return scoreDoc.empty ? false : scoreDoc.docs[0].data();
         }
 
-        function showResultsPage(scoreData) {
+        async function showResultsPage(scoreData) {
+            if (!subjectPage) {
+                const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
+                const subjectDoc = await db.collection('subjects').doc(assignmentDoc.data().subjectId).get();
+                if(subjectDoc.exists) subjectPage = subjectDoc.data().page;
+            }
             DOMElements.mainContentIDE.style.display = 'none';
             DOMElements.sidebar.style.display = 'none';
             DOMElements.resultsPage.classList.add('active');
             DOMElements.finalScore.textContent = `${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
             DOMElements.scoreDetails.textContent = `You have successfully completed ${scoreData.problemsSolved} out of ${scoreData.totalProblems} problems.`;
-            DOMElements.backToCourseBtn.href = subjectPage;
+            DOMElements.backToCourseBtn.href = subjectPage || 'dashboard.html';
             DOMElements.loadingOverlay.style.display = 'none';
         }
 
@@ -235,8 +242,10 @@
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
             pyodide = await loadPyodide();
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
+            
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
             window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
+
             require(['vs/editor/editor.main'], () => {
                 editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
                 DOMElements.loadingOverlay.style.opacity = '0';
@@ -275,9 +284,7 @@
                         <div class="p-title">${p.title}</div>
                         <div class="p-status"><i class='bx bxs-check-circle'></i></div>
                     </div>
-                    <div class="problem-item-footer">
-                         <button class="btn submit-problem-btn" data-id="${p.id}"><div class="loader" style="display: none;"></div><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit Problem</span></button>
-                    </div>
+                    ${!solvedProblems.has(p.id) ? `<div class="problem-item-footer"><button class="btn submit-problem-btn" data-id="${p.id}"><div class="loader" style="display: none;"></div><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit Problem</span></button></div>` : ''}
                 </li>`).join('');
 
             DOMElements.problemList.querySelectorAll('.submit-problem-btn').forEach(btn => {
@@ -286,7 +293,7 @@
                     if(e.currentTarget.closest('.problem-item').dataset.id === currentProblemId) {
                         handleExecution(true);
                     } else {
-                        alert("Please select this problem to submit it.");
+                        alert("Please select this problem before submitting.");
                     }
                 });
             });
@@ -363,7 +370,7 @@
                 summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><svg><use href="${success ? '#icon-check' : '#icon-close'}"></use></svg><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`;
                 if (success) {
                     const problem = problems.find(p => p.id === currentProblemId);
-                    saveScore(problem);
+                    saveProblemScore(problem);
                 }
             } else {
                 summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`;
@@ -372,13 +379,14 @@
             DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
         }
 
-        async function saveScore(problem) {
+        async function saveProblemScore(problem) {
             if (solvedProblems.has(problem.id)) return;
             const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: problem.points, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
             try {
                 await db.collection('codeScores').add(scoreData);
                 solvedProblems.add(problem.id);
                 renderProblemList();
+                loadProblem(problem.id);
                 updateSubmitAssignmentButton();
             } catch (e) { console.error("Error saving score:", e); }
         }
@@ -397,14 +405,9 @@
             scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
 
             const finalScoreData = {
-                userId: currentUser.uid,
-                assignmentId: assignmentId,
-                assignmentName: assignment.name,
-                subjectId: assignment.subjectId,
-                totalScoreObtained,
-                totalScorePossible,
-                problemsSolved: solvedProblems.size,
-                totalProblems: problems.length,
+                userId: currentUser.uid, assignmentId: assignmentId, assignmentName: assignment.name,
+                subjectId: assignment.subjectId, totalScoreObtained, totalScorePossible,
+                problemsSolved: solvedProblems.size, totalProblems: problems.length,
                 completedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             await db.collection('codeAssignmentScores').add(finalScoreData);
