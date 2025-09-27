@@ -5,56 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exam In Progress - Exam Portal</title>
     <style>
-        :root { --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color: #4B5563; --text-primary: #F9FAFB; --text-secondary: #9CA3AF; --accent-glow-rgb: 79, 70, 229; --accent-start: #4F46E5; --accent-end: #7C3AED; --success: #10B981; --danger: #EF4444; --success-light-rgb: 16, 185, 129; --danger-light-rgb: 239, 68, 68; --border-radius: 8px; --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        :root { --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color: #4B5563; --text-primary: #F9FAFB; --text-secondary: #9CA3AF; --accent-glow-rgb: 79, 70, 229; --accent-start: #4F46E5; --accent-end: #7C3AED; --success: #10B981; --danger: #EF4444; --warning: #F59E0B; --success-light-rgb: 16, 185, 129; --danger-light-rgb: 239, 68, 68; --border-radius: 8px; --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
         body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); }
-        button { font-family: inherit; cursor: pointer; border: none; background: none; }
         .view-container { display: none; width: 100%; height: 100%; }
         .view-container.active { display: flex; }
         .exam-dashboard { display: flex; height: 100%; position: relative; }
-        .sidebar { width: 320px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
-        .sidebar-header { margin-bottom: 24px; padding-left: 12px; } .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
-        .sidebar nav { flex-grow: 1; overflow-y: auto; } .problem-nav { list-style: none; }
-        .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition); border: 1px solid transparent; }
-        .problem-item:hover { background-color: var(--surface-dark); }
-        .problem-item.active { background-color: var(--surface-dark); color: white; font-weight: 600; border-color: var(--border-color); box-shadow: 0 0 15px rgba(var(--accent-glow-rgb), 0.2); }
-        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); }
-        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
-        .p-title { font-size: 0.95rem; font-weight: 500; }
-        .p-status-icon { margin-left: auto; color: var(--success); opacity: 0; transform: scale(0.5); transition: all var(--transition); }
-        .problem-item.answered .p-status-icon { opacity: 1; transform: scale(1); }
-        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
-        .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; gap: 16px; }
-        .header-title { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
-        .timer { display: flex; align-items: center; gap: 8px; font-size: 1rem; color: var(--text-secondary); margin-left: auto; }
+        .sidebar { width: 320px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
+        .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
+        .sidebar nav { flex-grow: 1; overflow-y: auto; }
+        .question-nav { list-style: none; }
+        .question-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), color var(--transition); border: 1px solid transparent; }
+        .question-item:hover { background-color: var(--surface-dark); }
+        .question-item.active { background-color: var(--surface-dark); color: white; font-weight: 600; border-color: var(--border-color); box-shadow: 0 0 15px rgba(var(--accent-glow-rgb), 0.2); }
+        .q-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); }
+        .active .q-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
+        .q-title { font-size: 0.95rem; font-weight: 500; }
+        .q-status-icon { width: 18px; height: 18px; margin-left: auto; opacity: 0; transform: scale(0.5); transition: all var(--transition); }
+        .q-status-icon.check { color: var(--success); }
+        .question-item.answered .q-status-icon.check { opacity: 1; transform: scale(1); }
+        .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .main-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 24px; border-bottom: 1px solid var(--border-color); flex-shrink: 0; gap: 16px; }
+        .timer { font-size: 1.1rem; font-weight: 600; color: var(--text-secondary); }
         .controls { display: flex; gap: 12px; }
         .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); }
         .btn svg { width: 18px; height: 18px; }
         .btn.run-btn { background-color: var(--surface-light); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: var(--border-color); }
         .btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
-        .btn:disabled { background-color: var(--surface-light); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
+        .btn:disabled { background-color: var(--surface-light); color: var(--text-secondary); cursor: not-allowed; opacity: 0.5; }
         .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .question-area { flex-grow: 1; display: flex; flex-direction: column; }
-        #mcq-container { padding: 2rem; background: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); }
-        .mcq-title { font-size: 1.25rem; font-weight: 600; line-height: 1.6; margin-bottom: 2rem; }
-        .options-container { display: flex; flex-direction: column; gap: 1rem; }
-        .option { display: flex; align-items: center; padding: 1rem; border: 1px solid var(--border-color); border-radius: var(--border-radius); cursor: pointer; transition: all var(--transition); }
-        .option:hover { border-color: var(--accent-start); background-color: rgba(var(--accent-glow-rgb), 0.1); }
-        .option.selected { border-color: var(--accent-start); background-color: rgba(var(--accent-glow-rgb), 0.1); color: var(--text-primary); font-weight: 500; }
-        .option-letter { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-color); display: grid; place-items: center; flex-shrink: 0; margin-right: 1rem; background: var(--surface-light); transition: all var(--transition); }
-        .selected .option-letter { border-color: var(--accent-start); background-color: var(--accent-start); color: white; }
-        #coding-container { display: flex; flex-direction: column; flex-grow: 1; height: 100%; }
-        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
-        #problem-details { flex: 1; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; overflow-y: auto; border: 1px solid var(--border-color); }
+        .question-area { flex-grow: 1; display: flex; height: calc(100% - 73px); }
+        .question-view { display: none; width: 100%; height: 100%; } .question-view.active { display: flex; }
+        .mcq-layout { padding: 24px 48px; overflow-y: auto; width: 100%; }
+        .mcq-card { background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; width: 100%; max-width: 800px; margin: 2rem auto; border: 1px solid var(--border-color); }
+        .mcq-title { font-size: 1.25rem; font-weight: 600; line-height: 1.6; margin-bottom: 24px; }
+        .options-container { display: flex; flex-direction: column; gap: 12px; }
+        .option { display: flex; align-items: center; padding: 16px; border: 1px solid var(--border-color); border-radius: var(--border-radius); cursor: pointer; transition: all var(--transition); }
+        .option:hover { border-color: var(--accent-start); background-color: var(--surface-light); } .option.selected { border-color: var(--accent-start); background-color: var(--surface-light); color: var(--text-primary); font-weight: 500; }
+        .option-letter { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--border-color); display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; background: var(--bg-dark); } .selected .option-letter { border-color: var(--accent-start); background-color: var(--accent-start); color: white; }
+        .coding-layout { display: flex; flex-direction: column; width: 100%; height: 100%; }
+        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; padding: 16px; }
+        #problem-details { flex: 1; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 24px; overflow-y: auto; border: 1px solid var(--border-color); }
         #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;}
-        #problem-statement { line-height: 1.7; color: var(--text-secondary); } #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
+        #problem-statement { line-height: 1.7; color: var(--text-secondary); }
+        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
         .test-case { background-color: var(--bg-dark); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
         #editor-container { flex: 1; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
-        #resizer-h { height: 16px; cursor: row-resize; display: flex; align-items: center; justify-content: center; } #resizer-h::before { content: '•••'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
-        #resizer-v { width: 16px; cursor: col-resize; display: flex; align-items: center; justify-content: center; } #resizer-v::before { content: '⋮'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
-        .bottom-panel { flex-shrink: 0; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; }
+        #resizer-h { height: 16px; cursor: row-resize; display: flex; align-items: center; justify-content: center; background-color: var(--bg-dark); } #resizer-h::before { content: '•••'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        .bottom-panel { flex-shrink: 0; background-color: var(--surface-dark); border: 1px solid var(--border-color); overflow: hidden; }
         .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; }
         .tab { padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all var(--transition); } .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
         .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; height: 100%; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
@@ -63,60 +64,62 @@
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 8px; }
         .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
         .status-pass { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); } .status-fail { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
-        .question-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 2rem; flex-shrink: 0; }
-        .menu-toggle, .overlay, .close-menu-btn { display: none; }
-        .mobile-nav { display: none; }
-        @media (max-width: 800px) {
-            .main-content { padding: 16px; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: var(--shadow-lg); } .sidebar.active { transform: translateX(0); }
-            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--surface-light); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
-            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--border-color); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
-            .header-title { display: none; }
-            .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
-            .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; text-align: center; font-size: 0.9rem; }
-            .mobile-nav-btn.active { color: var(--text-primary); border-bottom-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border-bottom-style: solid; border-bottom-width: 2px; }
-            .top-panel, .bottom-panel, #problem-details, #editor-container, #mcq-container { display: none; flex-direction: column; }
-            .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
-            #resizer-h, #resizer-v { display: none; }
-        }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="loading-spinner"></div><p>Initializing Environment...</p></div>
-    <div style="display: none;"><svg id="icon-defs"><symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol><symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol><symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol><symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol><symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol></svg></div>
-
-    <main class="exam-dashboard">
-        <aside class="sidebar" id="sidebar">
-            <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
-            <div class="sidebar-header"><h1 class="test-title" id="exam-title-sidebar"></h1></div>
-            <nav><ul class="problem-nav" id="problem-list"></ul></nav>
-        </aside>
-        <div class="main-content">
-            <header class="main-header">
-                <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                <h1 class="header-title" id="main-header-title"></h1>
-                <div class="timer" id="timer-display">00:00</div>
-                <div class="controls">
-                    <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
-                    <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit Test</span></button>
+    <div id="loading-overlay"><div class="loading-spinner"></div><p>Loading Exam Environment...</p></div>
+    <div style="display: none;"><svg id="icon-defs"><symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol></svg></div>
+    
+    <div class="view-container active" id="exam-view">
+        <div class="exam-dashboard">
+            <aside class="sidebar" id="sidebar">
+                <div class="sidebar-header"><h1 class="test-title" id="exam-title-sidebar"></h1></div>
+                <nav><ul class="question-nav" id="question-nav"></ul></nav>
+            </aside>
+            <main class="main-content">
+                <header class="main-header">
+                    <div id="timer-display" class="timer">00:00</div>
+                    <div class="controls">
+                        <button id="run-btn" class="btn run-btn" disabled><span class="btn-text">Run Code</span></button>
+                        <button id="submit-btn" class="btn submit-btn">Submit Test</button>
+                    </div>
+                </header>
+                <div class="question-area">
+                    <div id="mcq-view" class="question-view mcq-layout">
+                        <div class="mcq-card">
+                            <h2 class="mcq-title" id="mcq-title"></h2>
+                            <div class="options-container" id="options-container"></div>
+                        </div>
+                    </div>
+                    <div id="coding-view" class="question-view coding-layout">
+                        <div class="top-panel">
+                            <div id="problem-details">
+                                <h2 id="coding-title"></h2>
+                                <div id="problem-statement"></div>
+                            </div>
+                            <div id="editor-container"></div>
+                        </div>
+                        <div id="resizer-h"></div>
+                        <div class="bottom-panel" style="height: 200px;">
+                            <div class="tabs">
+                                <div class="tab active" data-tab="results">Test Results</div>
+                                <div class="tab" data-tab="console">Console</div>
+                            </div>
+                            <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run code to see test results.</p></div>
+                            <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
+                        </div>
+                    </div>
                 </div>
-            </header>
-            <div class="mobile-nav" id="mobile-nav"></div>
-            <div class="question-area" id="question-area"></div>
-            <footer class="question-footer">
-                <button id="prev-btn" class="btn run-btn">Previous</button>
-                <button id="next-btn" class="btn run-btn">Next</button>
-            </footer>
+            </main>
         </div>
-        <div class="overlay" id="overlay"></div>
-    </main>
-
+    </div>
+    
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
@@ -132,48 +135,68 @@
             const auth = firebase.auth();
             const db = firebase.firestore();
 
-            let examState = {}, editor, pyodide;
-            const DOMElements = {
+            const dom = {
                 loadingOverlay: document.getElementById('loading-overlay'),
                 examTitleSidebar: document.getElementById('exam-title-sidebar'),
-                problemList: document.getElementById('problem-list'),
-                mainHeaderTitle: document.getElementById('main-header-title'),
+                questionNav: document.getElementById('question-nav'),
                 timerDisplay: document.getElementById('timer-display'),
-                runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'),
-                prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'),
-                questionArea: document.getElementById('question-area'),
-                mobileNav: document.getElementById('mobile-nav'),
-                sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'),
-                menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn')
+                runBtn: document.getElementById('run-btn'),
+                submitBtn: document.getElementById('submit-btn'),
+                mcqView: document.getElementById('mcq-view'),
+                codingView: document.getElementById('coding-view'),
+                mcqTitle: document.getElementById('mcq-title'),
+                optionsContainer: document.getElementById('options-container'),
+                codingTitle: document.getElementById('coding-title'),
+                problemStatement: document.getElementById('problem-statement'),
+                editorContainer: document.getElementById('editor-container'),
+                resultsContent: document.getElementById('results'),
+                consoleOutput: document.getElementById('console-output'),
+                tabs: document.querySelectorAll('.tab'),
             };
+
+            let examState = { questions: [] };
+            let currentUser = null;
+            let editor;
+            let pyodide;
 
             auth.onAuthStateChanged(user => {
                 if (user) {
-                    initializePage(user);
+                    currentUser = user;
+                    initializePage();
                 } else {
                     window.location.href = 'index.html';
                 }
             });
 
-            async function initializePage(user) {
+            async function initializePage() {
                 const urlParams = new URLSearchParams(window.location.search);
                 const examId = urlParams.get('id');
-                if (!examId) { alert('Invalid exam ID.'); window.location.href = 'dashboard.html'; return; }
-
-                const examDoc = await db.collection('exams').doc(examId).get();
-                if (!examDoc.exists || examDoc.data().isLocked) {
-                    alert('Exam not found or is locked.'); window.location.href = 'dashboard.html'; return;
+                if (!examId) {
+                    alert('Invalid exam ID.');
+                    window.location.href = 'dashboard.html';
+                    return;
                 }
                 
-                const examData = { id: examDoc.id, ...examDoc.data() };
-                examState = {
-                    currentUser: user, currentExamData: examData,
-                    questions: JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isAnswered: false})),
-                    currentQuestionIndex: 0,
-                    timeLeft: examData.duration, timerInterval: null
-                };
+                const examDoc = await db.collection('exams').doc(examId).get();
+                if (!examDoc.exists || examDoc.data().isLocked) {
+                    alert('Exam not found or is locked.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
 
-                DOMElements.examTitleSidebar.textContent = examData.name;
+                examState = {
+                    currentExamId: examId,
+                    currentExamData: examDoc.data(),
+                    questions: JSON.parse(JSON.stringify(examDoc.data().questions)).map(q => ({
+                        ...q,
+                        userAnswer: q.type === 'Coding' ? q.starterCode : null,
+                        isAnswered: false
+                    })),
+                    currentQuestionIndex: 0,
+                    timeLeft: examDoc.data().duration,
+                    timerInterval: null
+                };
+                
                 initPyodideAndEditor();
             }
 
@@ -181,253 +204,208 @@
                 pyodide = await loadPyodide();
                 require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
                 require(['vs/editor/editor.main'], () => {
-                    DOMElements.loadingOverlay.style.display = 'none';
-                    initApp();
+                    editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
+                    startExam();
                 });
             }
 
-            function initApp() {
+            function startExam() {
+                dom.examTitleSidebar.textContent = examState.currentExamData.name;
                 renderSidebar();
                 loadQuestion(0);
                 startTimer();
                 initEventListeners();
+                dom.loadingOverlay.style.display = 'none';
             }
-            
-            function renderSidebar() {
-                DOMElements.problemList.innerHTML = examState.questions.map((q, i) =>
-                    `<li class="problem-item ${i === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}" data-index="${i}">
-                        <div class="p-number">${i + 1}</div><div class="p-title">${q.title}</div>
-                        <i class='bx bxs-check-circle p-status-icon'></i>
-                    </li>`
-                ).join('');
+
+            function initEventListeners() {
+                dom.questionNav.addEventListener('click', (e) => {
+                    const item = e.target.closest('.question-item');
+                    if (item) loadQuestion(parseInt(item.dataset.index, 10));
+                });
+                dom.runBtn.addEventListener('click', () => handleCodeExecution(false));
+                dom.submitBtn.addEventListener('click', () => { if (confirm('Are you sure you want to submit?')) handleSubmit(); });
+                dom.tabs.forEach(tab => tab.addEventListener('click', (e) => {
+                    const targetId = e.currentTarget.dataset.tab;
+                    dom.tabs.forEach(t => t.classList.remove('active'));
+                    e.currentTarget.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetId));
+                }));
             }
 
             function loadQuestion(index) {
+                if (examState.questions[examState.currentQuestionIndex].type === 'Coding') {
+                    examState.questions[examState.currentQuestionIndex].userAnswer = editor.getValue();
+                }
                 examState.currentQuestionIndex = index;
                 const question = examState.questions[index];
-                DOMElements.mainHeaderTitle.textContent = question.title;
-                DOMElements.questionArea.innerHTML = '';
                 
+                dom.mcqView.classList.toggle('active', question.type === 'Mcq');
+                dom.codingView.classList.toggle('active', question.type === 'Coding');
+                dom.runBtn.disabled = question.type !== 'Coding';
+
                 if (question.type === 'Mcq') {
-                    DOMElements.runBtn.style.display = 'none';
-                    DOMElements.mobileNav.style.display = 'none';
-                    DOMElements.questionArea.innerHTML = `
-                        <div id="mcq-container">
-                            <h2 class="mcq-title">${question.title}</h2>
-                            <div class="options-container">
-                                ${question.options.map((opt, i) => `
-                                    <div class="option ${question.userAnswer === i ? 'selected' : ''}" data-index="${i}">
-                                        <span class="option-letter">${String.fromCharCode(65 + i)}</span>
-                                        <span>${opt}</span>
-                                    </div>
-                                `).join('')}
-                            </div>
-                        </div>`;
-                } else if (question.type === 'Coding') {
-                    DOMElements.runBtn.style.display = 'flex';
-                    DOMElements.mobileNav.style.display = 'flex';
-                    DOMElements.questionArea.innerHTML = `
-                        <div id="coding-container">
-                            <div class="top-panel">
-                                <div id="problem-details">
-                                    <h2 id="problem-title-main"></h2>
-                                    <div id="problem-statement"></div>
-                                </div>
-                                <div id="resizer-v"></div>
-                                <div id="editor-container"></div>
-                            </div>
-                            <div id="resizer-h"></div>
-                            <div class="bottom-panel">
-                                <div class="tabs">
-                                    <div class="tab active" data-tab="results">Test Results</div>
-                                    <div class="tab" data-tab="console">Console</div>
-                                </div>
-                                <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run code to see results.</p></div>
-                                <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
-                            </div>
-                        </div>`;
-                    
-                    document.getElementById('problem-title-main').textContent = question.title;
-                    document.getElementById('problem-statement').innerHTML = question.statement;
-                    
-                    if (editor) editor.dispose();
-                    editor = monaco.editor.create(document.getElementById('editor-container'), { value: question.userAnswer || question.starterCode, language: 'python', theme: 'vs-dark', automaticLayout: true });
-                    
-                    initResizers();
-                    document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', switchTab));
-                    setMobileView('problem');
+                    renderMcq(question);
+                } else {
+                    renderCodingProblem(question);
                 }
-                
-                updateNavButtons();
                 renderSidebar();
             }
-            
-            function updateNavButtons() {
-                DOMElements.prevBtn.disabled = examState.currentQuestionIndex === 0;
-                DOMElements.nextBtn.disabled = examState.currentQuestionIndex === examState.questions.length - 1;
+
+            function renderSidebar() {
+                dom.questionNav.innerHTML = examState.questions.map((q, i) => `
+                    <li class="question-item ${i === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}" data-index="${i}">
+                        <div class="q-number">${i + 1}</div>
+                        <div class="q-title">${q.type}</div>
+                        <div class="q-status-icon check"><svg><use href="#icon-check"></use></svg></div>
+                    </li>
+                `).join('');
             }
 
-            function startTimer() {
-                if (examState.timerInterval) clearInterval(examState.timerInterval);
-                examState.timerInterval = setInterval(() => {
-                    examState.timeLeft--;
-                    const mins = Math.floor(examState.timeLeft / 60);
-                    const secs = examState.timeLeft % 60;
-                    DOMElements.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                    if (examState.timeLeft <= 0) {
-                        clearInterval(examState.timerInterval);
-                        alert("Time's up! Submitting your exam.");
-                        submitExam();
-                    }
-                }, 1000);
+            function renderMcq(question) {
+                dom.mcqTitle.textContent = question.title;
+                dom.optionsContainer.innerHTML = question.options.map((opt, i) => `
+                    <div class="option ${question.userAnswer === i ? 'selected' : ''}" data-index="${i}">
+                        <span class="option-letter">${String.fromCharCode(65 + i)}</span>
+                        <span>${opt}</span>
+                    </div>
+                `).join('');
+                dom.optionsContainer.querySelectorAll('.option').forEach(el => {
+                    el.addEventListener('click', () => selectOption(parseInt(el.dataset.index, 10)));
+                });
+            }
+
+            function selectOption(index) {
+                const question = examState.questions[examState.currentQuestionIndex];
+                question.userAnswer = (question.userAnswer === index) ? null : index;
+                question.isAnswered = question.userAnswer !== null;
+                renderMcq(question);
+                renderSidebar();
+            }
+
+            function renderCodingProblem(question) {
+                dom.codingTitle.textContent = question.title;
+                dom.problemStatement.innerHTML = question.statement;
+                editor.setValue(question.userAnswer);
+                dom.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run code to see test results.</p>';
+                dom.consoleOutput.textContent = 'No console output.';
             }
 
             async function handleCodeExecution(isSubmission) {
                 const question = examState.questions[examState.currentQuestionIndex];
-                if (!editor || question.type !== 'Coding') return;
-                
-                setLoadingState(true, isSubmission);
-                question.userAnswer = editor.getValue();
-                
+                if (question.type !== 'Coding') return;
+
+                const btn = isSubmission ? dom.submitBtn : dom.runBtn;
+                const btnText = btn.querySelector('.btn-text');
+                btn.disabled = true;
+                if (btnText) btnText.innerHTML = '<div class="loader"></div>';
+
+                const allLogs = [];
+                pyodide.setStdout({ batched: (msg) => allLogs.push(msg) });
+                pyodide.setStderr({ batched: (msg) => allLogs.push(msg) });
+
+                const code = editor.getValue();
                 const testsToRun = isSubmission ? question.testCases : question.testCases.filter(tc => !tc.hidden);
                 const results = [];
-                let allPassed = true;
-
                 for (const test of testsToRun) {
-                    const result = await executeTestCase(question.userAnswer, test, question.functionName);
-                    results.push(result);
-                    if (result.status !== 'pass') allPassed = false;
+                    results.push(await executeTestCase(code, test, question.functionName));
                 }
-
-                if(isSubmission) question.isAnswered = allPassed;
-
-                renderResults(results, isSubmission);
-                setLoadingState(false, isSubmission);
-                if (isSubmission) renderSidebar();
-            }
-
-            async function executeTestCase(code, testCase, functionName) {
-                pyodide.setStdout({ batched: (msg) => document.getElementById('console-output').textContent += msg + '\n' });
-                const inputDefs = `import json\nkwargs = json.loads('${JSON.stringify(testCase.input)}')`;
-                const funcCall = `${functionName}(**kwargs)`;
-                try {
-                    await pyodide.loadPackagesFromImports(code);
-                    const pyCode = `${code}\n${inputDefs}\n${funcCall}`;
-                    let output = await pyodide.runPythonAsync(pyCode);
-                    if(pyodide.isPyProxy(output)) output = output.toJs({ dict_converter: Object.fromEntries });
-                    
-                    const passed = JSON.stringify(output) === JSON.stringify(testCase.expected);
-                    return { status: passed ? 'pass' : 'fail', output, expected: testCase.expected };
-                } catch(e) {
-                    return { status: 'fail', error: e.toString() };
-                }
-            }
-            
-            function renderResults(results, isSubmission) {
-                const resultsContainer = document.getElementById('results');
-                const passedCount = results.filter(r => r.status === 'pass').length;
-                let summaryHTML = `<div id="results-summary" class="${passedCount === results.length ? 'success' : 'failure'}">${isSubmission ? 'Submission' : 'Run'} Finished: ${passedCount} / ${results.length} cases passed.</div>`;
-                resultsContainer.innerHTML = summaryHTML + results.map((r, i) => `
-                    <div class="result-item">
-                        <span>Test Case #${i + 1}</span>
-                        <div class="status status-${r.status}"><svg><use href="#icon-${r.status === 'pass' ? 'check' : 'close'}"></use></svg>${r.status.toUpperCase()}</div>
-                    </div>`).join('');
+                dom.consoleOutput.textContent = allLogs.length > 0 ? allLogs.join('\n') : 'No console output.';
+                renderCodeResults(results);
+                
+                btn.disabled = false;
+                if (btnText) btnText.innerHTML = isSubmission ? 'Submit' : 'Run Code';
                 document.querySelector('.tab[data-tab="results"]').click();
             }
 
-            function setLoadingState(isLoading, isSubmission) {
-                const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
-                const btnText = btn.querySelector('.btn-text');
-                DOMElements.runBtn.disabled = isLoading;
-                DOMElements.submitBtn.disabled = isLoading;
-                if (isLoading) {
-                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
-                    const loader = document.createElement('div');
-                    loader.className = 'loader';
-                    btn.prepend(loader);
-                    btn.querySelector('svg').style.display = 'none';
-                } else {
-                    btn.querySelector('.loader')?.remove();
-                    btnText.textContent = isSubmission ? 'Submit Test' : 'Run';
-                    btn.querySelector('svg').style.display = 'block';
+            async function executeTestCase(code, testCase, functionName) {
+                let result = { status: 'fail', output: null };
+                const inputDefs = `input_data = ${JSON.stringify(testCase.input)}`;
+                const funcCall = `${functionName}(**input_data)`;
+                const driverCode = `\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
+                try {
+                    const output = await pyodide.runPythonAsync(code + driverCode);
+                    const resultMatch = pyodide.globals.get('micropip')._final_output.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                    if (resultMatch && resultMatch[1]) {
+                        const outputJs = JSON.parse(resultMatch[1]);
+                        result.output = outputJs;
+                        if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) {
+                            result.status = 'pass';
+                        }
+                    }
+                } catch (e) {
+                    console.error(e);
                 }
+                return { ...testCase, ...result };
+            }
+            
+            function renderCodeResults(results) {
+                const passedCount = results.filter(r => r.status === 'pass').length;
+                const summaryClass = passedCount === results.length ? 'success' : 'failure';
+                let summaryHTML = `<div id="results-summary" class="${summaryClass}"> ${passedCount} / ${results.length} test cases passed.</div>`;
+                const resultsHTML = results.map((r, i) => `
+                    <div class="result-item">
+                        <span>Test Case #${i + 1}</span>
+                        <div class="status status-${r.status}">${r.status}</div>
+                    </div>
+                `).join('');
+                dom.resultsContent.innerHTML = summaryHTML + resultsHTML;
             }
 
-            function submitExam() {
+            async function handleSubmit() {
                 clearInterval(examState.timerInterval);
                 let totalPoints = 0;
                 let pointsReceived = 0;
-                examState.questions.forEach(q => {
-                    totalPoints += q.points;
-                    if (q.type === 'Mcq' && q.userAnswer === q.correctAnswer) {
-                        pointsReceived += q.points;
-                    } else if (q.type === 'Coding' && q.isAnswered) {
-                        pointsReceived += q.points;
+
+                for (const question of examState.questions) {
+                    totalPoints += question.points;
+                    if (question.type === 'Mcq') {
+                        if (question.userAnswer === question.correctAnswer) {
+                            pointsReceived += question.points;
+                        }
+                    } else if (question.type === 'Coding') {
+                        const code = question.userAnswer;
+                        let allPassed = true;
+                        for (const testCase of question.testCases) {
+                            const result = await executeTestCase(code, testCase, question.functionName);
+                            if (result.status !== 'pass') {
+                                allPassed = false;
+                                break;
+                            }
+                        }
+                        if (allPassed) pointsReceived += question.points;
                     }
-                });
+                }
                 
                 const scoreData = {
-                    userId: examState.currentUser.uid,
-                    examId: examState.currentExamData.id,
+                    userId: currentUser.uid,
+                    examId: examState.currentExamId,
                     examName: examState.currentExamData.name,
-                    pointsReceived, totalPoints,
+                    pointsReceived: pointsReceived,
+                    totalPoints: totalPoints,
+                    timeTaken: examState.currentExamData.duration - examState.timeLeft,
                     timestamp: firebase.firestore.FieldValue.serverTimestamp()
                 };
-                
-                db.collection('scores').add(scoreData).then(() => {
-                    alert('Exam submitted successfully!');
-                    window.location.href = 'dashboard.html';
-                }).catch(err => {
-                    alert('Error submitting exam. Please try again.');
-                    console.error(err);
-                });
-            }
 
-            function switchTab(e) { 
-                const targetTab = e.currentTarget.dataset.tab;
-                document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); 
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); 
+                await db.collection('scores').add(scoreData);
+                alert(`Exam Submitted! Your score: ${pointsReceived}/${totalPoints}`);
+                window.location.href = 'dashboard.html';
             }
             
-            function initEventListeners() {
-                DOMElements.runBtn.addEventListener('click', () => handleCodeExecution(false));
-                DOMElements.submitBtn.addEventListener('click', submitExam);
-                DOMElements.prevBtn.addEventListener('click', () => loadQuestion(Math.max(0, examState.currentQuestionIndex - 1)));
-                DOMElements.nextBtn.addEventListener('click', () => loadQuestion(Math.min(examState.questions.length - 1, examState.currentQuestionIndex + 1)));
-                DOMElements.problemList.addEventListener('click', (e) => {
-                    const item = e.target.closest('.problem-item');
-                    if (item) loadQuestion(parseInt(item.dataset.index, 10));
-                });
-                DOMElements.questionArea.addEventListener('click', (e) => {
-                    const option = e.target.closest('.option');
-                    if (option) {
-                        const question = examState.questions[examState.currentQuestionIndex];
-                        question.userAnswer = parseInt(option.dataset.index, 10);
-                        question.isAnswered = true;
-                        loadQuestion(examState.currentQuestionIndex);
+            function startTimer() {
+                if (examState.timerInterval) clearInterval(examState.timerInterval);
+                examState.timerInterval = setInterval(() => {
+                    examState.timeLeft--;
+                    if (examState.timeLeft <= 0) {
+                        clearInterval(examState.timerInterval);
+                        alert("Time's up! Submitting your exam.");
+                        handleSubmit();
                     }
-                });
-                const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
-                DOMElements.menuToggle.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); });
-                DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
-                DOMElements.overlay.addEventListener('click', closeMobileMenu);
+                    const mins = Math.floor(examState.timeLeft / 60);
+                    const secs = examState.timeLeft % 60;
+                    dom.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                }, 1000);
             }
-            
-            function setMobileView(view) {
-                document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
-                if (view === 'problem') { document.getElementById('problem-details').classList.add('mobile-view-active'); }
-                else if (view === 'code') { document.getElementById('editor-container').classList.add('mobile-view-active'); }
-            }
-
-            function initResizers(){
-                const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
-                const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
-                resizerH.addEventListener('mousedown', e => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveH); document.addEventListener('mouseup', () => document.removeEventListener('mousemove', onMouseMoveH), { once: true }); });
-                resizerV.addEventListener('mousedown', e => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', () => document.removeEventListener('mousemove', onMouseMoveV), { once: true }); });
-                const onMouseMoveH = e => { const newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; topPanel.style.height = `${newTopHeight}px`; };
-                const onMouseMoveV = e => { const newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; problemDetails.style.flexBasis = `${newLeftWidth}px`; };
-            }
-
         });
     </script>
 </body>
