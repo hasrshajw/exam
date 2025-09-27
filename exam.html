@@ -77,7 +77,7 @@
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--color-text-secondary);"><div class="loading-spinner"></div><p>Initializing Exam Environment...</p></div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--color-text-secondary);"><div class="loading-spinner"></div><p>Initializing Environment...</p></div>
     
     <div class="view-container" id="exam-view">
         <div class="exam-dashboard">
@@ -130,21 +130,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
     
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-            authDomain: "exam-2e799.firebaseapp.com",
-            projectId: "exam-2e799",
-            storageBucket: "exam-2e799.firebasestorage.app",
-            messagingSenderId: "472506328501",
-            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-            measurementId: "G-NX21HT3JKT"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        let examState = {}, currentUser, editor, pyodide;
-
         const dom = {
             loadingOverlay: document.getElementById('loading-overlay'),
             views: document.querySelectorAll('.view-container'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
@@ -159,28 +144,44 @@
             finalSubmitBtn: document.getElementById('final-submit-btn'), resultsView: document.getElementById('results-view')
         };
 
-        const showView = (viewId) => { dom.views.forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); };
+        let examState = {}, currentUser, editor, pyodide;
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+            authDomain: "exam-2e799.firebaseapp.com",
+            projectId: "exam-2e799",
+            storageBucket: "exam-2e799.firebasestorage.app",
+            messagingSenderId: "472506328501",
+            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+            measurementId: "G-NX21HT3JKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const showView = (viewId) => {
+            dom.views.forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        };
 
         const initEnvironment = async () => {
             try {
+                dom.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
                 pyodide = await loadPyodide();
-                dom.loadingOverlay.querySelector('p').textContent = 'Initializing Editor...';
-                
+                dom.loadingOverlay.querySelector('p').textContent = 'Initializing Code Editor...';
                 await new Promise((resolve, reject) => {
                     require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
                     window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
                     require(['vs/editor/editor.main'], resolve, reject);
                 });
-
                 editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
                 auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
             } catch (error) {
                 console.error("Initialization failed:", error);
-                dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
+                dom.loadingOverlay.innerHTML = '<p>Failed to load environment. Please check your connection and refresh.</p>';
             }
         };
-        
-        document.addEventListener('DOMContentLoaded', initEnvironment);
+        initEnvironment();
 
         const initializePage = async () => {
             const examId = new URLSearchParams(window.location.search).get('id');
@@ -223,11 +224,12 @@
             const isCoding = question.type === 'Coding';
             dom.mcqContainer.style.display = isCoding ? 'none' : 'block';
             dom.codingContainer.style.display = isCoding ? 'flex' : 'none';
+            dom.questionFooter.style.display = 'flex';
 
             if (isCoding) {
                 dom.problemDetails.innerHTML = `<h3>Problem Statement</h3>${question.statement}`;
                 editor.setValue(question.userAnswer || question.starterCode || '');
-                dom.consoleOutput.textContent = '';
+                dom.consoleOutput.textContent = 'Run code to see output against public test cases.';
             } else {
                 dom.optionsContainer.innerHTML = '';
                 question.options.forEach((opt, index) => {
@@ -277,8 +279,8 @@
                 const mins = Math.floor(examState.timeLeft / 60);
                 const secs = examState.timeLeft % 60;
                 dom.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                if (examState.timeLeft <= 300) dom.timer.classList.add('warning');
-                if (examState.timeLeft <= 60) dom.timer.classList.add('danger');
+                if (examState.timeLeft <= 300 && examState.timeLeft > 60) dom.timer.classList.add('warning');
+                if (examState.timeLeft <= 60) { dom.timer.classList.remove('warning'); dom.timer.classList.add('danger'); }
                 if (examState.timeLeft <= 0) { clearInterval(examState.timerInterval); handleSubmit(true); }
             }, 1000);
         };
@@ -297,7 +299,7 @@
                     let output = await pyodide.runPythonAsync(fullCode);
                     
                     if (JSON.stringify(output) === JSON.stringify(tc.expected)) {
-                         resultsHTML += `<p style="color: var(--color-success);">Test Case Passed</p>`;
+                        resultsHTML += `<p style="color: var(--color-success);">Test Case Passed</p>`;
                     } else {
                         resultsHTML += `<p style="color: var(--color-danger);">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
                     }
@@ -314,8 +316,7 @@
             dom.loadingOverlay.querySelector('p').textContent = 'Submitting...';
             dom.loadingOverlay.style.display = 'flex';
 
-            let pointsReceived = 0;
-            let totalPoints = 0;
+            let pointsReceived = 0, totalPoints = 0;
             for(const q of examState.questions) {
                 totalPoints += q.points;
                 if (q.type === 'Mcq' && q.userAnswer === q.correctAnswer) {
