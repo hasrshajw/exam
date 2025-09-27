@@ -92,6 +92,7 @@
         .form-field { margin-bottom: 1.25rem; }
         .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
         .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field textarea { font-family: 'Menlo', 'Consolas', monospace; }
         .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
         .full-width { grid-column: 1 / -1; }
@@ -111,11 +112,9 @@
         .question-card { padding: 1.5rem; position: relative; }
         .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .remove-item-btn:hover { background-color: var(--danger-hover); color: white; }
-        .test-case-container { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color); }
-        .test-case-item { position: relative; background-color: #F9FAFB; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-        .test-case-item .remove-item-btn { top: 0.5rem; right: 0.5rem; }
-        .test-case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .test-case-grid textarea { min-height: 80px; resize: vertical; font-family: monospace; }
+        .test-case-card { background-color: #F9FAFB; border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; }
+        .test-case-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .test-case-header h5 { font-weight: 600; }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
         .modal-footer .secondary-btn { margin-right: 0.75rem; }
         .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
@@ -174,7 +173,7 @@
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
+    <div id="loading-overlay">Authenticating...</div>
     <div class="overlay" id="overlay"></div>
     <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
@@ -226,7 +225,7 @@
         <div class="modal-content">
             <div class="modal-header"><h3 id="exam-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
-                <form id="exam-form">
+                <form id="exam-form" novalidate>
                     <input type="hidden" id="exam-id">
                     <div class="form-grid">
                         <div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div>
@@ -246,7 +245,7 @@
                     <div id="questions-container"></div>
                 </form>
             </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-exam-btn">Save Exam</button></div>
+            <div class="modal-footer"><button type="button" class="secondary-btn">Cancel</button><button type="button" class="primary-btn" id="save-exam-btn">Save Exam</button></div>
         </div>
     </div>
 
@@ -350,22 +349,9 @@
                     snapshot.docs.sort((a, b) => a.data().name.localeCompare(b.data().name)).forEach(doc => {
                         const exam = doc.data();
                         const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${exam.name}</td>
-                            <td>${exam.duration / 60} min</td>
-                            <td>${exam.questions.length}</td>
-                            <td>${formatDate(exam.deadline)}</td>
-                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
-                            <td class="actions-cell">
-                                <div class="actions-container">
-                                    <button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
-                                    <div class="action-dropdown">
-                                        <button class="action-item edit" data-id="${doc.id}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg> Edit</button>
-                                        <button class="action-item delete" data-id="${doc.id}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg> Delete</button>
-                                    </div>
-                                </div>
-                            </td>`;
+                        row.innerHTML = `<td>${exam.name}</td><td>${exam.duration / 60} min</td><td>${exam.questions.length}</td><td>${formatDate(exam.deadline)}</td><td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td><td class="actions-cell"><div class="actions-container"><button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button><div class="action-dropdown"><button class="action-item edit" data-id="${doc.id}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg> Edit</button><button class="action-item delete" data-id="${doc.id}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg> Delete</button></div></div></td>`;
                         tbody.appendChild(row);
+
                         const card = document.createElement('div');
                         card.className = 'exam-card-mobile';
                         card.innerHTML = `<div class="card-header"><h3>${exam.name}</h3><span class="status-badge ${!exam.isLocked ? 'active' : 'locked'}">${!exam.isLocked ? 'Active' : 'Locked'}</span></div><div class="card-body"><div class="info-item"><i class='bx bx-time-five'></i> ${exam.duration / 60} min</div><div class="info-item"><i class='bx bx-list-ul'></i> ${exam.questions.length} Questions</div><div class="info-item"><i class='bx bx-calendar-x'></i> ${formatDate(exam.deadline)}</div></div><div class="card-footer"><button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button></div>`;
@@ -413,7 +399,7 @@
                 const item = document.createElement('div');
                 item.className = 'accordion-item';
                 item.dataset.type = 'Coding';
-                item.innerHTML = `<button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Coding Problem'}</span><i class='bx bx-chevron-down'></i></button><div class="accordion-content-inner"><div class="question-card"><button type="button" class="remove-item-btn">&times;</button><div class="form-field"><label>Problem Title</label><input type="text" class="question-title" value="${question.title || ''}" required></div><div class="form-field"><label>Problem Statement (HTML)</label><textarea rows="4" class="coding-statement">${question.statement || ''}</textarea></div><div class="form-grid"><div class="form-field"><label>Function Name</label><input type="text" class="coding-function-name" value="${question.functionName || ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div><div class="form-field"><label>Starter Code</label><textarea rows="6" class="coding-starter-code">${question.starterCode || ''}</textarea></div><div class="test-case-container"><label>Test Cases</label></div><button type="button" class="secondary-btn add-test-case-btn" style="margin-top: 1rem;">+ Add Test Case</button></div></div>`;
+                item.innerHTML = `<button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Coding Problem'}</span><i class='bx bx-chevron-down'></i></button><div class="accordion-content-inner"><div class="question-card"><button type="button" class="remove-item-btn">&times;</button><div class="form-field"><label>Problem Title</label><input type="text" class="question-title" value="${question.title || ''}" required></div><div class="form-field"><label>Problem Statement (HTML)</label><textarea rows="4" class="coding-statement">${question.statement || ''}</textarea></div><div class="form-grid"><div class="form-field"><label>Function Name</label><input type="text" class="coding-function-name" value="${question.functionName || ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div><div class="form-field"><label>Starter Code</label><textarea rows="6" class="coding-starter-code">${question.starterCode || ''}</textarea></div><div class="form-field"><label>Test Cases</label><div class="test-cases-container"></div><button type="button" class="secondary-btn add-test-case-btn">+ Add Test Case</button></div></div></div>`;
                 container.appendChild(item);
                 const testCasesContainer = item.querySelector('.test-cases-container');
                 if (question.testCases) question.testCases.forEach(tc => addTestCaseForm(testCasesContainer, tc));
@@ -422,8 +408,8 @@
 
             const addTestCaseForm = (container, testCase = {}) => {
                 const item = document.createElement('div');
-                item.className = 'test-case-item';
-                item.innerHTML = `<button type="button" class="remove-item-btn">&times;</button><div class="test-case-grid"><div class="form-field"><label>Input (JSON)</label><textarea rows="3" class="test-case-input">${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div><div class="form-field"><label>Expected Output (JSON)</label><textarea rows="3" class="test-case-output">${testCase.expected ? JSON.stringify(testCase.expected, null, 2) : ''}</textarea></div></div>`;
+                item.className = 'test-case-card';
+                item.innerHTML = `<div class="test-case-header"><h5>Test Case</h5><button type="button" class="remove-item-btn">&times;</button></div><div class="form-grid"><div class="form-field"><label>Input (JSON)</label><textarea rows="2" class="test-case-input">${JSON.stringify(testCase.input, null, 2) || ''}</textarea></div><div class="form-field"><label>Expected Output (JSON)</label><textarea rows="2" class="test-case-output">${JSON.stringify(testCase.expected, null, 2) || ''}</textarea></div></div>`;
                 container.appendChild(item);
             };
 
@@ -452,10 +438,22 @@
             
             document.addEventListener('click', async e => {
                 const isDropdownButton = e.target.closest('.action-menu-btn');
-                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => { if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) { dropdown.classList.remove('active'); dropdown.closest('.actions-container').classList.remove('menu-open'); }});
-                if (isDropdownButton) { const dropdown = isDropdownButton.nextElementSibling; const container = isDropdownButton.closest('.actions-container'); dropdown.classList.toggle('active'); container.classList.toggle('menu-open', dropdown.classList.contains('active')); }
+                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
+                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                        dropdown.classList.remove('active');
+                        dropdown.closest('.actions-container').classList.remove('menu-open');
+                    }
+                });
+                if (isDropdownButton) {
+                    const dropdown = isDropdownButton.nextElementSibling;
+                    const container = isDropdownButton.closest('.actions-container');
+                    dropdown.classList.toggle('active');
+                    container.classList.toggle('menu-open', dropdown.classList.contains('active'));
+                }
+                
                 const button = e.target.closest('button');
                 if (!button) return;
+                
                 if (button.id === 'create-exam-btn') openExamModal();
                 if (button.matches('.edit-exam-btn, .action-item.edit')) {
                     closeActionsheet();
@@ -464,7 +462,9 @@
                 }
                 if (button.matches('.delete-exam-btn, .action-item.delete')) {
                     closeActionsheet();
-                    if (confirm('Are you sure you want to delete this exam? This action cannot be undone.')) { await db.collection('exams').doc(button.dataset.id).delete(); }
+                    if (confirm('Are you sure you want to delete this exam? This action cannot be undone.')) {
+                        await db.collection('exams').doc(button.dataset.id).delete();
+                    }
                 }
                 if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
                 if (button.id === 'add-question-btn') document.getElementById('add-question-menu').classList.toggle('show');
@@ -485,13 +485,18 @@
                 e.currentTarget.classList.remove('show');
             });
             
-            document.querySelector('body').addEventListener('change', async e => {
-                 if (e.target.matches('.lock-toggle, #actionsheet-lock-toggle')) await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+            document.querySelector('tbody').addEventListener('change', async e => {
+                 if (e.target.classList.contains('lock-toggle')) await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+            });
+
+            document.getElementById('actionsheet-lock-toggle').addEventListener('change', async e => {
+                await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
             });
 
             document.getElementById('save-exam-btn').addEventListener('click', async () => {
                 const form = document.getElementById('exam-form');
                 if (!form.checkValidity()) { form.reportValidity(); return; }
+
                 const id = document.getElementById('exam-id').value;
                 const questions = [];
                 document.querySelectorAll('#questions-container > .accordion-item').forEach(card => {
@@ -503,9 +508,9 @@
                         });
                     } else if (type === 'Coding') {
                         const testCases = [];
-                        card.querySelectorAll('.test-case-item').forEach(tcCard => {
+                        card.querySelectorAll('.test-cases-container .test-case-card').forEach(tcCard => {
                             try { testCases.push({ input: JSON.parse(tcCard.querySelector('.test-case-input').value || '{}'), expected: JSON.parse(tcCard.querySelector('.test-case-output').value || 'null'), });
-                            } catch(e) { console.error('Invalid JSON in test case', e); alert('Error: Invalid JSON format in one of the test cases. Please correct it.'); throw e; }
+                            } catch(e) { console.error('Invalid JSON in test case', e); alert('Invalid JSON format in one of the test cases. Please correct it.'); }
                         });
                         questions.push({
                             title: card.querySelector('.question-title').value.trim(), statement: card.querySelector('.coding-statement').value.trim(),
@@ -514,6 +519,7 @@
                         });
                     }
                 });
+
                 const date = document.getElementById('exam-deadline-date').value;
                 let deadline = null;
                 if(date) { const d = new Date(date); d.setHours(23, 59, 59, 999); deadline = firebase.firestore.Timestamp.fromDate(d); }
