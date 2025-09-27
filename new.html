@@ -13,10 +13,10 @@
             --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
             --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375;
             --hover-bg: #F3F4F6; --danger-color: #EF4444;
-            --c-primary: #002726; --c-primary-dark: #001A19; --c-accent: #33C375;
+            --c-primary: #002726; --c-primary-dark: #001A19; --c-accent: #33C375; --c-accent-light: #D1FAE5;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --radius-lg: 0.75rem; --space-md: 1rem; --space-lg: 1.5rem;
+            --radius-lg: 0.75rem; --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2.5rem;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -328,10 +328,10 @@
                 container.innerHTML = '';
                 
                 let assessments = [];
-                examsSnapshot.forEach(doc => assessments.push({ type: 'mcq', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || 0 }));
-                codeAssignmentsSnapshot.forEach(doc => assessments.push({ type: 'code', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || 0 }));
+                examsSnapshot.forEach(doc => assessments.push({ type: 'mcq', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || { seconds: 0 } }));
+                codeAssignmentsSnapshot.forEach(doc => assessments.push({ type: 'code', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || { seconds: 0 } }));
                 
-                assessments.sort((a, b) => (a.createdAt.seconds || 0) - (b.createdAt.seconds || 0));
+                assessments.sort((a, b) => a.createdAt.seconds - b.createdAt.seconds);
 
                 if (assessments.length === 0) { container.innerHTML = '<p>No assessments available in this subject yet.</p>'; return; }
                 
@@ -366,7 +366,8 @@
                             buttonText = exam.isLocked ? 'Locked' : 'Start Exam';
                         }
                         if(exam.isLocked && !score) card.style.pointerEvents = 'none';
-                        prefixClass += " bx bxs-file-doc";
+                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-file-doc'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button">${buttonText}</button>`;
+
                     } else if (item.type === 'code') {
                         const assignment = item.data;
                         const problems = problemsByAssignment[item.id] || [];
@@ -375,15 +376,14 @@
                         card.href = `code.html?id=${item.id}`;
                         meta = `Code Assignment • ${solvedCount}/${problems.length} Solved`;
                         buttonText = isCompleted ? 'View Submission' : 'Start Challenge';
-                        prefixClass += " bx bxs-code-alt";
+                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-code-alt'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button">${buttonText}</button>`;
                     }
-
+                    
                     if (isCompleted) {
-                        prefixClass = 'card-prefix--completed';
-                        statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
+                        card.dataset.status = 'completed';
+                        card.querySelector('.card-prefix').classList.replace('card-prefix--default', 'card-prefix--completed');
+                        card.querySelector('.card-info').insertAdjacentHTML('afterend', `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`);
                     }
-                    card.dataset.status = isCompleted ? 'completed' : 'next';
-                    card.innerHTML = `<div class="card-prefix ${prefixClass}"></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div>${statusIcon}<button class="card-button">${buttonText}</button>`;
                     listContainer.appendChild(card);
                 });
                 container.appendChild(assessmentGroup);
@@ -402,7 +402,6 @@
                 });
 
                 let totalPointsPossible = 0, totalPointsEarned = 0;
-                const problemIds = [];
                 for(const assignDoc of codeAssignmentsSnapshot.docs) {
                     const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignDoc.id).get();
                     problemsSnap.forEach(probDoc => {
