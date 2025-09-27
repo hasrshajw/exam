@@ -10,21 +10,13 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB;
-            --widget-bg: #FFFFFF;
-            --border-color: #E5E7EB;
-            --text-primary: #002726;
-            --text-secondary: #6B7280;
-            --brand-green: #33C375;
-            --hover-bg: #F3F4F6;
-            --danger-color: #EF4444;
-            --c-primary: #002726;
-            --c-primary-dark: #001A19;
-            --c-accent: #33C375;
+            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
+            --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375;
+            --hover-bg: #F3F4F6; --danger-color: #EF4444;
+            --c-primary: #002726; --c-primary-dark: #001A19; --c-accent: #33C375;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --radius-lg: 0.75rem;
-            --space-md: 1rem; --space-lg: 1.5rem;
+            --radius-lg: 0.75rem; --space-md: 1rem; --space-lg: 1.5rem;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -67,7 +59,7 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .chapter-group { margin-bottom: var(--space-xl); }
         .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color); }
-        .chapter-lessons { display: flex; flex-direction: column; gap: 0.75rem; }
+        .content-list { display: flex; flex-direction: column; gap: 0.75rem; }
         .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; text-decoration: none; }
         .card:not([data-status='locked']):hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
         .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; font-weight: 600; }
@@ -198,7 +190,7 @@
             const auth = firebase.auth();
             const db = firebase.firestore();
 
-            const CURRENT_PAGE_FILENAME = "new.html";
+            const CURRENT_PAGE_FILENAME = "java-exams.html";
 
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
@@ -255,15 +247,18 @@
                 document.getElementById('subject-title').textContent = subjectDoc.data().name;
                 document.getElementById('subject-breadcrumb').textContent = subjectDoc.data().name;
 
-                const [coursesSnapshot, examsSnapshot, progressSnapshot, scoresSnapshot] = await Promise.all([
+                const [coursesSnapshot, examsSnapshot, codeAssignmentsSnapshot, progressSnapshot, scoresSnapshot, codeScoresSnapshot] = await Promise.all([
                     db.collection('courses').where('subjectId', '==', subjectId).get(),
                     db.collection('exams').where('subjectId', '==', subjectId).get(),
+                    db.collection('codeAssignments').where('subjectId', '==', subjectId).get(),
                     db.collection('users').doc(userId).collection('progress').get(),
-                    db.collection('scores').where('userId', '==', userId).get()
+                    db.collection('scores').where('userId', '==', userId).get(),
+                    db.collection('codeScores').where('userId', '==', userId).get()
                 ]);
 
                 const userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
                 const userScores = new Map(scoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
+                const userCodeScores = new Map(codeScoresSnapshot.docs.map(doc => [doc.data().problemId, doc.data()]));
 
                 const courseIds = coursesSnapshot.docs.map(doc => doc.id);
                 const lessonsByCourse = {};
@@ -277,8 +272,8 @@
                 }
                 
                 renderCourses(coursesSnapshot, lessonsByCourse, userProgress);
-                renderAssessments(examsSnapshot, userScores);
-                updateSidebarStats(coursesSnapshot, lessonsByCourse, examsSnapshot, userProgress, userScores);
+                renderAssessments(examsSnapshot, codeAssignmentsSnapshot, userScores, userCodeScores);
+                updateSidebarStats(coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeScores);
             };
 
             const renderCourses = (coursesSnapshot, lessonsByCourse, userProgress) => {
@@ -292,15 +287,14 @@
                 coursesSnapshot.forEach(courseDoc => {
                     const course = courseDoc.data();
                     const lessons = (lessonsByCourse[courseDoc.id] || []);
-
                     course.chapters.forEach((chapterName, chapterIndex) => {
                         const lessonsInChapter = lessons.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
                         if (lessonsInChapter.length === 0) return;
 
                         const chapterGroup = document.createElement('div');
                         chapterGroup.className = 'chapter-group';
-                        chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="chapter-lessons"></div>`;
-                        const lessonsContainer = chapterGroup.querySelector('.chapter-lessons');
+                        chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="content-list"></div>`;
+                        const lessonsContainer = chapterGroup.querySelector('.content-list');
 
                         lessonsInChapter.forEach(lesson => {
                             const card = document.createElement('a');
@@ -320,16 +314,8 @@
                             }
 
                             if (status === 'locked') card.style.pointerEvents = 'none';
-
                             card.dataset.status = status;
-                            card.innerHTML = `
-                                <div class="card-prefix ${prefixClass}">${lesson.chapterIndex + 1}.${lesson.order + 1}</div>
-                                <div class="card-info">
-                                    <p class="card-title">${lesson.title}</p>
-                                    <p class="card-meta">${lesson.duration}</p>
-                                </div>
-                                ${statusIcon}
-                                ${buttonHtml}`;
+                            card.innerHTML = `<div class="card-prefix ${prefixClass}">${lesson.chapterIndex + 1}.${lesson.order + 1}</div><div class="card-info"><p class="card-title">${lesson.title}</p><p class="card-meta">${lesson.duration}</p></div>${statusIcon}${buttonHtml}`;
                             lessonsContainer.appendChild(card);
                         });
                         container.appendChild(chapterGroup);
@@ -337,41 +323,73 @@
                 });
             };
 
-            const renderAssessments = (examsSnapshot, userScores) => {
+            const renderAssessments = async (examsSnapshot, codeAssignmentsSnapshot, userScores, userCodeScores) => {
                 const container = document.getElementById('assessmentsContent');
                 container.innerHTML = '';
-                if (examsSnapshot.empty) { container.innerHTML = '<p>No assessments available in this subject yet.</p>'; return; }
+                
+                let assessments = [];
+                examsSnapshot.forEach(doc => assessments.push({ type: 'mcq', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || 0 }));
+                codeAssignmentsSnapshot.forEach(doc => assessments.push({ type: 'code', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || 0 }));
+                
+                assessments.sort((a, b) => (a.createdAt.seconds || 0) - (b.createdAt.seconds || 0));
 
-                examsSnapshot.forEach(doc => {
-                    const exam = doc.data();
-                    const score = userScores.get(doc.id);
+                if (assessments.length === 0) { container.innerHTML = '<p>No assessments available in this subject yet.</p>'; return; }
+                
+                const problemsByAssignment = {};
+                for(const assign of assessments.filter(a => a.type === 'code')) {
+                    const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assign.id).get();
+                    problemsByAssignment[assign.id] = problemsSnap.docs.map(d => d.id);
+                }
+
+                const assessmentGroup = document.createElement('div');
+                assessmentGroup.className = 'chapter-group';
+                assessmentGroup.innerHTML = `<div class="content-list"></div>`;
+                const listContainer = assessmentGroup.querySelector('.content-list');
+
+                assessments.forEach(item => {
                     const card = document.createElement('a');
-                    card.href = `exam.html?id=${doc.id}`;
                     card.className = 'card';
-                    let status, prefixClass, buttonHtml = '', meta, statusIcon = '';
+                    let prefixClass = 'card-prefix--default', statusIcon = '', meta = '', buttonText = '', isCompleted = false;
 
-                    if (score) {
-                        const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                        status = 'completed'; prefixClass = 'card-prefix--completed'; meta = `Score: ${percentage}%`; buttonHtml = '<button class="card-button">View Results</button>';
-                        statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
-                    } else {
-                        status = exam.isLocked ? 'locked' : 'next';
-                        prefixClass = exam.isLocked ? 'card-prefix--locked' : 'card-prefix--default';
-                        meta = `${exam.questions.length} Questions`;
-                        buttonHtml = `<button class="card-button ${exam.isLocked ? 'card-button--locked' : ''}">${exam.isLocked ? 'Locked' : 'Start Exam'}</button>`;
+                    if (item.type === 'mcq') {
+                        const exam = item.data;
+                        const score = userScores.get(item.id);
+                        card.href = `exam.html?id=${item.id}`;
+                        
+                        if (score) {
+                            isCompleted = true;
+                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                            meta = `MCQ Exam • Score: ${percentage}%`;
+                            buttonText = 'View Results';
+                        } else {
+                            meta = `MCQ Exam • ${exam.questions.length} Questions`;
+                            buttonText = exam.isLocked ? 'Locked' : 'Start Exam';
+                        }
+                        if(exam.isLocked && !score) card.style.pointerEvents = 'none';
+                        prefixClass += " bx bxs-file-doc";
+                    } else if (item.type === 'code') {
+                        const assignment = item.data;
+                        const problems = problemsByAssignment[item.id] || [];
+                        const solvedCount = problems.filter(pId => userCodeScores.has(pId)).length;
+                        isCompleted = problems.length > 0 && solvedCount === problems.length;
+                        card.href = `code.html?id=${item.id}`;
+                        meta = `Code Assignment • ${solvedCount}/${problems.length} Solved`;
+                        buttonText = isCompleted ? 'View Submission' : 'Start Challenge';
+                        prefixClass += " bx bxs-code-alt";
                     }
-                    if(status === 'locked') card.style.pointerEvents = 'none';
-                    card.dataset.status = status;
-                    card.innerHTML = `
-                        <div class="card-prefix ${prefixClass}"><i class='bx bx-abacus'></i></div>
-                        <div class="card-info"><p class="card-title">${exam.name}</p><p class="card-meta">${meta}</p></div>
-                        ${statusIcon}
-                        ${buttonHtml}`;
-                    container.appendChild(card);
+
+                    if (isCompleted) {
+                        prefixClass = 'card-prefix--completed';
+                        statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
+                    }
+                    card.dataset.status = isCompleted ? 'completed' : 'next';
+                    card.innerHTML = `<div class="card-prefix ${prefixClass}"></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div>${statusIcon}<button class="card-button">${buttonText}</button>`;
+                    listContainer.appendChild(card);
                 });
+                container.appendChild(assessmentGroup);
             };
             
-            const updateSidebarStats = (coursesSnapshot, lessonsByCourse, examsSnapshot, userProgress, userScores) => {
+            const updateSidebarStats = async (coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeScores) => {
                 const totalCourses = coursesSnapshot.size;
                 const totalLessons = Object.values(lessonsByCourse).flat().length;
                 const completedLessons = userProgress.size;
@@ -379,12 +397,27 @@
                 
                 let totalScore = 0, scoreCount = 0;
                 userScores.forEach(score => {
-                    const examId = score.examId;
-                    if(examsSnapshot.docs.some(doc => doc.id === examId)) {
-                        totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
-                        scoreCount++;
-                    }
+                    totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
+                    scoreCount++;
                 });
+
+                let totalPointsPossible = 0, totalPointsEarned = 0;
+                const problemIds = [];
+                for(const assignDoc of codeAssignmentsSnapshot.docs) {
+                    const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignDoc.id).get();
+                    problemsSnap.forEach(probDoc => {
+                        const problem = probDoc.data();
+                        totalPointsPossible += problem.points;
+                        if(userCodeScores.has(probDoc.id)) {
+                            totalPointsEarned += problem.points;
+                        }
+                    });
+                }
+                if (totalPointsPossible > 0) {
+                    totalScore += (totalPointsEarned / totalPointsPossible) * 100;
+                    scoreCount++;
+                }
+
                 const avgScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : '-';
 
                 document.getElementById('stat-courses').textContent = totalCourses;
