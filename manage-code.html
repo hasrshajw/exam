@@ -43,7 +43,7 @@
         .primary-btn, .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
         .primary-btn { background-color: var(--brand-purple); color: white; }
         .primary-btn:hover { background-color: #5B21B6; }
-        .secondary-btn { color: var(--text-primary); background-color: var(--hover-bg); margin-right: 0.5rem; }
+        .secondary-btn { color: var(--text-primary); background-color: var(--hover-bg); }
         .secondary-btn:hover { background-color: var(--border-color); }
         .back-btn { margin-bottom: 1rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; cursor: pointer; }
         .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); }
@@ -71,19 +71,19 @@
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .full-width { grid-column: 1 / -1; }
         .testcase-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; position: relative; }
-        .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
+        .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
         .problem-container { display: flex; flex-direction: column; gap: 1.5rem; }
         .problem-card { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow); }
         .problem-header { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .problem-title { font-size: 1.1rem; font-weight: 600; }
-        .problem-header-actions { display: flex; align-items: center; gap: 0.5rem; }
+        .problem-header-actions { display: flex; align-items: center; }
         .problem-header i { font-size: 1.5rem; transition: transform 0.3s ease; }
         .problem-header.active i { transform: rotate(180deg); }
         .problem-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; border-top: 1px solid transparent; }
         .problem-header.active + .problem-body { border-color: var(--border-color); }
         .problem-body-content { padding: 1.5rem; }
-        .problem-actions { text-align: right; padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; }
+        .problem-actions { text-align: right; padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; }
         .menu-toggle, .sidebar-close-btn { display: none; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -174,7 +174,7 @@
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save</button></div>
         </div>
     </div>
-
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -297,7 +297,6 @@
                     <div class="problem-header">
                         <span class="problem-title">${problem.title || 'New Problem'}</span>
                         <div class="problem-header-actions">
-                            <button type="button" class="delete-btn delete-problem-btn"><i class='bx bxs-trash'></i></button>
                             <i class='bx bx-chevron-down'></i>
                         </div>
                     </div>
@@ -315,7 +314,10 @@
                                 </div>
                                 <h4>Test Cases</h4><div class="testcases-container"></div>
                                 <button type="button" class="secondary-btn add-testcase-btn" style="margin-top: 1rem;">+ Add Test Case</button>
-                                <div class="problem-actions"><button type="submit" class="primary-btn">Save Problem</button></div>
+                                <div class="problem-actions">
+                                    <button type="button" class="delete-btn delete-problem-btn">Delete Problem</button>
+                                    <button type="submit" class="primary-btn">Save Problem</button>
+                                </div>
                             </form>
                         </div>
                     </div>`;
@@ -382,14 +384,12 @@
                 const target = e.target;
                 const header = target.closest('.problem-header');
                 const button = target.closest('button');
-
-                if(header && !button) { // Ensure a button inside the header wasn't the target
+                if (header && !button) { 
                     header.classList.toggle('active');
                     const content = header.nextElementSibling;
                     content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
                     return;
                 }
-                
                 if (button) {
                     if (button.matches('.add-testcase-btn')) button.previousElementSibling.appendChild(createTestCaseForm());
                     if (button.matches('.remove-item-btn')) button.parentElement.remove();
@@ -417,7 +417,7 @@
                     isLocked: document.getElementById('assignment-locked').checked,
                     createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
-                if (!data.name || isNaN(data.duration)) { alert('Name and Duration are required'); return; }
+                if (!data.name || isNaN(data.duration) || data.duration <= 0) { alert('Name and a valid positive Duration are required'); return; }
                 if (id) {
                     delete data.createdAt;
                     await db.collection('codeAssignments').doc(id).update(data);
@@ -439,9 +439,9 @@
                         testCases.push({
                             input: JSON.parse(card.querySelector('.testcase-input').value),
                             expected: JSON.parse(card.querySelector('.testcase-expected').value),
-                            hidden: card.querySelector('.testcase-hidden')?.checked || false
+                            hidden: card.querySelector('.testcase-hidden').checked
                         });
-                    } catch (err) { validJson = false; alert('Invalid JSON in test cases.'); }
+                    } catch (err) { validJson = false; alert(`Invalid JSON in a test case. Please check your inputs.\nError: ${err.message}`); }
                 });
                 if (!validJson) return;
 
@@ -468,7 +468,6 @@
                     const header = problemCard.querySelector('.problem-header');
                     header.classList.remove('active');
                     header.nextElementSibling.style.maxHeight = null;
-
                 } catch (err) { alert(`Error saving problem: ${err.message}`); }
             });
 
