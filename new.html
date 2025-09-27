@@ -366,17 +366,26 @@
                             buttonText = exam.isLocked ? 'Locked' : 'Start Exam';
                         }
                         if(exam.isLocked && !score) card.style.pointerEvents = 'none';
-                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-file-doc'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button">${buttonText}</button>`;
+                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-file-doc'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${exam.isLocked && !score ? 'card-button--locked' : ''}">${buttonText}</button>`;
 
                     } else if (item.type === 'code') {
                         const assignment = item.data;
                         const problems = problemsByAssignment[item.id] || [];
                         const solvedCount = problems.filter(pId => userCodeScores.has(pId)).length;
-                        isCompleted = problems.length > 0 && solvedCount === problems.length;
+                        const finalScoreDoc = await db.collection('codeAssignmentScores').where('userId', '==', auth.currentUser.uid).where('assignmentId', '==', item.id).limit(1).get();
+                        
+                        isCompleted = !finalScoreDoc.empty;
                         card.href = `code.html?id=${item.id}`;
                         meta = `Code Assignment • ${solvedCount}/${problems.length} Solved`;
-                        buttonText = isCompleted ? 'View Submission' : 'Start Challenge';
-                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-code-alt'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button">${buttonText}</button>`;
+                        
+                        if (isCompleted) {
+                            buttonText = 'View Submission';
+                        } else {
+                            buttonText = assignment.isLocked ? 'Locked' : 'Start Challenge';
+                        }
+                        
+                        if(assignment.isLocked && !isCompleted) card.style.pointerEvents = 'none';
+                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-code-alt'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${assignment.isLocked && !isCompleted ? 'card-button--locked' : ''}">${buttonText}</button>`;
                     }
                     
                     if (isCompleted) {
