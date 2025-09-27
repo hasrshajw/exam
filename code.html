@@ -131,7 +131,7 @@
                         <div class="tab active" data-tab="results">Test Results</div>
                         <div class="tab" data-tab="console">Console</div>
                     </div>
-                    <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run code to see results.</p></div>
+                    <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit code to see results.</p></div>
                     <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
                 </div>
             </div>
@@ -232,7 +232,7 @@
                 pyodide = await loadPyodide();
             } catch (error) {
                 console.error("Pyodide failed to load:", error);
-                DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please check your network connection and try again.</p>';
+                DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>';
                 return;
             }
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
@@ -343,7 +343,7 @@
             DOMElements.consoleOutput.textContent = 'Executing...';
             pyodide.setStdout({ batched: () => {} }); 
             const problem = problems.find(p => p.id === currentProblemId);
-            const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
+            const testsToRun = problem.testCases;
             const results = [];
             for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
             renderResults(results, isSubmission);
@@ -366,8 +366,9 @@
                 await pyodide.runPythonAsync(fullScript);
                 const outputStr = capturedOutput.lines.join('\n');
                 const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
-
-                DOMElements.consoleOutput.textContent = consoleLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim() || 'No console output.';
+                const consoleText = consoleLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
+                if (isSubmission) { DOMElements.consoleOutput.textContent = "Console output is hidden for submissions."; } 
+                else { DOMElements.consoleOutput.textContent = consoleText || 'No console output.'; }
                 
                 if (resultMatch && resultMatch[1]) {
                     const outputJs = JSON.parse(resultMatch[1]);
@@ -394,9 +395,9 @@
                 const problem = problems.find(p => p.id === currentProblemId);
                 saveScore(problem, success);
             } else {
-                summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`;
+                summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} test cases passed.</div>`;
             }
-            const resultsHTML = results.map((r, i) => `<div class="result-item"><span>${r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join('');
+            const resultsHTML = results.map((r, i) => `<div class="result-item"><span>Test Case #${i + 1}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join('');
             DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
         }
 
@@ -442,20 +443,19 @@
             const btnText = btn.querySelector('.btn-text');
             const loader = btn.querySelector('.loader');
             const icon = btn.querySelector('svg');
-            btn.disabled = isLoading;
+            const problem = problems.find(p => p.id === currentProblemId);
+            const isSolved = solvedProblems.has(problem.id);
+
+            btn.disabled = isLoading || (isSolved && btn.classList.contains('submit-problem-btn'));
+
             if (isLoading) {
                 btnText.textContent = btn.classList.contains('submit-problem-btn') ? 'Submitting...' : 'Running...';
                 loader.style.display = 'block';
                 icon.style.display = 'none';
             } else {
-                const problem = problems.find(p => p.id === currentProblemId);
-                const isSolved = solvedProblems.has(problem.id);
                 btnText.textContent = btn.classList.contains('submit-problem-btn') ? (isSolved ? 'Solved' : 'Submit Problem') : 'Run';
                 loader.style.display = 'none';
                 icon.style.display = 'block';
-                if (isSolved && btn.classList.contains('submit-problem-btn')) {
-                    btn.disabled = true;
-                }
             }
         }
         
