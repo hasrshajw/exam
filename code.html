@@ -44,18 +44,17 @@
         .btn.submit-problem-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
         .btn:disabled { background-color: var(--surface-light); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
         .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 80px); }
-        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
-        #problem-details { flex: 1; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; overflow-y: auto; border: 1px solid var(--border-color); }
+        .ide-layout { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; gap: 16px; flex-grow: 1; height: calc(100% - 80px); }
+        #problem-details { grid-row: 1 / 2; grid-column: 1 / 2; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; overflow-y: auto; border: 1px solid var(--border-color); }
+        #editor-container { grid-row: 1 / 3; grid-column: 2 / 3; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
+        .bottom-panel { grid-row: 2 / 3; grid-column: 1 / 2; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; }
         #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;}
         #problem-statement { line-height: 1.7; color: var(--text-secondary); }
         #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
         .test-case { background-color: var(--bg-dark); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
-        #editor-container { flex: 1; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
-        .bottom-panel { flex-shrink: 0; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; }
-        .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; }
+        .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; flex-shrink: 0; }
         .tab { padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all var(--transition); } .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
-        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; height: 100%; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
+        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; flex-grow: 1; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
         #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
         #results-summary.success { background-color: rgba(var(--success-light-rgb), 0.1); color: var(--success); } #results-summary.failure { background-color: rgba(var(--danger-light-rgb), 0.1); color: var(--danger); }
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 8px; }
@@ -71,11 +70,11 @@
         .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 800px) {
             .main-content { padding: 16px; }
-            .ide-layout { height: calc(100% - 120px); }
+            .ide-layout { display: flex; flex-direction: column; height: calc(100% - 120px); }
             .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
             .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; text-align: center; font-size: 0.9rem; }
             .mobile-nav-btn.active { color: var(--text-primary); border-bottom-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border-bottom-style: solid; border-bottom-width: 2px; }
-            .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; }
+            #problem-details, #editor-container, .bottom-panel { display: none; flex-direction: column; }
             .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: var(--shadow-lg); } .sidebar.active { transform: translateX(0); }
             .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--surface-light); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
@@ -119,14 +118,12 @@
                 <button class="mobile-nav-btn" data-view="results">Results</button>
             </div>
             <div class="ide-layout">
-                <div class="top-panel mobile-view-active">
-                    <div id="problem-details" class="mobile-view-active">
-                        <div id="problem-statement"></div>
-                        <h2 style="margin-top: 24px;">Test Cases</h2>
-                        <div id="public-test-cases"></div>
-                    </div>
-                    <div id="editor-container"></div>
+                <div id="problem-details" class="mobile-view-active">
+                    <div id="problem-statement"></div>
+                    <h2 style="margin-top: 24px;">Test Cases</h2>
+                    <div id="public-test-cases"></div>
                 </div>
+                <div id="editor-container"></div>
                 <div class="bottom-panel">
                     <div class="tabs">
                         <div class="tab active" data-tab="results">Test Results</div>
@@ -233,7 +230,7 @@
                 pyodide = await loadPyodide();
             } catch (error) {
                 console.error("Pyodide failed to load:", error);
-                DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please check your network connection and try again.</p>';
+                DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>';
                 return;
             }
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
@@ -307,7 +304,13 @@
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             editor.setValue(userCodeState[problemId]);
-            DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
+            DOMElements.publicTestCases.innerHTML = problem.testCases
+                .map((tc, i) => {
+                    if (tc.hidden) {
+                        return `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><i>Hidden</i></p></div>`;
+                    }
+                    return `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`;
+                }).join('');
             document.querySelectorAll('.problem-item').forEach(item => item.classList.toggle('active', item.dataset.id === problemId));
             DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit code to see results.</p>';
             DOMElements.consoleOutput.textContent = 'No console output.';
