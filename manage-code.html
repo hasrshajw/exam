@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Coding Exams - Admin</title>
+    <title>Manage Coding Challenges - Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -64,19 +64,20 @@
         .action-btn.delete { color: var(--danger-color); }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
         .modal-header h3 { font-size: 1.5rem; }
         .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
         .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
         .form-field { margin-bottom: 1rem; }
         .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
-        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; font-family: inherit; }
+        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; font-family: 'IBM Plex Sans', sans-serif; }
+        .form-field textarea { font-family: 'Menlo', 'Consolas', monospace; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .full-width { grid-column: 1 / -1; }
         .test-cases-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
         .test-case-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; position: relative; }
-        .test-case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
-        .checkbox-item { display: flex; align-items: center; gap: 0.5rem; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -84,11 +85,12 @@
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; }
-            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; transition: background-color 0.2s ease; }
+            .menu-toggle:hover { background-color: var(--hover-bg); }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; transition: color 0.2s ease; }
+            .sidebar-close-btn:hover { color: #b91c1c; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .test-case-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -124,37 +126,39 @@
         <main class="main-area">
             <header class="main-header">
                 <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
-                <h1>Manage Coding Exams</h1>
+                <h1>Manage Coding Challenges</h1>
             </header>
             <section class="content-body">
                 <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
                 <div class="admin-content-header">
                     <h2 id="page-title"></h2>
-                    <button class="primary-btn" id="create-code-exam-btn">Create New Code Exam</button>
+                    <button class="primary-btn" id="create-challenge-btn">Create New Challenge</button>
                 </div>
                 <table class="admin-table">
-                    <thead><tr><th>Problem Title</th><th>Function Name</th><th>Test Cases</th><th>Actions</th></tr></thead>
-                    <tbody id="code-exams-tbody"></tbody>
+                    <thead><tr><th>Challenge Title</th><th>Function Name</th><th>Test Cases</th><th>Actions</th></tr></thead>
+                    <tbody id="challenges-tbody"></tbody>
                 </table>
             </section>
         </main>
     </div>
 
-    <div class="modal-overlay" id="code-exam-modal">
+    <div class="modal-overlay" id="challenge-modal">
         <div class="modal-content">
-            <div class="modal-header"><h3 id="code-exam-modal-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-header"><h3 id="challenge-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
-                <form id="code-exam-form">
-                    <input type="hidden" id="code-exam-id">
-                    <div class="form-field"><label for="code-exam-title">Problem Title</label><input type="text" id="code-exam-title" required></div>
-                    <div class="form-field"><label for="code-exam-statement">Problem Statement (HTML allowed)</label><textarea id="code-exam-statement" rows="5" required></textarea></div>
-                    <div class="form-field"><label for="code-exam-function-name">Function Name (e.g., two_sum)</label><input type="text" id="code-exam-function-name" required></div>
-                    <div class="form-field"><label for="code-exam-starter-code">Starter Code</label><textarea id="code-exam-starter-code" rows="8" required></textarea></div>
+                <form id="challenge-form">
+                    <input type="hidden" id="challenge-id">
+                    <div class="form-grid">
+                        <div class="form-field"><label for="challenge-title">Challenge Title</label><input type="text" id="challenge-title" required></div>
+                        <div class="form-field"><label for="challenge-function-name">Function Name</label><input type="text" id="challenge-function-name" placeholder="e.g., two_sum" required></div>
+                    </div>
+                    <div class="form-field"><label for="challenge-statement">Problem Statement (HTML allowed)</label><textarea id="challenge-statement" rows="6" required></textarea></div>
+                    <div class="form-field"><label for="challenge-starter-code">Starter Code (Python)</label><textarea id="challenge-starter-code" rows="8" required></textarea></div>
                     <div class="test-cases-header"><h4>Test Cases</h4><button type="button" class="primary-btn" id="add-test-case-btn">Add Test Case</button></div>
                     <div id="test-cases-container"></div>
                 </form>
             </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-code-exam-btn">Save Exam</button></div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-challenge-btn">Save Challenge</button></div>
         </div>
     </div>
 
@@ -213,29 +217,26 @@
                 const urlParams = new URLSearchParams(window.location.search);
                 const subjectId = urlParams.get('subjectId');
                 if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
-
                 const subjectDoc = await db.collection('subjects').doc(subjectId).get();
                 if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
-
                 currentSubject = { id: subjectId, ...subjectDoc.data() };
-                document.getElementById('page-title').textContent = `Coding Exams in ${currentSubject.name}`;
-                loadCodeExams();
-                
+                document.getElementById('page-title').textContent = `Coding Challenges in ${currentSubject.name}`;
+                loadChallenges();
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
-            const loadCodeExams = () => {
-                const tbody = document.getElementById('code-exams-tbody');
-                db.collection('codingExams').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
+            const loadChallenges = () => {
+                const tbody = document.getElementById('challenges-tbody');
+                db.collection('codingChallenges').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
                     tbody.innerHTML = '';
                     snapshot.forEach(doc => {
-                        const exam = doc.data();
+                        const challenge = doc.data();
                         const row = document.createElement('tr');
                         row.innerHTML = `
-                            <td>${exam.title}</td>
-                            <td><code>${exam.functionName}</code></td>
-                            <td>${exam.testCases.length}</td>
+                            <td>${challenge.title}</td>
+                            <td><code>${challenge.functionName}</code></td>
+                            <td>${challenge.testCases.length}</td>
                             <td class="actions-cell">
                                 <button class="action-btn edit" data-id="${doc.id}"><i class='bx bxs-edit'></i> Edit</button>
                                 <button class="action-btn delete" data-id="${doc.id}"><i class='bx bxs-trash'></i> Delete</button>
@@ -245,17 +246,17 @@
                 });
             };
 
-            const openCodeExamModal = (exam = null) => {
-                const modal = document.getElementById('code-exam-modal');
-                modal.querySelector('#code-exam-modal-title').textContent = exam ? 'Edit Code Exam' : 'Create New Code Exam';
-                modal.querySelector('#code-exam-id').value = exam ? exam.id : '';
-                modal.querySelector('#code-exam-title').value = exam ? exam.title : '';
-                modal.querySelector('#code-exam-statement').value = exam ? exam.statement : '';
-                modal.querySelector('#code-exam-function-name').value = exam ? exam.functionName : '';
-                modal.querySelector('#code-exam-starter-code').value = exam ? exam.starterCode : '';
+            const openChallengeModal = (challenge = null) => {
+                const modal = document.getElementById('challenge-modal');
+                modal.querySelector('#challenge-modal-title').textContent = challenge ? 'Edit Challenge' : 'Create New Challenge';
+                modal.querySelector('#challenge-id').value = challenge ? challenge.id : '';
+                modal.querySelector('#challenge-title').value = challenge ? challenge.title : '';
+                modal.querySelector('#challenge-function-name').value = challenge ? challenge.functionName : '';
+                modal.querySelector('#challenge-statement').value = challenge ? challenge.statement : '';
+                modal.querySelector('#challenge-starter-code').value = challenge ? challenge.starterCode : '';
                 const testCasesContainer = modal.querySelector('#test-cases-container');
                 testCasesContainer.innerHTML = '';
-                if (exam) exam.testCases.forEach(addTestCaseToForm);
+                if (challenge) challenge.testCases.forEach(addTestCaseToForm);
                 modal.classList.add('show');
             };
 
@@ -264,11 +265,14 @@
                 card.className = 'test-case-card';
                 card.innerHTML = `
                     <button type="button" class="remove-item-btn">&times;</button>
-                    <div class="test-case-grid">
-                        <div class="form-field"><label>Input (JSON object)</label><textarea rows="3" class="test-case-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div>
-                        <div class="form-field"><label>Expected Output (JSON value)</label><textarea rows="3" class="test-case-expected" required>${testCase.expected ? JSON.stringify(testCase.expected) : ''}</textarea></div>
+                    <div class="form-field full-width">
+                        <label>Input (JSON format)</label>
+                        <textarea rows="3" class="test-case-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea>
                     </div>
-                    <div class="checkbox-item"><input type="checkbox" class="test-case-hidden" ${testCase.hidden ? 'checked' : ''}><label>Hidden Test Case</label></div>`;
+                    <div class="form-field full-width">
+                        <label>Expected Output (JSON format)</label>
+                        <textarea rows="2" class="test-case-output" required>${testCase.expected ? JSON.stringify(testCase.expected, null, 2) : ''}</textarea>
+                    </div>`;
                 document.getElementById('test-cases-container').appendChild(card);
             };
             
@@ -276,57 +280,59 @@
                 const button = e.target.closest('button');
                 if (!button) return;
                 
-                if (button.id === 'create-code-exam-btn') openCodeExamModal();
+                if (button.id === 'create-challenge-btn') openChallengeModal();
                 if (button.matches('.edit')) {
-                    const doc = await db.collection('codingExams').doc(button.dataset.id).get();
-                    openCodeExamModal({ id: doc.id, ...doc.data() });
+                    const doc = await db.collection('codingChallenges').doc(button.dataset.id).get();
+                    openChallengeModal({ id: doc.id, ...doc.data() });
                 }
                 if (button.matches('.delete')) {
-                    if (confirm('Are you sure you want to delete this coding exam?')) {
-                        await db.collection('codingExams').doc(button.dataset.id).delete();
+                    if (confirm('Are you sure you want to delete this challenge?')) {
+                        await db.collection('codingChallenges').doc(button.dataset.id).delete();
                     }
                 }
                 if (button.id === 'add-test-case-btn') addTestCaseToForm();
                 if (button.matches('.remove-item-btn')) button.closest('.test-case-card').remove();
-                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
+                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
+                    button.closest('.modal-overlay').classList.remove('show');
+                }
             });
 
-            document.getElementById('save-code-exam-btn').addEventListener('click', async () => {
-                const id = document.getElementById('code-exam-id').value;
+            document.getElementById('save-challenge-btn').addEventListener('click', async () => {
+                const id = document.getElementById('challenge-id').value;
                 const testCases = [];
-                let hasError = false;
+                let hasJsonError = false;
                 document.querySelectorAll('#test-cases-container .test-case-card').forEach(card => {
                     try {
                         const input = JSON.parse(card.querySelector('.test-case-input').value);
-                        const expected = JSON.parse(card.querySelector('.test-case-expected').value);
-                        testCases.push({
-                            input: input,
-                            expected: expected,
-                            hidden: card.querySelector('.test-case-hidden').checked
-                        });
+                        const expected = JSON.parse(card.querySelector('.test-case-output').value);
+                        testCases.push({ input, expected });
                     } catch (e) {
-                        alert('Invalid JSON in one of the test cases. Please check your inputs.');
-                        hasError = true;
+                        hasJsonError = true;
+                        alert('Invalid JSON in one of the test cases. Please check the format.');
                     }
                 });
-
-                if (hasError) return;
+                if (hasJsonError) return;
 
                 const data = {
-                    title: document.getElementById('code-exam-title').value,
-                    statement: document.getElementById('code-exam-statement').value,
-                    functionName: document.getElementById('code-exam-function-name').value,
-                    starterCode: document.getElementById('code-exam-starter-code').value,
+                    title: document.getElementById('challenge-title').value,
+                    functionName: document.getElementById('challenge-function-name').value,
+                    statement: document.getElementById('challenge-statement').value,
+                    starterCode: document.getElementById('challenge-starter-code').value,
                     subjectId: currentSubject.id,
-                    testCases: testCases
+                    testCases
                 };
 
-                if (id) {
-                    await db.collection('codingExams').doc(id).update(data);
-                } else {
-                    await db.collection('codingExams').add(data);
+                try {
+                    if (id) {
+                        await db.collection('codingChallenges').doc(id).update(data);
+                    } else {
+                        await db.collection('codingChallenges').add(data);
+                    }
+                    document.getElementById('challenge-modal').classList.remove('show');
+                } catch (error) {
+                    console.error("Error saving challenge:", error);
+                    alert("Failed to save challenge. Please check the console for details.");
                 }
-                document.getElementById('code-exam-modal').classList.remove('show');
             });
         });
     </script>
