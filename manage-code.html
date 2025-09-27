@@ -296,9 +296,7 @@
                 card.innerHTML = `
                     <div class="problem-header">
                         <span class="problem-title">${problem.title || 'New Problem'}</span>
-                        <div class="problem-header-actions">
-                            <i class='bx bx-chevron-down'></i>
-                        </div>
+                        <div class="problem-header-actions"><i class='bx bx-chevron-down'></i></div>
                     </div>
                     <div class="problem-body">
                         <div class="problem-body-content">
@@ -336,7 +334,7 @@
                     <button type="button" class="remove-item-btn">&times;</button>
                     <div class="form-field"><label>Input (JSON Object)</label><textarea rows="3" class="testcase-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div>
                     <div class="form-field"><label>Expected Output (JSON value)</label><textarea rows="2" class="testcase-expected" required>${testCase.expected !== undefined ? JSON.stringify(testCase.expected, null, 2) : ''}</textarea></div>
-                    <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" class="testcase-hidden" ${testCase.hidden ? 'checked' : ''}><label>Hidden</label></div>`;
+                    <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" class="testcase-hidden" ${testCase.hidden ? 'checked' : ''} style="width:auto;"><label>Hidden</label></div>`;
                 return card;
             };
 
@@ -375,7 +373,7 @@
                     const header = newCard.querySelector('.problem-header');
                     header.classList.add('active');
                     const content = header.nextElementSibling;
-                    content.style.maxHeight = content.scrollHeight + "px";
+                    setTimeout(() => { content.style.maxHeight = content.scrollHeight + "px"; }, 10);
                 }
                 if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
             });
@@ -384,21 +382,32 @@
                 const target = e.target;
                 const header = target.closest('.problem-header');
                 const button = target.closest('button');
+
                 if (header && !button) { 
                     header.classList.toggle('active');
                     const content = header.nextElementSibling;
                     content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
                     return;
                 }
+                
                 if (button) {
-                    if (button.matches('.add-testcase-btn')) button.previousElementSibling.appendChild(createTestCaseForm());
-                    if (button.matches('.remove-item-btn')) button.parentElement.remove();
+                    if (button.matches('.add-testcase-btn')) {
+                        const container = button.previousElementSibling;
+                        container.appendChild(createTestCaseForm());
+                        const problemBody = button.closest('.problem-body');
+                        problemBody.style.maxHeight = problemBody.scrollHeight + "px";
+                    }
+                    if (button.matches('.remove-item-btn')) {
+                        const problemBody = button.closest('.problem-body');
+                        button.parentElement.remove();
+                        problemBody.style.maxHeight = problemBody.scrollHeight + "px";
+                    }
                     if (button.matches('.delete-problem-btn')) {
                         if (confirm('Are you sure?')) {
                             const problemCard = button.closest('.problem-card');
                             const problemId = problemCard.dataset.id;
                             if (problemId && !problemId.startsWith('new_')) db.collection('codeProblems').doc(problemId).delete();
-                            problemCard.remove();
+                            else problemCard.remove();
                         }
                     }
                 }
@@ -468,6 +477,7 @@
                     const header = problemCard.querySelector('.problem-header');
                     header.classList.remove('active');
                     header.nextElementSibling.style.maxHeight = null;
+
                 } catch (err) { alert(`Error saving problem: ${err.message}`); }
             });
 
