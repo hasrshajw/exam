@@ -331,7 +331,7 @@
                 examsSnapshot.forEach(doc => assessments.push({ type: 'mcq', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || { seconds: 0 } }));
                 codeAssignmentsSnapshot.forEach(doc => assessments.push({ type: 'code', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || { seconds: 0 } }));
                 
-                assessments.sort((a, b) => a.createdAt.seconds - b.createdAt.seconds);
+                assessments.sort((a, b) => (a.createdAt.seconds || 0) - (b.createdAt.seconds || 0));
 
                 if (assessments.length === 0) { container.innerHTML = '<p>No assessments available in this subject yet.</p>'; return; }
                 
@@ -349,7 +349,7 @@
                 assessments.forEach(item => {
                     const card = document.createElement('a');
                     card.className = 'card';
-                    let prefixClass = 'card-prefix--default', statusIcon = '', meta = '', buttonText = '', isCompleted = false;
+                    let meta = '', buttonText = '', isCompleted = false;
 
                     if (item.type === 'mcq') {
                         const exam = item.data;
@@ -408,7 +408,7 @@
                         const problem = probDoc.data();
                         totalPointsPossible += problem.points;
                         if(userCodeScores.has(probDoc.id)) {
-                            totalPointsEarned += problem.points;
+                            totalPointsEarned += userCodeScores.get(probDoc.id).pointsReceived;
                         }
                     });
                 }
