@@ -129,220 +129,217 @@
         <div class="overlay" id="overlay"></div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e799",
-                storageBucket: "exam-2e799.firebasestorage.app",
-                messagingSenderId: "472506328501",
-                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-                measurementId: "G-NX21HT3JKT"
-            };
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+            authDomain: "exam-2e799.firebaseapp.com",
+            projectId: "exam-2e799",
+            storageBucket: "exam-2e799.firebasestorage.app",
+            messagingSenderId: "472506328501",
+            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+            measurementId: "G-NX21HT3JKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-            const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), problemList: document.getElementById('problem-list'), assignmentTitle: document.getElementById('assignment-title'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn') };
-            
-            let currentUser, assignmentId, problems = [], currentProblemId, userCodeState = {}, editor, pyodide, solvedProblems = new Set();
+        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), problemList: document.getElementById('problem-list'), assignmentTitle: document.getElementById('assignment-title'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn') };
+        
+        let currentUser, assignmentId, problems = [], currentProblemId, userCodeState = {}, editor, pyodide, solvedProblems = new Set();
 
-            async function main() {
-                const urlParams = new URLSearchParams(window.location.search);
-                assignmentId = urlParams.get('id');
-                if (!assignmentId) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment ID not found.</p>'; return; }
+        async function main() {
+            const urlParams = new URLSearchParams(window.location.search);
+            assignmentId = urlParams.get('id');
+            if (!assignmentId) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment ID not found.</p>'; return; }
 
-                auth.onAuthStateChanged(async user => {
-                    if (user) {
-                        currentUser = user;
-                        await fetchData();
-                        initPyodide();
-                    } else {
-                        window.location.href = 'index.html';
-                    }
-                });
-            }
-
-            async function fetchData() {
-                const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
-                if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
-                DOMElements.assignmentTitle.textContent = assignmentDoc.data().name;
-
-                const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
-                problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-                const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
-                scoresSnap.forEach(doc => solvedProblems.add(doc.data().problemId));
-
-                if(problems.length > 0) {
-                    currentProblemId = problems[0].id;
+            auth.onAuthStateChanged(async user => {
+                if (user) {
+                    currentUser = user;
+                    await fetchData();
+                    await initPyodideAndEditor();
+                } else {
+                    window.location.href = 'index.html';
                 }
-            }
+            });
+        }
 
-            async function initPyodide() {
-                pyodide = await loadPyodide();
+        async function fetchData() {
+            const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
+            if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
+            DOMElements.assignmentTitle.textContent = assignmentDoc.data().name;
+
+            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
+            problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
+            scoresSnap.forEach(doc => solvedProblems.add(doc.data().problemId));
+
+            if (problems.length > 0) {
+                currentProblemId = problems[0].id;
+            }
+        }
+
+        async function initPyodideAndEditor() {
+            DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
+            pyodide = await loadPyodide();
+            DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
+            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+            require(['vs/editor/editor.main'], () => {
+                editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
                 DOMElements.loadingOverlay.style.opacity = '0';
                 setTimeout(() => DOMElements.loadingOverlay.style.display = 'none', 300);
                 document.querySelector('.ide-dashboard').style.display = 'flex';
-                initEditor();
-            }
+                init();
+            });
+        }
 
-            function initEditor() {
-                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-                require(['vs/editor/editor.main'], () => {
-                    editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
-                    init();
-                });
-            }
+        function init() {
+            problems.forEach(p => userCodeState[p.id] = p.starterCode);
+            renderProblemList();
+            loadProblem(currentProblemId);
+            initEventListeners();
+            DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
+            setMobileView('problem');
+        }
 
-            function init() {
-                problems.forEach(p => userCodeState[p.id] = p.starterCode);
+        function initEventListeners() {
+            DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
+            DOMElements.submitBtn.addEventListener('click', () => handleExecution(true));
+            DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
+            DOMElements.problemList.addEventListener('click', handleProblemSelect);
+            const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
+            DOMElements.menuToggle.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); });
+            DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
+            DOMElements.overlay.addEventListener('click', closeMobileMenu);
+            DOMElements.mobileNavBtns.forEach(btn => btn.addEventListener('click', (e) => setMobileView(e.target.dataset.view)));
+        }
+
+        function renderProblemList() { DOMElements.problemList.innerHTML = problems.map((p, i) => `<li class="problem-item ${solvedProblems.has(p.id) ? 'solved' : ''}" data-id="${p.id}"><div class="p-number">${i + 1}</div><div class="p-title">${p.title}</div></li>`).join(''); }
+
+        function loadProblem(problemId) {
+            if (!problemId) return;
+            if (editor) userCodeState[currentProblemId] = editor.getValue();
+            currentProblemId = problemId;
+            const problem = problems.find(p => p.id === problemId);
+            DOMElements.mainHeaderTitle.textContent = problem.title;
+            DOMElements.problemStatement.innerHTML = problem.statement;
+            editor.setValue(userCodeState[problemId]);
+            DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
+            document.querySelectorAll('.problem-item').forEach(item => item.classList.toggle('active', item.dataset.id === problemId));
+            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
+            DOMElements.consoleOutput.textContent = 'No console output.';
+            setMobileView('problem');
+        }
+        
+        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
+
+        function setMobileView(view) {
+            DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+            [DOMElements.problemDetails, DOMElements.editorContainer, DOMElements.bottomPanel].forEach(p => p.classList.remove('mobile-view-active'));
+            if (view === 'problem') DOMElements.problemDetails.classList.add('mobile-view-active');
+            else if (view === 'code') DOMElements.editorContainer.classList.add('mobile-view-active');
+            else if (view === 'results') DOMElements.bottomPanel.classList.add('mobile-view-active');
+        }
+
+        async function handleExecution(isSubmission) {
+            setLoadingState(true, isSubmission);
+            DOMElements.resultsContent.innerHTML = '';
+            const allLogs = [];
+            pyodide.setStdout({ batched: (msg) => allLogs.push(msg) });
+            const problem = problems.find(p => p.id === currentProblemId);
+            const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
+            const results = [];
+            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
+            DOMElements.consoleOutput.textContent = allLogs.length > 0 ? allLogs.join('\n') : 'No console output.';
+            renderResults(results, isSubmission);
+            setLoadingState(false, isSubmission);
+            document.querySelector('.tab[data-tab="results"]').click();
+            setMobileView('results');
+        }
+        
+        async function executeTestCase(code, testCase, functionName) {
+            let result = { status: 'fail', error: null, output: null };
+            const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
+            const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
+            const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
+            try {
+                const capturedOutput = { lines: [] };
+                pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); } });
+                await pyodide.runPythonAsync(fullScript);
+                const outputStr = capturedOutput.lines.join('\n');
+                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                if (resultMatch && resultMatch[1]) {
+                    const outputJs = JSON.parse(resultMatch[1]);
+                    result.output = outputJs;
+                    if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
+                } else { result.error = "Execution failed to produce a valid result."; }
+            } catch (e) { result.error = e.toString(); } 
+            finally { pyodide.setStdout(); }
+            return { ...testCase, ...result };
+        }
+
+        function renderResults(results, isSubmission) {
+            const passedCount = results.filter(r => r.status === 'pass').length;
+            const totalCount = results.length;
+            const success = passedCount === totalCount;
+            let summaryHTML;
+            if (isSubmission) {
+                summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><svg><use href="${success ? '#icon-check' : '#icon-close'}"></use></svg><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`;
+                if (success) {
+                    const problem = problems.find(p => p.id === currentProblemId);
+                    saveScore(problem);
+                }
+            } else {
+                summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`;
+            }
+            const resultsHTML = results.map((r, i) => `<div class="result-item"><span>${r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join('');
+            DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
+        }
+
+        async function saveScore(problem) {
+            if (solvedProblems.has(problem.id)) return;
+            const scoreData = {
+                userId: currentUser.uid,
+                assignmentId: assignmentId,
+                problemId: problem.id,
+                pointsReceived: problem.points,
+                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            try {
+                await db.collection('codeScores').add(scoreData);
+                solvedProblems.add(problem.id);
                 renderProblemList();
-                loadProblem(currentProblemId);
-                initEventListeners();
-                DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
-                setMobileView('problem');
-            }
+            } catch (e) { console.error("Error saving score:", e); }
+        }
 
-            function initEventListeners() {
-                DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
-                DOMElements.submitBtn.addEventListener('click', () => handleExecution(true));
-                DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
-                DOMElements.problemList.addEventListener('click', handleProblemSelect);
-                const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
-                DOMElements.menuToggle.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); });
-                DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
-                DOMElements.overlay.addEventListener('click', closeMobileMenu);
-                DOMElements.mobileNavBtns.forEach(btn => btn.addEventListener('click', (e) => setMobileView(e.target.dataset.view)));
+        function setLoadingState(isLoading, isSubmission) {
+            const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
+            const otherBtn = isSubmission ? DOMElements.runBtn : DOMElements.submitBtn;
+            const btnText = btn.querySelector('.btn-text');
+            const loader = btn.querySelector('.loader');
+            const icon = btn.querySelector('svg');
+            otherBtn.disabled = isLoading;
+            if (isLoading) {
+                btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
+                loader.style.display = 'block';
+                icon.style.display = 'none';
+            } else {
+                btnText.textContent = isSubmission ? 'Submit' : 'Run';
+                loader.style.display = 'none';
+                icon.style.display = 'block';
             }
-
-            function renderProblemList() { DOMElements.problemList.innerHTML = problems.map((p, i) => `<li class="problem-item ${solvedProblems.has(p.id) ? 'solved' : ''}" data-id="${p.id}"><div class="p-number">${i + 1}</div><div class="p-title">${p.title}</div></li>`).join(''); }
-
-            function loadProblem(problemId) {
-                if (!problemId) return;
-                if (editor) userCodeState[currentProblemId] = editor.getValue();
-                currentProblemId = problemId;
-                const problem = problems.find(p => p.id === problemId);
-                DOMElements.mainHeaderTitle.textContent = problem.title;
-                DOMElements.problemStatement.innerHTML = problem.statement;
-                editor.setValue(userCodeState[problemId]);
-                DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
-                document.querySelectorAll('.problem-item').forEach(item => item.classList.toggle('active', item.dataset.id === problemId));
-                DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
-                DOMElements.consoleOutput.textContent = 'No console output.';
-                setMobileView('problem');
-            }
-            
-            function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
-
-            function setMobileView(view) {
-                DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
-                [DOMElements.problemDetails, DOMElements.editorContainer, DOMElements.bottomPanel].forEach(p => p.classList.remove('mobile-view-active'));
-                if (view === 'problem') DOMElements.problemDetails.classList.add('mobile-view-active');
-                else if (view === 'code') DOMElements.editorContainer.classList.add('mobile-view-active');
-                else if (view === 'results') DOMElements.bottomPanel.classList.add('mobile-view-active');
-            }
-
-            async function handleExecution(isSubmission) {
-                setLoadingState(true, isSubmission);
-                DOMElements.resultsContent.innerHTML = '';
-                const allLogs = [];
-                pyodide.setStdout({ batched: (msg) => allLogs.push(msg) });
-                const problem = problems.find(p => p.id === currentProblemId);
-                const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
-                const results = [];
-                for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
-                DOMElements.consoleOutput.textContent = allLogs.length > 0 ? allLogs.join('\n') : 'No console output.';
-                renderResults(results, isSubmission);
-                setLoadingState(false, isSubmission);
-                document.querySelector('.tab[data-tab="results"]').click();
-                setMobileView('results');
-            }
-            
-            async function executeTestCase(code, testCase, functionName) {
-                let result = { status: 'fail', error: null, output: null };
-                const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
-                const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
-                const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
-                try {
-                    const capturedOutput = { lines: [] };
-                    pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); } });
-                    await pyodide.runPythonAsync(fullScript);
-                    const outputStr = capturedOutput.lines.join('\n');
-                    const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
-                    if (resultMatch && resultMatch[1]) {
-                        const outputJs = JSON.parse(resultMatch[1]);
-                        result.output = outputJs;
-                        if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
-                    } else { result.error = "Execution failed to produce a valid result."; }
-                } catch (e) { result.error = e.toString(); } 
-                finally { pyodide.setStdout(); }
-                return { ...testCase, ...result };
-            }
-
-            function renderResults(results, isSubmission) {
-                const passedCount = results.filter(r => r.status === 'pass').length;
-                const totalCount = results.length;
-                const success = passedCount === totalCount;
-                let summaryHTML;
-                if (isSubmission) {
-                    summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><svg><use href="${success ? '#icon-check' : '#icon-close'}"></use></svg><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`;
-                    if (success) {
-                        const problem = problems.find(p => p.id === currentProblemId);
-                        saveScore(problem);
-                    }
-                } else {
-                    summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`;
-                }
-                const resultsHTML = results.map((r, i) => `<div class="result-item"><span>${r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join('');
-                DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
-            }
-
-            async function saveScore(problem) {
-                if (solvedProblems.has(problem.id)) return;
-                const scoreData = {
-                    userId: currentUser.uid,
-                    assignmentId: assignmentId,
-                    problemId: problem.id,
-                    pointsReceived: problem.points,
-                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-                };
-                try {
-                    await db.collection('codeScores').add(scoreData);
-                    solvedProblems.add(problem.id);
-                    renderProblemList();
-                } catch (e) { console.error("Error saving score:", e); }
-            }
-
-            function setLoadingState(isLoading, isSubmission) {
-                const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
-                const otherBtn = isSubmission ? DOMElements.runBtn : DOMElements.submitBtn;
-                const btnText = btn.querySelector('.btn-text');
-                const loader = btn.querySelector('.loader');
-                const icon = btn.querySelector('svg');
-
-                otherBtn.disabled = isLoading;
-                if (isLoading) {
-                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
-                    loader.style.display = 'block';
-                    icon.style.display = 'none';
-                } else {
-                    btnText.textContent = isSubmission ? 'Submit' : 'Run';
-                    loader.style.display = 'none';
-                    icon.style.display = 'block';
-                }
-            }
-            
-            function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
-            
-            main();
-        });
+        }
+        
+        function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
+        
+        main();
+    });
     </script>
 </body>
 </html>
