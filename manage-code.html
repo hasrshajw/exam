@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; --success-color: #10B981;}
+        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; --success-color: #10B981; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; }
@@ -50,8 +50,8 @@
         .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
         .admin-table th { background: #F9FAFB; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; }
         .admin-table tr:last-child td { border-bottom: none; }
-        .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; }
-        .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
+        .action-btn, .delete-btn { font-weight: 600; background: none; border: none; cursor: pointer; }
+        .action-btn { color: var(--brand-purple); margin-right: 1rem; } .delete-btn { color: var(--danger-color); }
         .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .lock-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger-color); transition: .4s; border-radius: 24px; }
@@ -60,11 +60,11 @@
         input:checked + .slider:before { transform: translateX(20px); }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); }
         .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
         .modal-header h3 { font-size: 1.5rem; }
         .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
+        .modal-body { flex-grow: 1; overflow-y: auto; }
         .form-field { margin-bottom: 1rem; }
         .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
         .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; font-family: 'IBM Plex Sans', sans-serif; }
@@ -75,11 +75,11 @@
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
         .problem-container { display: flex; flex-direction: column; gap: 1.5rem; }
         .problem-card { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow); }
-        .problem-header { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .problem-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .problem-title { font-size: 1.1rem; font-weight: 600; }
         .problem-header i { font-size: 1.5rem; transition: transform 0.3s ease; }
         .problem-header.active i { transform: rotate(180deg); }
-        .problem-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; border-top: 1px solid var(--border-color); }
+        .problem-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
         .problem-body-content { padding: 1.5rem; }
         .problem-actions { text-align: right; padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; }
         .menu-toggle, .sidebar-close-btn { display: none; }
@@ -166,13 +166,13 @@
                     <input type="hidden" id="assignment-id">
                     <div class="form-field"><label for="assignment-name">Assignment Name</label><input type="text" id="assignment-name" required></div>
                     <div class="form-field"><label for="assignment-duration">Duration (minutes)</label><input type="number" id="assignment-duration" required></div>
-                    <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" id="assignment-locked"><label for="assignment-locked">Locked</label></div>
+                    <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" id="assignment-locked" style="width: auto;"><label for="assignment-locked">Locked for students</label></div>
                 </form>
             </div>
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save</button></div>
         </div>
     </div>
-
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -243,24 +243,27 @@
 
             const loadAssignments = () => {
                 const tbody = document.getElementById('assignments-tbody');
-                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id).onSnapshot(async snapshot => {
-                    tbody.innerHTML = '';
-                    for (const doc of snapshot.docs) {
-                        const assignment = doc.data();
+                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
+                    Promise.all(snapshot.docs.map(async doc => {
                         const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', doc.id).get();
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${assignment.name}</td>
-                            <td>${problemsSnap.size}</td>
-                            <td>${assignment.duration / 60} min</td>
-                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!assignment.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
-                            <td>
-                                <button class="action-btn manage-problems-btn" data-id="${doc.id}" data-name="${assignment.name}">Manage Problems</button>
-                                <button class="action-btn edit-assignment-btn" data-id="${doc.id}">Edit</button>
-                                <button class="delete-btn delete-assignment-btn" data-id="${doc.id}">Delete</button>
-                            </td>`;
-                        tbody.appendChild(row);
-                    }
+                        return { id: doc.id, ...doc.data(), problemCount: problemsSnap.size };
+                    })).then(assignments => {
+                        tbody.innerHTML = '';
+                        assignments.forEach(assignment => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${assignment.name}</td>
+                                <td>${assignment.problemCount}</td>
+                                <td>${assignment.duration / 60} min</td>
+                                <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${assignment.id}" ${!assignment.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
+                                <td>
+                                    <button class="action-btn manage-problems-btn" data-id="${assignment.id}" data-name="${assignment.name}">Manage Problems</button>
+                                    <button class="action-btn edit-assignment-btn" data-id="${assignment.id}">Edit</button>
+                                    <button class="delete-btn delete-assignment-btn" data-id="${assignment.id}">Delete</button>
+                                </td>`;
+                            tbody.appendChild(row);
+                        });
+                    });
                 });
             };
 
@@ -282,45 +285,38 @@
                 modal.classList.add('show');
             };
 
-            const createProblemCard = (id, problem = {}) => {
+            const createProblemCard = (id, problem) => {
                 const card = document.createElement('div');
                 card.className = 'problem-card';
-                if (id) card.dataset.id = id;
+                card.dataset.id = id;
                 card.innerHTML = `
-                    <div class="problem-header active">
-                        <span class="problem-title">${problem.title || 'New Problem'}</span>
-                        <div><i class='bx bx-chevron-down'></i></div>
+                    <div class="problem-header">
+                        <span class="problem-title">${problem.title}</span>
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <button class="delete-btn delete-problem-btn" style="font-size: 1.2rem;"><i class='bx bxs-trash'></i></button>
+                            <i class='bx bx-chevron-down'></i>
+                        </div>
                     </div>
                     <div class="problem-body">
                         <div class="problem-body-content">
                             <form class="problem-form">
                                 <div class="form-grid">
-                                    <div class="form-field"><label>Problem Title</label><input type="text" class="problem-title-input" value="${problem.title || ''}" required></div>
-                                    <div class="form-field"><label>Points</label><input type="number" class="problem-points-input" value="${problem.points || ''}" required></div>
+                                    <div class="form-field"><label>Problem Title</label><input type="text" class="problem-title-input" value="${problem.title}" required></div>
+                                    <div class="form-field"><label>Points</label><input type="number" class="problem-points-input" value="${problem.points}" required></div>
                                 </div>
-                                <div class="form-field"><label>Problem Statement (HTML allowed)</label><textarea rows="5" class="problem-statement-input" required>${problem.statement || ''}</textarea></div>
+                                <div class="form-field"><label>Problem Statement (HTML allowed)</label><textarea rows="5" class="problem-statement-input" required>${problem.statement}</textarea></div>
                                 <div class="form-grid">
-                                    <div class="form-field"><label>Function Name</label><input type="text" class="problem-function-name-input" value="${problem.functionName || ''}" required></div>
-                                    <div class="form-field"><label>Starter Code</label><textarea rows="5" class="problem-starter-code-input" required>${problem.starterCode || ''}</textarea></div>
+                                    <div class="form-field"><label>Function Name</label><input type="text" class="problem-function-name-input" value="${problem.functionName}" required></div>
+                                    <div class="form-field"><label>Starter Code</label><textarea rows="5" class="problem-starter-code-input" required>${problem.starterCode}</textarea></div>
                                 </div>
                                 <h4>Test Cases</h4><div class="testcases-container"></div>
                                 <button type="button" class="secondary-btn add-testcase-btn" style="margin-top: 1rem;">+ Add Test Case</button>
-                                <div class="problem-actions">
-                                    <button type="button" class="delete-btn delete-problem-btn">Delete Problem</button>
-                                    <button type="submit" class="primary-btn">Save Problem</button>
-                                </div>
+                                <div class="problem-actions"><button type="submit" class="primary-btn">Save Problem</button></div>
                             </form>
                         </div>
                     </div>`;
                 const testcasesContainer = card.querySelector('.testcases-container');
                 (problem.testCases || []).forEach(tc => testcasesContainer.appendChild(createTestCaseForm(tc)));
-                if (!id) {
-                    const content = card.querySelector('.problem-body');
-                    content.style.maxHeight = content.scrollHeight + "px";
-                }
-                card.querySelector('.problem-title-input').addEventListener('input', e => {
-                    card.querySelector('.problem-header .problem-title').textContent = e.target.value || 'New Problem';
-                });
                 return card;
             };
 
@@ -343,7 +339,7 @@
                     openAssignmentModal({ id: doc.id, ...doc.data() });
                 }
                 if (button.matches('.delete-assignment-btn')) {
-                    if (confirm('Are you sure? This deletes the assignment and ALL its problems, scores, etc.')) {
+                    if (confirm('Are you sure? This deletes all problems and scores inside.')) {
                         const assignmentId = button.dataset.id;
                         const batch = db.batch();
                         const problemsQuery = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
@@ -363,7 +359,7 @@
                     switchView('problems');
                 }
                 if (button.id === 'back-to-assignments-btn') { currentAssignment = null; switchView('assignments'); }
-                if (button.id === 'add-problem-btn') document.getElementById('problems-container').appendChild(createProblemCard());
+                if (button.id === 'add-problem-btn') document.getElementById('problems-container').appendChild(createProblemCard('', {title: 'New Problem'}));
                 if (button.matches('.problem-header')) {
                     button.classList.toggle('active');
                     const content = button.nextElementSibling;
@@ -393,14 +389,13 @@
                     subjectId: currentSubject.id,
                     duration: parseInt(document.getElementById('assignment-duration').value, 10) * 60,
                     isLocked: document.getElementById('assignment-locked').checked,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 if (!data.name || !data.duration) { alert('Name and Duration are required'); return; }
                 if (id) {
+                    delete data.createdAt;
                     await db.collection('codeAssignments').doc(id).update(data);
-                } else {
-                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    await db.collection('codeAssignments').add(data);
-                }
+                } else await db.collection('codeAssignments').add(data);
                 document.getElementById('assignment-modal').classList.remove('show');
             });
             
@@ -413,14 +408,15 @@
                 const testCases = [];
                 let validJson = true;
                 form.querySelectorAll('.testcases-container .testcase-card').forEach(card => {
+                    if (!validJson) return;
                     try {
                         testCases.push({
                             input: JSON.parse(card.querySelector('.testcase-input').value),
                             expected: JSON.parse(card.querySelector('.testcase-expected').value)
                         });
-                    } catch (e) { validJson = false; }
+                    } catch (err) { validJson = false; alert('Invalid JSON in test cases.'); }
                 });
-                if (!validJson) { alert('Invalid JSON in one of the test cases.'); return; }
+                if (!validJson) return;
 
                 const data = {
                     title: form.querySelector('.problem-title-input').value.trim(),
@@ -432,24 +428,20 @@
                     testCases: testCases
                 };
 
-                const saveButton = form.querySelector('.primary-btn');
-                saveButton.textContent = 'Saving...';
-                saveButton.disabled = true;
-
                 try {
                     if (problemId) {
                         await db.collection('codeProblems').doc(problemId).update(data);
                     } else {
                         const newDocRef = await db.collection('codeProblems').add(data);
-                        problemCard.dataset.id = newDocRef.id; 
+                        problemCard.dataset.id = newDocRef.id;
                     }
-                    alert('Problem saved successfully!');
-                } catch (error) {
-                    alert('Error saving problem.');
-                    console.error(error);
-                } finally {
-                    saveButton.textContent = 'Save Problem';
-                    saveButton.disabled = false;
+                    alert('Problem saved!');
+                    problemCard.querySelector('.problem-header').classList.remove('active');
+                    problemCard.querySelector('.problem-body').style.maxHeight = null;
+
+                } catch (err) {
+                    alert('Error saving problem. Please check console.');
+                    console.error(err);
                 }
             });
 
