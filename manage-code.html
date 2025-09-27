@@ -38,6 +38,7 @@
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .content-body { padding: 2rem 3rem; }
         .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
+        .admin-view { display: none; } .admin-view.active { display: block; }
         .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
         .admin-content-header h2 { font-size: 2rem; font-weight: 700; }
         .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
@@ -52,8 +53,8 @@
         .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
         .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; flex-shrink: 0; }
+        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
         .modal-header h3 { font-size: 1.5rem; }
         .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
         .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
@@ -64,14 +65,12 @@
         .full-width { grid-column: 1 / -1; }
         .testcase-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; position: relative; }
         .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
-        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; flex-shrink: 0; }
-        .accordion-item { border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 1rem; }
-        .accordion-button { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; padding: 1rem; background: var(--hover-bg); border: none; cursor: pointer; font-weight: 600; border-radius: 8px 8px 0 0; }
-        .accordion-button span { flex-grow: 1; }
-        .accordion-button i { transition: transform 0.3s ease; }
-        .accordion-button.active i { transform: rotate(180deg); }
-        .accordion-content-inner { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; position: relative; }
-        .accordion-content-inner .problem-card-body { padding: 1.5rem; }
+        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
+        .problem-container { display: flex; flex-direction: column; gap: 1rem; }
+        .problem-card { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow); }
+        .problem-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .problem-title { font-size: 1.1rem; font-weight: 600; }
+        .problem-body { padding: 1.5rem; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -82,7 +81,6 @@
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .form-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -121,39 +119,69 @@
                 <h1>Manage Code Assignments</h1>
             </header>
             <section class="content-body">
-                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
-                <div class="admin-content-header">
-                    <h2 id="page-title"></h2>
-                    <button class="primary-btn" id="create-assignment-btn">Create New Assignment</button>
+                <div id="assignments-view" class="admin-view active">
+                    <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
+                    <div class="admin-content-header">
+                        <h2 id="page-title"></h2>
+                        <button class="primary-btn" id="create-assignment-btn">Create New Assignment</button>
+                    </div>
+                    <table class="admin-table">
+                        <thead><tr><th>Assignment Name</th><th>Problems</th><th>Actions</th></tr></thead>
+                        <tbody id="assignments-tbody"></tbody>
+                    </table>
                 </div>
-                <table class="admin-table">
-                    <thead><tr><th>Assignment Name</th><th>Problems</th><th>Total Points</th><th>Actions</th></tr></thead>
-                    <tbody id="assignments-tbody"></tbody>
-                </table>
+                <div id="problems-view" class="admin-view">
+                    <button class="back-btn" id="back-to-assignments-btn"><i class='bx bx-arrow-back'></i> Back to Assignments</button>
+                    <div class="admin-content-header">
+                        <h2 id="problems-page-title"></h2>
+                        <button class="primary-btn" id="add-problem-btn">Add New Problem</button>
+                    </div>
+                    <div id="problems-container" class="problem-container"></div>
+                </div>
             </section>
         </main>
     </div>
 
     <div class="modal-overlay" id="assignment-modal">
-        <div class="modal-content">
+        <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header"><h3 id="assignment-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
                 <form id="assignment-form">
                     <input type="hidden" id="assignment-id">
                     <div class="form-field"><label for="assignment-name">Assignment Name</label><input type="text" id="assignment-name" required></div>
-                    <hr style="border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
-                    <h4>Coding Problems</h4>
-                    <div id="problems-container"></div>
-                    <button type="button" class="secondary-btn" id="add-problem-btn" style="margin-top: 1rem;">+ Add Problem</button>
                 </form>
             </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save Assignment</button></div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save</button></div>
         </div>
     </div>
-    
+
+    <div class="modal-overlay" id="problem-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="problem-modal-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <form id="problem-form">
+                    <input type="hidden" id="problem-id">
+                    <div class="form-grid">
+                        <div class="form-field"><label for="problem-title">Problem Title</label><input type="text" id="problem-title" required></div>
+                        <div class="form-field"><label for="problem-points">Points</label><input type="number" id="problem-points" required></div>
+                    </div>
+                    <div class="form-field"><label for="problem-statement">Problem Statement (HTML allowed)</label><textarea id="problem-statement" rows="5" required></textarea></div>
+                    <div class="form-grid">
+                        <div class="form-field"><label for="problem-function-name">Function Name</label><input type="text" id="problem-function-name" placeholder="e.g., two_sum" required></div>
+                        <div class="form-field"><label for="problem-starter-code">Starter Code</label><textarea id="problem-starter-code" rows="5" required></textarea></div>
+                    </div>
+                    <div class="admin-content-header"><h4>Test Cases</h4><button type="button" class="primary-btn" id="add-testcase-btn">+ Add</button></div>
+                    <div id="testcases-container"></div>
+                </form>
+            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-problem-btn">Save Problem</button></div>
+        </div>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const firebaseConfig = {
@@ -171,13 +199,16 @@
             const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
             let currentSubject = null;
+            let currentAssignment = null;
 
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
                     initPage();
-                } else { window.location.href = 'index.html'; }
+                } else {
+                    window.location.href = 'index.html';
+                }
             });
 
             const initSharedUI = (adminProfile) => {
@@ -212,6 +243,11 @@
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
+            const switchView = (view) => {
+                document.querySelectorAll('.admin-view').forEach(v => v.classList.remove('active'));
+                document.getElementById(`${view}-view`).classList.add('active');
+            };
+
             const loadAssignments = () => {
                 const tbody = document.getElementById('assignments-tbody');
                 db.collection('codeAssignments').where('subjectId', '==', currentSubject.id).onSnapshot(async snapshot => {
@@ -219,13 +255,12 @@
                     for (const doc of snapshot.docs) {
                         const assignment = doc.data();
                         const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', doc.id).get();
-                        const totalPoints = problemsSnap.docs.reduce((sum, pDoc) => sum + (pDoc.data().points || 0), 0);
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${assignment.name}</td>
                             <td>${problemsSnap.size}</td>
-                            <td>${totalPoints}</td>
                             <td>
+                                <button class="action-btn manage-problems-btn" data-id="${doc.id}" data-name="${assignment.name}">Manage Problems</button>
                                 <button class="action-btn edit-assignment-btn" data-id="${doc.id}">Edit</button>
                                 <button class="delete-btn delete-assignment-btn" data-id="${doc.id}">Delete</button>
                             </td>`;
@@ -234,57 +269,63 @@
                 });
             };
 
-            const openAssignmentModal = async (assignment = null) => {
+            const loadProblems = () => {
+                const container = document.getElementById('problems-container');
+                db.collection('codeProblems').where('assignmentId', '==', currentAssignment.id).onSnapshot(snapshot => {
+                    container.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const problem = doc.data();
+                        const card = document.createElement('div');
+                        card.className = 'problem-card';
+                        card.innerHTML = `
+                            <div class="problem-header">
+                                <span class="problem-title">${problem.title}</span>
+                                <div>
+                                    <button class="action-btn edit-problem-btn" data-id="${doc.id}">Edit</button>
+                                    <button class="delete-btn delete-problem-btn" data-id="${doc.id}">Delete</button>
+                                </div>
+                            </div>
+                            <div class="problem-body"><strong>Points:</strong> ${problem.points}</div>`;
+                        container.appendChild(card);
+                    });
+                });
+            };
+            
+            const openAssignmentModal = (assignment = null) => {
                 const modal = document.getElementById('assignment-modal');
                 modal.querySelector('#assignment-modal-title').textContent = assignment ? 'Edit Assignment' : 'Create New Assignment';
                 modal.querySelector('#assignment-id').value = assignment ? assignment.id : '';
                 modal.querySelector('#assignment-name').value = assignment ? assignment.name : '';
-                const problemsContainer = modal.querySelector('#problems-container');
-                problemsContainer.innerHTML = '';
-                if (assignment) {
-                    const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignment.id).get();
-                    problemsSnap.forEach(doc => addProblemToForm({ id: doc.id, ...doc.data() }));
+                modal.classList.add('show');
+            };
+
+            const openProblemModal = (problem = null) => {
+                const modal = document.getElementById('problem-modal');
+                modal.querySelector('#problem-modal-title').textContent = problem ? 'Edit Problem' : 'Add New Problem';
+                modal.querySelector('#problem-form').reset();
+                modal.querySelector('#problem-id').value = problem ? problem.id : '';
+                modal.querySelector('#problem-title').value = problem ? problem.title : '';
+                modal.querySelector('#problem-points').value = problem ? problem.points : '';
+                modal.querySelector('#problem-statement').value = problem ? problem.statement : '';
+                modal.querySelector('#problem-function-name').value = problem ? problem.functionName : '';
+                modal.querySelector('#problem-starter-code').value = problem ? problem.starterCode : '';
+                const testcasesContainer = modal.querySelector('#testcases-container');
+                testcasesContainer.innerHTML = '';
+                if (problem && problem.testCases) {
+                    problem.testCases.forEach(addTestCaseToForm);
                 }
                 modal.classList.add('show');
             };
 
-            const addProblemToForm = (problem = {}) => {
-                const problemIndex = document.querySelectorAll('#problems-container .accordion-item').length;
-                const item = document.createElement('div');
-                item.className = 'accordion-item';
-                item.dataset.problemId = problem.id || '';
-                item.innerHTML = `
-                    <button type="button" class="accordion-button"><span>${problemIndex + 1}. ${problem.title || 'New Problem'}</span><i class='bx bx-chevron-down'></i></button>
-                    <div class="accordion-content-inner">
-                        <div class="problem-card-body">
-                            <button type="button" class="remove-item-btn" style="position: static; float: right; margin-bottom: 1rem;">&times;</button>
-                            <div class="form-grid">
-                                <div class="form-field"><label>Problem Title</label><input type="text" class="problem-title" value="${problem.title || ''}"></div>
-                                <div class="form-field"><label>Points</label><input type="number" class="problem-points" value="${problem.points || 0}"></div>
-                            </div>
-                            <div class="form-field"><label>Problem Statement</label><textarea class="problem-statement" rows="4">${problem.statement || ''}</textarea></div>
-                            <div class="form-grid">
-                                <div class="form-field"><label>Function Name</label><input type="text" class="problem-function-name" value="${problem.functionName || ''}"></div>
-                                <div class="form-field"><label>Starter Code</label><textarea class="problem-starter-code" rows="4">${problem.starterCode || ''}</textarea></div>
-                            </div>
-                            <hr style="border: none; border-top: 1px solid var(--border-color); margin: 1.5rem 0;">
-                            <h4>Test Cases</h4>
-                            <div class="testcases-container"></div>
-                            <button type="button" class="secondary-btn add-testcase-btn" style="margin-top: 1rem;">+ Add Test Case</button>
-                        </div>
-                    </div>`;
-                document.getElementById('problems-container').appendChild(item);
-                const testcasesContainer = item.querySelector('.testcases-container');
-                if (problem.testCases) {
-                    problem.testCases.forEach(tc => addTestCaseToForm(testcasesContainer, tc));
-                }
-            };
-
-            const addTestCaseToForm = (container, testCase = {}) => {
+            const addTestCaseToForm = (testCase = {}) => {
                 const card = document.createElement('div');
                 card.className = 'testcase-card';
-                card.innerHTML = `<button type="button" class="remove-item-btn">&times;</button><div class="form-field"><label>Input (JSON Object)</label><textarea rows="3" class="testcase-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div><div class="form-field"><label>Expected Output (JSON string)</label><input type="text" class="testcase-expected" value='${testCase.expected ? JSON.stringify(testCase.expected) : '""'}' required></div><div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" class="testcase-hidden" ${testCase.hidden ? 'checked' : ''}><label>Hidden</label></div>`;
-                container.appendChild(card);
+                card.innerHTML = `
+                    <button type="button" class="remove-item-btn">&times;</button>
+                    <div class="form-field"><label>Input (JSON Object)</label><textarea rows="3" class="testcase-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div>
+                    <div class="form-field"><label>Expected Output (JSON string)</label><input type="text" class="testcase-expected" value='${testCase.expected !== undefined ? JSON.stringify(testCase.expected) : ''}' required></div>
+                    <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" class="testcase-hidden" ${testCase.hidden ? 'checked' : ''}><label>Hidden</label></div>`;
+                document.getElementById('testcases-container').appendChild(card);
             };
 
             document.addEventListener('click', async e => {
@@ -296,7 +337,7 @@
                     openAssignmentModal({ id: doc.id, ...doc.data() });
                 }
                 if (button.matches('.delete-assignment-btn')) {
-                    if (confirm('Are you sure? This will delete the assignment and all its problems.')) {
+                    if (confirm('Are you sure? Deleting this will delete all problems inside it.')) {
                         const assignmentId = button.dataset.id;
                         const problemsQuery = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
                         const batch = db.batch();
@@ -305,66 +346,66 @@
                         await batch.commit();
                     }
                 }
-                if (button.id === 'add-problem-btn') addProblemToForm();
-                if (button.id === 'add-testcase-btn') addTestCaseToForm(button.previousElementSibling);
-                if (button.matches('.remove-item-btn')) button.parentElement.closest('.accordion-item, .testcase-card').remove();
-                if (button.matches('.accordion-button')) {
-                    button.classList.toggle('active');
-                    const content = button.nextElementSibling;
-                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                if (button.matches('.manage-problems-btn')) {
+                    currentAssignment = { id: button.dataset.id, name: button.dataset.name };
+                    document.getElementById('problems-page-title').textContent = `Problems in ${currentAssignment.name}`;
+                    loadProblems();
+                    switchView('problems');
                 }
+                if (button.id === 'back-to-assignments-btn') { currentAssignment = null; switchView('assignments'); }
+                if (button.id === 'add-problem-btn') openProblemModal();
+                if (button.matches('.edit-problem-btn')) {
+                    const doc = await db.collection('codeProblems').doc(button.dataset.id).get();
+                    openProblemModal({ id: doc.id, ...doc.data() });
+                }
+                if (button.matches('.delete-problem-btn')) {
+                    if (confirm('Are you sure?')) { await db.collection('codeProblems').doc(button.dataset.id).delete(); }
+                }
+                if (button.id === 'add-testcase-btn') addTestCaseToForm();
+                if (button.matches('.remove-item-btn')) button.closest('.testcase-card').remove();
                 if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
             });
 
             document.getElementById('save-assignment-btn').addEventListener('click', async () => {
-                const modal = document.getElementById('assignment-modal');
-                const id = modal.querySelector('#assignment-id').value;
-                const name = modal.querySelector('#assignment-name').value.trim();
-                if (!name) { alert('Assignment Name is required.'); return; }
+                const id = document.getElementById('assignment-id').value;
+                const data = { name: document.getElementById('assignment-name').value.trim(), subjectId: currentSubject.id };
+                if (!data.name) { alert('Name is required'); return; }
+                if (id) await db.collection('codeAssignments').doc(id).update(data);
+                else await db.collection('codeAssignments').add(data);
+                document.getElementById('assignment-modal').classList.remove('show');
+            });
 
-                const assignmentData = { name, subjectId: currentSubject.id };
-                let assignmentRef;
-
-                if (id) {
-                    assignmentRef = db.collection('codeAssignments').doc(id);
-                    await assignmentRef.update(assignmentData);
-                } else {
-                    assignmentRef = await db.collection('codeAssignments').add(assignmentData);
-                }
-
-                const problems = [];
-                const problemCards = modal.querySelectorAll('#problems-container .accordion-item');
-                const batch = db.batch();
-
-                for (const card of problemCards) {
-                    const testCases = [];
-                    card.querySelectorAll('.testcases-container .testcase-card').forEach(tcCard => {
-                        try {
-                            testCases.push({
-                                input: JSON.parse(tcCard.querySelector('.testcase-input').value || '{}'),
-                                expected: JSON.parse(tcCard.querySelector('.testcase-expected').value || '""'),
-                                hidden: tcCard.querySelector('.testcase-hidden').checked
-                            });
-                        } catch (e) { alert('Invalid JSON in one of the test cases!'); throw e; }
-                    });
-                    const problemData = {
-                        title: card.querySelector('.problem-title').value.trim(),
-                        points: parseInt(card.querySelector('.problem-points').value, 10) || 0,
-                        statement: card.querySelector('.problem-statement').value.trim(),
-                        functionName: card.querySelector('.problem-function-name').value.trim(),
-                        starterCode: card.querySelector('.problem-starter-code').value,
-                        assignmentId: assignmentRef.id,
-                        testCases
-                    };
-                    const problemId = card.dataset.problemId;
-                    if (problemId) {
-                        batch.update(db.collection('codeProblems').doc(problemId), problemData);
-                    } else {
-                        batch.set(db.collection('codeProblems').doc(), problemData);
+            document.getElementById('save-problem-btn').addEventListener('click', async () => {
+                const id = document.getElementById('problem-id').value;
+                const testCases = [];
+                let validJson = true;
+                document.querySelectorAll('#testcases-container .testcase-card').forEach(card => {
+                    try {
+                        testCases.push({
+                            input: JSON.parse(card.querySelector('.testcase-input').value),
+                            expected: JSON.parse(card.querySelector('.testcase-expected').value),
+                            hidden: card.querySelector('.testcase-hidden').checked
+                        });
+                    } catch (e) {
+                        validJson = false;
+                        alert('Invalid JSON format in one of the test cases. Please check your inputs.');
                     }
-                }
-                await batch.commit();
-                modal.classList.remove('show');
+                });
+
+                if (!validJson) return;
+
+                const data = {
+                    title: document.getElementById('problem-title').value.trim(),
+                    points: parseInt(document.getElementById('problem-points').value, 10),
+                    statement: document.getElementById('problem-statement').value,
+                    functionName: document.getElementById('problem-function-name').value.trim(),
+                    starterCode: document.getElementById('problem-starter-code').value,
+                    assignmentId: currentAssignment.id,
+                    testCases: testCases
+                };
+                if (id) await db.collection('codeProblems').doc(id).update(data);
+                else await db.collection('codeProblems').add(data);
+                document.getElementById('problem-modal').classList.remove('show');
             });
         });
     </script>
