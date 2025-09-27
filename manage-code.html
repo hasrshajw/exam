@@ -172,7 +172,7 @@
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save</button></div>
         </div>
     </div>
-    
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -243,13 +243,15 @@
 
             const loadAssignments = () => {
                 const tbody = document.getElementById('assignments-tbody');
-                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
-                    Promise.all(snapshot.docs.map(async doc => {
-                        const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', doc.id).get();
-                        return { id: doc.id, ...doc.data(), problemCount: problemsSnap.size };
-                    })).then(assignments => {
+                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id)
+                    .onSnapshot(async snapshot => {
+                        const assignmentsData = await Promise.all(snapshot.docs.map(async doc => {
+                            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', doc.id).get();
+                            return { id: doc.id, ...doc.data(), problemCount: problemsSnap.size };
+                        }));
+                        
                         tbody.innerHTML = '';
-                        assignments.forEach(assignment => {
+                        assignmentsData.sort((a, b) => a.name.localeCompare(b.name)).forEach(assignment => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
                                 <td>${assignment.name}</td>
@@ -264,14 +266,15 @@
                             tbody.appendChild(row);
                         });
                     });
-                });
             };
 
             const loadProblems = () => {
                 const container = document.getElementById('problems-container');
                 db.collection('codeProblems').where('assignmentId', '==', currentAssignment.id).onSnapshot(snapshot => {
                     container.innerHTML = '';
-                    snapshot.forEach(doc => container.appendChild(createProblemCard(doc.id, doc.data())));
+                    snapshot.docs.sort((a,b) => a.data().title.localeCompare(b.data().title)).forEach(doc => {
+                        container.appendChild(createProblemCard(doc.id, doc.data()));
+                    });
                 });
             };
             
@@ -291,7 +294,7 @@
                 card.dataset.id = id;
                 card.innerHTML = `
                     <div class="problem-header">
-                        <span class="problem-title">${problem.title}</span>
+                        <span class="problem-title">${problem.title || 'New Problem'}</span>
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <button class="delete-btn delete-problem-btn" style="font-size: 1.2rem;"><i class='bx bxs-trash'></i></button>
                             <i class='bx bx-chevron-down'></i>
@@ -301,17 +304,19 @@
                         <div class="problem-body-content">
                             <form class="problem-form">
                                 <div class="form-grid">
-                                    <div class="form-field"><label>Problem Title</label><input type="text" class="problem-title-input" value="${problem.title}" required></div>
-                                    <div class="form-field"><label>Points</label><input type="number" class="problem-points-input" value="${problem.points}" required></div>
+                                    <div class="form-field"><label>Problem Title</label><input type="text" class="problem-title-input" value="${problem.title || ''}" required></div>
+                                    <div class="form-field"><label>Points</label><input type="number" class="problem-points-input" value="${problem.points || ''}" required></div>
                                 </div>
-                                <div class="form-field"><label>Problem Statement (HTML allowed)</label><textarea rows="5" class="problem-statement-input" required>${problem.statement}</textarea></div>
+                                <div class="form-field"><label>Problem Statement (HTML allowed)</label><textarea rows="5" class="problem-statement-input" required>${problem.statement || ''}</textarea></div>
                                 <div class="form-grid">
-                                    <div class="form-field"><label>Function Name</label><input type="text" class="problem-function-name-input" value="${problem.functionName}" required></div>
-                                    <div class="form-field"><label>Starter Code</label><textarea rows="5" class="problem-starter-code-input" required>${problem.starterCode}</textarea></div>
+                                    <div class="form-field"><label>Function Name</label><input type="text" class="problem-function-name-input" value="${problem.functionName || ''}" required></div>
+                                    <div class="form-field"><label>Starter Code</label><textarea rows="5" class="problem-starter-code-input" required>${problem.starterCode || ''}</textarea></div>
                                 </div>
                                 <h4>Test Cases</h4><div class="testcases-container"></div>
                                 <button type="button" class="secondary-btn add-testcase-btn" style="margin-top: 1rem;">+ Add Test Case</button>
-                                <div class="problem-actions"><button type="submit" class="primary-btn">Save Problem</button></div>
+                                <div class="problem-actions">
+                                    <button type="submit" class="primary-btn">Save Problem</button>
+                                </div>
                             </form>
                         </div>
                     </div>`;
@@ -325,8 +330,8 @@
                 card.className = 'testcase-card';
                 card.innerHTML = `
                     <button type="button" class="remove-item-btn">&times;</button>
-                    <div class="form-field"><label>Input (JSON Object)</label><textarea rows="3" class="testcase-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div>
-                    <div class="form-field"><label>Expected Output (JSON value)</label><textarea rows="2" class="testcase-expected" required>${testCase.expected !== undefined ? JSON.stringify(testCase.expected, null, 2) : ''}</textarea></div>`;
+                    <div class="form-field"><label>Input (JSON Object)</label><textarea rows="3" class="testcase-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : '{}'}</textarea></div>
+                    <div class="form-field"><label>Expected Output (JSON value)</label><textarea rows="2" class="testcase-expected" required>${testCase.expected !== undefined ? JSON.stringify(testCase.expected, null, 2) : 'null'}</textarea></div>`;
                 return card;
             };
 
@@ -339,7 +344,7 @@
                     openAssignmentModal({ id: doc.id, ...doc.data() });
                 }
                 if (button.matches('.delete-assignment-btn')) {
-                    if (confirm('Are you sure? This deletes all problems and scores inside.')) {
+                    if (confirm('Are you sure? Deleting this will delete all problems and scores inside it.')) {
                         const assignmentId = button.dataset.id;
                         const batch = db.batch();
                         const problemsQuery = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
@@ -359,7 +364,7 @@
                     switchView('problems');
                 }
                 if (button.id === 'back-to-assignments-btn') { currentAssignment = null; switchView('assignments'); }
-                if (button.id === 'add-problem-btn') document.getElementById('problems-container').appendChild(createProblemCard('', {title: 'New Problem'}));
+                if (button.id === 'add-problem-btn') document.getElementById('problems-container').appendChild(createProblemCard(null, {}));
                 if (button.matches('.problem-header')) {
                     button.classList.toggle('active');
                     const content = button.nextElementSibling;
@@ -388,14 +393,15 @@
                     name: document.getElementById('assignment-name').value.trim(), 
                     subjectId: currentSubject.id,
                     duration: parseInt(document.getElementById('assignment-duration').value, 10) * 60,
-                    isLocked: document.getElementById('assignment-locked').checked,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    isLocked: document.getElementById('assignment-locked').checked
                 };
                 if (!data.name || !data.duration) { alert('Name and Duration are required'); return; }
                 if (id) {
-                    delete data.createdAt;
                     await db.collection('codeAssignments').doc(id).update(data);
-                } else await db.collection('codeAssignments').add(data);
+                } else {
+                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('codeAssignments').add(data);
+                }
                 document.getElementById('assignment-modal').classList.remove('show');
             });
             
@@ -438,7 +444,6 @@
                     alert('Problem saved!');
                     problemCard.querySelector('.problem-header').classList.remove('active');
                     problemCard.querySelector('.problem-body').style.maxHeight = null;
-
                 } catch (err) {
                     alert('Error saving problem. Please check console.');
                     console.error(err);
@@ -453,7 +458,7 @@
                 reader.onload = async (event) => {
                     try {
                         const content = event.target.result;
-                        const problems = eval(`(${content})`);
+                        const problems = eval(`(${content})`); 
                         if (!Array.isArray(problems)) throw new Error('File must contain an array of problem objects.');
                         
                         const batch = db.batch();
