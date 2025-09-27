@@ -44,18 +44,18 @@
         .btn.submit-problem-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
         .btn:disabled { background-color: var(--surface-light); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
         .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 80px); }
-        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
-        #problem-details { flex: 1; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; overflow-y: auto; border: 1px solid var(--border-color); }
+        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; min-height: 0; }
+        .top-panel { flex: 1 1 60%; display: flex; gap: 16px; min-height: 200px; }
+        #problem-details { flex: 1 1 50%; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; overflow-y: auto; border: 1px solid var(--border-color); }
         #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;}
         #problem-statement { line-height: 1.7; color: var(--text-secondary); }
         #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
         .test-case { background-color: var(--bg-dark); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
-        #editor-container { flex: 1; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
-        .bottom-panel { flex-shrink: 0; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; }
-        .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; }
+        #editor-container { flex: 1 1 50%; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
+        .bottom-panel { flex: 1 1 40%; display: flex; flex-direction: column; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; min-height: 150px; }
+        .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; flex-shrink: 0; }
         .tab { padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all var(--transition); } .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
-        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; height: 100%; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
+        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; flex-grow: 1; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
         #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
         #results-summary.success { background-color: rgba(var(--success-light-rgb), 0.1); color: var(--success); } #results-summary.failure { background-color: rgba(var(--danger-light-rgb), 0.1); color: var(--danger); }
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 8px; }
@@ -71,13 +71,12 @@
         .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 800px) {
             .main-content { padding: 16px; }
-            .ide-layout { height: calc(100% - 120px); }
-            .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
+            .ide-layout { height: auto; }
+            .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; flex-shrink: 0;}
             .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; text-align: center; font-size: 0.9rem; }
             .mobile-nav-btn.active { color: var(--text-primary); border-bottom-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border-bottom-style: solid; border-bottom-width: 2px; }
             .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; }
             .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
-            #resizer-h, #resizer-v { display: none; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: var(--shadow-lg); } .sidebar.active { transform: translateX(0); }
             .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--surface-light); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
@@ -126,10 +125,8 @@
                         <h2 style="margin-top: 24px;">Test Cases</h2>
                         <div id="public-test-cases"></div>
                     </div>
-                    <div id="resizer-v"></div>
                     <div id="editor-container"></div>
                 </div>
-                <div id="resizer-h"></div>
                 <div class="bottom-panel">
                     <div class="tabs">
                         <div class="tab active" data-tab="results">Test Results</div>
