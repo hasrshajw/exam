@@ -13,7 +13,8 @@
             --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
             --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375;
             --hover-bg: #F3F4F6; --danger-color: #EF4444;
-            --c-primary: #002726; --c-primary-dark: #001A19; --c-accent: #33C375; --c-accent-light: #D1FAE5;
+            --c-primary: #002726; --c-primary-dark: #001A19; --c-accent: #33C375;
+            --c-primary-light: #E0EBEA; --c-accent-light: #D1FAE5;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
             --radius-lg: 0.75rem; --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2.5rem;
@@ -338,7 +339,7 @@
                 const problemsByAssignment = {};
                 for(const assign of assessments.filter(a => a.type === 'code')) {
                     const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assign.id).get();
-                    problemsByAssignment[assign.id] = problemsSnap.docs.map(d => d.id);
+                    problemsByAssignment[assign.id] = problemsSnap.docs.map(d => ({id: d.id, ...d.data()}));
                 }
 
                 const assessmentGroup = document.createElement('div');
@@ -366,24 +367,24 @@
                             buttonText = exam.isLocked ? 'Locked' : 'Start Exam';
                         }
                         if(exam.isLocked && !score) card.style.pointerEvents = 'none';
-                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-file-doc'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button">${buttonText}</button>`;
-
+                        prefixClass += " bx bxs-file-doc";
                     } else if (item.type === 'code') {
                         const assignment = item.data;
                         const problems = problemsByAssignment[item.id] || [];
-                        const solvedCount = problems.filter(pId => userCodeScores.has(pId)).length;
+                        const solvedCount = problems.filter(p => userCodeScores.has(p.id)).length;
                         isCompleted = problems.length > 0 && solvedCount === problems.length;
                         card.href = `code.html?id=${item.id}`;
                         meta = `Code Assignment • ${solvedCount}/${problems.length} Solved`;
                         buttonText = isCompleted ? 'View Submission' : 'Start Challenge';
-                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-code-alt'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button">${buttonText}</button>`;
+                        prefixClass += " bx bxs-code-alt";
                     }
-                    
+
                     if (isCompleted) {
-                        card.dataset.status = 'completed';
-                        card.querySelector('.card-prefix').classList.replace('card-prefix--default', 'card-prefix--completed');
-                        card.querySelector('.card-info').insertAdjacentHTML('afterend', `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`);
+                        prefixClass = 'card-prefix--completed';
+                        statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
                     }
+                    card.dataset.status = isCompleted ? 'completed' : 'next';
+                    card.innerHTML = `<div class="card-prefix ${prefixClass}"></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div>${statusIcon}<button class="card-button">${buttonText}</button>`;
                     listContainer.appendChild(card);
                 });
                 container.appendChild(assessmentGroup);
