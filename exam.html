@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --color-primary: #6D28D9; --color-primary-dark: #5B21B6; --color-sidebar-bg: #111827; --color-sidebar-text: #F9FAFB; --color-sidebar-text-muted: #9CA3AF; --color-sidebar-hover: #1F2937; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color: #4B5563; --color-background: #F9FAFB; --color-surface: #ffffff; --color-text-primary: #111827; --color-text-secondary: #6b7280; --color-border: #e5e7eb; --color-success: #10B981; --color-danger: #ef4444; --color-warning: #f59e0b; --color-success-light: #d1fae5; --color-warning-light: #fffbeb; --color-danger-light: #fee2e2; --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); --border-radius-md: 8px; --border-radius-lg: 16px; --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        :root { --font-family: 'IBM Plex Sans', sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --color-primary: #6D28D9; --color-primary-light: #EDE9FE; --color-sidebar-bg: #111827; --color-sidebar-text: #F9FAFB; --color-sidebar-text-muted: #9CA3AF; --color-sidebar-hover: #1F2937; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color-dark: #4B5563; --color-background: #F9FAFB; --color-surface: #FFFFFF; --color-text-primary: #111827; --color-text-secondary: #6B7280; --color-border: #E5E7EB; --color-success: #10B981; --color-danger: #EF4444; --color-warning: #F59E0B; --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1); --border-radius-md: 8px; --border-radius-lg: 16px; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
         body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); }
@@ -18,55 +18,67 @@
         .view-container.active { display: flex; }
         .exam-dashboard { display: flex; height: 100%; position: relative; }
         .sidebar { width: 280px; background-color: var(--color-sidebar-bg); color: var(--color-sidebar-text); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar-header { margin-bottom: 24px; } .sidebar-header .test-title { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
+        .sidebar-header { margin-bottom: 24px; }
+        .sidebar-header .test-title { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
         .sidebar nav { flex-grow: 1; overflow-y: auto; padding-right: 8px; }
         .question-nav { list-style: none; }
-        .question-item { display: flex; align-items: center; padding: 10px; border-radius: var(--border-radius-md); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition-fast); } .question-item.active { background-color: var(--color-primary); color: white; font-weight: 600; } .question-item:not(.active):hover { background-color: var(--color-sidebar-hover); }
-        .q-number { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; border: 1px solid var(--border-color); } .active .q-number { background-color: white; color: var(--color-primary); border-color: white; }
+        .question-item { display: flex; align-items: center; padding: 10px; border-radius: var(--border-radius-md); margin-bottom: 8px; cursor: pointer; transition: background-color 0.2s; }
+        .question-item.active { background-color: var(--color-primary); color: white; font-weight: 600; }
+        .question-item:not(.active):hover { background-color: var(--color-sidebar-hover); }
+        .q-number { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; border: 1px solid var(--color-sidebar-text-muted); }
+        .active .q-number { background-color: white; color: var(--color-primary); border-color: white; }
         .q-details { display: flex; flex-direction: column; } .q-type { font-size: 0.9rem; } .q-points { font-size: 0.75rem; color: var(--color-sidebar-text-muted); } .active .q-points { color: #e0e4f1; }
-        .q-status-icon { width: 20px; height: 20px; margin-left: auto; color: var(--color-success); opacity: 0; transform: scale(0.5); transition: all 0.2s; }
+        .q-status-icon { width: 24px; height: 24px; opacity: 0; transform: scale(0.5); margin-left: auto; color: var(--color-success); }
         .question-item.answered .q-status-icon { opacity: 1; transform: scale(1); }
         .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
-        .main-header { display: flex; align-items: center; margin-bottom: 16px; flex-shrink: 0; gap: 16px; } .timer { display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 600; color: var(--color-text-secondary); margin-left: auto; background-color: var(--color-surface); padding: 8px 16px; border-radius: 99px; border: 1px solid var(--color-border); } .timer i { font-size: 1.2rem; }
-        .end-round-btn { color: var(--color-danger); border: 1px solid var(--color-danger); padding: 8px 20px; border-radius: 999px; font-weight: 500; }
+        .main-header { display: flex; align-items: center; margin-bottom: 24px; flex-shrink: 0; gap: 16px; }
+        .timer { display: flex; align-items: center; gap: 8px; font-size: 1.1rem; font-weight: 600; color: var(--text-secondary); margin-left: auto; background-color: var(--color-surface); padding: 8px 16px; border-radius: 99px; border: 1px solid var(--color-border); }
+        .timer.warning { color: var(--color-warning); } .timer.danger { color: var(--color-danger); animation: pulse-danger 1.5s infinite; }
+        @keyframes pulse-danger { 0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); } 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); } }
+        .timer svg { width: 20px; height: 20px; }
+        .end-round-btn { color: var(--text-secondary); border: 1px solid var(--color-border); padding: 8px 20px; border-radius: 999px; font-weight: 500; }
         .question-area { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
-        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
+        .question-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .question-title-text { font-size: 1.5rem; font-weight: 600; }
-        #mcq-container { background-color: var(--color-surface); border-radius: var(--border-radius-lg); padding: 2.5rem; width: 100%; max-width: 900px; box-shadow: var(--shadow-lg); margin: 0 auto; }
-        .options-container { display: flex; flex-direction: column; gap: 1rem; } .option { display: flex; align-items: center; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); cursor: pointer; transition: all var(--transition-fast); }
-        .option:hover { border-color: var(--color-primary); background-color: #F3F4F6; } .option.selected { border-color: var(--color-primary); background-color: #EDE9FE; font-weight: 500; }
-        .option-letter { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--color-border); display: grid; place-items: center; flex-shrink: 0; margin-right: 1rem; font-weight: 600; } .selected .option-letter { border-color: var(--color-primary); background-color: var(--color-primary); color: white; }
+        #mcq-container { background-color: var(--color-surface); border-radius: var(--border-radius-lg); padding: 2.5rem; box-shadow: var(--shadow-lg); }
+        .options-container { display: flex; flex-direction: column; gap: 1rem; }
+        .option { display: flex; align-items: center; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); cursor: pointer; transition: all 0.2s; }
+        .option.selected { border-color: var(--color-primary); background-color: var(--color-primary-light); }
+        .option-letter { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--color-border); display: grid; place-items: center; flex-shrink: 0; margin-right: 1rem; }
+        .selected .option-letter { border-color: var(--color-primary); background-color: var(--color-primary); color: white; }
         #coding-container { display: flex; flex-direction: column; flex-grow: 1; min-height: 0; gap: 1rem; }
         .top-panel { flex: 1; display: flex; gap: 1rem; min-height: 200px; }
-        #problem-details { flex: 1; background-color: var(--surface-dark); color: var(--color-sidebar-text); border-radius: var(--border-radius-md); padding: 24px; overflow-y: auto; border: 1px solid var(--border-color); }
-        #problem-details h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;}
+        #problem-details { flex: 1; background-color: var(--surface-dark); color: var(--color-sidebar-text); border-radius: var(--border-radius-md); padding: 24px; overflow-y: auto; border: 1px solid var(--border-color-dark); }
+        #problem-details h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color-dark); padding-bottom: 1rem; }
         #problem-details p, #problem-details li { line-height: 1.7; color: var(--color-sidebar-text-muted); }
-        #problem-details code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 2px 5px; border-radius: 4px; font-family: var(--font-mono); color: var(--color-sidebar-text); }
-        #editor-container { flex: 1.5; border-radius: var(--border-radius-md); overflow: hidden; border: 1px solid var(--border-color); }
-        .bottom-panel { height: 200px; display: flex; flex-direction: column; background-color: var(--surface-dark); border-radius: var(--border-radius-md); border: 1px solid var(--border-color); }
-        .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; }
-        .tab { padding: 10px 16px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; } .tab.active { color: var(--color-sidebar-text); border-bottom-color: var(--color-primary); }
-        .tab-content { padding: 1rem; display: none; font-family: var(--font-mono); font-size: 0.9rem; height: 100%; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; }
-        #run-controls { display: flex; gap: 1rem; margin-top: 1rem; justify-content: flex-end; }
+        #problem-details code { background-color: var(--bg-dark); border: 1px solid var(--border-color-dark); padding: 2px 5px; border-radius: 4px; font-family: var(--font-mono); color: var(--color-sidebar-text); }
+        #editor-container { flex: 1.5; border-radius: var(--border-radius-md); overflow: hidden; border: 1px solid var(--border-color-dark); }
+        .bottom-panel { height: 250px; display: flex; flex-direction: column; background-color: var(--surface-dark); border-radius: var(--border-radius-md); border: 1px solid var(--border-color-dark); }
+        .tabs { display: flex; border-bottom: 1px solid var(--border-color-dark); background-color: var(--bg-dark); padding: 0 12px; }
+        .tab { padding: 10px 16px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; }
+        .tab.active { color: var(--color-sidebar-text); border-bottom-color: var(--color-primary); }
+        .tab-content { padding: 16px; display: none; font-family: var(--font-mono); font-size: 0.9rem; height: 100%; overflow-y: auto; white-space: pre-wrap; word-break: break-all; }
+        .tab-content.active { display: block; }
+        #run-controls { display: flex; gap: 1rem; margin-top: 1rem; }
         .btn { padding: 10px 24px; border-radius: var(--border-radius-md); font-weight: 600; display: flex; align-items: center; gap: 8px; }
         .btn.run-btn { background-color: var(--surface-light); color: var(--color-sidebar-text); }
         .btn.submit-code-btn { background-color: var(--color-success); color: white; }
         .question-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem; border-top: 1px solid var(--color-border); padding-top: 1.5rem; }
         .nav-btn { padding: 12px 28px; border-radius: var(--border-radius-md); font-weight: 600; }
         .nav-btn.next-btn, .nav-btn.submit-btn { background-color: var(--color-primary); color: white; }
-        .nav-btn.prev-btn { background-color: var(--color-surface); border: 1px solid var(--color-border); }
+        .nav-btn.prev-btn { color: var(--color-text-secondary); }
         .nav-btn:disabled { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; }
         #review-view, #results-view { flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; width: 100%; height: 100%; overflow-y: auto; }
         .review-card, .results-summary { background-color: var(--color-surface); border-radius: var(--border-radius-lg); padding: 40px; width: 100%; max-width: 800px; box-shadow: var(--shadow-lg); }
-        .review-header h2 { font-size: 1.75rem; font-weight: bold; text-align: center; } .review-header p { color: var(--color-text-secondary); text-align: center; }
+        .review-header h2 { font-size: 1.75rem; text-align: center; } .review-header p { color: var(--color-text-secondary); text-align: center; }
         .review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 12px; margin: 24px 0; }
         .review-item-btn { width: 50px; height: 50px; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 2px solid; }
         .review-item-btn.unanswered { border-color: var(--color-border); }
-        .review-item-btn.answered { background-color: #EDE9FE; color: var(--color-primary); border-color: var(--color-primary); }
+        .review-item-btn.answered { background-color: var(--color-primary-light); color: var(--color-primary); border-color: var(--color-primary); }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="loading-spinner"></div><p>Initializing Exam Environment...</p></div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--color-text-secondary);"><div class="loading-spinner"></div><p>Initializing Exam Environment...</p></div>
     
     <div class="view-container" id="exam-view">
         <div class="exam-dashboard">
@@ -76,32 +88,20 @@
             </aside>
             <main class="main-content">
                 <header class="main-header">
-                    <div class="timer"><i class='bx bx-time-five'></i><span id="timer-display"></span></div>
+                    <div class="timer" id="timer"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="timer-display"></span></div>
                     <button class="end-round-btn" id="end-round-btn">End Exam</button>
                 </header>
                 <div class="question-area">
                     <div class="question-header"><h2 class="question-title-text" id="question-title"></h2></div>
                     <div id="mcq-container" style="display: none;"><div class="options-container" id="options-container"></div></div>
                     <div id="coding-container" style="display: none;">
-                        <div class="top-panel">
-                            <div id="problem-details"></div>
-                            <div id="editor-container"></div>
-                        </div>
-                        <div class="bottom-panel">
-                            <div class="tabs"><div class="tab active" data-tab="console">Console</div></div>
-                            <div id="console" class="tab-content active"><pre id="console-output">Run code to see output.</pre></div>
-                        </div>
-                        <div id="run-controls">
-                             <button id="run-code-btn" class="btn run-btn">Run Code</button>
-                             <button id="submit-code-btn" class="btn submit-code-btn">Submit for Points</button>
-                        </div>
+                        <div class="top-panel"><div id="problem-details"></div><div id="editor-container"></div></div>
+                        <div class="bottom-panel"><div class="tabs"><div class="tab active" data-tab="console">Console</div></div><div id="console" class="tab-content active"><pre id="console-output"></pre></div></div>
+                        <div id="run-controls"><button id="run-code-btn" class="btn run-btn">Run Code</button></div>
                     </div>
                     <footer class="question-footer">
                         <button class="nav-btn prev-btn" id="prev-btn">&larr; Previous</button>
-                        <div>
-                            <button class="nav-btn next-btn" id="next-btn">Save & Next &rarr;</button>
-                            <button class="nav-btn submit-btn" id="submit-btn" style="display: none;">Review & Submit</button>
-                        </div>
+                        <div><button class="nav-btn next-btn" id="next-btn">Save & Next &rarr;</button><button class="nav-btn submit-btn" id="submit-btn" style="display: none;">Review & Submit</button></div>
                     </footer>
                 </div>
             </main>
@@ -110,11 +110,12 @@
     
     <div class="view-container" id="review-view">
         <div class="review-card">
-            <div class="review-header"><h2>Review Your Answers</h2><p>Click a number to jump to that question. Submit when ready.</p></div>
+            <div class="review-header"><h2>Review Your Answers</h2><p>Click a number to jump to that question. Submit when you are ready.</p></div>
             <div class="review-grid" id="review-grid"></div>
             <div class="review-footer"><button class="nav-btn submit-btn" id="final-submit-btn">Confirm & Submit Test</button></div>
         </div>
     </div>
+
     <div class="view-container" id="results-view"></div>
 
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
@@ -124,7 +125,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
+        document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
                 apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
                 authDomain: "exam-2e799.firebaseapp.com",
@@ -142,58 +143,50 @@
 
             const dom = {
                 loadingOverlay: document.getElementById('loading-overlay'),
-                views: document.querySelectorAll('.view-container'),
-                examTitleSidebar: document.getElementById('exam-title-sidebar'),
-                questionNav: document.getElementById('question-nav'),
-                timerDisplay: document.getElementById('timer-display'),
-                endRoundBtn: document.getElementById('end-round-btn'),
-                questionTitle: document.getElementById('question-title'),
-                mcqContainer: document.getElementById('mcq-container'),
-                optionsContainer: document.getElementById('options-container'),
-                codingContainer: document.getElementById('coding-container'),
-                problemDetails: document.getElementById('problem-details'),
-                editorContainer: document.getElementById('editor-container'),
-                consoleOutput: document.getElementById('console-output'),
-                runCodeBtn: document.getElementById('run-code-btn'),
-                submitCodeBtn: document.getElementById('submit-code-btn'),
-                prevBtn: document.getElementById('prev-btn'),
-                nextBtn: document.getElementById('next-btn'),
-                submitBtn: document.getElementById('submit-btn'),
-                reviewGrid: document.getElementById('review-grid'),
-                finalSubmitBtn: document.getElementById('final-submit-btn'),
-                resultsView: document.getElementById('results-view')
+                views: document.querySelectorAll('.view-container'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
+                questionNav: document.getElementById('question-nav'), timer: document.getElementById('timer'),
+                timerDisplay: document.getElementById('timer-display'), endRoundBtn: document.getElementById('end-round-btn'),
+                questionTitle: document.getElementById('question-title'), mcqContainer: document.getElementById('mcq-container'),
+                optionsContainer: document.getElementById('options-container'), codingContainer: document.getElementById('coding-container'),
+                problemDetails: document.getElementById('problem-details'), editorContainer: document.getElementById('editor-container'),
+                consoleOutput: document.getElementById('console-output'), runCodeBtn: document.getElementById('run-code-btn'),
+                prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'),
+                submitBtn: document.getElementById('submit-btn'), reviewGrid: document.getElementById('review-grid'),
+                finalSubmitBtn: document.getElementById('final-submit-btn'), resultsView: document.getElementById('results-view')
             };
 
-            const showView = (viewId) => {
-                dom.views.forEach(v => v.classList.remove('active'));
-                document.getElementById(viewId).classList.add('active');
-            };
+            const showView = (viewId) => { dom.views.forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); };
 
-            const initPyodideAndEditor = async () => {
-                pyodide = await loadPyodide();
-                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-                window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
-                require(["vs/editor/editor.main"], () => {
-                    editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
+            const initEnvironment = async () => {
+                try {
+                    pyodide = await loadPyodide();
+                    await new Promise((resolve, reject) => {
+                        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+                        require(['vs/editor/editor.main'], () => {
+                            editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
+                            resolve();
+                        }, (err) => reject(err));
+                    });
                     auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
-                });
+                } catch (error) {
+                    console.error("Initialization failed:", error);
+                    dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
+                }
             };
 
             const initializePage = async () => {
                 const examId = new URLSearchParams(window.location.search).get('id');
                 if (!examId) { alert('Invalid exam ID.'); window.location.href = 'dashboard.html'; return; }
                 const examDoc = await db.collection('exams').doc(examId).get();
-                if (!examDoc.exists || examDoc.data().isLocked) { alert('Exam not found or is locked.'); window.location.href = 'dashboard.html'; return; }
-                
+                if (!examDoc.exists) { alert('Exam not found.'); window.location.href = 'dashboard.html'; return; }
                 const examData = { id: examDoc.id, ...examDoc.data() };
                 examState = {
                     currentExamData: examData,
-                    questions: examData.questions.map(q => ({...q, userAnswer: null, isCorrect: null })),
+                    questions: JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isAnswered: false})),
                     currentQuestionIndex: 0,
                     timeLeft: examData.duration,
                     timerInterval: null
                 };
-                
                 dom.examTitleSidebar.textContent = examData.name;
                 renderSidebar();
                 renderQuestion();
@@ -206,8 +199,8 @@
                 dom.questionNav.innerHTML = '';
                 examState.questions.forEach((q, index) => {
                     const item = document.createElement('li');
-                    item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.userAnswer !== null ? 'answered' : ''}`;
-                    item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><div class="q-status-icon check"><i class='bx bx-check'></i></div>`;
+                    item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}`;
+                    item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><span class="q-status-icon check"><i class='bx bx-check'></i></span>`;
                     item.addEventListener('click', () => navigateToQuestion(index));
                     dom.questionNav.appendChild(item);
                 });
@@ -216,9 +209,8 @@
             const renderQuestion = () => {
                 const question = examState.questions[examState.currentQuestionIndex];
                 dom.questionTitle.textContent = `${examState.currentQuestionIndex + 1}. ${question.title}`;
-                
                 const isCoding = question.type === 'Coding';
-                dom.mcqContainer.style.display = isCoding ? 'none' : 'flex';
+                dom.mcqContainer.style.display = isCoding ? 'none' : 'block';
                 dom.codingContainer.style.display = isCoding ? 'flex' : 'none';
 
                 if (isCoding) {
@@ -238,14 +230,16 @@
             };
 
             const selectOption = (index) => {
-                examState.questions[examState.currentQuestionIndex].userAnswer = index;
+                const q = examState.questions[examState.currentQuestionIndex];
+                q.userAnswer = index;
+                q.isAnswered = true;
                 renderQuestion();
-                renderSidebar();
             };
 
             const navigateToQuestion = (index) => {
-                if (examState.questions[examState.currentQuestionIndex].type === 'Coding') {
-                    examState.questions[examState.currentQuestionIndex].userAnswer = editor.getValue();
+                const currentQuestion = examState.questions[examState.currentQuestionIndex];
+                if (currentQuestion.type === 'Coding') {
+                    currentQuestion.userAnswer = editor.getValue();
                 }
                 examState.currentQuestionIndex = index;
                 renderQuestion();
@@ -263,63 +257,64 @@
                 if (examState.timerInterval) clearInterval(examState.timerInterval);
                 examState.timerInterval = setInterval(() => {
                     examState.timeLeft--;
-                    if (examState.timeLeft <= 0) { clearInterval(examState.timerInterval); handleSubmit(true); return; }
                     const mins = Math.floor(examState.timeLeft / 60);
                     const secs = examState.timeLeft % 60;
                     dom.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                    if (examState.timeLeft <= 300) dom.timer.classList.add('warning');
+                    if (examState.timeLeft <= 60) dom.timer.classList.add('danger');
+                    if (examState.timeLeft <= 0) { clearInterval(examState.timerInterval); handleSubmit(true); }
                 }, 1000);
             };
 
-            const runCode = async (isSubmission) => {
+            const runCode = async () => {
                 const question = examState.questions[examState.currentQuestionIndex];
                 const code = editor.getValue();
                 dom.consoleOutput.textContent = 'Executing...';
                 
-                const testCases = isSubmission ? question.testCases : question.testCases.filter(tc => !tc.hidden);
-                let allPassed = true;
-                let resultsHTML = '';
-
-                for (const [index, tc] of testCases.entries()) {
-                    const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
-                    const fullCode = `${code}\nprint(${question.functionName}(${inputArgs}))`;
-                    try {
-                        let result = await pyodide.runPythonAsync(fullCode);
-                        let output = JSON.parse(JSON.stringify(result));
-                        
+                try {
+                    let resultsHTML = '';
+                    for (const tc of question.testCases) {
+                        const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
+                        const fullCode = `${code}\nprint(${question.functionName}(${inputArgs}))`;
+                        let output = await pyodide.runPythonAsync(fullCode);
                         if (JSON.stringify(output) === JSON.stringify(tc.expected)) {
-                             resultsHTML += `<p style="color: var(--color-success);">Test Case ${index + 1} Passed</p>`;
+                            resultsHTML += `<p style="color: var(--color-success);">Test Case Passed</p>`;
                         } else {
-                            resultsHTML += `<p style="color: var(--color-danger);">Test Case ${index + 1} Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
-                            allPassed = false;
+                            resultsHTML += `<p style="color: var(--color-danger);">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
                         }
-                    } catch (e) {
-                        resultsHTML += `<p style="color: var(--color-danger);">Test Case ${index + 1} Error: ${e.message}</p>`;
-                        allPassed = false;
                     }
-                }
-                dom.consoleOutput.innerHTML = resultsHTML;
-                if (isSubmission) {
-                    question.userAnswer = code;
-                    question.isCorrect = allPassed;
-                    alert(allPassed ? "All test cases passed! Answer submitted." : "Some test cases failed. Your code has been saved, but is marked as incorrect.");
-                    renderSidebar();
+                    dom.consoleOutput.innerHTML = resultsHTML;
+                } catch(e) {
+                    dom.consoleOutput.textContent = `Error: ${e.message}`;
                 }
             };
             
             const handleSubmit = async (isAutoSubmit = false) => {
                 if (!isAutoSubmit && !confirm("Are you sure you want to submit your test?")) return;
                 clearInterval(examState.timerInterval);
+                dom.loadingOverlay.querySelector('p').textContent = 'Submitting...';
+                dom.loadingOverlay.style.display = 'flex';
 
-                let pointsReceived = 0;
-                let totalPoints = 0;
-                examState.questions.forEach(q => {
+                let pointsReceived = 0, totalPoints = 0;
+                for(const q of examState.questions) {
                     totalPoints += q.points;
                     if (q.type === 'Mcq' && q.userAnswer === q.correctAnswer) {
                         pointsReceived += q.points;
-                    } else if (q.type === 'Coding' && q.isCorrect) {
-                        pointsReceived += q.points;
+                    } else if (q.type === 'Coding' && q.userAnswer) {
+                        let allPassed = true;
+                        for (const tc of q.testCases) {
+                            try {
+                                const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
+                                const fullCode = `${q.userAnswer}\nprint(${q.functionName}(${inputArgs}))`;
+                                let output = await pyodide.runPythonAsync(fullCode);
+                                if (JSON.stringify(output) !== JSON.stringify(tc.expected)) {
+                                    allPassed = false; break;
+                                }
+                            } catch(e) { allPassed = false; break; }
+                        }
+                        if(allPassed) pointsReceived += q.points;
                     }
-                });
+                }
 
                 const scoreData = {
                     userId: currentUser.uid, examId: examState.currentExamData.id, examName: examState.currentExamData.name,
@@ -333,29 +328,24 @@
 
             const renderResultsPage = (scoreData) => {
                 const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-                let title = percentage >= 50 ? "Congratulations!" : "Keep Trying!";
-                dom.resultsView.innerHTML = `<div class="results-summary"><h2>${title}</h2><p>You scored ${scoreData.pointsReceived} out of ${scoreData.totalPoints} points.</p><h3>${percentage}%</h3><a href="dashboard.html" class="nav-btn">Back to Dashboard</a></div>`;
+                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is ${percentage}%.</p><a href="dashboard.html" class="nav-btn">Back to Dashboard</a></div>`;
                 showView('results-view');
             };
 
-            const renderReviewGrid = () => {
-                dom.reviewGrid.innerHTML = '';
-                examState.questions.forEach((q, index) => {
-                    const btn = document.createElement('button');
-                    btn.className = `review-item-btn ${q.userAnswer !== null ? 'answered' : 'unanswered'}`;
-                    btn.textContent = index + 1;
-                    btn.addEventListener('click', () => { navigateToQuestion(index); showView('exam-view'); });
-                    dom.reviewGrid.appendChild(btn);
-                });
+            const handleNext = () => {
+                if (examState.questions[examState.currentQuestionIndex].type === 'Coding') {
+                    examState.questions[examState.currentQuestionIndex].userAnswer = editor.getValue();
+                    examState.questions[examState.currentQuestionIndex].isAnswered = true;
+                }
+                navigateToQuestion(examState.currentQuestionIndex + 1);
             };
 
             dom.prevBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex - 1));
-            dom.nextBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex + 1));
+            dom.nextBtn.addEventListener('click', handleNext);
             dom.submitBtn.addEventListener('click', () => { renderReviewGrid(); showView('review-view'); });
             dom.endRoundBtn.addEventListener('click', () => { renderReviewGrid(); showView('review-view'); });
             dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
-            dom.runCodeBtn.addEventListener('click', () => runCode(false));
-            dom.submitCodeBtn.addEventListener('click', () => runCode(true));
+            dom.runCodeBtn.addEventListener('click', runCode);
         });
     </script>
 </body>
