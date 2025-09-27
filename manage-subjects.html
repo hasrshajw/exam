@@ -3,23 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Code Assignments - Admin</title>
+    <title>Manage Subjects - Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-purple: #6D28D9; --hover-bg: #F3F4F6; --danger-color: #EF4444; }
+        :root {
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --danger-hover: #DC2626;
+            --danger-bg-light: #FEE2E2;
+            --danger-text-dark: #B91C1C;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
-        a { text-decoration: none; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
-        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
-        .main-nav { flex-grow: 1; } .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
+        .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; }
+        .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
         .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
-        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-purple); }
+        .main-nav a:hover { background-color: var(--hover-bg); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
+        .main-nav a.active i { color: var(--brand-purple); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .profile-details { flex-grow: 1; min-width: 0; }
@@ -30,58 +57,102 @@
         .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
         .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
         .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .popup-list { list-style: none; padding-top: 0.5rem; } .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
-        .popup-list a:hover { background-color: var(--hover-bg); } .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
-        .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
-        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
-        .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .popup-list { padding-top: 0.5rem; }
+        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); }
+        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); }
+        .popup-list a.logout { color: var(--danger-color); }
+
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h1 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .content-body { padding: 2rem 3rem; }
-        .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 2rem; font-weight: 700; }
-        .primary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; background-color: var(--brand-purple); color: white; transition: background-color 0.2s ease; border: none; font-size: 0.9rem; }
-        .primary-btn:hover { background-color: #5B21B6; }
-        .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; color: var(--text-secondary); background-color: var(--hover-bg); margin-right: 0.5rem; border: none; font-size: 0.9rem; }
-        .back-btn { margin-bottom: 1rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; cursor: pointer; }
-        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); }
-        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .admin-table th { background: #F9FAFB; font-size: 0.8rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; }
-        .admin-table tr:last-child td { border-bottom: none; }
-        .action-btn { font-weight: 600; color: var(--brand-purple); margin-right: 1rem; background: none; border: none; cursor: pointer; }
-        .delete-btn { font-weight: 600; color: var(--danger-color); background: none; border: none; cursor: pointer; }
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; backdrop-filter: blur(4px); }
-        .modal-overlay.show { display: flex; opacity: 1; }
-        .modal-content { background-color: var(--widget-bg); padding: 2rem; border-radius: 16px; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); margin-bottom: 1.5rem; }
-        .modal-header h3 { font-size: 1.5rem; }
-        .close-btn { font-size: 1.75rem; color: var(--text-secondary); cursor: pointer; border: none; background: none; }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding-right: 1rem; margin-right: -1rem; }
-        .form-field { margin-bottom: 1rem; }
-        .form-field label { display: block; font-weight: 500; margin-bottom: 0.5rem; }
-        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; font-family: 'IBM Plex Sans', sans-serif; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        .full-width { grid-column: 1 / -1; }
-        .questions-header, .problems-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
-        .problem-card, .testcase-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; position: relative; }
-        .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
-        .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
+        .primary-btn, .secondary-btn, .danger-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .primary-btn { background-color: var(--brand-purple); color: white; }
+        .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .secondary-btn:hover { background-color: var(--hover-bg); }
+        .danger-btn { background-color: var(--danger-color); color: white; }
+        .danger-btn:hover { background-color: var(--danger-hover); }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .subject-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: all 0.2s ease; }
+        .subject-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+        .card-content { padding: 1.5rem; flex-grow: 1; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.5rem; }
+        .card-header h3 { font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
+        .card-menu { position: relative; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .action-btn:hover { background-color: var(--hover-bg); }
+        .action-btn i { font-size: 1.5rem; color: var(--text-secondary); }
+        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-item:hover { background-color: var(--hover-bg); }
+        .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .action-item.delete { color: var(--danger-color); }
+        .card-filename { color: var(--text-secondary); font-size: 0.875rem; font-family: monospace; }
+        .card-actions { border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; display: flex; gap: 0.75rem; background-color: #F9FAFB; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+        .card-actions .action-link { flex: 1; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.2s ease; text-align: center; }
+        .card-actions .action-link svg { width: 16px; height: 16px; }
+        .card-actions .action-link--primary { background-color: var(--hover-bg); color: var(--text-primary); }
+        .card-actions .action-link--primary:hover { background-color: var(--border-color); }
+        
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
+        .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
+        .close-btn:hover { background-color: var(--hover-bg); }
+        .modal-body { padding: 1.5rem 2rem; }
+        .form-field { margin-bottom: 1.25rem; }
+        .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field input:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
+        .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        
+        .confirm-modal .modal-content { max-width: 420px; }
+        .confirm-modal .modal-body { text-align: center; padding: 2rem 1.5rem 1.5rem; }
+        .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background-color: var(--danger-bg-light); color: var(--danger-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+        .confirm-icon svg { width: 24px; height: 24px; }
+        .confirm-modal h4 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
+        .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
+
+        .action-overlay { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
+        .action-overlay.show { display: flex; }
+        .spinner { border: 4px solid var(--hover-bg); border-top: 4px solid var(--brand-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .action-overlay p { font-weight: 600; color: var(--text-primary); }
+        
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
-            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+        }
+        @media (max-width: 480px) {
+            .admin-content-header { flex-direction: column; align-items: stretch; }
+            .admin-content-header h1 { text-align: center; }
+            .primary-btn { width: 100%; }
+            .content-body { padding: 1rem; }
+            .main-header { padding: 1rem; }
+            .confirm-modal .modal-footer { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Authenticating...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
     <div class="overlay" id="overlay"></div>
+    <div class="action-overlay" id="action-overlay"><div class="spinner"></div><p>Deleting subject and all related data...</p></div>
     <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
@@ -110,42 +181,50 @@
         </aside>
         <main class="main-area">
             <header class="main-header">
-                <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
-                <h1>Manage Code Assignments</h1>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
+                <h1>Manage Subjects</h1>
             </header>
             <section class="content-body">
-                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
                 <div class="admin-content-header">
-                    <h2 id="page-title"></h2>
-                    <button class="primary-btn" id="create-assignment-btn">Create New Assignment</button>
+                    <h1>All Subjects</h1>
+                    <button class="primary-btn" id="create-subject-btn"><i class='bx bx-plus'></i> Create New Subject</button>
                 </div>
-                <table class="admin-table">
-                    <thead><tr><th>Assignment Name</th><th>Problems</th><th>Actions</th></tr></thead>
-                    <tbody id="assignments-tbody"></tbody>
-                </table>
+                <div class="subjects-grid" id="subjects-grid"></div>
             </section>
         </main>
     </div>
-
-    <div class="modal-overlay" id="assignment-modal">
+    <div class="modal-overlay" id="subject-modal">
         <div class="modal-content">
-            <div class="modal-header"><h3 id="assignment-modal-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-header"><h3 id="subject-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
-                <form id="assignment-form">
-                    <input type="hidden" id="assignment-id">
-                    <div class="form-field"><label for="assignment-name">Assignment Name</label><input type="text" id="assignment-name" required></div>
-                    <div class="problems-header"><h4>Problems</h4><button type="button" class="primary-btn" id="add-problem-btn">+ Add Problem</button></div>
-                    <div id="problems-container"></div>
+                <form id="subject-form">
+                    <input type="hidden" id="subject-id">
+                    <div class="form-field"><label for="subject-name">Subject Name</label><input type="text" id="subject-name" required></div>
+                    <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
                 </form>
             </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save Assignment</button></div>
+            <div class="modal-footer">
+                <button class="secondary-btn">Cancel</button>
+                <button class="primary-btn" id="save-subject-btn">Save Subject</button>
+            </div>
         </div>
     </div>
-
+    <div class="modal-overlay confirm-modal" id="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="confirm-icon"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg></div>
+                <h4 id="confirm-title">Are you sure?</h4>
+                <p id="confirm-text">Do you really want to delete this item? This process cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="confirm-cancel-btn">Cancel</button>
+                <button class="danger-btn" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
+    </div>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const firebaseConfig = {
@@ -162,13 +241,11 @@
             const db = firebase.firestore();
             const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
-            let currentSubject = null;
-
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
-                    initPage();
+                    loadSubjects();
                 } else {
                     window.location.href = 'index.html';
                 }
@@ -191,169 +268,171 @@
                 menuToggle.addEventListener('click', toggleMenu);
                 closeBtn.addEventListener('click', toggleMenu);
                 overlay.addEventListener('click', toggleMenu);
-            };
-
-            const initPage = async () => {
-                const urlParams = new URLSearchParams(window.location.search);
-                const subjectId = urlParams.get('subjectId');
-                if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
-                const subjectDoc = await db.collection('subjects').doc(subjectId).get();
-                if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
-                currentSubject = { id: subjectId, ...subjectDoc.data() };
-                document.getElementById('page-title').textContent = `Code Assignments in ${currentSubject.name}`;
-                loadAssignments();
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
-            const loadAssignments = () => {
-                const tbody = document.getElementById('assignments-tbody');
-                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id).onSnapshot(async snapshot => {
-                    tbody.innerHTML = '';
-                    for (const doc of snapshot.docs) {
-                        const assignment = doc.data();
-                        const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', doc.id).get();
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${assignment.name}</td>
-                            <td>${problemsSnap.size}</td>
-                            <td>
-                                <button class="action-btn edit-assignment-btn" data-id="${doc.id}">Edit</button>
-                                <button class="delete-btn delete-assignment-btn" data-id="${doc.id}">Delete</button>
-                            </td>`;
-                        tbody.appendChild(row);
-                    }
+            const loadSubjects = () => {
+                const gridContainer = document.getElementById('subjects-grid');
+                db.collection('subjects').orderBy('name').onSnapshot(snapshot => {
+                    gridContainer.innerHTML = '';
+                    snapshot.forEach(doc => {
+                        const subject = doc.data();
+                        const card = document.createElement('div');
+                        card.className = 'subject-card';
+                        card.innerHTML = `
+                            <div class="card-content">
+                                <div class="card-header">
+                                    <h3>${subject.name}</h3>
+                                    <div class="card-menu">
+                                        <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                        <div class="action-dropdown">
+                                            <button class="action-item edit-btn" data-id="${doc.id}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Edit
+                                            </button>
+                                            <button class="action-item delete delete-btn" data-id="${doc.id}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="card-filename">${subject.page}</p>
+                            </div>
+                            <div class="card-actions">
+                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-link action-link--primary">
+                                    <i class='bx bxs-book-content'></i> Content
+                                </a>
+                                <a href="manage-exams.html?subjectId=${doc.id}" class="action-link action-link--primary">
+                                    <i class='bx bxs-graduation'></i> Exams
+                                </a>
+                            </div>`;
+                        gridContainer.appendChild(card);
+                    });
                 });
             };
 
-            const openAssignmentModal = async (assignment = null) => {
-                const modal = document.getElementById('assignment-modal');
-                modal.querySelector('#assignment-modal-title').textContent = assignment ? 'Edit Assignment' : 'Create New Assignment';
-                modal.querySelector('#assignment-id').value = assignment ? assignment.id : '';
-                modal.querySelector('#assignment-name').value = assignment ? assignment.name : '';
-                const problemsContainer = modal.querySelector('#problems-container');
-                problemsContainer.innerHTML = '';
-
-                if (assignment) {
-                    const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignment.id).get();
-                    problemsSnap.forEach(doc => addProblemToForm({ id: doc.id, ...doc.data() }));
-                }
+            const openSubjectModal = (subject = null) => {
+                const modal = document.getElementById('subject-modal');
+                modal.querySelector('#subject-modal-title').textContent = subject ? 'Edit Subject' : 'Create New Subject';
+                modal.querySelector('#subject-id').value = subject ? subject.id : '';
+                modal.querySelector('#subject-name').value = subject ? subject.name : '';
+                modal.querySelector('#subject-page').value = subject ? subject.page : '';
                 modal.classList.add('show');
             };
-
-            const addProblemToForm = (problem = {}) => {
-                const problemId = problem.id || `new_${Date.now()}`;
-                const card = document.createElement('div');
-                card.className = 'problem-card';
-                card.dataset.problemId = problemId;
-                card.innerHTML = `
-                    <button type="button" class="remove-item-btn">&times;</button>
-                    <div class="form-grid">
-                        <div class="form-field"><label>Problem Title</label><input type="text" class="problem-title" value="${problem.title || ''}" required></div>
-                        <div class="form-field"><label>Points</label><input type="number" class="problem-points" value="${problem.points || ''}" required></div>
-                    </div>
-                    <div class="form-field"><label>Problem Statement (HTML)</label><textarea class="problem-statement" rows="3">${problem.statement || ''}</textarea></div>
-                    <div class="form-grid">
-                        <div class="form-field"><label>Function Name</label><input type="text" class="problem-function-name" value="${problem.functionName || ''}" required></div>
-                        <div class="form-field"><label>Starter Code</label><textarea class="problem-starter-code" rows="4">${problem.starterCode || ''}</textarea></div>
-                    </div>
-                    <div class="questions-header"><h5>Test Cases</h5><button type="button" class="secondary-btn add-testcase-btn">+ Test Case</button></div>
-                    <div class="testcases-container"></div>
-                `;
-                const testcasesContainer = card.querySelector('.testcases-container');
-                if (problem.testCases) {
-                    problem.testCases.forEach(tc => addTestCaseToForm(testcasesContainer, tc));
-                }
-                document.getElementById('problems-container').appendChild(card);
+            
+            let confirmCallback = null;
+            const openConfirmationModal = (title, text, onConfirm) => {
+                const modal = document.getElementById('confirm-modal');
+                modal.querySelector('#confirm-title').textContent = title;
+                modal.querySelector('#confirm-text').textContent = text;
+                confirmCallback = onConfirm;
+                modal.classList.add('show');
+            };
+            const closeModal = (modalId) => {
+                document.getElementById(modalId).classList.remove('show');
             };
 
-            const addTestCaseToForm = (container, testCase = {}) => {
-                const card = document.createElement('div');
-                card.className = 'testcase-card';
-                card.innerHTML = `
-                    <button type="button" class="remove-item-btn">&times;</button>
-                    <div class="form-field"><label>Input (JSON Object)</label><textarea rows="2" class="testcase-input">${testCase.input ? JSON.stringify(testCase.input) : ''}</textarea></div>
-                    <div class="form-field"><label>Expected Output (JSON string)</label><input type="text" class="testcase-expected" value='${testCase.expected ? JSON.stringify(testCase.expected) : ''}'></div>
-                    <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" class="testcase-hidden" ${testCase.hidden ? 'checked' : ''}><label>Hidden</label></div>`;
-                container.appendChild(card);
+            const deleteSubject = async (subjectId) => {
+                openConfirmationModal('Delete Subject?', 'This will delete the subject and ALL of its courses, lessons, enrollments, and exams permanently. This action cannot be undone.', async () => {
+                    const actionOverlay = document.getElementById('action-overlay');
+                    actionOverlay.classList.add('show');
+                    try {
+                        const batch = db.batch();
+                        const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
+                        const courseIds = coursesQuery.docs.map(d => d.id);
+                        if (courseIds.length > 0) {
+                            const [lessonsQuery, enrollmentsQuery] = await Promise.all([
+                                db.collection('lessons').where('courseId', 'in', courseIds).get(),
+                                db.collection('enrollments').where('courseId', 'in', courseIds).get()
+                            ]);
+                            lessonsQuery.forEach(doc => batch.delete(doc.ref));
+                            enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
+                            const allUsersQuery = await db.collection('users').get();
+                            for (const userDoc of allUsersQuery.docs) {
+                                const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
+                                progressQuery.forEach(doc => batch.delete(doc.ref));
+                            }
+                        }
+                        coursesQuery.forEach(doc => batch.delete(doc.ref));
+                        
+                        const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
+                        const examIds = examsQuery.docs.map(d => d.id);
+                        if (examIds.length > 0) {
+                            const scoresQuery = await db.collection('scores').where('examId', 'in', examIds).get();
+                            scoresQuery.forEach(doc => batch.delete(doc.ref));
+                        }
+                        examsQuery.forEach(doc => batch.delete(doc.ref));
+                        
+                        batch.delete(db.collection('subjects').doc(subjectId));
+                        await batch.commit();
+                    } catch(error) {
+                        console.error("Deletion failed: ", error);
+                        alert("An error occurred during deletion. Please check the console.");
+                    } finally {
+                        actionOverlay.classList.remove('show');
+                    }
+                });
             };
 
             document.addEventListener('click', async e => {
+                const isDropdownButton = e.target.closest('.card-menu .menu-btn');
+                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
+                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+                if (isDropdownButton) {
+                    isDropdownButton.nextElementSibling.classList.toggle('active');
+                }
+                
                 const button = e.target.closest('button');
                 if (!button) return;
                 
-                if (button.id === 'create-assignment-btn') openAssignmentModal();
-                if (button.matches('.edit-assignment-btn')) {
-                    const doc = await db.collection('codeAssignments').doc(button.dataset.id).get();
-                    openAssignmentModal({ id: doc.id, ...doc.data() });
+                if (button.id === 'create-subject-btn') openSubjectModal();
+                if (button.matches('.edit-btn')) {
+                    const doc = await db.collection('subjects').doc(button.dataset.id).get();
+                    openSubjectModal({ id: doc.id, ...doc.data() });
                 }
-                if (button.matches('.delete-assignment-btn')) {
-                    if (confirm('Are you sure? This deletes the assignment and all problems inside.')) {
-                        const assignmentId = button.dataset.id;
-                        const problemsQuery = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
-                        const batch = db.batch();
-                        problemsQuery.forEach(doc => batch.delete(doc.ref));
-                        batch.delete(db.collection('codeAssignments').doc(assignmentId));
-                        await batch.commit();
-                    }
+                if (button.matches('.delete-btn')) deleteSubject(button.dataset.id);
+                if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) {
+                    button.closest('.modal-overlay').classList.remove('show');
                 }
-                if (button.id === 'add-problem-btn') addProblemToForm();
-                if (button.matches('.add-testcase-btn')) {
-                    const container = button.closest('.problem-card').querySelector('.testcases-container');
-                    addTestCaseToForm(container);
+                if(button.id === 'confirm-cancel-btn') closeModal('confirm-modal');
+                if(button.id === 'confirm-delete-btn') {
+                    if (confirmCallback) confirmCallback();
+                    closeModal('confirm-modal');
                 }
-                if (button.matches('.remove-item-btn')) button.parentElement.remove();
-                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
             });
 
-            document.getElementById('save-assignment-btn').addEventListener('click', async () => {
-                const modal = document.getElementById('assignment-modal');
-                const assignmentId = modal.querySelector('#assignment-id').value;
-                const assignmentName = modal.querySelector('#assignment-name').value.trim();
-                if (!assignmentName) { alert('Assignment Name is required.'); return; }
-
-                const assignmentData = { name: assignmentName, subjectId: currentSubject.id };
-                const assignmentRef = assignmentId ? db.collection('codeAssignments').doc(assignmentId) : db.collection('codeAssignments').doc();
-
-                const batch = db.batch();
-                if (assignmentId) batch.update(assignmentRef, assignmentData);
-                else batch.set(assignmentRef, assignmentData);
-
-                const problemPromises = [];
-                modal.querySelectorAll('#problems-container .problem-card').forEach(card => {
-                    const problemId = card.dataset.problemId;
-                    const testCases = [];
-                    card.querySelectorAll('.testcase-card').forEach(tcCard => {
-                        try {
-                            testCases.push({
-                                input: JSON.parse(tcCard.querySelector('.testcase-input').value || '{}'),
-                                expected: JSON.parse(tcCard.querySelector('.testcase-expected').value || '""'),
-                                hidden: tcCard.querySelector('.testcase-hidden').checked
-                            });
-                        } catch (e) { alert('Invalid JSON in a test case!'); throw e; }
-                    });
-                    const problemData = {
-                        title: card.querySelector('.problem-title').value.trim(),
-                        points: parseInt(card.querySelector('.problem-points').value, 10),
-                        statement: card.querySelector('.problem-statement').value.trim(),
-                        functionName: card.querySelector('.problem-function-name').value.trim(),
-                        starterCode: card.querySelector('.problem-starter-code').value,
-                        assignmentId: assignmentRef.id,
-                        testCases
-                    };
-                    
-                    const problemRef = problemId.startsWith('new_') ? db.collection('codeProblems').doc() : db.collection('codeProblems').doc(problemId);
-                    if(problemId.startsWith('new_')) batch.set(problemRef, problemData);
-                    else batch.update(problemRef, problemData);
-                });
-
-                try {
+            document.getElementById('save-subject-btn').addEventListener('click', async () => {
+                const id = document.getElementById('subject-id').value;
+                const subjectName = document.getElementById('subject-name').value.trim();
+                const subjectPage = document.getElementById('subject-page').value.trim();
+                if (!subjectName || !subjectPage) { alert('All fields are required.'); return; }
+                const subjectData = { name: subjectName, page: subjectPage };
+                
+                if (id) {
+                    const subjectRef = db.collection('subjects').doc(id);
+                    const subjectDoc = await subjectRef.get();
+                    const existingCourseId = subjectDoc.data().courseId;
+                    const batch = db.batch();
+                    batch.update(subjectRef, subjectData);
+                    if (existingCourseId) {
+                        const courseRef = db.collection('courses').doc(existingCourseId);
+                        batch.update(courseRef, { name: `${subjectName} Course` });
+                    }
                     await batch.commit();
-                    modal.classList.remove('show');
-                } catch(error) {
-                    console.error("Error saving assignment: ", error);
-                    alert("Failed to save. Please check your data and try again.");
+                } else {
+                    const newSubjectRef = db.collection('subjects').doc();
+                    const newCourseRef = db.collection('courses').doc();
+                    const batch = db.batch();
+                    batch.set(newCourseRef, { name: `${subjectName} Course`, subjectId: newSubjectRef.id, chapters: [] });
+                    batch.set(newSubjectRef, { ...subjectData, courseId: newCourseRef.id });
+                    await batch.commit();
                 }
+                closeModal('subject-modal');
             });
         });
     </script>
