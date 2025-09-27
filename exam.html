@@ -130,257 +130,259 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
     
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e799",
-                storageBucket: "exam-2e799.firebasestorage.app",
-                messagingSenderId: "472506328501",
-                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-                measurementId: "G-NX21HT3JKT"
-            };
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+            authDomain: "exam-2e799.firebaseapp.com",
+            projectId: "exam-2e799",
+            storageBucket: "exam-2e799.firebasestorage.app",
+            messagingSenderId: "472506328501",
+            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+            measurementId: "G-NX21HT3JKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
 
-            let examState = {}, currentUser, editor, pyodide;
+        let examState = {}, currentUser, editor, pyodide;
 
-            const dom = {
-                loadingOverlay: document.getElementById('loading-overlay'),
-                views: document.querySelectorAll('.view-container'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
-                questionNav: document.getElementById('question-nav'), timer: document.getElementById('timer'),
-                timerDisplay: document.getElementById('timer-display'), endRoundBtn: document.getElementById('end-round-btn'),
-                questionTitle: document.getElementById('question-title'), mcqContainer: document.getElementById('mcq-container'),
-                optionsContainer: document.getElementById('options-container'), codingContainer: document.getElementById('coding-container'),
-                problemDetails: document.getElementById('problem-details'), editorContainer: document.getElementById('editor-container'),
-                consoleOutput: document.getElementById('console-output'), runCodeBtn: document.getElementById('run-code-btn'),
-                prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'),
-                submitBtn: document.getElementById('submit-btn'), reviewGrid: document.getElementById('review-grid'),
-                finalSubmitBtn: document.getElementById('final-submit-btn'), resultsView: document.getElementById('results-view')
-            };
+        const dom = {
+            loadingOverlay: document.getElementById('loading-overlay'),
+            views: document.querySelectorAll('.view-container'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
+            questionNav: document.getElementById('question-nav'), timer: document.getElementById('timer'),
+            timerDisplay: document.getElementById('timer-display'), endRoundBtn: document.getElementById('end-round-btn'),
+            questionTitle: document.getElementById('question-title'), mcqContainer: document.getElementById('mcq-container'),
+            optionsContainer: document.getElementById('options-container'), codingContainer: document.getElementById('coding-container'),
+            problemDetails: document.getElementById('problem-details'), editorContainer: document.getElementById('editor-container'),
+            consoleOutput: document.getElementById('console-output'), runCodeBtn: document.getElementById('run-code-btn'),
+            prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'),
+            submitBtn: document.getElementById('submit-btn'), reviewGrid: document.getElementById('review-grid'),
+            finalSubmitBtn: document.getElementById('final-submit-btn'), resultsView: document.getElementById('results-view')
+        };
 
-            const showView = (viewId) => { dom.views.forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); };
+        const showView = (viewId) => { dom.views.forEach(v => v.classList.remove('active')); document.getElementById(viewId).classList.add('active'); };
 
-            const initEnvironment = async () => {
-                try {
-                    pyodide = await loadPyodide();
-                    dom.loadingOverlay.querySelector('p').textContent = 'Initializing Editor...';
-                    await new Promise((resolve, reject) => {
-                        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-                        window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
-                        require(['vs/editor/editor.main'], resolve, reject);
-                    });
-                    editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
-                    auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
-                } catch (error) {
-                    console.error("Initialization failed:", error);
-                    dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
-                }
-            };
-            initEnvironment();
-
-            const initializePage = async () => {
-                const examId = new URLSearchParams(window.location.search).get('id');
-                if (!examId) { alert('Invalid exam ID.'); window.location.href = 'dashboard.html'; return; }
-                const examDoc = await db.collection('exams').doc(examId).get();
-                if (!examDoc.exists) { alert('Exam not found.'); window.location.href = 'dashboard.html'; return; }
+        const initEnvironment = async () => {
+            try {
+                pyodide = await loadPyodide();
+                dom.loadingOverlay.querySelector('p').textContent = 'Initializing Editor...';
                 
-                const examData = { id: examDoc.id, ...examDoc.data() };
-                examState = {
-                    currentExamData: examData,
-                    questions: JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isAnswered: false})),
-                    currentQuestionIndex: 0,
-                    timeLeft: examData.duration,
-                    timerInterval: null
-                };
-                
-                dom.examTitleSidebar.textContent = examData.name;
-                renderSidebar();
-                renderQuestion();
-                startTimer();
-                showView('exam-view');
-                dom.loadingOverlay.style.display = 'none';
-            };
-
-            const renderSidebar = () => {
-                dom.questionNav.innerHTML = '';
-                examState.questions.forEach((q, index) => {
-                    const item = document.createElement('li');
-                    item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}`;
-                    item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><span class="q-status-icon check"><i class='bx bx-check'></i></span>`;
-                    item.addEventListener('click', () => navigateToQuestion(index));
-                    dom.questionNav.appendChild(item);
+                await new Promise((resolve, reject) => {
+                    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+                    window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
+                    require(['vs/editor/editor.main'], resolve, reject);
                 });
+
+                editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
+                auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
+            } catch (error) {
+                console.error("Initialization failed:", error);
+                dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
+            }
+        };
+        
+        document.addEventListener('DOMContentLoaded', initEnvironment);
+
+        const initializePage = async () => {
+            const examId = new URLSearchParams(window.location.search).get('id');
+            if (!examId) { alert('Invalid exam ID.'); window.location.href = 'dashboard.html'; return; }
+            const examDoc = await db.collection('exams').doc(examId).get();
+            if (!examDoc.exists) { alert('Exam not found.'); window.location.href = 'dashboard.html'; return; }
+            
+            const examData = { id: examDoc.id, ...examDoc.data() };
+            examState = {
+                currentExamData: examData,
+                questions: JSON.parse(JSON.stringify(examData.questions)).map(q => ({...q, userAnswer: null, isAnswered: false})),
+                currentQuestionIndex: 0,
+                timeLeft: examData.duration,
+                timerInterval: null
             };
+            
+            dom.examTitleSidebar.textContent = examData.name;
+            renderSidebar();
+            renderQuestion();
+            startTimer();
+            showView('exam-view');
+            dom.loadingOverlay.style.display = 'none';
+        };
 
-            const renderQuestion = () => {
-                const question = examState.questions[examState.currentQuestionIndex];
-                dom.questionTitle.textContent = `${examState.currentQuestionIndex + 1}. ${question.title}`;
-                
-                const isCoding = question.type === 'Coding';
-                dom.mcqContainer.style.display = isCoding ? 'none' : 'block';
-                dom.codingContainer.style.display = isCoding ? 'flex' : 'none';
+        const renderSidebar = () => {
+            dom.questionNav.innerHTML = '';
+            examState.questions.forEach((q, index) => {
+                const item = document.createElement('li');
+                item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}`;
+                item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><span class="q-status-icon check"><i class='bx bx-check'></i></span>`;
+                item.addEventListener('click', () => navigateToQuestion(index));
+                dom.questionNav.appendChild(item);
+            });
+        };
 
-                if (isCoding) {
-                    dom.problemDetails.innerHTML = `<h3>Problem Statement</h3>${question.statement}`;
-                    editor.setValue(question.userAnswer || question.starterCode || '');
-                    dom.consoleOutput.textContent = '';
-                } else {
-                    dom.optionsContainer.innerHTML = '';
-                    question.options.forEach((opt, index) => {
-                        const optionDiv = document.createElement('div');
-                        optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`;
-                        optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span>`;
-                        optionDiv.addEventListener('click', () => selectOption(index));
-                        dom.optionsContainer.appendChild(optionDiv);
-                    });
-                }
-                updateNavButtons();
-            };
+        const renderQuestion = () => {
+            const question = examState.questions[examState.currentQuestionIndex];
+            dom.questionTitle.textContent = `${examState.currentQuestionIndex + 1}. ${question.title}`;
+            
+            const isCoding = question.type === 'Coding';
+            dom.mcqContainer.style.display = isCoding ? 'none' : 'block';
+            dom.codingContainer.style.display = isCoding ? 'flex' : 'none';
 
-            const selectOption = (index) => {
-                const q = examState.questions[examState.currentQuestionIndex];
-                q.userAnswer = index;
-                q.isAnswered = true;
-                renderSidebar();
-                renderQuestion();
-            };
+            if (isCoding) {
+                dom.problemDetails.innerHTML = `<h3>Problem Statement</h3>${question.statement}`;
+                editor.setValue(question.userAnswer || question.starterCode || '');
+                dom.consoleOutput.textContent = '';
+            } else {
+                dom.optionsContainer.innerHTML = '';
+                question.options.forEach((opt, index) => {
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`;
+                    optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span>`;
+                    optionDiv.addEventListener('click', () => selectOption(index));
+                    dom.optionsContainer.appendChild(optionDiv);
+                });
+            }
+            updateNavButtons();
+        };
 
-            const navigateToQuestion = (index) => {
-                const currentQuestion = examState.questions[examState.currentQuestionIndex];
-                if (currentQuestion.type === 'Coding' && editor) {
-                    const code = editor.getValue();
-                    if (code !== (currentQuestion.starterCode || '')) {
-                        currentQuestion.userAnswer = code;
-                        currentQuestion.isAnswered = true;
-                    }
-                }
-                examState.currentQuestionIndex = index;
-                renderQuestion();
-                renderSidebar();
-            };
+        const selectOption = (index) => {
+            const q = examState.questions[examState.currentQuestionIndex];
+            q.userAnswer = index;
+            q.isAnswered = true;
+            renderSidebar();
+            renderQuestion();
+        };
 
-            const updateNavButtons = () => {
-                dom.prevBtn.disabled = examState.currentQuestionIndex === 0;
-                const isLast = examState.currentQuestionIndex === examState.questions.length - 1;
-                dom.nextBtn.style.display = isLast ? 'none' : 'inline-flex';
-                dom.submitBtn.style.display = isLast ? 'inline-flex' : 'none';
-            };
-
-            const startTimer = () => {
-                if (examState.timerInterval) clearInterval(examState.timerInterval);
-                examState.timerInterval = setInterval(() => {
-                    examState.timeLeft--;
-                    const mins = Math.floor(examState.timeLeft / 60);
-                    const secs = examState.timeLeft % 60;
-                    dom.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                    if (examState.timeLeft <= 300) dom.timer.classList.add('warning');
-                    if (examState.timeLeft <= 60) dom.timer.classList.add('danger');
-                    if (examState.timeLeft <= 0) { clearInterval(examState.timerInterval); handleSubmit(true); }
-                }, 1000);
-            };
-
-            const runCode = async () => {
-                const question = examState.questions[examState.currentQuestionIndex];
+        const navigateToQuestion = (index) => {
+            const currentQuestion = examState.questions[examState.currentQuestionIndex];
+            if (currentQuestion.type === 'Coding' && editor) {
                 const code = editor.getValue();
-                dom.consoleOutput.textContent = 'Executing...';
-                
-                try {
-                    const testCases = question.testCases.filter(tc => !tc.hidden);
-                    let resultsHTML = '';
-                    for (const tc of testCases) {
-                        const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
-                        const fullCode = `${code}\nprint(${question.functionName}(${inputArgs}))`;
-                        let output = await pyodide.runPythonAsync(fullCode);
-                        
-                        if (JSON.stringify(output) === JSON.stringify(tc.expected)) {
-                             resultsHTML += `<p style="color: var(--color-success);">Test Case Passed</p>`;
-                        } else {
-                            resultsHTML += `<p style="color: var(--color-danger);">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
-                        }
-                    }
-                    dom.consoleOutput.innerHTML = resultsHTML || "Execution finished with no output.";
-                } catch(e) {
-                    dom.consoleOutput.textContent = `Error: ${e.message}`;
+                if (code.trim() !== (currentQuestion.starterCode || '').trim()) {
+                    currentQuestion.userAnswer = code;
+                    currentQuestion.isAnswered = true;
                 }
-            };
+            }
+            examState.currentQuestionIndex = index;
+            renderQuestion();
+            renderSidebar();
+        };
+
+        const updateNavButtons = () => {
+            dom.prevBtn.disabled = examState.currentQuestionIndex === 0;
+            const isLast = examState.currentQuestionIndex === examState.questions.length - 1;
+            dom.nextBtn.style.display = isLast ? 'none' : 'inline-flex';
+            dom.submitBtn.style.display = isLast ? 'inline-flex' : 'none';
+        };
+
+        const startTimer = () => {
+            if (examState.timerInterval) clearInterval(examState.timerInterval);
+            examState.timerInterval = setInterval(() => {
+                examState.timeLeft--;
+                const mins = Math.floor(examState.timeLeft / 60);
+                const secs = examState.timeLeft % 60;
+                dom.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                if (examState.timeLeft <= 300) dom.timer.classList.add('warning');
+                if (examState.timeLeft <= 60) dom.timer.classList.add('danger');
+                if (examState.timeLeft <= 0) { clearInterval(examState.timerInterval); handleSubmit(true); }
+            }, 1000);
+        };
+
+        const runCode = async () => {
+            const question = examState.questions[examState.currentQuestionIndex];
+            const code = editor.getValue();
+            dom.consoleOutput.textContent = 'Executing...';
             
-            const handleSubmit = async (isAutoSubmit = false) => {
-                if (!isAutoSubmit && !confirm("Are you sure you want to submit your test?")) return;
-                clearInterval(examState.timerInterval);
-                dom.loadingOverlay.querySelector('p').textContent = 'Submitting...';
-                dom.loadingOverlay.style.display = 'flex';
-
-                let pointsReceived = 0;
-                let totalPoints = 0;
-                for(const q of examState.questions) {
-                    totalPoints += q.points;
-                    if (q.type === 'Mcq' && q.userAnswer === q.correctAnswer) {
-                        pointsReceived += q.points;
-                    } else if (q.type === 'Coding' && q.userAnswer) {
-                        let allPassed = true;
-                        if (!q.testCases || q.testCases.length === 0) allPassed = false;
-                        for (const tc of q.testCases) {
-                            try {
-                                const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
-                                const fullCode = `${q.userAnswer}\nprint(${q.functionName}(${inputArgs}))`;
-                                let output = await pyodide.runPythonAsync(fullCode);
-                                if (JSON.stringify(output) !== JSON.stringify(tc.expected)) { allPassed = false; break; }
-                            } catch(e) { allPassed = false; break; }
-                        }
-                        if(allPassed) pointsReceived += q.points;
+            try {
+                const testCases = question.testCases.filter(tc => !tc.hidden);
+                let resultsHTML = '';
+                for (const tc of testCases) {
+                    const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
+                    const fullCode = `${code}\nprint(${question.functionName}(${inputArgs}))`;
+                    let output = await pyodide.runPythonAsync(fullCode);
+                    
+                    if (JSON.stringify(output) === JSON.stringify(tc.expected)) {
+                         resultsHTML += `<p style="color: var(--color-success);">Test Case Passed</p>`;
+                    } else {
+                        resultsHTML += `<p style="color: var(--color-danger);">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
                     }
                 }
+                dom.consoleOutput.innerHTML = resultsHTML || "Execution finished with no output.";
+            } catch(e) {
+                dom.consoleOutput.textContent = `Error: ${e.message}`;
+            }
+        };
+        
+        const handleSubmit = async (isAutoSubmit = false) => {
+            if (!isAutoSubmit && !confirm("Are you sure you want to submit your test?")) return;
+            clearInterval(examState.timerInterval);
+            dom.loadingOverlay.querySelector('p').textContent = 'Submitting...';
+            dom.loadingOverlay.style.display = 'flex';
 
-                const scoreData = {
-                    userId: currentUser.uid, examId: examState.currentExamData.id, examName: examState.currentExamData.name,
-                    pointsReceived, totalPoints, timeTaken: examState.currentExamData.duration - examState.timeLeft,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                };
-
-                await db.collection('scores').add(scoreData);
-                renderResultsPage(scoreData);
-            };
-
-            const renderResultsPage = (scoreData) => {
-                const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is ${percentage}%.</p><p>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</p><a href="dashboard.html" class="nav-btn">Back to Dashboard</a></div>`;
-                showView('results-view');
-            };
-
-            const renderReviewGrid = () => {
-                dom.reviewGrid.innerHTML = '';
-                examState.questions.forEach((q, index) => {
-                    const btn = document.createElement('button');
-                    btn.className = `review-item-btn ${q.isAnswered ? 'answered' : 'unanswered'}`;
-                    btn.textContent = index + 1;
-                    btn.onclick = () => { navigateToQuestion(index); showView('exam-view'); };
-                    dom.reviewGrid.appendChild(btn);
-                });
-            };
-
-            const handleNext = () => {
-                const q = examState.questions[examState.currentQuestionIndex];
-                if (q.type === 'Coding') {
-                    const code = editor.getValue();
-                    if (code.trim() !== (q.starterCode || '').trim()) {
-                        q.userAnswer = code;
-                        q.isAnswered = true;
+            let pointsReceived = 0;
+            let totalPoints = 0;
+            for(const q of examState.questions) {
+                totalPoints += q.points;
+                if (q.type === 'Mcq' && q.userAnswer === q.correctAnswer) {
+                    pointsReceived += q.points;
+                } else if (q.type === 'Coding' && q.userAnswer) {
+                    let allPassed = true;
+                    if (!q.testCases || q.testCases.length === 0) allPassed = false;
+                    for (const tc of q.testCases) {
+                        try {
+                            const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
+                            const fullCode = `${q.userAnswer}\nprint(${q.functionName}(${inputArgs}))`;
+                            let output = await pyodide.runPythonAsync(fullCode);
+                            if (JSON.stringify(output) !== JSON.stringify(tc.expected)) { allPassed = false; break; }
+                        } catch(e) { allPassed = false; break; }
                     }
+                    if(allPassed) pointsReceived += q.points;
                 }
-                if (examState.currentQuestionIndex < examState.questions.length - 1) {
-                    navigateToQuestion(examState.currentQuestionIndex + 1);
-                }
+            }
+
+            const scoreData = {
+                userId: currentUser.uid, examId: examState.currentExamData.id, examName: examState.currentExamData.name,
+                pointsReceived, totalPoints, timeTaken: examState.currentExamData.duration - examState.timeLeft,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
-            
-            dom.prevBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex - 1));
-            dom.nextBtn.addEventListener('click', handleNext);
-            dom.submitBtn.addEventListener('click', () => { handleNext(); renderReviewGrid(); showView('review-view'); });
-            dom.endRoundBtn.addEventListener('click', () => { handleNext(); renderReviewGrid(); showView('review-view'); });
-            dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
-            dom.runCodeBtn.addEventListener('click', runCode);
-        });
+
+            await db.collection('scores').add(scoreData);
+            renderResultsPage(scoreData);
+        };
+
+        const renderResultsPage = (scoreData) => {
+            const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
+            dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is ${percentage}%.</p><p>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</p><a href="dashboard.html" class="nav-btn">Back to Dashboard</a></div>`;
+            showView('results-view');
+        };
+
+        const renderReviewGrid = () => {
+            dom.reviewGrid.innerHTML = '';
+            examState.questions.forEach((q, index) => {
+                const btn = document.createElement('button');
+                btn.className = `review-item-btn ${q.isAnswered ? 'answered' : 'unanswered'}`;
+                btn.textContent = index + 1;
+                btn.onclick = () => { navigateToQuestion(index); showView('exam-view'); };
+                dom.reviewGrid.appendChild(btn);
+            });
+        };
+
+        const handleNext = () => {
+            const q = examState.questions[examState.currentQuestionIndex];
+            if (q.type === 'Coding') {
+                const code = editor.getValue();
+                if (code.trim() !== (q.starterCode || '').trim()) {
+                    q.userAnswer = code;
+                    q.isAnswered = true;
+                }
+            }
+            if (examState.currentQuestionIndex < examState.questions.length - 1) {
+                navigateToQuestion(examState.currentQuestionIndex + 1);
+            }
+        };
+        
+        dom.prevBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex - 1));
+        dom.nextBtn.addEventListener('click', handleNext);
+        dom.submitBtn.addEventListener('click', () => { handleNext(); renderReviewGrid(); showView('review-view'); });
+        dom.endRoundBtn.addEventListener('click', () => { handleNext(); renderReviewGrid(); showView('review-view'); });
+        dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
+        dom.runCodeBtn.addEventListener('click', runCode);
+    });
     </script>
 </body>
 </html>
