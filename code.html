@@ -20,13 +20,15 @@
         .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
         .sidebar nav { flex-grow: 1; overflow-y: auto; }
         .problem-nav { list-style: none; }
-        .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), color var(--transition); border: 1px solid transparent; }
+        .problem-item { display: flex; flex-direction: column; align-items: stretch; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition); border: 1px solid transparent; }
         .problem-item:hover { background-color: var(--surface-dark); }
-        .problem-item.active { background-color: var(--surface-dark); color: white; font-weight: 600; border-color: var(--border-color); box-shadow: 0 0 15px rgba(var(--accent-glow-rgb), 0.2); }
-        .problem-item.solved .p-number { background-image: none; background-color: var(--success); color: white; }
+        .problem-item.active { background-color: var(--surface-dark); border-color: var(--border-color); box-shadow: 0 0 15px rgba(var(--accent-glow-rgb), 0.2); }
+        .problem-info { display: flex; align-items: center; }
         .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); }
         .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
+        .problem-item.solved .p-number { background-image: none; background-color: var(--success); color: white; }
         .p-title { font-size: 0.95rem; font-weight: 500; }
+        .submit-problem-btn { margin-top: 12px; width: 100%; }
         .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
         .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; gap: 16px; }
         .header-title { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
@@ -90,14 +92,14 @@
             <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
             <div class="sidebar-header"><h1 class="test-title" id="assignment-title"></h1></div>
             <nav><ul class="problem-nav" id="problem-list"></ul></nav>
+            <button id="submit-assignment-btn" class="btn submit-btn" disabled>Finish & Submit Assignment</button>
         </aside>
         <div class="main-content">
             <header class="main-header">
                 <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
                 <h1 class="header-title" id="main-header-title"></h1>
                 <div class="controls">
-                    <button id="run-btn" class="btn run-btn" disabled><div class="loader" style="display: none;"></div><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
-                    <button id="submit-btn" class="btn submit-btn" disabled><div class="loader" style="display: none;"></div><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
+                    <button id="run-btn" class="btn run-btn" disabled><div class="loader" style="display: none;"></div><svg><use href="#icon-play"></use></svg><span class="btn-text">Run Code</span></button>
                 </div>
             </header>
             <div class="mobile-nav">
@@ -121,7 +123,7 @@
                         <div class="tab active" data-tab="results">Test Results</div>
                         <div class="tab" data-tab="console">Console</div>
                     </div>
-                    <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit to see results.</p></div>
+                    <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run code or submit a problem to see results.</p></div>
                     <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
                 </div>
             </div>
@@ -149,7 +151,7 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), problemList: document.getElementById('problem-list'), assignmentTitle: document.getElementById('assignment-title'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn') };
+        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), problemList: document.getElementById('problem-list'), assignmentTitle: document.getElementById('assignment-title'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), submitAssignmentBtn: document.getElementById('submit-assignment-btn') };
         
         let currentUser, assignmentId, problems = [], currentProblemId, userCodeState = {}, editor, pyodide, solvedProblems = new Set();
 
@@ -157,15 +159,12 @@
             const urlParams = new URLSearchParams(window.location.search);
             assignmentId = urlParams.get('id');
             if (!assignmentId) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment ID not found.</p>'; return; }
-
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     currentUser = user;
                     await fetchData();
                     await initPyodideAndEditor();
-                } else {
-                    window.location.href = 'index.html';
-                }
+                } else { window.location.href = 'index.html'; }
             });
         }
 
@@ -177,14 +176,15 @@
             const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
             problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
-            scoresSnap.forEach(doc => solvedProblems.add(doc.data().problemId));
+            const submissionsSnap = await db.collection('users').doc(currentUser.uid).collection('submissions').where('assignmentId', '==', assignmentId).get();
+            submissionsSnap.forEach(doc => {
+                const sub = doc.data();
+                solvedProblems.add(sub.problemId);
+                userCodeState[sub.problemId] = sub.code;
+            });
 
-            if(problems.length > 0) {
-                currentProblemId = problems[0].id;
-            } else {
-                 DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>';
-            }
+            if(problems.length > 0) { currentProblemId = problems[0].id; } 
+            else { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; }
         }
 
         async function initPyodideAndEditor() {
@@ -192,10 +192,8 @@
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
             pyodide = await loadPyodide();
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
-            
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
             window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
-
             require(['vs/editor/editor.main'], () => {
                 editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
                 DOMElements.loadingOverlay.style.opacity = '0';
@@ -206,27 +204,42 @@
         }
 
         function init() {
-            problems.forEach(p => userCodeState[p.id] = p.starterCode);
+            problems.forEach(p => { if (!userCodeState[p.id]) userCodeState[p.id] = p.starterCode; });
             renderProblemList();
             loadProblem(currentProblemId);
             initEventListeners();
-            DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
+            DOMElements.runBtn.disabled = false;
             setMobileView('problem');
         }
 
         function initEventListeners() {
             DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
-            DOMElements.submitBtn.addEventListener('click', () => handleExecution(true));
+            DOMElements.problemList.addEventListener('click', handleProblemActions);
             DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
-            DOMElements.problemList.addEventListener('click', handleProblemSelect);
             const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
             DOMElements.menuToggle.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); });
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.mobileNavBtns.forEach(btn => btn.addEventListener('click', (e) => setMobileView(e.target.dataset.view)));
+            DOMElements.submitAssignmentBtn.addEventListener('click', handleFinalSubmission);
         }
 
-        function renderProblemList() { DOMElements.problemList.innerHTML = problems.map((p, i) => `<li class="problem-item ${solvedProblems.has(p.id) ? 'solved' : ''}" data-id="${p.id}"><div class="p-number">${i + 1}</div><div class="p-title">${p.title}</div></li>`).join(''); }
+        function renderProblemList() {
+            DOMElements.problemList.innerHTML = problems.map((p, i) => `
+                <li class="problem-item ${solvedProblems.has(p.id) ? 'solved' : ''}" data-id="${p.id}">
+                    <div class="problem-info">
+                        <div class="p-number">${i + 1}</div>
+                        <div class="p-title">${p.title}</div>
+                    </div>
+                    ${!solvedProblems.has(p.id) ? `<button class="btn submit-btn submit-problem-btn" data-problem-id="${p.id}"><span class="btn-text">Submit Problem</span></button>` : ''}
+                </li>`).join('');
+            checkAllProblemsSolved();
+        }
+        
+        function checkAllProblemsSolved() {
+            const allSolved = problems.every(p => solvedProblems.has(p.id));
+            DOMElements.submitAssignmentBtn.disabled = !allSolved;
+        }
 
         function loadProblem(problemId) {
             if (!problemId) return;
@@ -236,14 +249,25 @@
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             editor.setValue(userCodeState[problemId]);
+            editor.updateOptions({ readOnly: solvedProblems.has(problemId) });
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
             document.querySelectorAll('.problem-item').forEach(item => item.classList.toggle('active', item.dataset.id === problemId));
-            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
+            const resultsMessage = solvedProblems.has(problemId) ? '<div id="results-summary" class="success">Problem successfully submitted!</div>' : '<p style="color: var(--text-secondary);">Run code or submit a problem to see results.</p>';
+            DOMElements.resultsContent.innerHTML = resultsMessage;
             DOMElements.consoleOutput.textContent = 'No console output.';
             setMobileView('problem');
         }
         
-        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
+        function handleProblemActions(e) {
+            const problemItem = e.target.closest('.problem-item');
+            const submitButton = e.target.closest('.submit-problem-btn');
+            if (submitButton) {
+                handleExecution(true, submitButton.dataset.problemId);
+            } else if (problemItem && problemItem.dataset.id !== currentProblemId) {
+                loadProblem(problemItem.dataset.id);
+                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active');
+            }
+        }
 
         function setMobileView(view) {
             DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
@@ -253,18 +277,19 @@
             else if (view === 'results') DOMElements.bottomPanel.classList.add('mobile-view-active');
         }
 
-        async function handleExecution(isSubmission) {
-            setLoadingState(true, isSubmission);
+        async function handleExecution(isSubmission, problemIdForSubmission = null) {
+            const problemId = problemIdForSubmission || currentProblemId;
+            setLoadingState(true, isSubmission, problemId);
             DOMElements.resultsContent.innerHTML = '';
             const allLogs = [];
             pyodide.setStdout({ batched: (msg) => allLogs.push(msg) });
-            const problem = problems.find(p => p.id === currentProblemId);
+            const problem = problems.find(p => p.id === problemId);
             const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
             const results = [];
             for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
             DOMElements.consoleOutput.textContent = allLogs.length > 0 ? allLogs.join('\n') : 'No console output.';
-            renderResults(results, isSubmission);
-            setLoadingState(false, isSubmission);
+            renderResults(results, isSubmission, problem);
+            setLoadingState(false, isSubmission, problemId);
             document.querySelector('.tab[data-tab="results"]').click();
             setMobileView('results');
         }
@@ -275,32 +300,23 @@
             const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
             const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
             try {
-                const capturedOutput = { lines: [] };
-                pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); } });
                 await pyodide.runPythonAsync(fullScript);
-                const outputStr = capturedOutput.lines.join('\n');
-                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
-                if (resultMatch && resultMatch[1]) {
-                    const outputJs = JSON.parse(resultMatch[1]);
-                    result.output = outputJs;
-                    if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
-                } else { result.error = "Execution failed to produce a valid result."; }
-            } catch (e) { result.error = e.toString(); } 
-            finally { pyodide.setStdout(); }
+                const output = await pyodide.globals.get('result');
+                const outputJs = output.toJs ? output.toJs() : output;
+                result.output = outputJs;
+                if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
+            } catch (e) { result.error = e.toString(); }
             return { ...testCase, ...result };
         }
 
-        function renderResults(results, isSubmission) {
+        function renderResults(results, isSubmission, problem) {
             const passedCount = results.filter(r => r.status === 'pass').length;
             const totalCount = results.length;
             const success = passedCount === totalCount;
             let summaryHTML;
             if (isSubmission) {
                 summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><svg><use href="${success ? '#icon-check' : '#icon-close'}"></use></svg><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`;
-                if (success) {
-                    const problem = problems.find(p => p.id === currentProblemId);
-                    saveScore(problem);
-                }
+                if (success) saveProblemSubmission(problem);
             } else {
                 summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`;
             }
@@ -308,37 +324,56 @@
             DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
         }
 
-        async function saveScore(problem) {
+        async function saveProblemSubmission(problem) {
             if (solvedProblems.has(problem.id)) return;
-            const scoreData = {
-                userId: currentUser.uid,
-                assignmentId: assignmentId,
-                problemId: problem.id,
-                pointsReceived: problem.points,
+            const submissionData = {
+                userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id,
+                code: editor.getValue(), points: problem.points,
                 submittedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
             try {
-                await db.collection('codeScores').add(scoreData);
+                await db.collection('users').doc(currentUser.uid).collection('submissions').add(submissionData);
                 solvedProblems.add(problem.id);
                 renderProblemList();
-            } catch (e) { console.error("Error saving score:", e); }
+                loadProblem(problem.id); // Reload to lock editor
+            } catch (e) { console.error("Error saving submission:", e); }
         }
 
-        function setLoadingState(isLoading, isSubmission) {
-            const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
-            const otherBtn = isSubmission ? DOMElements.runBtn : DOMElements.submitBtn;
+        async function handleFinalSubmission() {
+            DOMElements.submitAssignmentBtn.disabled = true;
+            DOMElements.submitAssignmentBtn.textContent = 'Submitting...';
+            const submissionsSnap = await db.collection('users').doc(currentUser.uid).collection('submissions').where('assignmentId', '==', assignmentId).get();
+            let totalScore = 0;
+            submissionsSnap.forEach(doc => { totalScore += doc.data().points; });
+            try {
+                await db.collection('codeScores').add({
+                    userId: currentUser.uid,
+                    assignmentId: assignmentId,
+                    totalScore: totalScore,
+                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                alert(`Assignment submitted successfully! Your total score is ${totalScore}.`);
+                window.location.href = 'dashboard.html'; // Or a results page
+            } catch(e) {
+                console.error("Error submitting final score:", e);
+                alert("There was an error submitting your assignment. Please try again.");
+                DOMElements.submitAssignmentBtn.disabled = false;
+                DOMElements.submitAssignmentBtn.textContent = 'Finish & Submit Assignment';
+            }
+        }
+
+        function setLoadingState(isLoading, isSubmission, problemId) {
+            const btn = isSubmission ? document.querySelector(`.submit-problem-btn[data-problem-id="${problemId}"]`) : DOMElements.runBtn;
+            if (!btn) return;
             const btnText = btn.querySelector('.btn-text');
-            const loader = btn.querySelector('.loader');
-            const icon = btn.querySelector('svg');
-            otherBtn.disabled = isLoading;
+            const loader = document.createElement('div');
+            loader.className = 'loader';
             if (isLoading) {
-                btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
-                loader.style.display = 'block';
-                icon.style.display = 'none';
+                btn.disabled = true;
+                if (btnText) btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
             } else {
-                btnText.textContent = isSubmission ? 'Submit' : 'Run';
-                loader.style.display = 'none';
-                icon.style.display = 'block';
+                btn.disabled = false;
+                if (btnText) btnText.textContent = isSubmission ? 'Submit Problem' : 'Run Code';
             }
         }
         
