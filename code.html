@@ -367,8 +367,7 @@
                 const outputStr = capturedOutput.lines.join('\n');
                 const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
                 const consoleText = consoleLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
-                if (isSubmission) { DOMElements.consoleOutput.textContent = "Console output is hidden for submissions."; } 
-                else { DOMElements.consoleOutput.textContent = consoleText || 'No console output.'; }
+                DOMElements.consoleOutput.textContent = consoleText || 'No console output.';
                 
                 if (resultMatch && resultMatch[1]) {
                     const outputJs = JSON.parse(resultMatch[1]);
@@ -397,7 +396,7 @@
             } else {
                 summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} test cases passed.</div>`;
             }
-            const resultsHTML = results.map((r, i) => `<div class="result-item"><span>Test Case #${i + 1}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join('');
+            const resultsHTML = results.map((r, i) => `<div class="result-item"><span>${r.hidden ? `Hidden Test Case #${i + 1}` : `Test Case #${i + 1}`}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join('');
             DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
         }
 
