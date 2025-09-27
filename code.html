@@ -27,7 +27,9 @@
         .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); }
         .problem-item.active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
         .problem-item.solved .p-number { background-image: none; background-color: var(--success); color: white; }
-        .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
+        .p-title-wrapper { flex-grow: 1; }
+        .p-title { font-size: 0.95rem; font-weight: 500; }
+        .p-points { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
         .p-status { font-size: 1.5rem; color: var(--success); opacity: 0; transition: opacity 0.3s; }
         .problem-item.solved .p-status { opacity: 1; }
         .problem-item-footer { margin-top: 12px; display: none; }
@@ -230,7 +232,7 @@
                 pyodide = await loadPyodide();
             } catch (error) {
                 console.error("Pyodide failed to load:", error);
-                DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>';
+                DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please check your network connection and try again.</p>';
                 return;
             }
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
@@ -275,18 +277,26 @@
                 <li class="problem-item ${solvedProblems.has(p.id) ? 'solved' : ''}" data-id="${p.id}">
                     <div class="problem-item-header">
                         <div class="p-number">${i + 1}</div>
-                        <div class="p-title">${p.title}</div>
+                        <div class="p-title-wrapper">
+                            <div class="p-title">${p.title}</div>
+                            <div class="p-points">${p.points} pts</div>
+                        </div>
                         <div class="p-status"><i class='bx bxs-check-circle'></i></div>
                     </div>
                     <div class="problem-item-footer">
-                         <button class="btn submit-problem-btn" data-id="${p.id}" ${solvedProblems.has(p.id) ? 'disabled' : ''}><div class="loader" style="display: none;"></div><svg><use href="#icon-send"></use></svg><span class="btn-text">${solvedProblems.has(p.id) ? 'Solved' : 'Submit Problem'}</span></button>
+                         <button class="btn submit-problem-btn" data-id="${p.id}"><div class="loader" style="display: none;"></div><svg><use href="#icon-send"></use></svg><span class="btn-text">${solvedProblems.has(p.id) ? 'Solved' : 'Submit Problem'}</span></button>
                     </div>
                 </li>`).join('');
 
             DOMElements.problemList.querySelectorAll('.submit-problem-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    handleExecution(true);
+                    if (solvedProblems.has(e.currentTarget.dataset.id)) return;
+                    if(e.currentTarget.closest('.problem-item').dataset.id === currentProblemId) {
+                        handleExecution(true);
+                    } else {
+                        alert("Please select this problem to submit it.");
+                    }
                 });
             });
         }
@@ -296,7 +306,10 @@
             if (editor && currentProblemId) userCodeState[currentProblemId] = editor.getValue();
             currentProblemId = problemId;
             const problem = problems.find(p => p.id === problemId);
-            editor.updateOptions({ readOnly: solvedProblems.has(problemId) });
+            const isSolved = solvedProblems.has(problemId);
+            editor.updateOptions({ readOnly: isSolved });
+            DOMElements.runBtn.disabled = isSolved;
+            
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             editor.setValue(userCodeState[problemId]);
@@ -313,13 +326,7 @@
             setMobileView('problem');
         }
         
-        function handleProblemSelect(e) {
-            const target = e.target.closest('.problem-item');
-            if (target && !e.target.closest('.submit-problem-btn') && target.dataset.id !== currentProblemId) {
-                loadProblem(target.dataset.id);
-                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active');
-            }
-        }
+        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
 
         function setMobileView(view) {
             DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
@@ -337,7 +344,8 @@
             pyodide.setStdout({ batched: () => {} }); 
             const problem = problems.find(p => p.id === currentProblemId);
             const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
-            const results = await Promise.all(testsToRun.map(test => executeTestCase(editor.getValue(), test, problem.functionName)));
+            const results = [];
+            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
             renderResults(results, isSubmission);
             setLoadingState(false, btn);
             document.querySelector('.tab[data-tab="results"]').click();
@@ -350,23 +358,30 @@
             const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
             const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
             try {
+                const capturedOutput = { lines: [] };
                 let consoleLogs = '';
-                pyodide.setStdout({ batched: (msg) => { consoleLogs += msg + '\n'; } });
-                pyodide.setStderr({ batched: (msg) => { consoleLogs += msg + '\n'; } });
+                pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); consoleLogs += msg + '\n'; } });
+                pyodide.setStderr({ batched: (msg) => { capturedOutput.lines.push(msg); consoleLogs += msg + '\n'; } });
+
                 await pyodide.runPythonAsync(fullScript);
-                const resultMatch = consoleLogs.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                const outputStr = capturedOutput.lines.join('\n');
+                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+
                 DOMElements.consoleOutput.textContent = consoleLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim() || 'No console output.';
+                
                 if (resultMatch && resultMatch[1]) {
                     const outputJs = JSON.parse(resultMatch[1]);
                     result.output = outputJs;
                     if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
-                } else { result.error = "Execution failed to produce a valid result."; }
+                } else {
+                    result.error = "Execution failed to produce a valid result.";
+                }
             } catch (e) { 
                 result.error = e.toString();
                 DOMElements.consoleOutput.textContent = e.toString();
             } 
             finally { pyodide.setStdout(); pyodide.setStderr(); }
-            return { ...result, hidden: testCase.hidden };
+            return { ...testCase, ...result };
         }
 
         function renderResults(results, isSubmission) {
@@ -381,19 +396,15 @@
             } else {
                 summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`;
             }
-            
-            const resultsHTML = results.map((r, i) => {
-                const originalTestCase = (isSubmission ? problems.find(p=>p.id===currentProblemId).testCases : problems.find(p=>p.id===currentProblemId).testCases.filter(tc => !tc.hidden))[i];
-                const caseTitle = originalTestCase.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`;
-                const statusIcon = r.status === 'pass' ? '#icon-check' : '#icon-close';
-                return `<div class="result-item"><span>${caseTitle}</span><div class="status status-${r.status}"><svg><use href="${statusIcon}"></use></svg>${r.status.toUpperCase()}</div></div>`;
-            }).join('');
-
+            const resultsHTML = results.map((r, i) => `<div class="result-item"><span>${r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join('');
             DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
         }
 
         async function saveScore(problem, wasCorrect) {
-            if (solvedProblems.has(problem.id)) return;
+            const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
+            const scoreSnap = await scoreRef.get();
+            if (!scoreSnap.empty) return;
+
             const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
             try {
                 await db.collection('codeScores').add(scoreData);
@@ -412,8 +423,10 @@
             DOMElements.submitAssignmentBtn.disabled = true;
             let totalScoreObtained = 0;
             const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
+            
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
             scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
+
             const finalScoreData = {
                 userId: currentUser.uid, assignmentId: assignmentId,
                 assignmentName: assignment.name, subjectId: assignment.subjectId,
@@ -435,12 +448,13 @@
                 loader.style.display = 'block';
                 icon.style.display = 'none';
             } else {
-                btnText.textContent = btn.classList.contains('submit-problem-btn') ? 'Solved' : 'Run';
+                const problem = problems.find(p => p.id === currentProblemId);
+                const isSolved = solvedProblems.has(problem.id);
+                btnText.textContent = btn.classList.contains('submit-problem-btn') ? (isSolved ? 'Solved' : 'Submit Problem') : 'Run';
                 loader.style.display = 'none';
                 icon.style.display = 'block';
-                 if(btn.classList.contains('submit-problem-btn')){
-                    const problem = problems.find(p => p.id === currentProblemId);
-                    if(solvedProblems.has(problem.id)) btn.disabled = true;
+                if (isSolved && btn.classList.contains('submit-problem-btn')) {
+                    btn.disabled = true;
                 }
             }
         }
