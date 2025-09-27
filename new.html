@@ -377,9 +377,8 @@
                         buttonText = isCompleted ? 'View Submission' : (isLocked ? 'Locked' : 'Start Challenge');
                     }
                     
-                    const iconClass = item.type === 'mcq' ? 'bxs-file-doc' : 'bxs-code-alt';
                     if(isLocked && !isCompleted) card.style.pointerEvents = 'none';
-
+                    const iconClass = item.type === 'mcq' ? 'bxs-file-doc' : 'bxs-code-alt';
                     card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${isLocked && !isCompleted ? 'card-button--locked' : ''}">${buttonText}</button>`;
                     
                     if (isCompleted) {
