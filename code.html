@@ -132,8 +132,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -182,15 +182,20 @@
 
             if(problems.length > 0) {
                 currentProblemId = problems[0].id;
+            } else {
+                 DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>';
             }
         }
 
         async function initPyodideAndEditor() {
+            if (!problems.length) return;
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
             pyodide = await loadPyodide();
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
             
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+            window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
+
             require(['vs/editor/editor.main'], () => {
                 editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
                 DOMElements.loadingOverlay.style.opacity = '0';
