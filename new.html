@@ -349,12 +349,13 @@
                 assessments.forEach(item => {
                     const card = document.createElement('a');
                     card.className = 'card';
-                    let meta = '', buttonText = '', isCompleted = false;
+                    let meta = '', buttonText = '', isCompleted = false, isLocked = false;
 
                     if (item.type === 'mcq') {
                         const exam = item.data;
                         const score = userScores.get(item.id);
                         card.href = `exam.html?id=${item.id}`;
+                        isLocked = exam.isLocked;
                         
                         if (score) {
                             isCompleted = true;
@@ -363,22 +364,23 @@
                             buttonText = 'View Results';
                         } else {
                             meta = `MCQ Exam • ${exam.questions.length} Questions • ${exam.duration / 60} min`;
-                            buttonText = exam.isLocked ? 'Locked' : 'Start Exam';
+                            buttonText = isLocked ? 'Locked' : 'Start Exam';
                         }
-                        if(exam.isLocked && !score) card.style.pointerEvents = 'none';
-                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-file-doc'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${exam.isLocked && !score ? 'card-button--locked' : ''}">${buttonText}</button>`;
-
                     } else if (item.type === 'code') {
                         const assignment = item.data;
                         const problems = problemsByAssignment[item.id] || [];
                         const solvedCount = problems.filter(pId => userCodeScores.has(pId)).length;
                         isCompleted = problems.length > 0 && solvedCount === problems.length;
                         card.href = `code.html?id=${item.id}`;
+                        isLocked = assignment.isLocked;
                         meta = `Code Assignment • ${solvedCount}/${problems.length} Solved • ${assignment.duration / 60} min`;
-                        buttonText = isCompleted ? 'View Submission' : (assignment.isLocked ? 'Locked' : 'Start Challenge');
-                        if(assignment.isLocked && !isCompleted) card.style.pointerEvents = 'none';
-                        card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx bxs-code-alt'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${assignment.isLocked && !isCompleted ? 'card-button--locked' : ''}">${buttonText}</button>`;
+                        buttonText = isCompleted ? 'View Submission' : (isLocked ? 'Locked' : 'Start Challenge');
                     }
+                    
+                    const iconClass = item.type === 'mcq' ? 'bxs-file-doc' : 'bxs-code-alt';
+                    if(isLocked && !isCompleted) card.style.pointerEvents = 'none';
+
+                    card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${isLocked && !isCompleted ? 'card-button--locked' : ''}">${buttonText}</button>`;
                     
                     if (isCompleted) {
                         card.dataset.status = 'completed';
@@ -402,8 +404,7 @@
                     scoreCount++;
                 });
 
-                let totalPointsPossible = 0;
-                let totalPointsEarned = 0;
+                let totalPointsPossible = 0, totalPointsEarned = 0;
                 for(const assignDoc of codeAssignmentsSnapshot.docs) {
                     const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignDoc.id).get();
                     problemsSnap.forEach(probDoc => {
