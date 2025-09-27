@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding Challenge</title>
+    <style>
+        :root { --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color: #4B5563; --text-primary: #F9FAFB; --text-secondary: #9CA3AF; --accent-glow-rgb: 79, 70, 229; --accent-start: #4F46E5; --accent-end: #7C3AED; --success: #10B981; --danger: #EF4444; --success-light-rgb: 16, 185, 129; --danger-light-rgb: 239, 68, 68; --border-radius: 8px; --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        svg { display: block; width: 100%; height: 100%; }
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); transition: opacity 0.3s; }
+        .loading-spinner { border: 4px solid var(--surface-light); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .ide-dashboard { display: flex; height: 100%; position: relative; }
+        .sidebar { width: 320px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
+        .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
+        .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
+        .sidebar nav { flex-grow: 1; overflow-y: auto; }
+        .problem-nav { list-style: none; }
+        .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), color var(--transition); border: 1px solid transparent; }
+        .problem-item:hover { background-color: var(--surface-dark); }
+        .problem-item.active { background-color: var(--surface-dark); color: white; font-weight: 600; border-color: var(--border-color); box-shadow: 0 0 15px rgba(var(--accent-glow-rgb), 0.2); }
+        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); }
+        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
+        .p-title { font-size: 0.95rem; font-weight: 500; }
+        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
+        .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; gap: 16px; }
+        .header-title { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
+        .controls { display: flex; gap: 12px; }
+        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); }
+        .btn svg { width: 18px; height: 18px; }
+        .btn.run-btn { background-color: var(--surface-light); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: var(--border-color); }
+        .btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
+        .btn:disabled { background-color: var(--surface-light); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
+        .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 80px); }
+        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
+        #problem-details { flex: 1; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; overflow-y: auto; border: 1px solid var(--border-color); }
+        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;}
+        #problem-statement { line-height: 1.7; color: var(--text-secondary); }
+        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
+        .test-case { background-color: var(--bg-dark); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
+        #editor-container { flex: 1; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
+        #resizer-h { height: 16px; cursor: row-resize; display: flex; align-items: center; justify-content: center; } #resizer-h::before { content: '•••'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        #resizer-v { width: 16px; cursor: col-resize; display: flex; align-items: center; justify-content: center; } #resizer-v::before { content: '⋮'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        .bottom-panel { flex-shrink: 0; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; }
+        .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; }
+        .tab { padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all var(--transition); } .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
+        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; height: 100%; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
+        #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        #results-summary.success { background-color: rgba(var(--success-light-rgb), 0.1); color: var(--success); } #results-summary.failure { background-color: rgba(var(--danger-light-rgb), 0.1); color: var(--danger); }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 8px; }
+        .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
+        .status-pass { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); } .status-fail { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
+        .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        @media (max-width: 800px) {
+            .main-content { padding: 16px; }
+            .ide-layout { height: calc(100% - 120px); }
+            .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
+            .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; text-align: center; font-size: 0.9rem; }
+            .mobile-nav-btn.active { color: var(--text-primary); border-bottom-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border-bottom-style: solid; border-bottom-width: 2px; }
+            .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; }
+            .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
+            #resizer-h, #resizer-v { display: none; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: var(--shadow-lg); } .sidebar.active { transform: translateX(0); }
+            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--surface-light); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
+            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--border-color); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
+            .header-title { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay"><div class="loading-spinner"></div><p>Initializing Python Environment...</p></div>
+    <div style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
+            <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
+            <symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol>
+            <symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
+            <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
+        </svg>
+    </div>
+
+    <main class="ide-dashboard" style="display: none;">
+        <aside class="sidebar" id="sidebar">
+            <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
+            <div class="sidebar-header"><h1 class="test-title"></h1></div>
+            <nav><ul class="problem-nav" id="problem-list"></ul></nav>
+        </aside>
+        <div class="main-content">
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                <h1 class="header-title" id="main-header-title"></h1>
+                <div class="controls">
+                    <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                    <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
+                </div>
+            </header>
+            <div class="mobile-nav">
+                <button class="mobile-nav-btn active" data-view="problem">Problem</button>
+                <button class="mobile-nav-btn" data-view="code">Code</button>
+                <button class="mobile-nav-btn" data-view="results">Results</button>
+            </div>
+            <div class="ide-layout">
+                <div class="top-panel mobile-view-active">
+                    <div id="problem-details" class="mobile-view-active">
+                        <div id="problem-statement"></div>
+                        <h2 style="margin-top: 24px;">Public Test Cases</h2>
+                        <div id="public-test-cases"></div>
+                    </div>
+                    <div id="resizer-v"></div>
+                    <div id="editor-container"></div>
+                </div>
+                <div id="resizer-h"></div>
+                <div class="bottom-panel">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="results">Test Results</div>
+                        <div class="tab" data-tab="console">Console</div>
+                    </div>
+                    <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit to see results.</p></div>
+                    <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
+                </div>
+            </div>
+        </div>
+        <div class="overlay" id="overlay"></div>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+            authDomain: "exam-2e799.firebaseapp.com",
+            projectId: "exam-2e799",
+            storageBucket: "exam-2e799.firebasestorage.app",
+            messagingSenderId: "472506328501",
+            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+            measurementId: "G-NX21HT3JKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), dashboard: document.querySelector('.ide-dashboard'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), problemList: document.getElementById('problem-list'), mainHeaderTitle: document.getElementById('main-header-title'), sidebarTitle: document.querySelector('.test-title'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNav: document.querySelector('.mobile-nav'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn') };
+        let currentUser, currentChallenge, challenges = [], userCodeState = {}, editor, pyodide;
+
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                initPyodide();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function initPyodide() {
+            pyodide = await loadPyodide();
+            initEditor();
+        }
+
+        function initEditor() {
+            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+            require(['vs/editor/editor.main'], () => {
+                editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
+                init();
+            });
+        }
+
+        async function init() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const challengeId = urlParams.get('id');
+            if (!challengeId) { alert("Challenge ID missing."); return; }
+            
+            const challengeDoc = await db.collection('codingChallenges').doc(challengeId).get();
+            if (!challengeDoc.exists) { alert("Challenge not found."); return; }
+            currentChallenge = { id: challengeDoc.id, ...challengeDoc.data() };
+
+            const subjectDoc = await db.collection('subjects').doc(currentChallenge.subjectId).get();
+            DOMElements.sidebarTitle.textContent = subjectDoc.exists() ? subjectDoc.data().name : "Coding Problems";
+
+            const challengesSnap = await db.collection('codingChallenges').where('subjectId', '==', currentChallenge.subjectId).get();
+            challenges = challengesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            
+            challenges.forEach(p => userCodeState[p.id] = p.starterCode);
+            renderProblemList();
+            loadProblem(challengeId);
+            initEventListeners();
+            DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
+            setMobileView('problem');
+            DOMElements.loadingOverlay.style.opacity = '0';
+            setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.dashboard.style.display = 'flex'; }, 300);
+        }
+
+        function initEventListeners() {
+            DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
+            DOMElements.submitBtn.addEventListener('click', () => handleExecution(true));
+            DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
+            DOMElements.problemList.addEventListener('click', handleProblemSelect);
+            const toggleMobileMenu = () => { DOMElements.sidebar.classList.toggle('active'); DOMElements.overlay.classList.toggle('active'); };
+            DOMElements.menuToggle.addEventListener('click', toggleMobileMenu);
+            DOMElements.closeMenuBtn.addEventListener('click', toggleMobileMenu);
+            DOMElements.overlay.addEventListener('click', toggleMobileMenu);
+            DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
+            initResizers();
+        }
+
+        function renderProblemList() { DOMElements.problemList.innerHTML = challenges.map((p, i) => `<li class="problem-item" data-id="${p.id}"><div class="p-number">${i + 1}</div><div class="p-title">${p.title}</div></li>`).join(''); }
+
+        function loadProblem(challengeId) {
+            if (editor) userCodeState[currentChallenge.id] = editor.getValue();
+            currentChallenge = challenges.find(p => p.id === challengeId);
+            DOMElements.mainHeaderTitle.textContent = currentChallenge.title;
+            DOMElements.problemStatement.innerHTML = currentChallenge.statement;
+            editor.setValue(userCodeState[challengeId]);
+            DOMElements.publicTestCases.innerHTML = currentChallenge.testCases.map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
+            document.querySelectorAll('.problem-item').forEach(item => item.classList.toggle('active', item.dataset.id === challengeId));
+            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
+            DOMElements.consoleOutput.textContent = 'No console output.';
+            setMobileView('problem');
+        }
+        
+        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && target.dataset.id !== currentChallenge.id) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
+
+        function setMobileView(view) {
+            DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+            [DOMElements.problemDetails, DOMElements.editorContainer, DOMElements.bottomPanel].forEach(p => p.classList.remove('mobile-view-active'));
+            if (view === 'problem') DOMElements.problemDetails.classList.add('mobile-view-active');
+            else if (view === 'code') DOMElements.editorContainer.classList.add('mobile-view-active');
+            else if (view === 'results') DOMElements.bottomPanel.classList.add('mobile-view-active');
+        }
+
+        async function handleExecution(isSubmission) {
+            setLoadingState(true, isSubmission);
+            DOMElements.resultsContent.innerHTML = '';
+            const allLogs = [];
+            pyodide.setStdout({ batched: (msg) => allLogs.push(msg) });
+            pyodide.setStderr({ batched: (msg) => allLogs.push(msg) });
+            const testsToRun = isSubmission ? currentChallenge.testCases : currentChallenge.testCases.slice(0, currentChallenge.publicTestCount || currentChallenge.testCases.length);
+            const results = [];
+            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test)); }
+            DOMElements.consoleOutput.textContent = allLogs.length > 0 ? allLogs.join('\n') : 'No console output.';
+            renderResults(results, isSubmission);
+            if (isSubmission) await saveScore(results);
+            setLoadingState(false, isSubmission);
+            document.querySelector('.tab[data-tab="results"]').click();
+            setMobileView('results');
+        }
+        
+        async function executeTestCase(code, testCase) {
+            let result = { status: 'fail', error: null, output: null };
+            const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
+            const funcCall = `${currentChallenge.functionName}(${Object.keys(testCase.input).join(', ')})`;
+            const driverCode = `\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
+            const fullScript = code + driverCode;
+            try {
+                const capturedOutput = { lines: [] };
+                pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); } });
+                const pyProxy = await pyodide.runPythonAsync(fullScript);
+                const outputStr = capturedOutput.lines.join('\n');
+                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                if (resultMatch && resultMatch[1]) {
+                    const outputJs = JSON.parse(resultMatch[1]);
+                    result.output = outputJs;
+                    if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
+                } else { result.error = "Execution failed to produce a valid result."; }
+            } catch (e) { result.error = e.toString(); } 
+            finally { pyodide.setStdout(); }
+            return { ...testCase, ...result };
+        }
+
+        function renderResults(results, isSubmission) {
+            const passedCount = results.filter(r => r.status === 'pass').length, totalCount = results.length;
+            let summaryHTML;
+            if (isSubmission) { const success = passedCount === totalCount; const icon = success ? '#icon-check' : '#icon-close'; summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><svg><use href="${icon}"></use></svg><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; } 
+            else { summaryHTML = `<div id="results-summary" class="${passedCount === totalCount ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`; }
+            const resultsHTML = results.map((r, i) => {
+                const statusIcon = r.status === 'pass' ? '#icon-check' : '#icon-close';
+                return `<div class="result-item"><span>Test Case #${i + 1}</span><div class="status status-${r.status}"><svg><use href="${statusIcon}"></use></svg>${r.status.toUpperCase()}</div></div>`;
+            }).join('');
+            DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
+        }
+
+        async function saveScore(results) {
+            const passedCount = results.filter(r => r.status === 'pass').length;
+            const totalCount = results.length;
+            const totalPoints = totalCount * 10;
+            const pointsReceived = passedCount * 10;
+            
+            const scoreData = {
+                userId: currentUser.uid,
+                examId: currentChallenge.id,
+                examName: currentChallenge.title,
+                examType: 'coding',
+                pointsReceived: pointsReceived,
+                totalPoints: totalPoints,
+                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            await db.collection('scores').add(scoreData);
+        }
+
+        function setLoadingState(isLoading, isSubmission) {
+            const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
+            const btnText = btn.querySelector('.btn-text');
+            DOMElements.runBtn.disabled = isLoading; DOMElements.submitBtn.disabled = isLoading;
+            if (isLoading) { btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); btn.querySelector('svg').style.display = 'none'; } 
+            else { btn.querySelector('.loader')?.remove(); btnText.textContent = isSubmission ? 'Submit' : 'Run'; btn.querySelector('svg').style.display = 'inline-block'; }
+        }
+        
+        function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
+        
+        function initResizers() {
+            const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
+            const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
+            let onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flex = `0 1 ${Math.max(25, Math.min(75, percentage))}%`; bottomPanel.style.flex = `0 1 ${100 - parseFloat(topPanel.style.flexBasis)}%`; };
+            const onMouseUpH = () => document.removeEventListener('mousemove', onMouseMoveH);
+            resizerH.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveH); document.addEventListener('mouseup', onMouseUpH, { once: true }); });
+            let onMouseMoveV = (e) => { const containerWidth = problemDetails.parentElement.clientWidth, newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; const percentage = newLeftWidth / containerWidth * 100; problemDetails.style.flex = `0 1 ${Math.max(25, Math.min(75, percentage))}%`; editorContainer.style.flex = `0 1 ${100 - parseFloat(problemDetails.style.flexBasis)}%`; };
+            const onMouseUpV = () => document.removeEventListener('mousemove', onMouseMoveV);
+            resizerV.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', onMouseUpV, { once: true }); });
+        }
+    });
+    </script>
+</body>
+</html>
