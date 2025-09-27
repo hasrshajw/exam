@@ -77,12 +77,11 @@
         .problem-card { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow); }
         .problem-header { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
         .problem-title { font-size: 1.1rem; font-weight: 600; flex-grow: 1; }
-        .problem-header-actions { display: flex; align-items: center; gap: 1rem; }
+        .problem-header-actions { display: flex; align-items: center; gap: 0.5rem; }
         .problem-header i { font-size: 1.5rem; transition: transform 0.3s ease; }
-        .problem-header.active i { transform: rotate(180deg); }
-        .problem-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; border-top: 1px solid transparent; }
-        .problem-header.active + .problem-body { border-color: var(--border-color); }
-        .problem-body-content { padding: 1.5rem; }
+        .problem-header.active i.toggle-arrow { transform: rotate(180deg); }
+        .problem-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+        .problem-body-content { padding: 0 1.5rem 1.5rem; }
         .problem-actions { text-align: right; padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; }
         .menu-toggle, .sidebar-close-btn { display: none; }
         @media (max-width: 1024px) {
@@ -159,7 +158,6 @@
             </section>
         </main>
     </div>
-
     <div class="modal-overlay" id="assignment-modal">
         <div class="modal-content">
             <div class="modal-header"><h3 id="assignment-modal-title"></h3><button class="close-btn">&times;</button></div>
@@ -174,7 +172,7 @@
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save</button></div>
         </div>
     </div>
-
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -247,9 +245,8 @@
                 const tbody = document.getElementById('assignments-tbody');
                 db.collection('codeAssignments').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
                     const assignmentPromises = snapshot.docs.map(doc => 
-                        db.collection('codeProblems').where('assignmentId', '==', doc.id).get().then(snap => ({
-                            id: doc.id, ...doc.data(), problemCount: snap.size
-                        }))
+                        db.collection('codeProblems').where('assignmentId', '==', doc.id).get()
+                          .then(snap => ({ id: doc.id, ...doc.data(), problemCount: snap.size }))
                     );
                     Promise.all(assignmentPromises).then(assignments => {
                         tbody.innerHTML = '';
@@ -292,15 +289,15 @@
             const createProblemCard = (id, problem) => {
                 const card = document.createElement('div');
                 card.className = 'problem-card';
-                card.dataset.id = id;
+                card.dataset.id = id || `new_${Date.now()}`;
                 card.innerHTML = `
-                    <button type="button" class="problem-header">
+                    <div class="problem-header">
                         <span class="problem-title">${problem.title || 'New Problem'}</span>
                         <div class="problem-header-actions">
-                            <button type="button" class="delete-btn delete-problem-btn" data-id="${id}"><i class='bx bxs-trash'></i></button>
-                            <i class='bx bx-chevron-down'></i>
+                            <button type="button" class="delete-btn delete-problem-btn" style="font-size: 1.2rem;"><i class='bx bxs-trash'></i></button>
+                            <i class='bx bx-chevron-down toggle-arrow'></i>
                         </div>
-                    </button>
+                    </div>
                     <div class="problem-body">
                         <div class="problem-body-content">
                             <form class="problem-form">
@@ -369,28 +366,29 @@
                 if (button.id === 'add-problem-btn') document.getElementById('problems-container').appendChild(createProblemCard(null, {}));
                 if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
             });
-            
+
             document.getElementById('problems-container').addEventListener('click', e => {
                 const target = e.target;
-                const button = target.closest('button');
-                const header = target.closest('.problem-header');
+                const problemHeader = target.closest('.problem-header');
 
-                if (header) {
-                    if (!button) { // Ensure click is on header but not a button inside it
-                        header.classList.toggle('active');
-                        const content = header.nextElementSibling;
-                        content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
-                    } else if (button.matches('.delete-problem-btn')) {
-                        if (confirm('Are you sure?')) {
-                            const problemCard = button.closest('.problem-card');
-                            const problemId = problemCard.dataset.id;
-                            if (problemId && !problemId.startsWith('new_')) db.collection('codeProblems').doc(problemId).delete();
-                            problemCard.remove();
-                        }
+                if (problemHeader && !target.closest('button')) {
+                    problemHeader.classList.toggle('active');
+                    const content = problemHeader.nextElementSibling;
+                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                }
+
+                const button = target.closest('button');
+                if (!button) return;
+
+                if (button.matches('.add-testcase-btn')) button.previousElementSibling.appendChild(createTestCaseForm());
+                if (button.matches('.remove-item-btn')) button.parentElement.remove();
+                if (button.matches('.delete-problem-btn')) {
+                    if (confirm('Are you sure?')) {
+                        const problemCard = button.closest('.problem-card');
+                        const problemId = problemCard.dataset.id;
+                        if (problemId && !problemId.startsWith('new_')) db.collection('codeProblems').doc(problemId).delete();
+                        else problemCard.remove();
                     }
-                } else if (button) {
-                    if (button.matches('.add-testcase-btn')) button.previousElementSibling.appendChild(createTestCaseForm());
-                    if (button.matches('.remove-item-btn')) button.parentElement.remove();
                 }
             });
 
@@ -404,15 +402,14 @@
                     name: document.getElementById('assignment-name').value.trim(), 
                     subjectId: currentSubject.id,
                     duration: parseInt(document.getElementById('assignment-duration').value, 10) * 60,
-                    isLocked: document.getElementById('assignment-locked').checked
+                    isLocked: document.getElementById('assignment-locked').checked,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 if (!data.name || isNaN(data.duration)) { alert('Name and Duration are required'); return; }
                 if (id) {
+                    delete data.createdAt;
                     await db.collection('codeAssignments').doc(id).update(data);
-                } else {
-                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
-                    await db.collection('codeAssignments').add(data);
-                }
+                } else await db.collection('codeAssignments').add(data);
                 document.getElementById('assignment-modal').classList.remove('show');
             });
             
@@ -458,6 +455,7 @@
                     const header = problemCard.querySelector('.problem-header');
                     header.classList.remove('active');
                     header.nextElementSibling.style.maxHeight = null;
+
                 } catch (err) { alert(`Error saving problem: ${err.message}`); }
             });
 
