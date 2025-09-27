@@ -230,7 +230,7 @@
                 pyodide = await loadPyodide();
             } catch (error) {
                 console.error("Pyodide failed to load:", error);
-                DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>';
+                DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please check your network connection and try again.</p>';
                 return;
             }
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
@@ -349,16 +349,14 @@
             const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
             const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
             try {
-                const capturedOutput = { lines: [] };
-                let consoleLogs = '';
-                pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); consoleLogs += msg + '\n'; } });
-                pyodide.setStderr({ batched: (msg) => { capturedOutput.lines.push(msg); consoleLogs += msg + '\n'; } });
+                let capturedLogs = '';
+                pyodide.setStdout({ batched: (msg) => { capturedLogs += msg + '\n'; } });
+                pyodide.setStderr({ batched: (msg) => { capturedLogs += msg + '\n'; } });
 
                 await pyodide.runPythonAsync(fullScript);
-                const outputStr = capturedOutput.lines.join('\n');
-                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
-
-                DOMElements.consoleOutput.textContent = consoleLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim() || 'No console output.';
+                const resultMatch = capturedLogs.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                const consoleLogs = capturedLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
+                DOMElements.consoleOutput.textContent = consoleLogs || 'No console output.';
                 
                 if (resultMatch && resultMatch[1]) {
                     const outputJs = JSON.parse(resultMatch[1]);
@@ -436,12 +434,12 @@
                 loader.style.display = 'block';
                 icon.style.display = 'none';
             } else {
-                btnText.textContent = btn.classList.contains('submit-problem-btn') ? 'Solved' : 'Run';
+                const isSolved = solvedProblems.has(currentProblemId);
+                btnText.textContent = btn.classList.contains('submit-problem-btn') ? (isSolved ? 'Solved' : 'Submit Problem') : 'Run';
                 loader.style.display = 'none';
                 icon.style.display = 'block';
-                 if(btn.classList.contains('submit-problem-btn')){
-                    const problem = problems.find(p => p.id === currentProblemId);
-                    if(solvedProblems.has(problem.id)) btn.disabled = true;
+                if(btn.classList.contains('submit-problem-btn')){
+                    btn.disabled = isSolved;
                 }
             }
         }
