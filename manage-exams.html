@@ -109,6 +109,9 @@
         .accordion-button.active i { transform: rotate(180deg); }
         .accordion-content-inner { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: var(--widget-bg); }
         .question-card { padding: 1.5rem; position: relative; }
+        .test-cases-section { margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+        .test-case-card { position: relative; background-color: var(--hover-bg); padding: 1rem; border-radius: 8px; margin-top: 1rem; border: 1px solid var(--border-color); }
+        .test-case-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .remove-item-btn:hover { background-color: var(--danger-hover); color: white; }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
@@ -344,6 +347,7 @@
                     cardsContainer.innerHTML = '';
                     snapshot.docs.sort((a, b) => a.data().name.localeCompare(b.data().name)).forEach(doc => {
                         const exam = doc.data();
+                        
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${exam.name}</td>
@@ -361,6 +365,7 @@
                                 </div>
                             </td>`;
                         tbody.appendChild(row);
+
                         const card = document.createElement('div');
                         card.className = 'exam-card-mobile';
                         card.innerHTML = `<div class="card-header"><h3>${exam.name}</h3><span class="status-badge ${!exam.isLocked ? 'active' : 'locked'}">${!exam.isLocked ? 'Active' : 'Locked'}</span></div><div class="card-body"><div class="info-item"><i class='bx bx-time-five'></i> ${exam.duration / 60} min</div><div class="info-item"><i class='bx bx-list-ul'></i> ${exam.questions.length} Questions</div><div class="info-item"><i class='bx bx-calendar-x'></i> ${formatDate(exam.deadline)}</div></div><div class="card-footer"><button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button></div>`;
@@ -408,7 +413,7 @@
                 const item = document.createElement('div');
                 item.className = 'accordion-item';
                 item.dataset.type = 'Coding';
-                item.innerHTML = `<button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Coding Problem'}</span><i class='bx bx-chevron-down'></i></button><div class="accordion-content-inner"><div class="question-card"><button type="button" class="remove-item-btn">&times;</button><div class="form-field"><label>Problem Title</label><input type="text" class="question-title" value="${question.title || ''}" required></div><div class="form-field"><label>Problem Statement (HTML)</label><textarea rows="4" class="coding-statement">${question.statement || ''}</textarea></div><div class="form-grid"><div class="form-field"><label>Function Name</label><input type="text" class="coding-function-name" value="${question.functionName || ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div><div class="form-field"><label>Starter Code</label><textarea rows="6" class="coding-starter-code">${question.starterCode || ''}</textarea></div><div class="form-field"><label>Test Cases</label><div class="test-cases-container"></div><button type="button" class="secondary-btn add-test-case-btn">+ Add Test Case</button></div></div></div>`;
+                item.innerHTML = `<button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Coding Problem'}</span><i class='bx bx-chevron-down'></i></button><div class="accordion-content-inner"><div class="question-card"><button type="button" class="remove-item-btn">&times;</button><div class="form-field"><label>Problem Title</label><input type="text" class="question-title" value="${question.title || ''}" required></div><div class="form-field"><label>Problem Statement (HTML)</label><textarea rows="4" class="coding-statement">${question.statement || ''}</textarea></div><div class="form-grid"><div class="form-field"><label>Function Name</label><input type="text" class="coding-function-name" value="${question.functionName || ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div><div class="form-field"><label>Starter Code</label><textarea rows="6" class="coding-starter-code">${question.starterCode || ''}</textarea></div><div class="test-cases-section"><div class="questions-header" style="border:none; padding:0; margin-bottom:1rem;"><h4>Test Cases</h4><button type="button" class="secondary-btn add-test-case-btn">+ Add</button></div><div class="test-cases-container"></div></div></div></div>`;
                 container.appendChild(item);
                 const testCasesContainer = item.querySelector('.test-cases-container');
                 if (question.testCases) question.testCases.forEach(tc => addTestCaseForm(testCasesContainer, tc));
@@ -417,8 +422,8 @@
 
             const addTestCaseForm = (container, testCase = {}) => {
                 const item = document.createElement('div');
-                item.className = 'question-card';
-                item.innerHTML = `<button type="button" class="remove-item-btn">&times;</button><div class="form-field"><label>Input (JSON)</label><textarea rows="2" class="test-case-input">${JSON.stringify(testCase.input) || ''}</textarea></div><div class="form-field"><label>Expected Output (JSON)</label><textarea rows="2" class="test-case-output">${JSON.stringify(testCase.expected) || ''}</textarea></div>`;
+                item.className = 'test-case-card';
+                item.innerHTML = `<button type="button" class="remove-item-btn">&times;</button><div class="test-case-grid"><div class="form-field"><label>Input (JSON)</label><textarea rows="2" class="test-case-input">${testCase.input ? JSON.stringify(testCase.input) : ''}</textarea></div><div class="form-field"><label>Expected Output (JSON)</label><textarea rows="2" class="test-case-output">${testCase.expected ? JSON.stringify(testCase.expected) : ''}</textarea></div></div>`;
                 container.appendChild(item);
             };
 
@@ -471,15 +476,16 @@
                 }
                 if (button.matches('.delete-exam-btn, .action-item.delete')) {
                     closeActionsheet();
-                    if (confirm('Are you sure you want to delete this exam? This action cannot be undone.')) {
+                    if (confirm('Are you sure? This cannot be undone.')) {
                         await db.collection('exams').doc(button.dataset.id).delete();
                     }
                 }
                 if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
                 if (button.id === 'add-question-btn') document.getElementById('add-question-menu').classList.toggle('show');
-                if (button.matches('.add-test-case-btn')) addTestCaseForm(button.previousElementSibling);
+                if (button.matches('.add-test-case-btn')) addTestCaseForm(button.nextElementSibling);
                 if (button.matches('.remove-item-btn')) {
-                    button.parentElement.parentElement.remove();
+                    const itemToRemove = button.parentElement.matches('.test-case-card') ? button.parentElement : button.parentElement.parentElement;
+                    itemToRemove.remove();
                     document.querySelectorAll('#questions-container .accordion-button span').forEach((span, index) => {
                         const currentText = span.textContent.split('. ')[1];
                         span.textContent = `${index + 1}. ${currentText}`;
@@ -500,12 +506,10 @@
                 e.currentTarget.classList.remove('show');
             });
             
-            document.querySelector('#exams-tbody, #exams-cards').addEventListener('change', async e => {
-                 if (e.target.classList.contains('lock-toggle')) await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
-            });
-
-            document.getElementById('actionsheet-lock-toggle').addEventListener('change', async e => {
-                await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+            document.querySelector('body').addEventListener('change', async e => {
+                 if (e.target.matches('.lock-toggle, #actionsheet-lock-toggle')) {
+                    await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+                }
             });
 
             document.getElementById('save-exam-btn').addEventListener('click', async () => {
@@ -523,9 +527,9 @@
                         });
                     } else if (type === 'Coding') {
                         const testCases = [];
-                        card.querySelectorAll('.test-cases-container .question-card').forEach(tcCard => {
+                        card.querySelectorAll('.test-cases-container .test-case-card').forEach(tcCard => {
                             try { testCases.push({ input: JSON.parse(tcCard.querySelector('.test-case-input').value || '{}'), expected: JSON.parse(tcCard.querySelector('.test-case-output').value || 'null'), });
-                            } catch(e) { console.error('Invalid JSON in test case', e); }
+                            } catch(e) { console.error('Invalid JSON in test case:', e); alert('Error: Invalid JSON format in one of the test cases. Please correct it.'); throw e; }
                         });
                         questions.push({
                             title: card.querySelector('.question-title').value.trim(), statement: card.querySelector('.coding-statement').value.trim(),
