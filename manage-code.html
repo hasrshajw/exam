@@ -172,7 +172,7 @@
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save</button></div>
         </div>
     </div>
-
+    
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -243,15 +243,15 @@
 
             const loadAssignments = () => {
                 const tbody = document.getElementById('assignments-tbody');
-                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
+                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id)
+                  .onSnapshot(snapshot => {
                     const assignmentPromises = snapshot.docs.map(doc => 
-                        db.collection('codeProblems').where('assignmentId', '==', doc.id).get().then(snap => ({
-                            id: doc.id, ...doc.data(), problemCount: snap.size
-                        }))
+                        db.collection('codeProblems').where('assignmentId', '==', doc.id).get()
+                          .then(snap => ({ id: doc.id, ...doc.data(), problemCount: snap.size }))
                     );
                     Promise.all(assignmentPromises).then(assignments => {
                         tbody.innerHTML = '';
-                        assignments.forEach(assignment => {
+                        assignments.sort((a,b) => a.name.localeCompare(b.name)).forEach(assignment => {
                             const row = document.createElement('tr');
                             row.innerHTML = `
                                 <td>${assignment.name}</td>
@@ -290,7 +290,7 @@
             const createProblemCard = (id, problem) => {
                 const card = document.createElement('div');
                 card.className = 'problem-card';
-                card.dataset.id = id;
+                card.dataset.id = id || `new_${Date.now()}`;
                 card.innerHTML = `
                     <div class="problem-header">
                         <span class="problem-title">${problem.title || 'New Problem'}</span>
@@ -370,12 +370,14 @@
 
             document.getElementById('problems-container').addEventListener('click', e => {
                 const button = e.target.closest('button');
-                if (!button) return;
-
-                if (button.matches('.problem-header')) {
-                    button.classList.toggle('active');
-                    const content = button.nextElementSibling;
-                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                if (!button) {
+                    const header = e.target.closest('.problem-header');
+                    if (header) {
+                        header.classList.toggle('active');
+                        const content = header.nextElementSibling;
+                        content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                    }
+                    return;
                 }
                 if (button.matches('.add-testcase-btn')) button.previousElementSibling.appendChild(createTestCaseForm());
                 if (button.matches('.remove-item-btn')) button.parentElement.remove();
@@ -383,8 +385,8 @@
                     if (confirm('Are you sure?')) {
                         const problemCard = button.closest('.problem-card');
                         const problemId = problemCard.dataset.id;
-                        if (problemId) db.collection('codeProblems').doc(problemId).delete();
-                        else problemCard.remove();
+                        if (problemId && !problemId.startsWith('new_')) db.collection('codeProblems').doc(problemId).delete();
+                        problemCard.remove();
                     }
                 }
             });
@@ -442,7 +444,7 @@
                 if (!data.title || isNaN(data.points) || !data.functionName) { alert('Title, Points, and Function Name are required.'); return; }
 
                 try {
-                    if (problemId) {
+                    if (problemId && !problemId.startsWith('new_')) {
                         await db.collection('codeProblems').doc(problemId).update(data);
                     } else {
                         const newDocRef = await db.collection('codeProblems').add(data);
@@ -452,6 +454,7 @@
                     const header = problemCard.querySelector('.problem-header');
                     header.classList.remove('active');
                     header.nextElementSibling.style.maxHeight = null;
+
                 } catch (err) { alert(`Error saving problem: ${err.message}`); }
             });
 
