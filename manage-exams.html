@@ -45,11 +45,11 @@
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .back-btn { margin-bottom: 1.5rem; font-weight: 600; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; }
         .back-btn:hover { color: var(--brand-purple-hover); }
         .back-btn i { font-size: 1.25rem; }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
         .primary-btn { background-color: var(--brand-purple); color: white; }
         .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
@@ -95,8 +95,9 @@
         .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
         .full-width { grid-column: 1 / -1; }
-        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; position: relative; }
+        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
         .questions-header h4 { font-size: 1.125rem; font-weight: 700; }
+        .add-question-menu-container { position: relative; }
         .add-question-menu { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background: var(--widget-bg); border-radius: 8px; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); z-index: 20; padding: 0.5rem; display: none; }
         .add-question-menu.show { display: block; }
         .add-question-menu button { display: block; width: 100%; text-align: left; padding: 0.5rem 1rem; background: none; border: none; cursor: pointer; border-radius: 6px; }
@@ -112,6 +113,28 @@
         .remove-item-btn:hover { background-color: var(--danger-hover); color: white; }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
         .modal-footer .secondary-btn { margin-right: 0.75rem; }
+        .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
+        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .actionsheet.show { transform: translateY(0); }
+        .actionsheet-header { text-align: center; padding-bottom: 1rem; }
+        .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
+        .actionsheet-title { font-size: 1.25rem; font-weight: 700; }
+        .actionsheet-content { padding: 1rem 0; border-top: 1px solid var(--border-color); margin-top: 1rem; }
+        .actionsheet-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: left; margin-bottom: 1.5rem; }
+        .actionsheet-details p { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+        .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: var(--hover-bg); border-radius: 12px; }
+        .actionsheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem 0 0.5rem 0; }
+        .actionsheet-btn { padding: 0.9rem 1rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .actionsheet-btn svg { width: 18px; height: 18px; }
+        .actionsheet-btn:active { transform: scale(0.97); }
+        .actionsheet-btn--edit { background-color: var(--hover-bg); color: var(--text-primary); }
+        .actionsheet-btn--edit:hover { background-color: var(--border-color); }
+        .actionsheet-btn--delete { background-color: var(--danger-bg-light); color: var(--danger-text-dark); }
+        .actionsheet-btn--delete:hover { background-color: #FECACA; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); color: var(--text-secondary); font-weight: 600; padding: 0.9rem; border: none; cursor: pointer; border-radius: 12px; transition: background-color 0.2s ease; }
+        .actionsheet-cancel button:hover { background-color: var(--hover-bg); }
         .mobile-card-view { display: none; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -198,7 +221,7 @@
         <div class="modal-content">
             <div class="modal-header"><h3 id="exam-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
-                <form id="exam-form" novalidate>
+                <form id="exam-form">
                     <input type="hidden" id="exam-id">
                     <div class="form-grid">
                         <div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div>
@@ -207,11 +230,11 @@
                     </div>
                     <div class="questions-header">
                         <h4>Questions</h4>
-                        <div style="position: relative;">
+                        <div class="add-question-menu-container">
                             <button type="button" class="primary-btn" id="add-question-btn"><i class='bx bx-plus'></i> Add Question</button>
                             <div class="add-question-menu" id="add-question-menu">
-                                <button type="button" data-type="Mcq">Add MCQ</button>
-                                <button type="button" data-type="Coding">Add Coding Problem</button>
+                                <button type="button" data-type="Mcq">MCQ</button>
+                                <button type="button" data-type="Coding">Coding Problem</button>
                             </div>
                         </div>
                     </div>
@@ -322,13 +345,25 @@
                     snapshot.docs.sort((a, b) => a.data().name.localeCompare(b.data().name)).forEach(doc => {
                         const exam = doc.data();
                         const row = document.createElement('tr');
-                        row.innerHTML = `<td>${exam.name}</td><td>${exam.duration / 60} min</td><td>${exam.questions.length}</td><td>${formatDate(exam.deadline)}</td><td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td><td class="actions-cell"><div class="actions-container"><button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button><div class="action-dropdown"><button class="action-item edit" data-id="${doc.id}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>Edit</button><button class="action-item delete" data-id="${doc.id}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>Delete</button></div></div></td>`;
+                        row.innerHTML = `
+                            <td>${exam.name}</td>
+                            <td>${exam.duration / 60} min</td>
+                            <td>${exam.questions.length}</td>
+                            <td>${formatDate(exam.deadline)}</td>
+                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
+                            <td class="actions-cell">
+                                <div class="actions-container">
+                                    <button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                    <div class="action-dropdown">
+                                        <button class="action-item edit" data-id="${doc.id}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg> Edit</button>
+                                        <button class="action-item delete" data-id="${doc.id}"><svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg> Delete</button>
+                                    </div>
+                                </div>
+                            </td>`;
                         tbody.appendChild(row);
                         const card = document.createElement('div');
                         card.className = 'exam-card-mobile';
-                        const statusClass = !exam.isLocked ? 'active' : 'locked';
-                        const statusText = !exam.isLocked ? 'Active' : 'Locked';
-                        card.innerHTML = `<div class="card-header"><h3>${exam.name}</h3><span class="status-badge ${statusClass}">${statusText}</span></div><div class="card-body"><div class="info-item"><i class='bx bx-time-five'></i> ${exam.duration / 60} min</div><div class="info-item"><i class='bx bx-list-ul'></i> ${exam.questions.length} Qs</div><div class="info-item"><i class='bx bx-calendar-x'></i> ${formatDate(exam.deadline)}</div></div><div class="card-footer"><button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button></div>`;
+                        card.innerHTML = `<div class="card-header"><h3>${exam.name}</h3><span class="status-badge ${!exam.isLocked ? 'active' : 'locked'}">${!exam.isLocked ? 'Active' : 'Locked'}</span></div><div class="card-body"><div class="info-item"><i class='bx bx-time-five'></i> ${exam.duration / 60} min</div><div class="info-item"><i class='bx bx-list-ul'></i> ${exam.questions.length} Questions</div><div class="info-item"><i class='bx bx-calendar-x'></i> ${formatDate(exam.deadline)}</div></div><div class="card-footer"><button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button></div>`;
                         cardsContainer.appendChild(card);
                     });
                 });
@@ -340,35 +375,46 @@
                 modal.querySelector('#exam-id').value = exam ? exam.id : '';
                 modal.querySelector('#exam-name').value = exam ? exam.name : '';
                 modal.querySelector('#exam-duration').value = exam ? exam.duration / 60 : '';
-                modal.querySelector('#exam-deadline-date').value = (exam && exam.deadline) ? new Date(exam.deadline.seconds * 1000).toISOString().split('T')[0] : '';
+                if (exam && exam.deadline) {
+                    modal.querySelector('#exam-deadline-date').value = new Date(exam.deadline.seconds * 1000).toISOString().split('T')[0];
+                } else {
+                    modal.querySelector('#exam-deadline-date').value = '';
+                }
                 const questionsContainer = modal.querySelector('#questions-container');
                 questionsContainer.innerHTML = '';
-                if (exam) { exam.questions.forEach(q => (q.type === 'Coding') ? addCodingForm(q) : addMcqForm(q)); }
+                if (exam) {
+                    exam.questions.forEach(q => {
+                        if (q.type === 'Mcq') addMcqForm(q);
+                        if (q.type === 'Coding') addCodingForm(q);
+                    });
+                }
                 modal.classList.add('show');
             };
 
             const addMcqForm = (question = {}) => {
                 const container = document.getElementById('questions-container');
-                const index = container.children.length;
+                const index = container.querySelectorAll('.accordion-item').length;
                 const item = document.createElement('div');
                 item.className = 'accordion-item';
                 item.dataset.type = 'Mcq';
-                item.innerHTML = `<button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New MCQ'}</span><i class='bx bx-chevron-down'></i></button><div class="accordion-content-inner"><div class="question-card"><button type="button" class="remove-item-btn" aria-label="Remove Question">&times;</button><div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div><div class="form-grid">${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}<div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div></div></div>`;
+                item.innerHTML = `<button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New MCQ'}</span><i class='bx bx-chevron-down'></i></button><div class="accordion-content-inner"><div class="question-card"><button type="button" class="remove-item-btn">&times;</button><div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title">${question.title || ''}</textarea></div><div class="form-grid">${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}<div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div></div></div>`;
                 container.appendChild(item);
+                item.querySelector('.question-title').addEventListener('input', e => item.querySelector('.accordion-button span').textContent = `${index + 1}. ${e.target.value || 'New MCQ'}`);
             };
 
             const addCodingForm = (question = {}) => {
                 const container = document.getElementById('questions-container');
-                const index = container.children.length;
+                const index = container.querySelectorAll('.accordion-item').length;
                 const item = document.createElement('div');
                 item.className = 'accordion-item';
                 item.dataset.type = 'Coding';
-                item.innerHTML = `<button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Coding Problem'}</span><i class='bx bx-chevron-down'></i></button><div class="accordion-content-inner"><div class="question-card"><button type="button" class="remove-item-btn">&times;</button><div class="form-field"><label>Problem Title</label><input type="text" class="question-title" value="${question.title || ''}" required></div><div class="form-field"><label>Problem Statement (HTML allowed)</label><textarea rows="4" class="coding-statement">${question.statement || ''}</textarea></div><div class="form-grid"><div class="form-field"><label>Function Name</label><input type="text" class="coding-function-name" value="${question.functionName || ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div><div class="form-field"><label>Starter Code</label><textarea rows="6" class="coding-starter-code">${question.starterCode || ''}</textarea></div><div class="form-field"><label>Test Cases</label><div class="test-cases-container"></div><button type="button" class="secondary-btn add-test-case-btn">+ Add Test Case</button></div></div></div>`;
+                item.innerHTML = `<button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Coding Problem'}</span><i class='bx bx-chevron-down'></i></button><div class="accordion-content-inner"><div class="question-card"><button type="button" class="remove-item-btn">&times;</button><div class="form-field"><label>Problem Title</label><input type="text" class="question-title" value="${question.title || ''}" required></div><div class="form-field"><label>Problem Statement (HTML)</label><textarea rows="4" class="coding-statement">${question.statement || ''}</textarea></div><div class="form-grid"><div class="form-field"><label>Function Name</label><input type="text" class="coding-function-name" value="${question.functionName || ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div></div><div class="form-field"><label>Starter Code</label><textarea rows="6" class="coding-starter-code">${question.starterCode || ''}</textarea></div><div class="form-field"><label>Test Cases</label><div class="test-cases-container"></div><button type="button" class="secondary-btn add-test-case-btn">+ Add Test Case</button></div></div></div>`;
                 container.appendChild(item);
                 const testCasesContainer = item.querySelector('.test-cases-container');
-                if (question.testCases) { question.testCases.forEach(tc => addTestCaseForm(testCasesContainer, tc)); }
+                if (question.testCases) question.testCases.forEach(tc => addTestCaseForm(testCasesContainer, tc));
+                item.querySelector('.question-title').addEventListener('input', e => item.querySelector('.accordion-button span').textContent = `${index + 1}. ${e.target.value || 'New Coding Problem'}`);
             };
-            
+
             const addTestCaseForm = (container, testCase = {}) => {
                 const item = document.createElement('div');
                 item.className = 'question-card';
@@ -382,7 +428,7 @@
                 const exam = doc.data();
                 document.getElementById('actionsheet-title').textContent = exam.name;
                 document.getElementById('actionsheet-duration').textContent = `${exam.duration / 60} min`;
-                document.getElementById('actionsheet-questions').textContent = `${exam.questions.length} Qs`;
+                document.getElementById('actionsheet-questions').textContent = `${exam.questions.length} Questions`;
                 document.getElementById('actionsheet-deadline').textContent = formatDate(exam.deadline);
                 const toggle = document.getElementById('actionsheet-lock-toggle');
                 toggle.checked = !exam.isLocked;
@@ -400,33 +446,23 @@
             };
             
             document.addEventListener('click', async e => {
+                const isDropdownButton = e.target.closest('.action-menu-btn');
+                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
+                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                        dropdown.classList.remove('active');
+                        dropdown.closest('.actions-container').classList.remove('menu-open');
+                    }
+                });
+                if (isDropdownButton) {
+                    const dropdown = isDropdownButton.nextElementSibling;
+                    const container = isDropdownButton.closest('.actions-container');
+                    dropdown.classList.toggle('active');
+                    container.classList.toggle('menu-open', dropdown.classList.contains('active'));
+                }
+                
                 const button = e.target.closest('button');
-                if (!button) {
-                    const isOutsideDropdown = !e.target.closest('.actions-container');
-                    if (isOutsideDropdown) {
-                        document.querySelectorAll('.action-dropdown.active').forEach(d => d.classList.remove('active'));
-                    }
-                    const isOutsideMenu = !e.target.closest('.questions-header');
-                    if (isOutsideMenu) {
-                        document.getElementById('add-question-menu').classList.remove('show');
-                    }
-                    return;
-                }
-
-                if (button.matches('.action-menu-btn')) { button.nextElementSibling.classList.toggle('active'); }
-                if (button.id === 'add-question-btn') { document.getElementById('add-question-menu').classList.toggle('show'); }
-                if (button.matches('[data-type="Mcq"]')) addMcqForm();
-                if (button.matches('[data-type="Coding"]')) addCodingForm();
-                if (button.matches('.add-test-case-btn')) addTestCaseForm(button.previousElementSibling);
-                if (button.matches('.remove-item-btn')) {
-                    const itemToRemove = button.parentElement.matches('.test-cases-container .question-card') ? button.parentElement : button.closest('.accordion-item');
-                    itemToRemove.remove();
-                }
-                if (button.matches('.accordion-button')) {
-                    button.classList.toggle('active');
-                    const content = button.nextElementSibling;
-                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
-                }
+                if (!button) return;
+                
                 if (button.id === 'create-exam-btn') openExamModal();
                 if (button.matches('.edit-exam-btn, .action-item.edit')) {
                     closeActionsheet();
@@ -435,17 +471,41 @@
                 }
                 if (button.matches('.delete-exam-btn, .action-item.delete')) {
                     closeActionsheet();
-                    if (confirm('Are you sure?')) await db.collection('exams').doc(button.dataset.id).delete();
+                    if (confirm('Are you sure you want to delete this exam? This action cannot be undone.')) {
+                        await db.collection('exams').doc(button.dataset.id).delete();
+                    }
                 }
                 if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
+                if (button.id === 'add-question-btn') document.getElementById('add-question-menu').classList.toggle('show');
+                if (button.matches('.add-test-case-btn')) addTestCaseForm(button.previousElementSibling);
+                if (button.matches('.remove-item-btn')) {
+                    button.parentElement.parentElement.remove();
+                    document.querySelectorAll('#questions-container .accordion-button span').forEach((span, index) => {
+                        const currentText = span.textContent.split('. ')[1];
+                        span.textContent = `${index + 1}. ${currentText}`;
+                    });
+                }
+                if (button.matches('.accordion-button')) {
+                    button.classList.toggle('active');
+                    const content = button.nextElementSibling;
+                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                }
                 if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
                 if (button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
             });
             
-            document.querySelector('.content-body').addEventListener('change', async e => {
-                 if (e.target.matches('.lock-toggle, #actionsheet-lock-toggle')) {
-                    await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
-                }
+            document.getElementById('add-question-menu').addEventListener('click', e => {
+                if (e.target.dataset.type === 'Mcq') addMcqForm();
+                if (e.target.dataset.type === 'Coding') addCodingForm();
+                e.currentTarget.classList.remove('show');
+            });
+            
+            document.querySelector('#exams-tbody, #exams-cards').addEventListener('change', async e => {
+                 if (e.target.classList.contains('lock-toggle')) await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+            });
+
+            document.getElementById('actionsheet-lock-toggle').addEventListener('change', async e => {
+                await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
             });
 
             document.getElementById('save-exam-btn').addEventListener('click', async () => {
@@ -454,9 +514,8 @@
 
                 const id = document.getElementById('exam-id').value;
                 const questions = [];
-                document.querySelectorAll('#questions-container > .accordion-item').forEach(item => {
-                    const type = item.dataset.type;
-                    const card = item.querySelector('.question-card');
+                document.querySelectorAll('#questions-container > .accordion-item').forEach(card => {
+                    const type = card.dataset.type;
                     if (type === 'Mcq') {
                         questions.push({
                             title: card.querySelector('.question-title').value.trim(), options: [...card.querySelectorAll('.question-option')].map(opt => opt.value.trim()),
@@ -465,16 +524,12 @@
                     } else if (type === 'Coding') {
                         const testCases = [];
                         card.querySelectorAll('.test-cases-container .question-card').forEach(tcCard => {
-                            try {
-                                testCases.push({
-                                    input: JSON.parse(tcCard.querySelector('.test-case-input').value || '{}'),
-                                    expected: JSON.parse(tcCard.querySelector('.test-case-output').value || 'null'),
-                                });
+                            try { testCases.push({ input: JSON.parse(tcCard.querySelector('.test-case-input').value || '{}'), expected: JSON.parse(tcCard.querySelector('.test-case-output').value || 'null'), });
                             } catch(e) { console.error('Invalid JSON in test case', e); }
                         });
                         questions.push({
-                            title: card.querySelector('.question-title').value, statement: card.querySelector('.coding-statement').value,
-                            functionName: card.querySelector('.coding-function-name').value, starterCode: card.querySelector('.coding-starter-code').value,
+                            title: card.querySelector('.question-title').value.trim(), statement: card.querySelector('.coding-statement').value.trim(),
+                            functionName: card.querySelector('.coding-function-name').value.trim(), starterCode: card.querySelector('.coding-starter-code').value,
                             points: parseInt(card.querySelector('.question-points').value, 10), testCases: testCases, type: 'Coding'
                         });
                     }
@@ -482,18 +537,11 @@
 
                 const date = document.getElementById('exam-deadline-date').value;
                 let deadline = null;
-                if(date) {
-                    const d = new Date(date); d.setHours(23, 59, 59, 999);
-                    deadline = firebase.firestore.Timestamp.fromDate(d);
-                }
-
-                const data = { name: document.getElementById('exam-name').value, duration: parseInt(document.getElementById('exam-duration').value, 10) * 60, subjectId: currentSubject.id, questions, deadline };
-                if (id) {
-                    await db.collection('exams').doc(id).update(data);
-                } else {
-                    data.isLocked = true;
-                    await db.collection('exams').add(data);
-                }
+                if(date) { const d = new Date(date); d.setHours(23, 59, 59, 999); deadline = firebase.firestore.Timestamp.fromDate(d); }
+                const data = { name: document.getElementById('exam-name').value.trim(), duration: parseInt(document.getElementById('exam-duration').value, 10) * 60, subjectId: currentSubject.id, questions, deadline };
+                
+                if (id) await db.collection('exams').doc(id).update(data);
+                else { data.isLocked = true; await db.collection('exams').add(data); }
                 document.getElementById('exam-modal').classList.remove('show');
             });
         });
