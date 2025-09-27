@@ -66,7 +66,7 @@
         .testcase-card { border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; position: relative; }
         .remove-item-btn { position: absolute; top: 8px; right: 8px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; }
         .modal-footer { padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; text-align: right; }
-        .problem-container { display: flex; flex-direction: column; gap: 1rem; }
+        .problem-container { display: flex; flex-direction: column; gap: 1.5rem; }
         .problem-card { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow); }
         .problem-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
         .problem-title { font-size: 1.1rem; font-weight: 600; }
@@ -341,8 +341,8 @@
                         const problemsQuery = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
                         const batch = db.batch();
                         problemsQuery.forEach(doc => batch.delete(doc.ref));
+                        batch.delete(db.collection('codeAssignments').doc(assignmentId));
                         await batch.commit();
-                        await db.collection('codeAssignments').doc(assignmentId).delete();
                     }
                 }
                 if (button.matches('.manage-problems-btn')) {
@@ -382,6 +382,7 @@
             document.getElementById('save-problem-btn').addEventListener('click', async () => {
                 const id = document.getElementById('problem-id').value;
                 const testCases = [];
+                let valid = true;
                 document.querySelectorAll('#testcases-container .testcase-card').forEach(card => {
                     try {
                         testCases.push({
@@ -389,8 +390,11 @@
                             expected: JSON.parse(card.querySelector('.testcase-expected').value),
                             hidden: card.querySelector('.testcase-hidden').checked
                         });
-                    } catch (e) { alert('Invalid JSON in test cases!'); throw e; }
+                    } catch (e) { valid = false; }
                 });
+
+                if (!valid) { alert('Invalid JSON in test cases! Please check your inputs.'); return; }
+
                 const data = {
                     title: document.getElementById('problem-title').value.trim(),
                     points: parseInt(document.getElementById('problem-points').value, 10),
