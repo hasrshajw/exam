@@ -166,19 +166,19 @@
                 try {
                     pyodide = await loadPyodide();
                     dom.loadingOverlay.querySelector('p').textContent = 'Initializing Editor...';
-                    await new Promise((resolve, reject) => {
-                        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-                        window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
-                        require(['vs/editor/editor.main'], resolve, reject);
+                    
+                    require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+                    window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
+                    
+                    require(['vs/editor/editor.main'], () => {
+                        editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
+                        auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
                     });
-                    editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
-                    auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
                 } catch (error) {
                     console.error("Initialization failed:", error);
                     dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
                 }
             };
-            initEnvironment();
 
             const initializePage = async () => {
                 const examId = new URLSearchParams(window.location.search).get('id');
@@ -251,7 +251,7 @@
                 const currentQuestion = examState.questions[examState.currentQuestionIndex];
                 if (currentQuestion.type === 'Coding' && editor) {
                     const code = editor.getValue();
-                    if (code !== (currentQuestion.starterCode || '')) {
+                    if (code.trim() !== (currentQuestion.starterCode || '').trim()) {
                         currentQuestion.userAnswer = code;
                         currentQuestion.isAnswered = true;
                     }
