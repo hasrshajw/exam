@@ -43,7 +43,7 @@
         .primary-btn, .secondary-btn { padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
         .primary-btn { background-color: var(--brand-purple); color: white; }
         .primary-btn:hover { background-color: #5B21B6; }
-        .secondary-btn { color: var(--text-primary); background-color: var(--hover-bg); }
+        .secondary-btn { color: var(--text-primary); background-color: var(--hover-bg); margin-right: 0.5rem; }
         .secondary-btn:hover { background-color: var(--border-color); }
         .back-btn { margin-bottom: 1rem; font-weight: 500; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; cursor: pointer; }
         .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow); border-collapse: collapse; overflow: hidden; border: 1px solid var(--border-color); }
@@ -76,12 +76,13 @@
         .problem-container { display: flex; flex-direction: column; gap: 1.5rem; }
         .problem-card { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow); }
         .problem-header { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .problem-title { font-size: 1.1rem; font-weight: 600; flex-grow: 1; }
+        .problem-title { font-size: 1.1rem; font-weight: 600; }
         .problem-header-actions { display: flex; align-items: center; gap: 0.5rem; }
         .problem-header i { font-size: 1.5rem; transition: transform 0.3s ease; }
-        .problem-header.active i.toggle-arrow { transform: rotate(180deg); }
-        .problem-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
-        .problem-body-content { padding: 0 1.5rem 1.5rem; }
+        .problem-header.active i { transform: rotate(180deg); }
+        .problem-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; border-top: 1px solid transparent; }
+        .problem-header.active + .problem-body { border-color: var(--border-color); }
+        .problem-body-content { padding: 1.5rem; }
         .problem-actions { text-align: right; padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; }
         .menu-toggle, .sidebar-close-btn { display: none; }
         @media (max-width: 1024px) {
@@ -158,6 +159,7 @@
             </section>
         </main>
     </div>
+
     <div class="modal-overlay" id="assignment-modal">
         <div class="modal-content">
             <div class="modal-header"><h3 id="assignment-modal-title"></h3><button class="close-btn">&times;</button></div>
@@ -172,7 +174,7 @@
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save</button></div>
         </div>
     </div>
-    
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -243,7 +245,8 @@
 
             const loadAssignments = () => {
                 const tbody = document.getElementById('assignments-tbody');
-                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
+                db.collection('codeAssignments').where('subjectId', '==', currentSubject.id)
+                  .onSnapshot(snapshot => {
                     const assignmentPromises = snapshot.docs.map(doc => 
                         db.collection('codeProblems').where('assignmentId', '==', doc.id).get()
                           .then(snap => ({ id: doc.id, ...doc.data(), problemCount: snap.size }))
@@ -294,8 +297,8 @@
                     <div class="problem-header">
                         <span class="problem-title">${problem.title || 'New Problem'}</span>
                         <div class="problem-header-actions">
-                            <button type="button" class="delete-btn delete-problem-btn" style="font-size: 1.2rem;"><i class='bx bxs-trash'></i></button>
-                            <i class='bx bx-chevron-down toggle-arrow'></i>
+                            <button type="button" class="delete-btn delete-problem-btn"><i class='bx bxs-trash'></i></button>
+                            <i class='bx bx-chevron-down'></i>
                         </div>
                     </div>
                     <div class="problem-body">
@@ -330,7 +333,8 @@
                 card.innerHTML = `
                     <button type="button" class="remove-item-btn">&times;</button>
                     <div class="form-field"><label>Input (JSON Object)</label><textarea rows="3" class="testcase-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div>
-                    <div class="form-field"><label>Expected Output (JSON value)</label><textarea rows="2" class="testcase-expected" required>${testCase.expected !== undefined ? JSON.stringify(testCase.expected, null, 2) : ''}</textarea></div>`;
+                    <div class="form-field"><label>Expected Output (JSON value)</label><textarea rows="2" class="testcase-expected" required>${testCase.expected !== undefined ? JSON.stringify(testCase.expected, null, 2) : ''}</textarea></div>
+                    <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" class="testcase-hidden" ${testCase.hidden ? 'checked' : ''}><label>Hidden</label></div>`;
                 return card;
             };
 
@@ -363,31 +367,39 @@
                     switchView('problems');
                 }
                 if (button.id === 'back-to-assignments-btn') { currentAssignment = null; switchView('assignments'); }
-                if (button.id === 'add-problem-btn') document.getElementById('problems-container').appendChild(createProblemCard(null, {}));
+                if (button.id === 'add-problem-btn') {
+                    const newCard = createProblemCard('', {});
+                    document.getElementById('problems-container').appendChild(newCard);
+                    const header = newCard.querySelector('.problem-header');
+                    header.classList.add('active');
+                    const content = header.nextElementSibling;
+                    content.style.maxHeight = content.scrollHeight + "px";
+                }
                 if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
             });
 
             document.getElementById('problems-container').addEventListener('click', e => {
                 const target = e.target;
-                const problemHeader = target.closest('.problem-header');
-
-                if (problemHeader && !target.closest('button')) {
-                    problemHeader.classList.toggle('active');
-                    const content = problemHeader.nextElementSibling;
-                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
-                }
-
+                const header = target.closest('.problem-header');
                 const button = target.closest('button');
-                if (!button) return;
 
-                if (button.matches('.add-testcase-btn')) button.previousElementSibling.appendChild(createTestCaseForm());
-                if (button.matches('.remove-item-btn')) button.parentElement.remove();
-                if (button.matches('.delete-problem-btn')) {
-                    if (confirm('Are you sure?')) {
-                        const problemCard = button.closest('.problem-card');
-                        const problemId = problemCard.dataset.id;
-                        if (problemId && !problemId.startsWith('new_')) db.collection('codeProblems').doc(problemId).delete();
-                        else problemCard.remove();
+                if(header && !button) { // Ensure a button inside the header wasn't the target
+                    header.classList.toggle('active');
+                    const content = header.nextElementSibling;
+                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                    return;
+                }
+                
+                if (button) {
+                    if (button.matches('.add-testcase-btn')) button.previousElementSibling.appendChild(createTestCaseForm());
+                    if (button.matches('.remove-item-btn')) button.parentElement.remove();
+                    if (button.matches('.delete-problem-btn')) {
+                        if (confirm('Are you sure?')) {
+                            const problemCard = button.closest('.problem-card');
+                            const problemId = problemCard.dataset.id;
+                            if (problemId && !problemId.startsWith('new_')) db.collection('codeProblems').doc(problemId).delete();
+                            problemCard.remove();
+                        }
                     }
                 }
             });
@@ -426,7 +438,8 @@
                     try {
                         testCases.push({
                             input: JSON.parse(card.querySelector('.testcase-input').value),
-                            expected: JSON.parse(card.querySelector('.testcase-expected').value)
+                            expected: JSON.parse(card.querySelector('.testcase-expected').value),
+                            hidden: card.querySelector('.testcase-hidden')?.checked || false
                         });
                     } catch (err) { validJson = false; alert('Invalid JSON in test cases.'); }
                 });
