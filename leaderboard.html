@@ -9,7 +9,9 @@
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #111827; --text-secondary: #6B7280; --brand-green: #10B981; --hover-bg: #F3F4F6; --gold: #F59E0B; --silver: #9CA3AF; --bronze: #A16207; --danger-color: #EF4444; --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+        :root {
+            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #111827; --text-secondary: #6B7280; --brand-green: #10B981; --hover-bg: #F3F4F6; --gold: #F59E0B; --silver: #9CA3AF; --bronze: #A16207; --danger-color: #EF4444; --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
@@ -53,10 +55,9 @@
         .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; }
         .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .widget-header h2 { font-size: 1.125rem; font-weight: 600; }
-        .leaderboard-tabs { position: relative; display: flex; background-color: var(--hover-bg); padding: 0.25rem; border-radius: 99px; margin-bottom: 2rem; align-self: center; }
-        .tab-btn { padding: 0.6rem 1.25rem; border: none; background-color: transparent; border-radius: 99px; font-weight: 600; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; transition: all 0.3s ease; z-index: 2; }
-        #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; background-color: var(--widget-bg); border-radius: 99px; box-shadow: var(--shadow-sm); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
-        .tab-btn.active { color: var(--text-primary); }
+        .leaderboard-tabs { display: flex; gap: 0.5rem; background-color: var(--hover-bg); padding: 0.25rem; border-radius: 99px; margin-bottom: 2rem; align-self: center; }
+        .tab-btn { padding: 0.6rem 1.25rem; border: none; background-color: transparent; border-radius: 99px; font-weight: 600; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; transition: all 0.3s ease; }
+        .tab-btn.active { background-color: var(--widget-bg); color: var(--text-primary); box-shadow: var(--shadow-sm); }
         .tab-content { display: none; width: 100%; } .tab-content.active { display: block; }
         .podium-stacked-card { border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem; overflow: hidden; box-shadow: var(--shadow-sm); }
         .podium-stacked-item { display: flex; align-items: center; padding: 0.75rem 1rem; gap: 1rem; position: relative; }
@@ -69,26 +70,15 @@
         .podium-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .podium-info { flex-grow: 1; } .podium-name { font-weight: 600; } .podium-score { font-weight: 700; color: var(--brand-green); }
         .leaderboard-list { list-style: none; }
-        .leaderboard-list li { display: flex; align-items: center; padding: 0.75rem 0; }
-        .leaderboard-list li:not(:last-child) { border-bottom: 1px solid var(--border-color); }
+        .leaderboard-list li { display: flex; align-items: center; padding: 0.75rem; border-radius: 8px; transition: background-color 0.2s ease; }
+        .leaderboard-list li:hover { background-color: var(--hover-bg); }
+        .leaderboard-list li:not(:last-child) { margin-bottom: 0.5rem; }
         .leaderboard-list .rank { font-size: 1rem; font-weight: 600; color: var(--text-secondary); width: 40px; text-align: center; }
         .leaderboard-list img { width: 40px; height: 40px; border-radius: 50%; margin: 0 1rem; }
         .leaderboard-list .info { flex-grow: 1; } .leaderboard-list .name { font-weight: 600; }
         .leaderboard-list .affiliation { color: var(--text-secondary); font-size: 0.85rem; }
         .leaderboard-list .score { font-weight: 700; color: var(--brand-green); }
-        .leaderboard-list li.current-user { background-color: #ECFDF5; border-radius: 8px; margin: -0.25rem -0.75rem; padding: 1rem 0.75rem; }
-        .winner-card { position: relative; padding: 1px; border-radius: 1rem; margin-bottom: 2rem; overflow: hidden; }
-        .winner-card::before { content: ''; position: absolute; inset: -300%; background: conic-gradient(from 90deg at 50% 50%, #F59E0B, #FBBF24, #FCD34D, #FBBF24, #F59E0B); animation: spin-border 5s linear infinite; z-index: 1; }
-        @keyframes spin-border { 100% { transform: rotate(360deg); } }
-        .winner-card-inner { background: #1F2937; color: #F9FAFB; border-radius: calc(1rem - 1px); padding: 1.25rem; display: flex; align-items: center; gap: 1rem; position: relative; z-index: 2; }
-        .winner-avatar { width: 56px; height: 56px; border-radius: 50%; border: 3px solid var(--gold); object-fit: cover; }
-        .winner-info { flex-grow: 1; }
-        .winner-info h3 { font-size: 1.1rem; font-weight: 600; }
-        .winner-info p { font-size: 0.85rem; opacity: 0.8; }
-        .winner-score { text-align: right; }
-        .winner-score strong { display: block; font-size: 1.5rem; font-weight: 700; color: var(--gold); }
-        .winner-score span { font-size: 0.8rem; opacity: 0.8; }
-        .winner-trophy { font-size: 1.75rem; color: var(--gold); flex-shrink: 0; }
+        .leaderboard-list li.current-user { background-color: #ECFDF5; border: 1px solid #A7F3D0; }
         .score-history-list { list-style: none; }
         .score-history-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; }
         .score-history-item:not(:last-child) { border-bottom: 1px solid var(--border-color); }
@@ -109,23 +99,19 @@
             .overlay.active { opacity: 1; pointer-events: auto; }
         }
          @media (max-width: 640px) {
-            .content-body { padding: 1rem; } .main-header { padding: 1rem; }
+            .rank-summary-card { grid-template-columns: 1fr 1fr; gap: 0; }
             .rank-item { padding: 1rem; }
             .rank-item p { font-size: 0.8rem; margin-bottom: 0.25rem; }
             .rank-value { font-size: 1.875rem; }
-            .rank-summary-card { grid-template-columns: 1fr 1fr; gap: 0; }
             .rank-item:first-child { border-right: 1px solid var(--border-color); }
-            .leaderboard-list li { padding: 0.75rem 0; }
-            .leaderboard-list img { margin: 0 0.75rem; width: 36px; height: 36px; }
-            .leaderboard-list .rank { width: 30px; }
-            .podium-stacked-item { padding: 0.5rem 0.75rem; gap: 0.75rem;}
         }
+
         @keyframes shimmer { 100% { transform: translateX(100%); } }
         .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; border-radius: 8px; }
         .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
         .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
         .skeleton-line { height: 14px; border-radius: 4px; }
-        .skeleton-list-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; }
+        .skeleton-list-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; }
     </style>
 </head>
 <body>
@@ -221,7 +207,6 @@
                     </div>
                     <div class="widget">
                         <div class="leaderboard-tabs">
-                            <div id="pill-slider"></div>
                             <button id="collegeTab" class="tab-btn active" data-target="#college-content">My College</button>
                             <button id="overallTab" class="tab-btn" data-target="#overall-content">Overall</button>
                         </div>
@@ -277,20 +262,10 @@
                 overlay.addEventListener('click', toggleMenu);
                 
                 const tabs = document.querySelectorAll('.tab-btn');
-                const slider = document.getElementById('pill-slider');
-                const moveSlider = (tab) => {
-                    if (tab) {
-                        slider.style.width = `${tab.offsetWidth}px`;
-                        slider.style.left = `${tab.offsetLeft}px`;
-                    }
-                };
-                moveSlider(document.querySelector('.tab-btn.active'));
-
                 tabs.forEach(tab => {
                     tab.addEventListener('click', (e) => {
                         tabs.forEach(t => t.classList.remove('active'));
                         e.currentTarget.classList.add('active');
-                        moveSlider(e.currentTarget);
                         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                         document.querySelector(e.currentTarget.dataset.target).classList.add('active');
                     });
@@ -326,19 +301,28 @@
 
             const calculateUserPoints = async () => {
                 const [scoresSnap, codeAssignmentScoresSnap, usersSnap] = await Promise.all([
-                    db.collection('scores').get(), db.collection('codeAssignmentScores').get(), db.collection('users').get()
+                    db.collection('scores').get(),
+                    db.collection('codeAssignmentScores').get(),
+                    db.collection('users').get()
                 ]);
+
                 const allUsers = new Map();
                 usersSnap.forEach(doc => allUsers.set(doc.id, doc.data()));
+
                 const userPoints = new Map();
                 allUsers.forEach((profile, id) => userPoints.set(id, 0));
+
                 scoresSnap.forEach(doc => {
                     const score = doc.data();
-                    if (userPoints.has(score.userId)) { userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.pointsReceived); }
+                    if (userPoints.has(score.userId)) {
+                        userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.pointsReceived);
+                    }
                 });
                 codeAssignmentScoresSnap.forEach(doc => {
                     const score = doc.data();
-                    if (userPoints.has(score.userId)) { userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.totalScoreObtained); }
+                    if (userPoints.has(score.userId)) {
+                        userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.totalScoreObtained);
+                    }
                 });
                 return { userPoints, allUsers };
             };
@@ -346,8 +330,11 @@
             const loadLeaderboardData = async () => {
                 try {
                     const { userPoints, allUsers } = await calculateUserPoints();
-                    const rankedList = Array.from(userPoints.entries()).map(([id, points]) => ({ id, points, profile: allUsers.get(id) })).filter(u => u.profile).sort((a,b) => b.points - a.points);
+                    const rankedList = Array.from(userPoints.entries()).map(([id, points]) => ({
+                        id, points, profile: allUsers.get(id)
+                    })).filter(u => u.profile).sort((a,b) => b.points - a.points);
                     const collegeList = rankedList.filter(u => u.profile.college === currentUserProfile.college);
+                    
                     renderLeaderboard('overall-content', rankedList, true);
                     renderLeaderboard('college-content', collegeList, false);
                     renderRankSummary(rankedList, collegeList);
@@ -364,7 +351,11 @@
                 const container = document.getElementById(containerId);
                 let listToRender = [...userList];
                 const currentUserInList = listToRender.some(u => u.id === currentUserId);
-                if (!currentUserInList && userList.length > 0) { listToRender.push({ id: currentUserId, points: 0, profile: currentUserProfile }); }
+
+                if (!currentUserInList && currentUserProfile) {
+                    listToRender.push({ id: currentUserId, points: 0, profile: currentUserProfile });
+                }
+                
                 let topPerformersHtml = '';
                 const topPerformers = listToRender.filter(u => u.points > 0).slice(0, 3);
                 let startIndexForList = 0;
@@ -372,7 +363,7 @@
                 if (isOverall && topPerformers.length > 0) {
                     const winner = topPerformers[0];
                     const winnerPhoto = winner.profile.photoURL || DEFAULT_AVATAR;
-                    topPerformersHtml = `<div class="winner-card"><div class="winner-card-inner"><i class='bx bxs-trophy winner-trophy'></i><img src="${winnerPhoto}" alt="Avatar" class="winner-avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="winner-info"><h3>${winner.profile.displayName}</h3><p>${winner.profile.college}</p></div><div class="winner-score"><strong>${winner.points}</strong><span>XP</span></div></div></div>`;
+                    topPerformersHtml = `<div class="podium-stacked-card"><div class="podium-stacked-item rank-1"><div class="podium-rank-badge"><i class='bx bxs-trophy'></i></div><img src="${winnerPhoto}" alt="Avatar" class="podium-avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="podium-info"><p class="podium-name">${winner.profile.displayName}</p></div><p class="podium-score">${winner.points} XP</p></div></div>`;
                     startIndexForList = 1;
                 } else if (!isOverall && topPerformers.length > 0) {
                     topPerformersHtml = '<div class="podium-stacked-card">';
@@ -380,7 +371,8 @@
                         const rank = index + 1;
                         const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
                         let rankIcon = rank;
-                        if(rank === 1) rankIcon = `<i class='bx bxs-trophy'></i>`; else if(rank === 2 || rank === 3) rankIcon = `<i class='bx bxs-medal'></i>`;
+                        if(rank === 1) rankIcon = `<i class='bx bxs-trophy'></i>`;
+                        else if(rank === 2 || rank === 3) rankIcon = `<i class='bx bxs-medal'></i>`;
                         topPerformersHtml += `<div class="podium-stacked-item rank-${rank}"><div class="podium-rank-badge">${rankIcon}</div><img src="${userPhoto}" alt="Avatar" class="podium-avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="podium-info"><p class="podium-name">${user.profile.displayName}</p></div><p class="podium-score">${user.points} XP</p></div>`;
                     });
                     topPerformersHtml += '</div>';
@@ -388,16 +380,16 @@
                 }
                 
                 let listHtml = '<ul class="leaderboard-list">';
-                const listForDisplay = listToRender.slice(startIndexForList);
-                let currentUserRenderedInList = listToRender.slice(0, startIndexForList).some(u => u.id === currentUserId);
+                let currentUserRendered = listToRender.slice(0, startIndexForList).some(u => u.id === currentUserId);
                 
-                listForDisplay.forEach((user) => {
+                listToRender.slice(startIndexForList).forEach((user) => {
                     const rank = listToRender.findIndex(u => u.id === user.id) + 1;
-                    if(user.id === currentUserId) currentUserRenderedInList = true;
+                    if(user.id === currentUserId) currentUserRendered = true;
                     const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
                     listHtml += `<li class="${user.id === currentUserId ? 'current-user' : ''}"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
                 });
-                if (!currentUserRenderedInList && listToRender.find(u => u.id === currentUserId)) {
+
+                if (!currentUserRendered && listToRender.find(u => u.id === currentUserId)) {
                      const user = listToRender.find(u => u.id === currentUserId);
                      const rank = listToRender.findIndex(u => u.id === user.id) + 1;
                      const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
@@ -416,14 +408,17 @@
                 const hasCollegeScore = collegeRank > 0 && collegeList[collegeRank-1].points > 0;
                 const overallRankText = hasOverallScore ? `#${overallRank}` : 'N/A';
                 const collegeRankText = hasCollegeScore ? `#${collegeRank}` : 'N/A';
+
                 overallRankEl.textContent = overallRankText;
                 overallRankEl.dataset.text = overallRankText;
                 collegeRankEl.textContent = collegeRankText;
                 collegeRankEl.dataset.text = collegeRankText;
+                
                 overallRankEl.className = 'rank-value';
                 if (hasOverallScore && overallRank === 1) overallRankEl.classList.add('rank-value--shining');
                 else if (hasOverallScore && overallRank === 2) overallRankEl.classList.add('silver');
                 else if (hasOverallScore && overallRank === 3) overallRankEl.classList.add('bronze');
+
                 collegeRankEl.className = 'rank-value';
                 if (hasCollegeScore && collegeRank === 1) collegeRankEl.classList.add('rank-value--shining');
                 else if (hasCollegeScore && collegeRank === 2) collegeRankEl.classList.add('silver');
@@ -436,12 +431,22 @@
                     db.collection('scores').where('userId', '==', currentUserId).orderBy('submittedAt', 'desc').get(),
                     db.collection('codeAssignmentScores').where('userId', '==', currentUserId).orderBy('completedAt', 'desc').get()
                 ]);
+
                 let historyItems = [];
-                scoresSnap.forEach(doc => { const data = doc.data(); historyItems.push({ name: data.examName, date: data.submittedAt.toDate(), score: `${data.pointsReceived} / ${data.totalPoints} XP` }); });
-                codeScoresSnap.forEach(doc => { const data = doc.data(); historyItems.push({ name: data.assignmentName, date: data.completedAt.toDate(), score: `${data.totalScoreObtained} / ${data.totalScorePossible} XP` }); });
+                scoresSnap.forEach(doc => {
+                    const data = doc.data();
+                    historyItems.push({ name: data.examName, date: data.submittedAt.toDate(), score: `${data.pointsReceived} / ${data.totalPoints} XP` });
+                });
+                codeScoresSnap.forEach(doc => {
+                    const data = doc.data();
+                    historyItems.push({ name: data.assignmentName, date: data.completedAt.toDate(), score: `${data.totalScoreObtained} / ${data.totalScorePossible} XP` });
+                });
                 historyItems.sort((a,b) => b.date - a.date);
 
-                if(historyItems.length === 0) { list.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 2rem 0;">No assessments completed yet.</p>'; return; }
+                if(historyItems.length === 0) {
+                    list.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 2rem 0;">No assessments completed yet.</p>';
+                    return;
+                }
                 list.innerHTML = historyItems.map(item => `
                     <li class="score-history-item">
                         <div class="score-history-info"><p>${item.name}</p><span>${item.date.toLocaleString()}</span></div>
