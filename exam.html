@@ -183,8 +183,20 @@
             const initializePage = async () => {
                 const examId = new URLSearchParams(window.location.search).get('id');
                 if (!examId) { alert('Invalid exam ID.'); window.location.href = 'dashboard.html'; return; }
+                
+                const prevScoreQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
+                if (!prevScoreQuery.empty) {
+                    renderResultsPage(prevScoreQuery.docs[0].data());
+                    dom.loadingOverlay.style.display = 'none';
+                    return;
+                }
+
                 const examDoc = await db.collection('exams').doc(examId).get();
-                if (!examDoc.exists) { alert('Exam not found.'); window.location.href = 'dashboard.html'; return; }
+                if (!examDoc.exists || examDoc.data().isLocked) { 
+                    alert('Exam not found or is currently locked.'); 
+                    window.location.href = 'dashboard.html'; 
+                    return; 
+                }
                 
                 const examData = { id: examDoc.id, ...examDoc.data() };
                 examState = {
@@ -259,7 +271,7 @@
                 if (currentQuestion.type === 'Coding' && editor) {
                     const code = editor.getValue();
                     currentQuestion.userAnswer = code;
-                    if (code.trim() !== (currentQuestion.starterCode || '').trim() && code.trim() !== '') {
+                    if (code && code.trim() !== (currentQuestion.starterCode || '').trim() && code.trim() !== '') {
                         currentQuestion.isAnswered = true;
                     }
                 }
@@ -308,7 +320,7 @@
                             resultsHTML += `<p style="color: var(--color-danger);">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
                         }
                     }
-                    dom.consoleOutput.innerHTML = resultsHTML;
+                    dom.consoleOutput.innerHTML = resultsHTML || "Execution finished with no output.";
                 } catch(e) {
                     dom.consoleOutput.textContent = `Error: ${e.message}`;
                 }
@@ -317,7 +329,7 @@
             const handleSubmit = async (isAutoSubmit = false) => {
                 if (!isAutoSubmit && !confirm("Are you sure you want to submit your test?")) return;
                 clearInterval(examState.timerInterval);
-                dom.loadingOverlay.querySelector('p').textContent = 'Submitting...';
+                dom.loadingOverlay.querySelector('p').textContent = 'Submitting & Calculating Score...';
                 dom.loadingOverlay.style.display = 'flex';
                 saveCurrentAnswer();
 
@@ -356,8 +368,9 @@
 
             const renderResultsPage = (scoreData) => {
                 const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is ${percentage}%.</p><h3>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</h3><a href="dashboard.html" class="nav-btn" style="margin-top: 1.5rem;">Back to Dashboard</a></div>`;
+                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is</p><h1 style="font-size: 4rem; color: var(--color-primary); margin: 1rem 0;">${percentage}%</h1><h3>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</h3><a href="dashboard.html" class="nav-btn" style="margin-top: 1.5rem;">Back to Dashboard</a></div>`;
                 showView('results-view');
+                dom.loadingOverlay.style.display = 'none';
             };
 
             const renderReviewGrid = () => {
