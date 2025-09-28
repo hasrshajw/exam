@@ -10,21 +10,13 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB;
-            --widget-bg: #FFFFFF;
-            --border-color: #E5E7EB;
-            --text-primary: #002726;
-            --text-secondary: #6B7280;
-            --brand-green: #33C375;
-            --hover-bg: #F3F4F6;
-            --danger-color: #EF4444;
-            --c-primary: #002726;
-            --c-primary-dark: #001A19;
-            --c-accent: #33C375;
+            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
+            --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375;
+            --hover-bg: #F3F4F6; --danger-color: #EF4444;
+            --c-primary: #002726; --c-primary-dark: #001A19; --c-accent: #33C375; --c-accent-light: #D1FAE5;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --radius-lg: 0.75rem;
-            --space-md: 1rem; --space-lg: 1.5rem;
+            --radius-lg: 0.75rem; --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2.5rem;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -55,29 +47,33 @@
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .hero-section { background-color: var(--text-primary); color: #FFFFFF; padding: 4rem 3rem; }
         .breadcrumbs { font-weight: 500; color: var(--brand-green); margin-bottom: 1rem; }
-        .breadcrumbs a { color: rgba(255, 255, 255, 0.7); text-decoration: none; } .breadcrumbs a:hover { text-decoration: underline; }
         .hero-title { font-size: 3rem; font-weight: 700; letter-spacing: -0.02em; }
         .content-body { padding: 2rem 3rem 3rem 3rem; display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: flex-start; }
         .main-content { min-width: 0; }
         .content-sidebar { position: sticky; top: calc(2rem + 73px); }
-        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; }
+        .pill-nav-container { display: flex; justify-content: flex-start; margin-bottom: 2rem; }
+        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; }
         .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 2; transition: color 0.3s ease; }
-        .nav-tab.active { color: var(--text-primary); }
-        #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; border-radius: 99px; background-color: var(--widget-bg); box-shadow: var(--shadow); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
         .chapter-group { margin-bottom: var(--space-xl); }
         .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color); }
-        .chapter-lessons { display: flex; flex-direction: column; gap: 0.75rem; }
-        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; text-decoration: none; }
-        .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; font-weight: 600; }
-        .card-info { flex-grow: 1; } .card-title { font-weight: 600; font-size: 1rem; color: var(--text-primary); }
-        .card-meta { font-size: 0.85rem; color: var(--text-secondary); }
-        .card-button { background-color: var(--c-primary); color: #FFFFFF; border: none; border-radius: 0.75rem; padding: 0.6rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; }
+        .content-list { display: flex; flex-direction: column; gap: 0.75rem; }
+        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; cursor: pointer; }
         .sidebar-card { background-color: var(--widget-bg); border-radius: 1rem; padding: 1.5rem; border: 2px solid var(--border-color); }
         .sidebar-card h4 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary); }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .stat-item { text-align: center; } .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
         .stat-label { font-size: 0.875rem; color: var(--text-secondary); }
         .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
+        
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        .skeleton-line { height: 14px; border-radius: 4px; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+        .skeleton-pill-nav { display: inline-flex; background-color: #e2e8f0; border-radius: 99px; padding: 0.25rem; position: relative;}
+        .skeleton-pill { width: 110px; height: 32px; border-radius: 99px; margin: 2px; }
+        .skeleton-pill-nav::before { content:''; position: absolute; top: 0.25rem; bottom: 0.25rem; left: 0.25rem; width: 114px; background-color: var(--widget-bg); border-radius: 99px; z-index: 1;}
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -92,19 +88,9 @@
             .sidebar-close-btn:hover { color: #b91c1c; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+            .pill-nav-container { justify-content: center; }
             .chapter-title { font-size: 1.25rem; }
-            .card-title { font-size: 0.95rem; }
-            .card-meta { font-size: 0.8rem; }
         }
-        
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
-        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
-        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
-        .skeleton-line { height: 14px; border-radius: 4px; }
-        .skeleton-pill-nav { display: flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; width: fit-content; }
-        .skeleton-pill { width: 110px; height: 32px; border-radius: 99px; margin: 2px; }
-
     </style>
 </head>
 <body>
@@ -167,65 +153,34 @@
             </section>
             <div class="content-body" id="skeleton-loader">
                 <div class="main-content">
-                    <div class="skeleton-pill-nav">
-                        <div class="skeleton skeleton-pill"></div>
-                        <div class="skeleton skeleton-pill"></div>
+                    <div class="pill-nav-container">
+                        <div class="skeleton-pill-nav">
+                            <div class="skeleton-pill"></div>
+                            <div class="skeleton-pill"></div>
+                        </div>
                     </div>
                     <div class="chapter-group" style="margin-bottom: 2.5rem;">
                         <div class="skeleton skeleton-line" style="width: 250px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
-                        <div class="chapter-lessons">
-                            <div class="card" style="border-color: transparent; box-shadow: none;">
-                                <div class="skeleton skeleton-avatar"></div>
-                                <div class="card-info" style="flex-grow: 1;">
-                                    <p class="skeleton skeleton-line" style="height: 16px; width: 80%; margin-bottom: 0.5rem;"></p>
-                                    <p class="skeleton skeleton-line" style="height: 14px; width: 40%;"></p>
-                                </div>
-                                <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
-                            </div>
-                            <div class="card" style="border-color: transparent; box-shadow: none;">
-                                <div class="skeleton skeleton-avatar"></div>
-                                <div class="card-info" style="flex-grow: 1;">
-                                    <p class="skeleton skeleton-line" style="height: 16px; width: 75%; margin-bottom: 0.5rem;"></p>
-                                    <p class="skeleton skeleton-line" style="height: 14px; width: 35%;"></p>
-                                </div>
-                                <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
-                            </div>
+                        <div class="content-list">
+                            <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 80%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 40%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
+                            <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 75%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 35%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
                         </div>
                     </div>
                      <div class="chapter-group">
                         <div class="skeleton skeleton-line" style="width: 300px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
-                        <div class="chapter-lessons">
-                            <div class="card" style="border-color: transparent; box-shadow: none;">
-                                <div class="skeleton skeleton-avatar"></div>
-                                <div class="card-info" style="flex-grow: 1;">
-                                    <p class="skeleton skeleton-line" style="height: 16px; width: 70%; margin-bottom: 0.5rem;"></p>
-                                    <p class="skeleton skeleton-line" style="height: 14px; width: 30%;"></p>
-                                </div>
-                                <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
-                            </div>
+                        <div class="content-list">
+                            <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 70%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 30%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
                         </div>
                     </div>
                 </div>
                 <aside class="content-sidebar">
-                    <div class="sidebar-card" style="border-color: transparent; background-color: var(--widget-bg); box-shadow: var(--shadow);">
+                    <div class="sidebar-card" style="border: none; box-shadow: var(--shadow);">
                         <h4 class="skeleton skeleton-line" style="height: 20px; width: 150px; margin-bottom: 1.5rem; border-radius: 8px;"></h4>
                         <div class="stat-grid">
-                            <div class="stat-item">
-                                <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
-                                <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
-                                <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
-                                <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
-                            </div>
-                            <div class="stat-item">
-                                <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
-                                <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
-                            </div>
+                            <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                            <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                            <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                            <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
                         </div>
                     </div>
                 </aside>
@@ -242,44 +197,42 @@
         document.addEventListener('DOMContentLoaded', () => {
             const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
 
-            const initSharedUI = () => {
-                const logoUrl = localStorage.getItem('dashboardLogoUrl');
-                if (logoUrl) {
-                    document.querySelector('.logo-image').src = logoUrl;
-                }
-
-                const storedProfile = JSON.parse(localStorage.getItem('dashboardUserProfile'));
-                
-                if (storedProfile) {
-                    document.querySelectorAll('.profile-avatar').forEach(el => {
-                        el.src = storedProfile.photoURL || DEFAULT_AVATAR;
-                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
-                    });
-                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = storedProfile.displayName);
-                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = storedProfile.email);
-                    document.querySelector('.profile-skeleton').style.display = 'none';
-                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
-                }
-
+            const setupEventListeners = () => {
+                document.getElementById('logout-btn')?.addEventListener('click', () => auth.signOut());
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
-
+                profileSection?.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (profileSection && !profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
                 const overlay = document.getElementById('overlay');
-                const toggleMenu = () => {
-                    sidebar.classList.toggle('active');
-                    overlay.classList.toggle('active');
-                };
-                menuToggle.addEventListener('click', toggleMenu);
-                closeBtn.addEventListener('click', toggleMenu);
-                overlay.addEventListener('click', toggleMenu);
+                const toggleMenu = () => { sidebar?.classList.toggle('active'); overlay?.classList.toggle('active'); };
+                menuToggle?.addEventListener('click', toggleMenu);
+                closeBtn?.addEventListener('click', toggleMenu);
+                overlay?.addEventListener('click', toggleMenu);
             };
-            
-            initSharedUI();
+
+            const updateProfileUI = (userProfile) => {
+                const logoUrl = localStorage.getItem('dashboardLogoUrl');
+                if (logoUrl) document.querySelector('.logo-image').src = logoUrl;
+
+                const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
+                
+                if (profileToUse) {
+                    document.querySelectorAll('.profile-avatar').forEach(el => {
+                        el.src = profileToUse.photoURL || DEFAULT_AVATAR;
+                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
+                    });
+                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
+                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
+                    document.querySelector('.profile-skeleton').style.display = 'none';
+                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
+                }
+            };
+
+            setupEventListeners();
+            updateProfileUI();
 
             (async function() {
                 const firebaseConfig = {
@@ -304,10 +257,7 @@
                     });
 
                     if (user) {
-                        if (document.getElementById('logout-btn')) {
-                            document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-                        }
-
+                        updateProfileUI(user);
                         const enrollmentsQuery = await db.collection('enrollments')
                             .where('userId', '==', user.uid)
                             .orderBy('enrolledAt', 'desc')
