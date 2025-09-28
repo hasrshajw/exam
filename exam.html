@@ -259,7 +259,7 @@
                 if (currentQuestion.type === 'Coding' && editor) {
                     const code = editor.getValue();
                     currentQuestion.userAnswer = code;
-                    if (code && code.trim() !== (currentQuestion.starterCode || '').trim()) {
+                    if (code.trim() !== (currentQuestion.starterCode || '').trim() && code.trim() !== '') {
                         currentQuestion.isAnswered = true;
                     }
                 }
@@ -342,24 +342,16 @@
                         if(allPassed) pointsReceived += q.points;
                     }
                 }
-                
-                const scoreDataForDb = {
+
+                const scoreData = {
                     userId: currentUser.uid, examId: examState.currentExamData.id, 
                     examName: examState.currentExamData.name, subjectId: examState.currentExamData.subjectId,
                     pointsReceived, totalPoints, timeTaken: examState.currentExamData.duration - examState.timeLeft,
                     submittedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
-                
-                const scoreDataForUi = { pointsReceived, totalPoints };
-                
-                try {
-                    await db.collection('scores').add(scoreDataForDb);
-                    renderResultsPage(scoreDataForUi);
-                } catch (error) {
-                    console.error("Failed to save score: ", error);
-                    alert("Submission failed. Please check your connection and try again.");
-                    dom.loadingOverlay.style.display = 'none';
-                }
+
+                await db.collection('scores').add(scoreData);
+                renderResultsPage(scoreData);
             };
 
             const renderResultsPage = (scoreData) => {
