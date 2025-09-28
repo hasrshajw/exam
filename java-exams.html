@@ -10,21 +10,13 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB;
-            --widget-bg: #FFFFFF;
-            --border-color: #E5E7EB;
-            --text-primary: #002726;
-            --text-secondary: #6B7280;
-            --brand-green: #33C375;
-            --hover-bg: #F3F4F6;
-            --danger-color: #EF4444;
-            --c-primary: #002726;
-            --c-primary-dark: #001A19;
-            --c-accent: #33C375;
+            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
+            --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375;
+            --hover-bg: #F3F4F6; --danger-color: #EF4444;
+            --c-primary: #002726; --c-primary-dark: #001A19; --c-accent: #33C375; --c-accent-light: #D1FAE5;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-            --radius-lg: 0.75rem;
-            --space-md: 1rem; --space-lg: 1.5rem;
+            --radius-lg: 0.75rem; --space-md: 1rem; --space-lg: 1.5rem; --space-xl: 2.5rem;
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -37,7 +29,6 @@
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
-        .profile-content-wrapper { display: flex; align-items: center; gap: 0.75rem; width: 100%; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .profile-details { flex-grow: 1; min-width: 0; }
         .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
@@ -68,7 +59,7 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .chapter-group { margin-bottom: var(--space-xl); }
         .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color); }
-        .chapter-lessons { display: flex; flex-direction: column; gap: 0.75rem; }
+        .content-list { display: flex; flex-direction: column; gap: 0.75rem; }
         .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; text-decoration: none; }
         .card:not([data-status='locked']):hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
         .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; font-weight: 600; }
@@ -81,7 +72,7 @@
         .card[data-status="completed"] .card-title { color: var(--text-secondary); }
         .card-prefix--completed { background-color: var(--c-accent-light); color: var(--c-accent); }
         .card[data-status="next"] { border-color: var(--c-primary); }
-        .card-prefix--default { background-color: var(--c-primary-light); color: var(--c-primary); }
+        .card-prefix--default { background-color: #e0e0e0; color: var(--c-primary); }
         .card[data-status="locked"] { opacity: 0.7; background-color: var(--hover-bg); pointer-events: none; }
         .card-prefix--locked { background-color: #E5E7EB; color: var(--text-secondary); }
         .card-button--locked { background-color: var(--border-color); color: var(--text-secondary); cursor: not-allowed; }
@@ -109,23 +100,15 @@
             .card-title { font-size: 0.95rem; }
             .card-meta { font-size: 0.8rem; }
         }
-        
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
-        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
-        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0; }
-        .skeleton-line { height: 14px; border-radius: 4px; }
-        .skeleton-pill-nav { display: flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; width: fit-content; }
-        .skeleton-pill { width: 110px; height: 32px; border-radius: 99px; margin: 2px; }
-
     </style>
 </head>
 <body>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
     <div class="overlay" id="overlay"></div>
-    <div class="dashboard-container">
+    <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
@@ -137,29 +120,14 @@
                 </ul>
             </nav>
             <div class="profile-section" id="profile-section">
-                <div class="profile-skeleton" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
-                    <div class="skeleton skeleton-avatar"></div>
-                    <div style="flex-grow: 1; min-width: 0;">
-                        <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
-                        <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
-                    </div>
-                </div>
-                <div class="profile-content-wrapper" style="display: none;">
-                    <img src="" alt="Profile Picture" class="profile-avatar">
-                    <div class="profile-details">
-                        <span class="profile-name"></span>
-                        <span class="profile-email"></span>
-                    </div>
-                    <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
-                </div>
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
             </div>
             <div class="profile-popup" id="profile-popup">
                 <div class="popup-header">
                     <img src="" alt="Profile Picture" class="profile-avatar">
-                    <div class="profile-details">
-                        <span class="profile-name"></span>
-                        <span class="profile-email"></span>
-                    </div>
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
                 </div>
                 <ul class="popup-list">
                     <li><a href="profile.html"><i class='bx bx-user'></i> Profile</a></li>
@@ -172,110 +140,33 @@
                 <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
                 <h1>Course & Content</h1>
             </header>
-
-            <div id="skeleton-loader" style="display: contents;">
-                <section class="hero-section">
-                    <div class="container">
-                        <p class="breadcrumbs"><span class="skeleton skeleton-line" style="width: 200px; height: 16px; display: inline-block; background-color: rgba(255,255,255,0.1);"></span></p>
-                        <h1 class="hero-title"><span class="skeleton" style="width: 350px; height: 48px; display: inline-block; border-radius: 8px; background-color: rgba(255,255,255,0.1);"></span></h1>
-                    </div>
-                </section>
-                <div class="content-body">
-                    <div class="main-content">
-                        <div class="skeleton-pill-nav">
-                           <div class="skeleton skeleton-pill"></div>
-                           <div class="skeleton skeleton-pill"></div>
-                        </div>
-                        <div class="chapter-group" style="margin-bottom: 2.5rem;">
-                            <div class="skeleton skeleton-line" style="width: 250px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
-                            <div class="chapter-lessons">
-                                <div class="card" style="border-color: transparent; box-shadow: none;">
-                                    <div class="skeleton skeleton-avatar"></div>
-                                    <div class="card-info" style="flex-grow: 1;">
-                                        <p class="skeleton skeleton-line" style="height: 16px; width: 80%; margin-bottom: 0.5rem;"></p>
-                                        <p class="skeleton skeleton-line" style="height: 14px; width: 40%;"></p>
-                                    </div>
-                                    <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
-                                </div>
-                                <div class="card" style="border-color: transparent; box-shadow: none;">
-                                    <div class="skeleton skeleton-avatar"></div>
-                                    <div class="card-info" style="flex-grow: 1;">
-                                        <p class="skeleton skeleton-line" style="height: 16px; width: 75%; margin-bottom: 0.5rem;"></p>
-                                        <p class="skeleton skeleton-line" style="height: 14px; width: 35%;"></p>
-                                    </div>
-                                    <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
-                                </div>
-                            </div>
-                        </div>
-                         <div class="chapter-group">
-                            <div class="skeleton skeleton-line" style="width: 300px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
-                            <div class="chapter-lessons">
-                                <div class="card" style="border-color: transparent; box-shadow: none;">
-                                    <div class="skeleton skeleton-avatar"></div>
-                                    <div class="card-info" style="flex-grow: 1;">
-                                        <p class="skeleton skeleton-line" style="height: 16px; width: 70%; margin-bottom: 0.5rem;"></p>
-                                        <p class="skeleton skeleton-line" style="height: 14px; width: 30%;"></p>
-                                    </div>
-                                    <div class="skeleton" style="height: 38px; width: 110px; border-radius: var(--radius-lg);"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <aside class="content-sidebar">
-                        <div class="sidebar-card" style="background-color: var(--widget-bg); border-color: var(--widget-bg); box-shadow: var(--shadow);">
-                            <h4 class="skeleton skeleton-line" style="height: 20px; width: 150px; margin-bottom: 1.5rem; border-radius: 8px;"></h4>
-                            <div class="stat-grid">
-                                <div class="stat-item">
-                                    <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
-                                    <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
-                                    <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
-                                    <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
-                                </div>
-                                <div class="stat-item">
-                                    <div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div>
-                                    <div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </aside>
+            <section class="hero-section">
+                <div class="container">
+                    <p class="breadcrumbs"><a href="dashboard.html">Dashboard</a> &gt; <span id="subject-breadcrumb"></span></p>
+                    <h1 class="hero-title" id="subject-title"></h1>
                 </div>
-            </div>
-
-            <div id="real-content" style="display: none; contents;">
-                <section class="hero-section">
-                    <div class="container">
-                        <p class="breadcrumbs"><a href="dashboard.html">Dashboard</a> &gt; <span id="subject-breadcrumb"></span></p>
-                        <h1 class="hero-title" id="subject-title"></h1>
+            </section>
+            <div class="content-body">
+                <div class="main-content">
+                    <div class="pill-nav">
+                        <div id="pill-slider"></div>
+                        <button id="courseTab" class="nav-tab active">Curriculum</button>
+                        <button id="assessmentsTab" class="nav-tab">Assessments</button>
                     </div>
-                </section>
-                <div class="content-body">
-                    <div class="main-content">
-                        <div class="pill-nav">
-                            <div id="pill-slider"></div>
-                            <button id="courseTab" class="nav-tab active">Curriculum</button>
-                            <button id="assessmentsTab" class="nav-tab">Assessments</button>
-                        </div>
-                        <div id="courseContent" class="content-section active"></div>
-                        <div id="assessmentsContent" class="content-section"></div>
-                    </div>
-                    <aside class="content-sidebar">
-                        <div id="sidebarCard" class="sidebar-card">
-                            <h4>Subject Progress</h4>
-                            <div class="stat-grid">
-                                <div class="stat-item"><div class="stat-value" id="stat-courses">0</div><div class="stat-label">Courses</div></div>
-                                <div class="stat-item"><div class="stat-value" id="stat-lessons">0</div><div class="stat-label">Lessons</div></div>
-                                <div class="stat-item"><div class="stat-value" id="stat-completed">0%</div><div class="stat-label">Completed</div></div>
-                                <div class="stat-item"><div class="stat-value" id="stat-avg-score">-</div><div class="stat-label">Avg. Score</div></div>
-                            </div>
-                        </div>
-                    </aside>
+                    <div id="courseContent" class="content-section active"></div>
+                    <div id="assessmentsContent" class="content-section"></div>
                 </div>
+                <aside class="content-sidebar">
+                    <div id="sidebarCard" class="sidebar-card">
+                        <h4>Subject Progress</h4>
+                        <div class="stat-grid">
+                            <div class="stat-item"><div class="stat-value" id="stat-courses">0</div><div class="stat-label">Courses</div></div>
+                            <div class="stat-item"><div class="stat-value" id="stat-lessons">0</div><div class="stat-label">Lessons</div></div>
+                            <div class="stat-item"><div class="stat-value" id="stat-completed">0%</div><div class="stat-label">Completed</div></div>
+                            <div class="stat-item"><div class="stat-value" id="stat-avg-score">-</div><div class="stat-label">Avg. Score</div></div>
+                        </div>
+                    </div>
+                </aside>
             </div>
         </main>
     </div>
@@ -298,26 +189,30 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-            const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
-            const CURRENT_PAGE_FILENAME = "java-exams.html";
 
-            const setupEventListeners = () => {
+            const CURRENT_PAGE_FILENAME = "new.html";
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                    const userProfile = userDoc.data();
+                    initSharedUI(userProfile);
+                    await loadAndRenderContent(user.uid);
+                    document.querySelector('.dashboard-container').style.display = 'grid';
+                    document.getElementById('loading-overlay').style.display = 'none';
+                } else { window.location.href = 'index.html'; }
+            });
+
+            const initSharedUI = (userProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-                
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { 
-                    e.stopPropagation(); 
-                    profilePopup.classList.toggle('active'); 
-                    profileSection.classList.toggle('active'); 
-                });
-                document.addEventListener('click', e => { 
-                    if (profileSection && !profileSection.contains(e.target) && profilePopup) { 
-                        profilePopup.classList.remove('active'); 
-                        profileSection.classList.remove('active'); 
-                    } 
-                });
-                
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -327,10 +222,10 @@
                 closeBtn.addEventListener('click', toggleMenu);
                 overlay.addEventListener('click', toggleMenu);
                 
-                const tabs = document.querySelectorAll('#real-content .nav-tab');
+                const tabs = document.querySelectorAll('.nav-tab');
                 const slider = document.getElementById('pill-slider');
-                const activeTab = document.querySelector('#real-content .nav-tab.active');
-                function moveSlider(tab) { if(tab && slider) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
+                const activeTab = document.querySelector('.nav-tab.active');
+                function moveSlider(tab) { if(tab) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
                 moveSlider(activeTab);
                 tabs.forEach(tab => {
                     tab.addEventListener('click', (e) => {
@@ -343,78 +238,42 @@
                     });
                 });
             };
-            
-            const updateProfileUI = (userProfile) => {
-                const logoUrl = localStorage.getItem('dashboardLogoUrl');
-                if (logoUrl) {
-                    document.querySelector('.logo-image').src = logoUrl;
-                }
-                const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
-
-                if(profileToUse) {
-                    document.querySelectorAll('.profile-avatar').forEach(el => {
-                        el.src = profileToUse.photoURL || DEFAULT_AVATAR;
-                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
-                    });
-                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
-                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
-                    document.querySelector('.profile-skeleton').style.display = 'none';
-                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
-                }
-            };
-
-            setupEventListeners();
-            updateProfileUI();
-
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                    const userProfile = userDoc.data();
-                    updateProfileUI(userProfile);
-                    await loadAndRenderContent(user.uid);
-                } else { window.location.href = 'index.html'; }
-            });
 
             const loadAndRenderContent = async (userId) => {
-                const skeletonLoader = document.getElementById('skeleton-loader');
-                const realContent = document.getElementById('real-content');
-                try {
-                    const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
-                    if (subjectQuery.empty) { document.querySelector('.main-area').innerHTML = '<h1>Subject not found.</h1>'; return; }
-                    const subjectDoc = subjectQuery.docs[0];
-                    const subjectId = subjectDoc.id;
-                    document.getElementById('subject-title').textContent = subjectDoc.data().name;
-                    document.getElementById('subject-breadcrumb').textContent = subjectDoc.data().name;
+                const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
+                if (subjectQuery.empty) { document.querySelector('.main-area').innerHTML = '<h1>Subject not found.</h1>'; return; }
+                const subjectDoc = subjectQuery.docs[0];
+                const subjectId = subjectDoc.id;
+                document.getElementById('subject-title').textContent = subjectDoc.data().name;
+                document.getElementById('subject-breadcrumb').textContent = subjectDoc.data().name;
 
-                    const [coursesSnapshot, examsSnapshot, progressSnapshot, scoresSnapshot] = await Promise.all([
-                        db.collection('courses').where('subjectId', '==', subjectId).get(),
-                        db.collection('exams').where('subjectId', '==', subjectId).get(),
-                        db.collection('users').doc(userId).collection('progress').get(),
-                        db.collection('scores').where('userId', '==', userId).get()
-                    ]);
+                const [coursesSnapshot, examsSnapshot, codeAssignmentsSnapshot, progressSnapshot, scoresSnapshot, codeScoresSnapshot] = await Promise.all([
+                    db.collection('courses').where('subjectId', '==', subjectId).get(),
+                    db.collection('exams').where('subjectId', '==', subjectId).get(),
+                    db.collection('codeAssignments').where('subjectId', '==', subjectId).get(),
+                    db.collection('users').doc(userId).collection('progress').get(),
+                    db.collection('scores').where('userId', '==', userId).get(),
+                    db.collection('codeScores').where('userId', '==', userId).get()
+                ]);
 
-                    const userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
-                    const userScores = new Map(scoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
+                const userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
+                const userScores = new Map(scoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
+                const userCodeScores = new Map(codeScoresSnapshot.docs.map(doc => [doc.data().problemId, doc.data()]));
 
-                    const courseIds = coursesSnapshot.docs.map(doc => doc.id);
-                    const lessonsByCourse = {};
-                    if (courseIds.length > 0) {
-                        const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
-                        lessonsQuery.forEach(doc => {
-                            const lesson = { id: doc.id, ...doc.data() };
-                            if (!lessonsByCourse[lesson.courseId]) lessonsByCourse[lesson.courseId] = [];
-                            lessonsByCourse[lesson.courseId].push(lesson);
-                        });
-                    }
-                    
-                    renderCourses(coursesSnapshot, lessonsByCourse, userProgress);
-                    renderAssessments(examsSnapshot, userScores);
-                    updateSidebarStats(coursesSnapshot, lessonsByCourse, examsSnapshot, userProgress, userScores);
-                } finally {
-                    skeletonLoader.style.display = 'none';
-                    realContent.style.display = 'contents';
+                const courseIds = coursesSnapshot.docs.map(doc => doc.id);
+                const lessonsByCourse = {};
+                if (courseIds.length > 0) {
+                    const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
+                    lessonsQuery.forEach(doc => {
+                        const lesson = { id: doc.id, ...doc.data() };
+                        if (!lessonsByCourse[lesson.courseId]) lessonsByCourse[lesson.courseId] = [];
+                        lessonsByCourse[lesson.courseId].push(lesson);
+                    });
                 }
+                
+                renderCourses(coursesSnapshot, lessonsByCourse, userProgress);
+                renderAssessments(examsSnapshot, codeAssignmentsSnapshot, userScores, userCodeScores);
+                updateSidebarStats(coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeScores);
             };
 
             const renderCourses = (coursesSnapshot, lessonsByCourse, userProgress) => {
@@ -427,14 +286,15 @@
 
                 coursesSnapshot.forEach(courseDoc => {
                     const course = courseDoc.data();
+                    const lessons = (lessonsByCourse[courseDoc.id] || []);
                     course.chapters.forEach((chapterName, chapterIndex) => {
-                        const lessonsInChapter = (lessonsByCourse[courseDoc.id] || []).filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
+                        const lessonsInChapter = lessons.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
                         if (lessonsInChapter.length === 0) return;
 
                         const chapterGroup = document.createElement('div');
                         chapterGroup.className = 'chapter-group';
-                        chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="chapter-lessons"></div>`;
-                        const lessonsContainer = chapterGroup.querySelector('.chapter-lessons');
+                        chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="content-list"></div>`;
+                        const lessonsContainer = chapterGroup.querySelector('.content-list');
 
                         lessonsInChapter.forEach(lesson => {
                             const card = document.createElement('a');
@@ -450,20 +310,12 @@
                             } else if (isNext) {
                                 status = 'next'; prefixClass = 'card-prefix--default'; buttonHtml = '<button class="card-button">Start Lesson</button>';
                             } else {
-                                status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = '<button class="card-button card-button--locked" disabled>Locked</button>';
+                                status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
                             }
 
                             if (status === 'locked') card.style.pointerEvents = 'none';
-
                             card.dataset.status = status;
-                            card.innerHTML = `
-                                <div class="card-prefix ${prefixClass}">${lesson.chapterIndex + 1}.${lesson.order + 1}</div>
-                                <div class="card-info">
-                                    <p class="card-title">${lesson.title}</p>
-                                    <p class="card-meta">${lesson.duration}</p>
-                                </div>
-                                ${statusIcon}
-                                ${buttonHtml}`;
+                            card.innerHTML = `<div class="card-prefix ${prefixClass}">${lesson.chapterIndex + 1}.${lesson.order + 1}</div><div class="card-info"><p class="card-title">${lesson.title}</p><p class="card-meta">${lesson.duration}</p></div>${statusIcon}${buttonHtml}`;
                             lessonsContainer.appendChild(card);
                         });
                         container.appendChild(chapterGroup);
@@ -471,41 +323,75 @@
                 });
             };
 
-            const renderAssessments = (examsSnapshot, userScores) => {
+            const renderAssessments = async (examsSnapshot, codeAssignmentsSnapshot, userScores, userCodeScores) => {
                 const container = document.getElementById('assessmentsContent');
                 container.innerHTML = '';
-                if (examsSnapshot.empty) { container.innerHTML = '<p>No assessments available in this subject yet.</p>'; return; }
+                
+                let assessments = [];
+                examsSnapshot.forEach(doc => assessments.push({ type: 'mcq', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || { seconds: 0 } }));
+                codeAssignmentsSnapshot.forEach(doc => assessments.push({ type: 'code', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || { seconds: 0 } }));
+                
+                assessments.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
 
-                examsSnapshot.forEach(doc => {
-                    const exam = doc.data();
-                    const score = userScores.get(doc.id);
+                if (assessments.length === 0) { container.innerHTML = '<p>No assessments available in this subject yet.</p>'; return; }
+                
+                const problemsByAssignment = {};
+                for(const assign of assessments.filter(a => a.type === 'code')) {
+                    const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assign.id).get();
+                    problemsByAssignment[assign.id] = problemsSnap.docs.map(d => d.id);
+                }
+
+                const assessmentGroup = document.createElement('div');
+                assessmentGroup.className = 'chapter-group';
+                assessmentGroup.innerHTML = `<div class="content-list"></div>`;
+                const listContainer = assessmentGroup.querySelector('.content-list');
+
+                assessments.forEach(item => {
                     const card = document.createElement('a');
-                    card.href = `exam.html?id=${doc.id}`;
                     card.className = 'card';
-                    let status, prefixClass, buttonHtml = '', meta, statusIcon = '';
+                    let meta = '', buttonText = '', isCompleted = false, isLocked = false;
 
-                    if (score) {
-                        const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                        status = 'completed'; prefixClass = 'card-prefix--completed'; meta = `Score: ${percentage}%`; buttonHtml = '<button class="card-button">View Results</button>';
-                        statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
-                    } else {
-                        status = exam.isLocked ? 'locked' : 'next';
-                        prefixClass = exam.isLocked ? 'card-prefix--locked' : 'card-prefix--default';
-                        meta = `${exam.questions.length} Questions`;
-                        buttonHtml = `<button class="card-button ${exam.isLocked ? 'card-button--locked' : ''}" ${exam.isLocked ? 'disabled' : ''}>${exam.isLocked ? 'Locked' : 'Start Exam'}</button>`;
+                    if (item.type === 'mcq') {
+                        const exam = item.data;
+                        const score = userScores.get(item.id);
+                        card.href = `exam.html?id=${item.id}`;
+                        isLocked = exam.isLocked;
+                        
+                        if (score) {
+                            isCompleted = true;
+                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                            meta = `MCQ Exam • Score: ${percentage}%`;
+                            buttonText = 'View Results';
+                        } else {
+                            meta = `MCQ Exam • ${exam.questions.length} Questions • ${exam.duration / 60} min`;
+                            buttonText = isLocked ? 'Locked' : 'Start Exam';
+                        }
+                    } else if (item.type === 'code') {
+                        const assignment = item.data;
+                        const problems = problemsByAssignment[item.id] || [];
+                        const solvedCount = problems.filter(pId => userCodeScores.has(pId)).length;
+                        isCompleted = problems.length > 0 && solvedCount === problems.length;
+                        card.href = `code.html?id=${item.id}`;
+                        isLocked = assignment.isLocked;
+                        meta = `Code Assignment • ${solvedCount}/${problems.length} Solved • ${assignment.duration / 60} min`;
+                        buttonText = isCompleted ? 'View Submission' : (isLocked ? 'Locked' : 'Start Challenge');
                     }
-                    if(status === 'locked') card.style.pointerEvents = 'none';
-                    card.dataset.status = status;
-                    card.innerHTML = `
-                        <div class="card-prefix ${prefixClass}"><i class='bx bx-abacus'></i></div>
-                        <div class="card-info"><p class="card-title">${exam.name}</p><p class="card-meta">${meta}</p></div>
-                        ${statusIcon}
-                        ${buttonHtml}`;
-                    container.appendChild(card);
+                    
+                    if(isLocked && !isCompleted) card.style.pointerEvents = 'none';
+                    const iconClass = item.type === 'mcq' ? 'bxs-file-doc' : 'bxs-code-alt';
+                    card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${isLocked && !isCompleted ? 'card-button--locked' : ''}">${buttonText}</button>`;
+                    
+                    if (isCompleted) {
+                        card.dataset.status = 'completed';
+                        card.querySelector('.card-prefix').classList.replace('card-prefix--default', 'card-prefix--completed');
+                        card.querySelector('.card-info').insertAdjacentHTML('afterend', `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`);
+                    }
+                    listContainer.appendChild(card);
                 });
+                container.appendChild(assessmentGroup);
             };
             
-            const updateSidebarStats = (coursesSnapshot, lessonsByCourse, examsSnapshot, userProgress, userScores) => {
+            const updateSidebarStats = async (coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeScores) => {
                 const totalCourses = coursesSnapshot.size;
                 const totalLessons = Object.values(lessonsByCourse).flat().length;
                 const completedLessons = userProgress.size;
@@ -513,12 +399,26 @@
                 
                 let totalScore = 0, scoreCount = 0;
                 userScores.forEach(score => {
-                    const examId = score.examId;
-                    if(examsSnapshot.docs.some(doc => doc.id === examId)) {
-                        totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
-                        scoreCount++;
-                    }
+                    totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
+                    scoreCount++;
                 });
+
+                let totalPointsPossible = 0, totalPointsEarned = 0;
+                for(const assignDoc of codeAssignmentsSnapshot.docs) {
+                    const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignDoc.id).get();
+                    problemsSnap.forEach(probDoc => {
+                        const problem = probDoc.data();
+                        totalPointsPossible += problem.points;
+                        if(userCodeScores.has(probDoc.id)) {
+                            totalPointsEarned += userCodeScores.get(probDoc.id).pointsReceived;
+                        }
+                    });
+                }
+                if (totalPointsPossible > 0) {
+                    totalScore += (totalPointsEarned / totalPointsPossible) * 100;
+                    scoreCount++;
+                }
+
                 const avgScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : '-';
 
                 document.getElementById('stat-courses').textContent = totalCourses;
