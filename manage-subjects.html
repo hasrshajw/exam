@@ -10,18 +10,10 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB;
-            --widget-bg: #FFFFFF;
-            --border-color: #E5E7EB;
-            --text-primary: #111827;
-            --text-secondary: #6B7280;
-            --brand-purple: #6D28D9;
-            --brand-purple-hover: #5B21B6;
-            --hover-bg: #F3F4F6;
-            --danger-color: #EF4444;
-            --danger-hover: #DC2626;
-            --danger-bg-light: #FEE2E2;
-            --danger-text-dark: #B91C1C;
+            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
+            --text-primary: #111827; --text-secondary: #6B7280; --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --danger-color: #EF4444;
+            --danger-hover: #DC2626; --danger-bg-light: #FEE2E2; --danger-text-dark: #B91C1C;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -31,13 +23,11 @@
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
-
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
         .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .content-body { padding: 2rem 2.5rem; }
-        
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
         .logo-image { height: 40px; }
         .main-nav { flex-grow: 1; }
@@ -63,7 +53,6 @@
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-
         .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .admin-content-header h1 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
@@ -75,8 +64,7 @@
         .danger-btn { background-color: var(--danger-color); color: white; }
         .danger-btn:hover { background-color: var(--danger-hover); }
         .menu-toggle, .sidebar-close-btn { display: none; }
-
-        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .subjects-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
         .subject-card { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); display: flex; flex-direction: column; transition: all 0.2s ease; }
         .subject-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
         .card-content { padding: 1.5rem; flex-grow: 1; }
@@ -93,12 +81,11 @@
         .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         .action-item.delete { color: var(--danger-color); }
         .card-filename { color: var(--text-secondary); font-size: 0.875rem; font-family: monospace; }
-        .card-actions { border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; display: flex; gap: 0.75rem; background-color: #F9FAFB; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
-        .card-actions .action-link { flex: 1; padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.2s ease; text-align: center; }
+        .card-actions { border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; background-color: #F9FAFB; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+        .card-actions .action-link { padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.2s ease; text-align: center; }
         .card-actions .action-link svg { width: 16px; height: 16px; }
         .card-actions .action-link--primary { background-color: var(--hover-bg); color: var(--text-primary); }
         .card-actions .action-link--primary:hover { background-color: var(--border-color); }
-        
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
@@ -113,7 +100,6 @@
         .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
         .form-field input:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
-        
         .confirm-modal .modal-content { max-width: 420px; }
         .confirm-modal .modal-body { text-align: center; padding: 2rem 1.5rem 1.5rem; }
         .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background-color: var(--danger-bg-light); color: var(--danger-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
@@ -121,13 +107,11 @@
         .confirm-modal h4 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
         .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
         .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
-
         .action-overlay { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
         .action-overlay.show { display: flex; }
         .spinner { border: 4px solid var(--hover-bg); border-top: 4px solid var(--brand-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .action-overlay p { font-weight: 600; color: var(--text-primary); }
-        
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -203,10 +187,7 @@
                     <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button class="secondary-btn">Cancel</button>
-                <button class="primary-btn" id="save-subject-btn">Save Subject</button>
-            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-subject-btn">Save Subject</button></div>
         </div>
     </div>
     <div class="modal-overlay confirm-modal" id="confirm-modal">
@@ -301,12 +282,9 @@
                                 <p class="card-filename">${subject.page}</p>
                             </div>
                             <div class="card-actions">
-                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-link action-link--primary">
-                                    <i class='bx bxs-book-content'></i> Content
-                                </a>
-                                <a href="manage-exams.html?subjectId=${doc.id}" class="action-link action-link--primary">
-                                    <i class='bx bxs-graduation'></i> Exams
-                                </a>
+                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-link action-link--primary"><i class='bx bxs-book-content'></i> Content</a>
+                                <a href="manage-exams.html?subjectId=${doc.id}" class="action-link action-link--primary"><i class='bx bxs-graduation'></i> Exams</a>
+                                <a href="manage-code.html?subjectId=${doc.id}" class="action-link action-link--primary"><i class='bx bxs-terminal'></i> Code Exams</a>
                             </div>`;
                         gridContainer.appendChild(card);
                     });
