@@ -140,7 +140,7 @@
                         <button class="primary-btn" id="create-assignment-btn"><i class='bx bx-plus'></i> Create Assignment</button>
                     </div>
                     <table class="admin-table">
-                        <thead><tr><th>Assignment Name</th><th>Problems</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>Assignment Name</th><th>Problems</th><th>Duration</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody id="assignments-tbody"></tbody>
                     </table>
                 </div>
@@ -167,7 +167,10 @@
                 <form id="assignment-form">
                     <input type="hidden" id="assignment-id">
                     <div class="form-field"><label for="assignment-name">Assignment Name</label><input type="text" id="assignment-name" required></div>
-                    <div class="form-field"><label for="assignment-duration">Duration (minutes)</label><input type="number" id="assignment-duration" required></div>
+                    <div class="form-grid">
+                        <div class="form-field"><label for="assignment-duration">Duration (minutes)</label><input type="number" id="assignment-duration" required></div>
+                        <div class="form-field"><label for="assignment-deadline">Deadline (Optional)</label><input type="date" id="assignment-deadline"></div>
+                    </div>
                     <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" id="assignment-locked" style="width: auto;"><label for="assignment-locked">Locked for students</label></div>
                 </form>
             </div>
@@ -243,6 +246,11 @@
                 document.getElementById(`${view}-view`).classList.add('active');
             };
 
+            const formatDate = (timestamp) => {
+                if (!timestamp) return "No Deadline";
+                return new Date(timestamp.seconds * 1000).toLocaleDateString('en-CA');
+            };
+
             const loadAssignments = () => {
                 const tbody = document.getElementById('assignments-tbody');
                 db.collection('codeAssignments').where('subjectId', '==', currentSubject.id)
@@ -259,6 +267,7 @@
                                 <td>${assignment.name}</td>
                                 <td>${assignment.problemCount}</td>
                                 <td>${assignment.duration / 60} min</td>
+                                <td>${formatDate(assignment.deadline)}</td>
                                 <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${assignment.id}" ${!assignment.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
                                 <td>
                                     <button class="action-btn manage-problems-btn" data-id="${assignment.id}" data-name="${assignment.name}">Manage Problems</button>
@@ -282,9 +291,13 @@
             const openAssignmentModal = (assignment = null) => {
                 const modal = document.getElementById('assignment-modal');
                 modal.querySelector('#assignment-modal-title').textContent = assignment ? 'Edit Assignment' : 'Create New Assignment';
+                modal.querySelector('#assignment-form').reset();
                 modal.querySelector('#assignment-id').value = assignment ? assignment.id : '';
                 modal.querySelector('#assignment-name').value = assignment ? assignment.name : '';
                 modal.querySelector('#assignment-duration').value = assignment ? assignment.duration / 60 : '';
+                if (assignment && assignment.deadline) {
+                    modal.querySelector('#assignment-deadline').value = new Date(assignment.deadline.seconds * 1000).toISOString().split('T')[0];
+                }
                 modal.querySelector('#assignment-locked').checked = assignment ? assignment.isLocked : true;
                 modal.classList.add('show');
             };
@@ -382,7 +395,6 @@
                 const target = e.target;
                 const header = target.closest('.problem-header');
                 const button = target.closest('button');
-
                 if (header && !button) { 
                     header.classList.toggle('active');
                     const content = header.nextElementSibling;
@@ -419,18 +431,30 @@
 
             document.getElementById('save-assignment-btn').addEventListener('click', async () => {
                 const id = document.getElementById('assignment-id').value;
+                const date = document.getElementById('assignment-deadline').value;
+                let deadline = null;
+                if (date) {
+                    const d = new Date(date);
+                    d.setHours(23, 59, 59, 999);
+                    deadline = firebase.firestore.Timestamp.fromDate(d);
+                }
+
                 const data = { 
                     name: document.getElementById('assignment-name').value.trim(), 
                     subjectId: currentSubject.id,
                     duration: parseInt(document.getElementById('assignment-duration').value, 10) * 60,
                     isLocked: document.getElementById('assignment-locked').checked,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    deadline: deadline
                 };
+
                 if (!data.name || isNaN(data.duration) || data.duration <= 0) { alert('Name and a valid positive Duration are required'); return; }
+                
                 if (id) {
-                    delete data.createdAt;
                     await db.collection('codeAssignments').doc(id).update(data);
-                } else await db.collection('codeAssignments').add(data);
+                } else {
+                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    await db.collection('codeAssignments').add(data);
+                }
                 document.getElementById('assignment-modal').classList.remove('show');
             });
             
@@ -477,7 +501,6 @@
                     const header = problemCard.querySelector('.problem-header');
                     header.classList.remove('active');
                     header.nextElementSibling.style.maxHeight = null;
-
                 } catch (err) { alert(`Error saving problem: ${err.message}`); }
             });
 
