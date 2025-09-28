@@ -43,9 +43,6 @@
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
         .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .search-bar { position: relative; width: 300px; }
-        .search-bar i { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 1.25rem; }
-        .search-bar input { width: 100%; padding: 0.75rem 1rem 0.75rem 3rem; border-radius: 8px; border: 1px solid var(--border-color); font-family: 'IBM Plex Sans', sans-serif; font-size: 0.9rem; background-color: var(--body-bg); outline: none; }
         .content-body { padding: 2rem 3rem; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: flex-start; }
         .column { display: flex; flex-direction: column; gap: 2rem; }
         .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02); }
@@ -110,7 +107,7 @@
         .menu-toggle { display: none; }
         .sidebar-close-btn { display: none; }
         .placeholder-text { color: var(--text-secondary); text-align: center; padding: 2rem; }
-
+        
         @keyframes shimmer { 100% { transform: translateX(100%); } }
         .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; border-radius: 8px; }
         .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
@@ -124,7 +121,7 @@
         .skeleton-tabs { display: flex; gap: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; margin-bottom: 1rem; }
         .skeleton-tab { width: 80px; height: 20px; }
         .skeleton-list-item { display: flex; align-items: center; gap: 1rem; }
-        
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -146,7 +143,7 @@
     <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="dashboard.html" class="active"><i class='bx bx-home-alt'></i> Dashboard</a></li>
@@ -164,7 +161,6 @@
                         <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
                         <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
                     </div>
-                    <div class="skeleton skeleton-icon" style="width: 24px; height: 24px; border-radius: 4px;"></div>
                 </div>
                 <div class="profile-content-wrapper" style="display: none;">
                     <img src="" alt="Profile Picture" class="profile-avatar">
@@ -193,15 +189,14 @@
             <header class="main-header">
                 <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
                 <h1>Dashboard</h1>
-                <div class="search-bar"><i class='bx bx-search'></i><input type="text" placeholder="What do you want to learn today?"></div>
             </header>
             <section class="content-body" id="skeleton-loader">
                 <div class="column main-col">
-                    <div class="widget skeleton-widget" style="background-color: var(--text-primary);">
-                        <div class="skeleton skeleton-line" style="width: 30%; height: 12px; margin-bottom: 0.5rem; background-color: rgba(255,255,255,0.2)"></div>
-                        <div class="skeleton skeleton-line" style="width: 70%; height: 28px; margin-bottom: 1.5rem; background-color: rgba(255,255,255,0.2)"></div>
-                        <div class="skeleton skeleton-line" style="width: 100%; height: 8px; margin-bottom: 1.5rem; background-color: rgba(255,255,255,0.2)"></div>
-                        <div class="skeleton skeleton-button" style="background-color: rgba(255,255,255,0.2)"></div>
+                    <div class="widget skeleton-widget">
+                        <div class="skeleton skeleton-line" style="width: 30%; height: 12px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 70%; height: 28px; margin-bottom: 1.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 100%; height: 8px; margin-bottom: 1.5rem;"></div>
+                        <div class="skeleton skeleton-button"></div>
                     </div>
                     <div class="widget skeleton-widget">
                         <div class="skeleton-header"><div class="skeleton skeleton-line" style="width: 40%; height: 20px;"></div></div>
@@ -384,7 +379,9 @@
 
             const initUI = (userProfile) => {
                 const logoUrl = document.querySelector('.logo-image').src;
-                if (logoUrl) { localStorage.setItem('dashboardLogoUrl', logoUrl); }
+                if (logoUrl) {
+                    localStorage.setItem('dashboardLogoUrl', logoUrl);
+                }
                 const userDetails = {
                     displayName: userProfile.displayName,
                     email: userProfile.email,
@@ -393,11 +390,12 @@
                 localStorage.setItem('dashboardUserProfile', JSON.stringify(userDetails));
 
                 document.querySelectorAll('.profile-avatar').forEach(el => {
-                    el.src = userDetails.photoURL;
+                    el.src = userProfile.photoURL || DEFAULT_AVATAR;
                     el.onerror = () => { el.src = DEFAULT_AVATAR; };
                 });
-                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userDetails.displayName);
-                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userDetails.email);
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
+                
                 document.querySelector('.profile-skeleton').style.display = 'none';
                 document.querySelector('.profile-content-wrapper').style.display = 'flex';
                 
@@ -433,7 +431,7 @@
             };
 
             const loadDashboardData = async (userId, userProfile) => {
-                 try {
+                try {
                     const enrollmentsSnap = await db.collection('enrollments').where('userId', '==', userId).get();
                     const enrolledCourseIds = enrollmentsSnap.docs.map(doc => doc.data().courseId);
                     const enrolledSubjectIds = enrollmentsSnap.docs.map(doc => doc.data().subjectId);
@@ -472,8 +470,8 @@
                         renderFeaturedCourse(enrolledCourses, allEnrolledLessons, allSubjects, userProgress);
                         renderOverallProgress(allEnrolledLessons.length, allExams.length, userProgress.size, userScores.size);
                     }
-                } catch (error) {
-                    console.error("Error loading dashboard data:", error);
+                } catch(error) {
+                    console.error("Error loading dashboard:", error);
                 } finally {
                     document.getElementById('skeleton-loader').style.display = 'none';
                     document.getElementById('real-content').style.display = 'grid';
@@ -554,10 +552,10 @@
                     });
                     
                     const currentUserRank = userList.indexOf(currentUserId);
-                    if (!currentUserInTop3 && currentUserRank > -1) {
+                    if (currentUserRank >= 3 && !currentUserInTop3) {
                          const user = users.get(currentUserId);
                          if (user) {
-                            html += `<hr class="user-separator"><li class="profile-item"><span class="rank">${currentUserRank + 1}</span><img src="${currentUserPhoto}" alt="${user.displayName}" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}';"><div class="profile-info"><p class="profile-name">${user.displayName} (You)</p><p class="profile-affiliation">${user.college}</p></div><span class="score">${userPoints[currentUserId] || 0} XP</span></li>`;
+                            html += `<hr class="user-separator"><li class="profile-item"><span class="rank">${currentUserRank !== -1 ? currentUserRank + 1 : '-'}</span><img src="${currentUserPhoto}" alt="${user.displayName}" onerror="this.onerror=null;this.src='${DEFAULT_AVATAR}';"><div class="profile-info"><p class="profile-name">${user.displayName} (You)</p><p class="profile-affiliation">${user.college}</p></div><span class="score">${userPoints[currentUserId] || 0} XP</span></li>`;
                          }
                     }
                     return html;
@@ -613,6 +611,7 @@
                             iconClass = 'warning'; icon = "<i class='bx bxs-error-alt'></i>"; text = `Deadline is in ${daysLeft} days.`;
                         }
                         heading = `${item.data.name} Deadline`;
+                        buttonHtml = `<a href="exam.html?id=${item.docId}" class="btn-notification">Start Exam</a>`;
                     }
                     
                     li.innerHTML = `
