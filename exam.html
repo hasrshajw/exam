@@ -24,7 +24,7 @@
         .q-number { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; border: 1px solid var(--color-sidebar-text-muted); }
         .active .q-number { background-color: white; color: var(--color-primary); border-color: white; }
         .q-details { display: flex; flex-direction: column; } .q-type { font-size: 0.9rem; } .q-points { font-size: 0.75rem; color: var(--color-sidebar-text-muted); } .active .q-points { color: #e0e4f1; }
-        .q-status-icon { width: 24px; height: 24px; opacity: 0; transform: scale(0.5); margin-left: auto; color: var(--color-success); }
+        .q-status-icon { width: 24px; height: 24px; opacity: 0; transform: scale(0.5); margin-left: auto; color: var(--color-success); transition: all 0.2s; }
         .question-item.answered .q-status-icon { opacity: 1; transform: scale(1); }
         .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
         .main-header { display: flex; align-items: center; margin-bottom: 24px; flex-shrink: 0; gap: 16px; }
@@ -113,7 +113,7 @@
         <div class="review-card">
             <div class="review-header"><h2>Review Your Answers</h2><p>Click a number to jump to that question. Submit when ready.</p></div>
             <div class="review-grid" id="review-grid"></div>
-            <div class="review-footer"><button class="nav-btn submit-btn" id="final-submit-btn">Confirm & Submit Test</button></div>
+            <div class="review-footer" style="text-align: center; margin-top: 1.5rem;"><button class="nav-btn submit-btn" id="final-submit-btn">Confirm & Submit Test</button></div>
         </div>
     </div>
 
@@ -123,7 +123,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -208,7 +208,7 @@
                 examState.questions.forEach((q, index) => {
                     const item = document.createElement('li');
                     item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}`;
-                    item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><span class="q-status-icon check"><i class='bx bx-check'></i></span>`;
+                    item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div><div class="q-status-icon"><i class='bx bx-check'></i></div>`;
                     item.addEventListener('click', () => navigateToQuestion(index));
                     dom.questionNav.appendChild(item);
                 });
@@ -225,7 +225,7 @@
                 if (isCoding) {
                     dom.problemDetails.innerHTML = `<h3>Problem Statement</h3>${question.statement}`;
                     editor.setValue(question.userAnswer || question.starterCode || '');
-                    dom.consoleOutput.textContent = '';
+                    dom.consoleOutput.textContent = 'Run code to see results against public test cases.';
                 } else {
                     dom.optionsContainer.innerHTML = '';
                     question.options.forEach((opt, index) => {
@@ -248,17 +248,21 @@
             };
 
             const navigateToQuestion = (index) => {
-                const currentQuestion = examState.questions[examState.currentQuestionIndex];
-                if (currentQuestion.type === 'Coding' && editor) {
-                    const code = editor.getValue();
-                    if (code.trim() !== (currentQuestion.starterCode || '').trim()) {
-                        currentQuestion.userAnswer = code;
-                        currentQuestion.isAnswered = true;
-                    }
-                }
+                saveCurrentAnswer();
                 examState.currentQuestionIndex = index;
                 renderQuestion();
                 renderSidebar();
+            };
+            
+            const saveCurrentAnswer = () => {
+                const currentQuestion = examState.questions[examState.currentQuestionIndex];
+                if (currentQuestion.type === 'Coding' && editor) {
+                    const code = editor.getValue();
+                    currentQuestion.userAnswer = code;
+                    if (code.trim() !== (currentQuestion.starterCode || '').trim() && code.trim() !== '') {
+                        currentQuestion.isAnswered = true;
+                    }
+                }
             };
 
             const updateNavButtons = () => {
@@ -275,8 +279,8 @@
                     const mins = Math.floor(examState.timeLeft / 60);
                     const secs = examState.timeLeft % 60;
                     dom.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                    if (examState.timeLeft <= 300) dom.timer.classList.add('warning');
-                    if (examState.timeLeft <= 60) dom.timer.classList.add('danger');
+                    if (examState.timeLeft <= 300 && examState.timeLeft > 60) dom.timer.classList.add('warning');
+                    if (examState.timeLeft <= 60) { dom.timer.classList.remove('warning'); dom.timer.classList.add('danger'); }
                     if (examState.timeLeft <= 0) { clearInterval(examState.timerInterval); handleSubmit(true); }
                 }, 1000);
             };
@@ -288,6 +292,10 @@
                 
                 try {
                     const testCases = question.testCases.filter(tc => !tc.hidden);
+                    if (testCases.length === 0) {
+                        dom.consoleOutput.textContent = "No public test cases to run against.";
+                        return;
+                    }
                     let resultsHTML = '';
                     for (const tc of testCases) {
                         const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
@@ -300,7 +308,7 @@
                             resultsHTML += `<p style="color: var(--color-danger);">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
                         }
                     }
-                    dom.consoleOutput.innerHTML = resultsHTML || "Execution finished with no output.";
+                    dom.consoleOutput.innerHTML = resultsHTML;
                 } catch(e) {
                     dom.consoleOutput.textContent = `Error: ${e.message}`;
                 }
@@ -311,7 +319,7 @@
                 clearInterval(examState.timerInterval);
                 dom.loadingOverlay.querySelector('p').textContent = 'Submitting...';
                 dom.loadingOverlay.style.display = 'flex';
-                handleNext(); 
+                saveCurrentAnswer();
 
                 let pointsReceived = 0;
                 let totalPoints = 0;
@@ -336,9 +344,10 @@
                 }
 
                 const scoreData = {
-                    userId: currentUser.uid, examId: examState.currentExamData.id, examName: examState.currentExamData.name,
+                    userId: currentUser.uid, examId: examState.currentExamData.id, 
+                    examName: examState.currentExamData.name, subjectId: examState.currentExamData.subjectId,
                     pointsReceived, totalPoints, timeTaken: examState.currentExamData.duration - examState.timeLeft,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
                 await db.collection('scores').add(scoreData);
@@ -347,7 +356,7 @@
 
             const renderResultsPage = (scoreData) => {
                 const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is ${percentage}%.</p><p>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</p><a href="dashboard.html" class="nav-btn">Back to Dashboard</a></div>`;
+                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is ${percentage}%.</p><h3>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</h3><a href="dashboard.html" class="nav-btn" style="margin-top: 1.5rem;">Back to Dashboard</a></div>`;
                 showView('results-view');
             };
 
@@ -363,15 +372,15 @@
             };
 
             const handleNext = () => {
-                if (examState.currentQuestionIndex < examState.questions.length) {
+                if (examState.currentQuestionIndex < examState.questions.length - 1) {
                     navigateToQuestion(examState.currentQuestionIndex + 1);
                 }
             };
             
             dom.prevBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex - 1));
             dom.nextBtn.addEventListener('click', handleNext);
-            dom.submitBtn.addEventListener('click', () => { handleNext(); renderReviewGrid(); showView('review-view'); });
-            dom.endRoundBtn.addEventListener('click', () => { handleNext(); renderReviewGrid(); showView('review-view'); });
+            dom.submitBtn.addEventListener('click', () => { saveCurrentAnswer(); renderReviewGrid(); showView('review-view'); });
+            dom.endRoundBtn.addEventListener('click', () => { saveCurrentAnswer(); renderReviewGrid(); showView('review-view'); });
             dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
             dom.runCodeBtn.addEventListener('click', runCode);
         });
