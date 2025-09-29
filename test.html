@@ -28,6 +28,7 @@
             --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             --mobile-header-height: 65px;
             --mobile-nav-height: 74px;
+            --mobile-footer-height: 82px;
             --app-height: 100vh;
         }
         
@@ -77,10 +78,12 @@
         .sidebar__close-btn svg { width: 20px; height: 20px; }
         .sidebar__nav { flex-grow: 1; overflow-y: auto; min-height: 0; }
         .problem-list { list-style: none; }
-        .problem-item { display: flex; align-items: center; gap: 16px; padding: 12px; margin-bottom: 8px; border-radius: var(--radius-md); cursor: pointer; border: 1px solid transparent; transition: background-color 0.2s, border-color 0.2s; }
+        .problem-item { display: flex; align-items: center; gap: 16px; padding: 12px; margin-bottom: 8px; border-radius: var(--radius-md); cursor: pointer; border: 1px solid transparent; transition: all 0.2s; }
         .problem-item:not(.is-locked):not(.is-active):hover { background-color: rgba(var(--border-color-rgb), 0.2); }
         .problem-item.is-active { background-color: rgba(var(--border-color-rgb), 0.4); }
-        .problem-item.is-locked { cursor: not-allowed; opacity: 0.5; }
+        .problem-item.is-locked { opacity: 0.6; cursor: not-allowed; background-color: transparent !important; }
+        .problem-item.shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
         .problem-item__number { width: 32px; height: 32px; display: grid; place-items: center; flex-shrink: 0; border-radius: 50%; font-size: 0.9rem; font-weight: 600; background-color: rgba(var(--border-color-rgb), 0.3); transition: all var(--transition-smooth); }
         .problem-item.is-active .problem-item__number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
         .problem-item__title { font-weight: 500; flex-grow: 1; }
@@ -99,7 +102,7 @@
         .mobile-nav__btn { flex: 1; text-align: center; padding: 10px; border-radius: 8px; font-weight: 600; color: var(--text-secondary); transition: all 0.2s; }
         .mobile-nav__btn.is-active { color: var(--text-primary); background-color: rgba(var(--border-color-rgb), 0.4); }
 
-        .main-content { width: 100%; display: flex; flex-direction: column; height: var(--app-height); padding: calc(var(--mobile-header-height) + var(--mobile-nav-height)) 16px 0 16px; }
+        .main-content { width: 100%; display: flex; flex-direction: column; height: var(--app-height); padding: calc(var(--mobile-header-height) + var(--mobile-nav-height)) 16px var(--mobile-footer-height) 16px; }
         .ide-grid { display: flex; flex-grow: 1; min-height: 0; padding-top: 50px; }
         .ide-view { display: none; flex-grow: 1; min-height: 0; }
         .ide-view.is-active { display: flex; flex-direction: column; }
@@ -128,7 +131,7 @@
         .status-pass { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); }
         .status-fail { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
         
-        .mobile-footer { position: fixed; bottom: 0; left: 0; width: 100%; padding: 16px; background: linear-gradient(to top, var(--bg-main) 50%, transparent); display: none; justify-content: space-between; gap: 12px; z-index: 100; }
+        .mobile-footer { position: fixed; bottom: 0; left: 0; width: 100%; height: var(--mobile-footer-height); padding: 16px; background: linear-gradient(to top, var(--bg-main) 50%, transparent); display: none; justify-content: space-between; gap: 12px; z-index: 100; }
         .mobile-footer.is-active { display: flex; }
         .mobile-footer .btn { flex: 1; }
         
@@ -411,9 +414,12 @@
             DOMElements.problemList.innerHTML = problems.map((p, i) => {
                 const status = problemStatus[p.id];
                 const isActive = p.id === currentProblemId;
+                const prevProblemStatus = i > 0 ? problemStatus[problems[i-1].id] : null;
+                const isLocked = i > 0 && prevProblemStatus === 'not-attempted';
                 const icon = status === 'solved' ? '#icon-solved' : '#icon-attempted';
+                
                 return `
-                    <li class="problem-item ${status} ${isActive ? 'is-active' : ''}" data-id="${p.id}">
+                    <li class="problem-item ${status} ${isActive ? 'is-active' : ''} ${isLocked ? 'is-locked' : ''}" data-id="${p.id}">
                         <div class="problem-item__number">${i + 1}</div>
                         <div class="problem-item__title">${p.title}</div>
                         ${(status !== 'not-attempted') ? `<div class="problem-item__status"><svg><use href="${icon}"></use></svg></div>` : ''}
@@ -466,10 +472,14 @@
         function initEventListeners() {
             DOMElements.problemList.addEventListener('click', (e) => {
                 const target = e.target.closest('.problem-item');
-                if (target && !target.classList.contains('is-locked')) {
-                    loadProblem(target.dataset.id);
-                    closeSidebar();
+                if (!target) return;
+                if (target.classList.contains('is-locked')) {
+                    target.classList.add('shake');
+                    setTimeout(() => target.classList.remove('shake'), 500);
+                    return;
                 }
+                loadProblem(target.dataset.id);
+                closeSidebar();
             });
 
             DOMElements.mobileMenuBtn.addEventListener('click', openSidebar);
@@ -525,9 +535,11 @@
             
             const results = await Promise.all(testsToRun.map(test => executeTestCase(userCode, test, problem.functionName)));
             
-            renderResults(results, isSubmission);
+            if (isSubmission && problemStatus[currentProblemId] === 'not-attempted') {
+                 problemStatus[currentProblemId] = 'attempted';
+            }
             
-            if (problemStatus[currentProblemId] === 'not-attempted') problemStatus[currentProblemId] = 'attempted';
+            renderResults(results, isSubmission);
 
             if (isSubmission) {
                 const allPassed = results.every(r => r.status === 'pass');
@@ -537,8 +549,11 @@
                 
                 if (allPassed) {
                     const nextProblem = problems.find(p => problemStatus[p.id] === 'not-attempted');
-                    if(nextProblem) loadProblem(nextProblem.id);
-                    else endExam("All problems completed!");
+                    if(nextProblem) {
+                         loadProblem(nextProblem.id);
+                    } else {
+                         endExam("All problems completed!");
+                    }
                 }
             }
             
