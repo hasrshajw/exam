@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProCoder IDE - Proctored Exam</title>
+    <style>
+        :root {
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
+            --bg-dark: #0d1117;
+            --surface-dark: #161b22;
+            --surface-light: #21262d;
+            --border-color: #30363d;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-glow-rgb: 79, 70, 229;
+            --accent-start: #4F46E5;
+            --accent-end: #7C3AED;
+            --success: #238636;
+            --danger: #da3633;
+            --warning: #e3b341;
+            --success-light-rgb: 35, 134, 54;
+            --danger-light-rgb: 218, 54, 51;
+            --border-radius: 8px;
+            --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; overflow: hidden; }
+        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; }
+        
+        .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
+        .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.2; }
+        .aurora-bg::before { background: radial-gradient(circle, var(--accent-start), transparent 70%); top: -20%; left: -10%; animation: moveAurora1 20s infinite alternate; }
+        .aurora-bg::after { background: radial-gradient(circle, var(--accent-end), transparent 70%); bottom: -20%; right: -10%; animation: moveAurora2 25s infinite alternate; }
+        @keyframes moveAurora1 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(100px, 50px) rotate(30deg); } }
+        @keyframes moveAurora2 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-100px, -50px) rotate(-30deg); } }
+
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        svg { display: block; width: 100%; height: 100%; }
+        
+        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); transition: opacity 0.3s; }
+        .loading-spinner { border: 4px solid var(--surface-light); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .ide-dashboard { display: flex; height: 100%; position: relative; background: rgba(13, 17, 23, 0.8); backdrop-filter: blur(20px); }
+        .sidebar { width: 320px; background-color: rgba(13, 17, 23, 0.8); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
+        .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
+        .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
+        .sidebar nav { flex-grow: 1; overflow-y: auto; }
+        .problem-nav { list-style: none; }
+        .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), color var(--transition), opacity var(--transition), box-shadow var(--transition); border: 1px solid transparent; }
+        .problem-item:not(.locked):hover { background-color: var(--surface-dark); }
+        .problem-item.active { background-color: var(--surface-dark); color: white; font-weight: 600; border-color: var(--accent-start); box-shadow: 0 0 20px rgba(var(--accent-glow-rgb), 0.25); }
+        .problem-item.locked { cursor: not-allowed; opacity: 0.5; }
+        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); }
+        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
+        .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
+        .p-status-icon { width: 20px; height: 20px; margin-left: 8px; opacity: 0; transform: scale(0.5); transition: all var(--transition); }
+        .problem-item.solved .p-status-icon, .problem-item.attempted .p-status-icon { opacity: 1; transform: scale(1); }
+        
+        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .main-header { display: flex; flex-direction: column; gap: 16px; margin-bottom: 24px; flex-shrink: 0; }
+        .header-top-row, .header-bottom-row { display: flex; align-items: center; justify-content: space-between; }
+        .header-title { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
+        .proctor-info { display: flex; align-items: center; gap: 24px; }
+        .timer-container, .attempts-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1.1rem; color: var(--text-secondary); }
+        .timer-container svg, .attempts-container svg { width: 20px; height: 20px; }
+        .controls { display: flex; gap: 12px; }
+        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); }
+        .btn svg { width: 18px; height: 18px; }
+        .btn.run-btn { background-color: var(--surface-light); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: var(--border-color); }
+        .btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
+        #end-test-btn { color: var(--danger); border-color: var(--danger); } #end-test-btn:hover:not(:disabled) { background-color: rgba(var(--danger-light-rgb), 0.1); }
+        .btn:disabled { background-color: var(--surface-light); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
+        .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+        
+        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 130px); }
+        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
+        #problem-details { flex: 1; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; overflow-y: auto; border: 1px solid var(--border-color); }
+        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;}
+        #problem-statement { line-height: 1.7; color: var(--text-secondary); }
+        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
+        .test-case { background-color: var(--bg-dark); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
+        #editor-container { flex: 1; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
+        #resizer-h { height: 16px; cursor: row-resize; display: flex; align-items: center; justify-content: center; } #resizer-h::before { content: '•••'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        #resizer-v { width: 16px; cursor: col-resize; display: flex; align-items: center; justify-content: center; } #resizer-v::before { content: '⋮'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        .bottom-panel { flex-shrink: 0; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; }
+        .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; }
+        .tab { padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all var(--transition); } .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
+        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; height: 100%; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
+        #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        #results-summary.success { background-color: rgba(var(--success-light-rgb), 0.1); color: var(--success); } #results-summary.failure { background-color: rgba(var(--danger-light-rgb), 0.1); color: var(--danger); }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 8px; }
+        .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
+        .status-pass { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); } .status-fail { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
+        
+        #results-overlay, #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition); }
+        #results-overlay.show, #fullscreen-overlay.show { display: flex; opacity: 1; }
+        .results-card, .fullscreen-card { background-color: var(--surface-dark); padding: 40px; border-radius: var(--border-radius); border: 1px solid var(--border-color); width: 90%; max-width: 600px; text-align: center; }
+        .results-card h2, .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p, .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        .final-results-list { list-style: none; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
+        .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
+        .final-status.solved { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); }
+        .final-status.attempted { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
+        .final-status.not-attempted { color: var(--text-secondary); background-color: var(--surface-light); }
+        
+        #warning-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--warning); color: black; padding: 16px 24px; border-radius: var(--border-radius); z-index: 10000; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: bottom 0.4s ease-in-out; }
+        #warning-toast.show { bottom: 20px; }
+        
+        .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        
+        @media (max-width: 800px) {
+            .main-content { padding: 16px; }
+            .ide-layout { height: calc(100% - 130px); }
+            .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
+            .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; text-align: center; font-size: 0.9rem; }
+            .mobile-nav-btn.active { color: var(--text-primary); border-bottom-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border-bottom-style: solid; border-bottom-width: 2px; }
+            .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; }
+            .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
+            #resizer-h, #resizer-v { display: none; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: var(--shadow-lg); } .sidebar.active { transform: translateX(0); }
+            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--surface-light); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
+            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--border-color); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
+            .header-title { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="aurora-bg"></div>
+
+    <div id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Initializing Python Environment...</p>
+    </div>
+
+    <div id="warning-toast"></div>
+
+    <div style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
+            <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
+            <symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol>
+            <symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol>
+            <symbol id="icon-solved-check" viewBox="0 0 24 24" fill="none"><path d="M7 13L10 16L17 9" stroke="#238636" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="#238636" stroke-width="2"></circle></symbol>
+            <symbol id="icon-attempted-x" viewBox="0 0 24 24" fill="none"><path d="M15 9L9 15M9 9L15 15" stroke="#da3633" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="#da3633" stroke-width="2"></circle></symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
+            <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
+            <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-shield-warning" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 00-1-1H9a1 1 0 000 2h1a1 1 0 001-1z" clip-rule="evenodd" /></symbol>
+        </svg>
+    </div>
+
+    <main class="ide-dashboard">
+        <aside class="sidebar" id="sidebar">
+            <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
+            <div class="sidebar-header"><h1 class="test-title">Problem Set</h1></div>
+            <nav><ul class="problem-nav" id="problem-list"></ul></nav>
+        </aside>
+        <div class="main-content">
+            <header class="main-header">
+                <div class="header-top-row">
+                    <div class="proctor-info">
+                        <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">10:00</span></div>
+                        <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left">5 Attempts Left</span></div>
+                    </div>
+                    <button id="end-test-btn" class="btn">End Test</button>
+                </div>
+                <div class="header-bottom-row">
+                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                    <h1 class="header-title" id="main-header-title"></h1>
+                    <div class="controls">
+                        <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                        <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
+                    </div>
+                </div>
+            </header>
+            <div class="mobile-nav">
+                <button class="mobile-nav-btn active" data-view="problem">Problem</button>
+                <button class="mobile-nav-btn" data-view="code">Code</button>
+                <button class="mobile-nav-btn" data-view="results">Results</button>
+            </div>
+            <div class="ide-layout">
+                <div class="top-panel mobile-view-active">
+                    <div id="problem-details" class="mobile-view-active">
+                        <div id="problem-statement"></div>
+                        <h2 style="margin-top: 24px;">Test Cases</h2>
+                        <div id="public-test-cases"></div>
+                    </div>
+                    <div id="resizer-v"></div>
+                    <div id="editor-container"></div>
+                </div>
+                <div id="resizer-h"></div>
+                <div class="bottom-panel">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="results">Test Results</div>
+                        <div class="tab" data-tab="console">Console</div>
+                    </div>
+                    <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit to see results.</p></div>
+                    <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
+                </div>
+            </div>
+            <div id="fullscreen-overlay">
+                <div class="fullscreen-card">
+                    <h2>Fullscreen Required</h2>
+                    <p>Please enter fullscreen mode to begin the test.</p>
+                    <button id="enter-fullscreen-btn" class="btn submit-btn">Enter Fullscreen</button>
+                </div>
+            </div>
+        </div>
+        <div class="overlay" id="overlay"></div>
+    </main>
+    <div id="results-overlay">
+        <div class="results-card">
+            <h2>Test Finished</h2>
+            <p id="final-score-message">Here is a summary of your session.</p>
+            <ul class="final-results-list" id="final-results-list"></ul>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const EXAM_DURATION_SECONDS = 10 * 60;
+        const MAX_VIOLATIONS = 5;
+        const problems = [
+            { id: 'two-sum', title: 'Two Sum', points: 10, statement: `<p>Given a list of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.</p><p>You may assume that each input would have <strong>exactly one solution</strong>.</p>`, functionName: 'two_sum', starterCode: `from typing import List\n\ndef two_sum(nums: List[int], target: int) -> List[int]:\n    # Write your code here\n    num_map = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in num_map:\n            return [num_map[complement], i]\n        num_map[num] = i\n    return []`, testCases: [ { input: { nums: [2, 7, 11, 15], target: 9 }, expected: [0, 1], hidden: false, detailsVisible: true }, { input: { nums: [3, 2, 4], target: 6 }, expected: [1, 2], hidden: false, detailsVisible: true }, { input: { nums: [-1, -3, 5, 90], target: 4 }, expected: [0, 2], hidden: true, detailsVisible: true } ] },
+            { id: 'is-palindrome', title: 'Valid Palindrome', points: 10, statement: `<p>A phrase is a <strong>palindrome</strong> if, after converting all uppercase letters into lowercase and removing all non-alphanumeric characters, it reads the same forward and backward.</p><p>Given a string <code>s</code>, return <code>True</code> if it is a palindrome, or <code>False</code> otherwise.</p>`, functionName: 'is_palindrome', starterCode: `def is_palindrome(s: str) -> bool:\n    # Write your code here\n    filtered_chars = filter(str.isalnum, s)\n    lowercase_filtered_chars = map(str.lower, filtered_chars)\n    \n    filtered_chars_list = list(lowercase_filtered_chars)\n    return filtered_chars_list == filtered_chars_list[::-1]`, testCases: [ { input: { s: "A man, a plan, a canal: Panama" }, expected: true, hidden: false, detailsVisible: true }, { input: { s: "race a car" }, expected: false, hidden: false, detailsVisible: true }, { input: { s: " " }, expected: true, hidden: true, detailsVisible: true } ] },
+            { id: 'longest-palindrome', title: 'Longest Palindromic Substring', points: 10, statement: `<p>Given a string <code>s</code>, find the longest palindromic substring in <code>s</code>.</p><p>A substring is a contiguous sequence of characters within a string. A palindrome is a sequence that reads the same backward as forward.</p>`, functionName: 'longest_palindrome', starterCode: `def longest_palindrome(s: str) -> str:\n    # This is a hard problem requiring an efficient solution.\n    # A common approach is "expand from center".\n    # print(f"Processing string: {s}")\n    pass`, testCases: [ { input: { s: "babad" }, expected: "bab", hidden: false, detailsVisible: true }, { input: { s: "cbbd" }, expected: "bb", hidden: false, detailsVisible: false }, { input: { s: "a" }, expected: "a", hidden: false, detailsVisible: false }, { input: {s: "mississippi"}, expected: "ississi", hidden: true, detailsVisible: false} ] }
+        ];
+
+        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), endTestBtn: document.getElementById('end-test-btn'), timer: document.getElementById('timer'), attemptsLeft: document.getElementById('attempts-left'), problemList: document.getElementById('problem-list'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNav: document.querySelector('.mobile-nav'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), resultsOverlay: document.getElementById('results-overlay'), finalResultsList: document.getElementById('final-results-list'), finalScoreMessage: document.getElementById('final-score-message'), fullscreenOverlay: document.getElementById('fullscreen-overlay'), enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), warningToast: document.getElementById('warning-toast') };
+        let currentProblemId = problems[0].id, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, timeLeft = EXAM_DURATION_SECONDS, isTestEnded = false, violationCount = 0;
+
+        async function initPyodide() {
+            pyodide = await loadPyodide();
+            DOMElements.loadingOverlay.style.opacity = '0';
+            setTimeout(() => DOMElements.loadingOverlay.style.display = 'none', 300);
+            initEditor();
+        }
+
+        function initEditor() {
+            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+            require(['vs/editor/editor.main'], () => {
+                editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
+                init();
+            });
+        }
+
+        function init() {
+            loadState();
+            renderProblemList();
+            loadProblem(currentProblemId);
+            initEventListeners();
+            DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
+            setMobileView('problem');
+            checkFullscreen();
+        }
+        
+        function handleViolation(type) {
+            if (isTestEnded) return;
+            violationCount++;
+            const remaining = MAX_VIOLATIONS - violationCount;
+            DOMElements.attemptsLeft.textContent = `${remaining} Attempt${remaining !== 1 ? 's' : ''} Left`;
+            if (violationCount > MAX_VIOLATIONS) {
+                endExam(`Test ended due to excessive ${type}.`);
+            } else {
+                showWarningToast(`Warning: ${type} detected. (${violationCount}/${MAX_VIOLATIONS} allowed)`);
+            }
+        }
+
+        function showWarningToast(message) {
+            DOMElements.warningToast.textContent = message;
+            DOMElements.warningToast.classList.add('show');
+            setTimeout(() => DOMElements.warningToast.classList.remove('show'), 4000);
+        }
+
+        function handleVisibilityChange() { if (document.hidden) handleViolation('tab switching'); }
+        function handleFullscreenChange() {
+            if (document.fullscreenElement) {
+                DOMElements.fullscreenOverlay.classList.remove('show');
+                if (!timerInterval && !isTestEnded) startTimer();
+            } else {
+                if (!isTestEnded) {
+                    handleViolation('fullscreen exits');
+                    DOMElements.fullscreenOverlay.classList.add('show');
+                }
+            }
+        }
+        function checkFullscreen() { if (!document.fullscreenElement) DOMElements.fullscreenOverlay.classList.add('show'); }
+        
+        function loadState() {
+            problems.forEach(p => {
+                const savedSubmission = localStorage.getItem(`submission-${p.id}`);
+                if (savedSubmission) { const data = JSON.parse(savedSubmission); userCodeState[p.id] = data.code; problemStatus[p.id] = data.status; } 
+                else { userCodeState[p.id] = p.starterCode; problemStatus[p.id] = 'not-attempted'; }
+            });
+            const firstUnsolvedIndex = problems.findIndex(p => problemStatus[p.id] !== 'solved');
+            currentProblemId = firstUnsolvedIndex === -1 ? problems[problems.length - 1].id : problems[firstUnsolvedIndex].id;
+        }
+        
+        function saveSubmission(problemId, resultsHTML, status) { localStorage.setItem(`submission-${problemId}`, JSON.stringify({ code: editor.getValue(), resultsHTML: resultsHTML, status: status, savedAt: new Date().toISOString() })); }
+        function startTimer() { updateTimerDisplay(); timerInterval = setInterval(() => { timeLeft--; updateTimerDisplay(); if (timeLeft <= 0) { endExam("Time's up!"); } }, 1000); }
+        function updateTimerDisplay() { const minutes = Math.floor(timeLeft / 60); const seconds = timeLeft % 60; DOMElements.timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; }
+        
+        function endExam(title = "Test Finished") {
+            if(isTestEnded) return;
+            isTestEnded = true;
+            clearInterval(timerInterval);
+            editor.updateOptions({ readOnly: true });
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn].forEach(btn => btn.disabled = true);
+            updateAttemptedStatus();
+
+            const userScore = problems.reduce((score, problem) => problemStatus[problem.id] === 'solved' ? score + problem.points : score, 0);
+            const totalPossibleScore = problems.reduce((score, problem) => score + problem.points, 0);
+            DOMElements.finalScoreMessage.textContent = `Final Score: ${userScore} / ${totalPossibleScore}`;
+
+            DOMElements.finalResultsList.innerHTML = problems.map(p => {
+                const status = problemStatus[p.id];
+                const statusClass = `final-status ${status.replace(/-/g, '')}`;
+                const statusText = status.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
+            }).join('');
+            DOMElements.resultsOverlay.querySelector('h2').textContent = title;
+            DOMElements.resultsOverlay.classList.add('show');
+            
+            problems.forEach(p => localStorage.removeItem(`submission-${p.id}`));
+        }
+
+        function initEventListeners() {
+            DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
+            DOMElements.submitBtn.addEventListener('click', () => handleExecution(true));
+            DOMElements.endTestBtn.addEventListener('click', () => endExam());
+            DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
+            DOMElements.problemList.addEventListener('click', handleProblemSelect);
+            DOMElements.menuToggle.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); });
+            const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
+            DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
+            DOMElements.overlay.addEventListener('click', closeMobileMenu);
+            DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
+            
+            const preventedActionHandler = (e, action) => { e.preventDefault(); showWarningToast(`${action} has been disabled.`); };
+            document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
+            document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
+            document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
+            document.addEventListener('dragstart', e => preventedActionHandler(e, 'Dragging'));
+            document.addEventListener('drop', e => preventedActionHandler(e, 'Dropping'));
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
+
+            document.addEventListener('visibilitychange', handleVisibilityChange); document.addEventListener('fullscreenchange', handleFullscreenChange);
+            DOMElements.enterFullscreenBtn.addEventListener('click', () => { document.documentElement.requestFullscreen().catch(err => console.error(err)); });
+            initResizers();
+        }
+
+        function isProblemUnlocked(problemId) {
+            const problemIndex = problems.findIndex(p => p.id === problemId);
+            if (problemIndex === 0) return true;
+            const prevProblemId = problems[problemIndex - 1].id;
+            return problemStatus[prevProblemId] === 'solved' || problemStatus[prevProblemId] === 'attempted';
+        }
+
+        function renderProblemList() {
+            DOMElements.problemList.innerHTML = problems.map((p, i) => {
+                const status = problemStatus[p.id];
+                const isUnlocked = isProblemUnlocked(p.id);
+                const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
+                return `<li class="problem-item ${status}" data-id="${p.id}" ${!isUnlocked ? 'style="cursor: not-allowed; opacity: 0.5;"' : ''}>
+                            <div class="p-number">${i + 1}</div>
+                            <div class="p-title">${p.title}</div>
+                            <div class="p-status-icon"><svg><use href="${icon}"></use></svg></div>
+                        </li>`;
+            }).join('');
+        }
+        
+        function updateAttemptedStatus() {
+            const currentCode = editor ? editor.getValue() : userCodeState[currentProblemId];
+            const starterCode = problems.find(p => p.id === currentProblemId)?.starterCode;
+            if (currentCode && currentCode.trim() !== starterCode.trim() && problemStatus[currentProblemId] === 'not-attempted') { problemStatus[currentProblemId] = 'attempted'; }
+            if(editor) userCodeState[currentProblemId] = currentCode;
+        }
+
+        function loadProblem(problemId) {
+            updateAttemptedStatus();
+            currentProblemId = problemId;
+            const problem = problems.find(p => p.id === problemId);
+            const isSolved = problemStatus[problemId] === 'solved';
+            DOMElements.mainHeaderTitle.textContent = problem.title;
+            DOMElements.problemStatement.innerHTML = problem.statement;
+            if (editor) { editor.setValue(userCodeState[problemId]); editor.updateOptions({ readOnly: isSolved }); }
+            DOMElements.runBtn.disabled = isSolved; DOMElements.submitBtn.disabled = isSolved;
+            
+            DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => {
+                return tc.detailsVisible ? `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>` : `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><i>Hidden</i></p></div>`;
+            }).join('');
+            
+            if (isSolved) {
+                const savedSubmission = JSON.parse(localStorage.getItem(`submission-${problemId}`));
+                DOMElements.resultsContent.innerHTML = savedSubmission.resultsHTML;
+                DOMElements.consoleOutput.textContent = 'This problem is solved. Console output is not available for past submissions.';
+                document.querySelector('.tab[data-tab="results"]').click();
+            } else {
+                DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
+                DOMElements.consoleOutput.textContent = 'No console output.';
+            }
+
+            document.querySelectorAll('.problem-item').forEach(item => item.classList.toggle('active', item.dataset.id === problemId));
+            setMobileView('problem');
+            renderProblemList();
+        }
+        
+        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.style.cursor) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
+        function setMobileView(view) {
+            DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+            [DOMElements.problemDetails, DOMElements.editorContainer, DOMElements.bottomPanel].forEach(p => p.classList.remove('mobile-view-active'));
+            if (view === 'problem') DOMElements.problemDetails.classList.add('mobile-view-active');
+            else if (view === 'code') DOMElements.editorContainer.classList.add('mobile-view-active');
+            else if (view === 'results') DOMElements.bottomPanel.classList.add('mobile-view-active');
+        }
+
+        async function handleExecution(isSubmission) {
+            setLoadingState(true, isSubmission);
+            DOMElements.resultsContent.innerHTML = '';
+            DOMElements.consoleOutput.textContent = 'No console output.';
+            const problem = problems.find(p => p.id === currentProblemId);
+            const testsToRun = isSubmission ? problem.testCases : (problem.testCases.filter(tc => !tc.hidden));
+            const results = [];
+            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
+            renderResults(results, isSubmission);
+            
+            const allPassed = results.every(r => r.status === 'pass');
+            if (isSubmission) {
+                problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
+                saveSubmission(currentProblemId, DOMElements.resultsContent.innerHTML, problemStatus[currentProblemId]);
+                renderProblemList();
+                const nextProblemIndex = problems.findIndex(p => p.id === currentProblemId) + 1;
+                if (nextProblemIndex < problems.length) {
+                    loadProblem(problems[nextProblemIndex].id);
+                } else {
+                    endExam("Congratulations! All problems attempted.");
+                }
+            } else if (problemStatus[currentProblemId] !== 'solved') {
+                problemStatus[currentProblemId] = 'attempted';
+            }
+
+            setLoadingState(false, isSubmission);
+            document.querySelector('.tab[data-tab="results"]').click();
+            setMobileView('results');
+        }
+        
+        async function executeTestCase(code, testCase, functionName) {
+            const startTime = performance.now();
+            let result = { status: 'fail', error: null, output: null, time: 0 };
+            const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
+            const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
+            const driverCode = `\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
+            const fullScript = code + driverCode;
+            try {
+                const capturedOutput = { lines: [] };
+                pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); } });
+                pyodide.setStderr({ batched: (msg) => { capturedOutput.lines.push(msg); } });
+                await pyodide.runPythonAsync(fullScript);
+                const outputStr = capturedOutput.lines.join('\n');
+                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                const userLogs = outputStr.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
+                if (userLogs) { const consoleElement = DOMElements.consoleOutput; if (consoleElement.textContent === 'No console output.') consoleElement.textContent = ''; consoleElement.textContent += `${userLogs}\n`; }
+                if (resultMatch && resultMatch[1]) {
+                    const outputJs = JSON.parse(resultMatch[1]);
+                    result.output = outputJs;
+                    if (deepEqual(outputJs, testCase.expected, currentProblemId)) result.status = 'pass';
+                } else { result.error = "Failed to capture result. Check console for errors."; }
+            } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent += `\n--- ERROR ---\n${e.toString()}`; } 
+            finally { result.time = (performance.now() - startTime).toFixed(2); pyodide.setStdout(); pyodide.setStderr(); }
+            return { ...testCase, ...result };
+        }
+
+        function deepEqual(a, b, problemId) {
+            if (problemId === 'longest-palindrome') { return a === b; }
+            if (Array.isArray(a) && Array.isArray(b)) { if (a.length !== b.length) return false; if (problemId === 'two-sum') return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort()); }
+            return JSON.stringify(a) === JSON.stringify(b);
+        }
+
+        function renderResults(results, isSubmission) {
+            const passedCount = results.filter(r => r.status === 'pass').length, totalCount = results.length;
+            let summaryHTML;
+            if (isSubmission) { const success = passedCount === totalCount; summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; } 
+            else { summaryHTML = `<div id="results-summary" class="${passedCount === totalCount ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`; }
+            const resultsHTML = results.map((r, i) => {
+                const caseTitle = r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`;
+                const statusIcon = r.status === 'pass' ? '#icon-check' : '#icon-close';
+                return `<div class="result-item"><span>${caseTitle}</span><div class="status status-${r.status}"><svg><use href="${statusIcon}"></use></svg>${r.status.toUpperCase() === 'PASS' ? 'PASSED' : 'FAILED'}</div></div>`;
+            }).join('');
+            DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
+        }
+
+        function setLoadingState(isLoading, isSubmission) {
+            const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
+            const btnText = btn.querySelector('.btn-text');
+            DOMElements.runBtn.disabled = isLoading; DOMElements.submitBtn.disabled = isLoading;
+            if (isLoading) { btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); btn.querySelector('svg').style.display = 'none'; } 
+            else { btn.querySelector('.loader')?.remove(); btnText.textContent = isSubmission ? 'Submit' : 'Run'; btn.querySelector('svg').style.display = 'inline-block'; }
+        }
+        
+        function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
+        
+        function initResizers() {
+            const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
+            const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
+            const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flex = `0 1 ${Math.max(25, Math.min(75, percentage))}%`; bottomPanel.style.flex = `0 1 ${100 - parseFloat(topPanel.style.flexBasis)}%`; };
+            const onMouseUpH = () => document.removeEventListener('mousemove', onMouseMoveH);
+            resizerH.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveH); document.addEventListener('mouseup', onMouseUpH, { once: true }); });
+            const onMouseMoveV = (e) => { const containerWidth = problemDetails.parentElement.clientWidth, newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; const percentage = newLeftWidth / containerWidth * 100; problemDetails.style.flex = `0 1 ${Math.max(25, Math.min(75, percentage))}%`; editorContainer.style.flex = `0 1 ${100 - parseFloat(problemDetails.style.flexBasis)}%`; };
+            const onMouseUpV = () => document.removeEventListener('mousemove', onMouseMoveV);
+            resizerV.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', onMouseUpV, { once: true }); });
+        }
+
+        initPyodide();
+    });
+    </script>
+</body>
+</html>
