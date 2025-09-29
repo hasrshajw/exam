@@ -130,19 +130,34 @@
         
         @media (max-width: 900px) {
             .main-header { display: none; }
-            .ide-layout { height: 100%; }
-            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
             .main-content { padding: 0; height: 100%; }
+            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
             .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
             .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
             .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
             
-            .ide-layout { display: flex; flex-direction: column; }
-            .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; border: none; background: transparent; backdrop-filter: none; }
-            .bottom-panel { margin: 0 16px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); }
-            #problem-details, #editor-container { padding: 0 16px; }
-            .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
-            
+            /* --- MOBILE VIEW FIX --- */
+            .ide-layout { height: auto; flex-grow: 1; display: flex; flex-direction: column; }
+            .top-panel { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; gap: 0; }
+            #problem-details, #editor-container, .bottom-panel {
+                display: none;
+            }
+            .mobile-view-active {
+                display: flex;
+                flex-direction: column;
+                flex-grow: 1;
+                min-height: 0;
+            }
+            #problem-details, #editor-container { padding: 0 16px 16px; }
+            .bottom-panel.mobile-view-active {
+                margin: 0 16px 16px;
+                border-radius: var(--border-radius);
+                border: 1px solid rgba(var(--border-color-rgb), 0.5);
+                background: rgba(var(--surface-dark-rgb), 0.7);
+                backdrop-filter: blur(20px);
+            }
+            /* --- END MOBILE VIEW FIX --- */
+
             #resizer-h, #resizer-v { display: none; }
             
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); } .sidebar.active { transform: translateX(0); }
@@ -275,9 +290,9 @@
         const EXAM_DURATION_SECONDS = 10 * 60;
         const MAX_VIOLATIONS = 5;
         const problems = [
-            { id: 'two-sum', title: 'Two Sum', points: 10, statement: `<p>Given a list of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.</p><p>You may assume that each input would have <strong>exactly one solution</strong>.</p>`, functionName: 'two_sum', starterCode: `from typing import List\n\ndef two_sum(nums: List[int], target: int) -> List[int]:\n    # Write your code here\n    num_map = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in num_map:\n            return [num_map[complement], i]\n        num_map[num] = i\n    return []`, testCases: [ { input: { nums: [2, 7, 11, 15], target: 9 }, expected: [0, 1], hidden: false, detailsVisible: true }, { input: { nums: [3, 2, 4], target: 6 }, expected: [1, 2], hidden: false, detailsVisible: true }, { input: { nums: [-1, -3, 5, 90], target: 4 }, expected: [0, 2], hidden: true, detailsVisible: true } ] },
-            { id: 'is-palindrome', title: 'Valid Palindrome', points: 10, statement: `<p>A phrase is a <strong>palindrome</strong> if, after converting all uppercase letters into lowercase and removing all non-alphanumeric characters, it reads the same forward and backward.</p><p>Given a string <code>s</code>, return <code>True</code> if it is a palindrome, or <code>False</code> otherwise.</p>`, functionName: 'is_palindrome', starterCode: `def is_palindrome(s: str) -> bool:\n    # Write your code here\n    filtered_chars = filter(str.isalnum, s)\n    lowercase_filtered_chars = map(str.lower, filtered_chars)\n    \n    filtered_chars_list = list(lowercase_filtered_chars)\n    return filtered_chars_list == filtered_chars_list[::-1]`, testCases: [ { input: { s: "A man, a plan, a canal: Panama" }, expected: true, hidden: false, detailsVisible: true }, { input: { s: "race a car" }, expected: false, hidden: false, detailsVisible: true }, { input: { s: " " }, expected: true, hidden: true, detailsVisible: true } ] },
-            { id: 'longest-palindrome', title: 'Longest Palindromic Substring', points: 10, statement: `<p>Given a string <code>s</code>, find the longest palindromic substring in <code>s</code>.</p><p>A substring is a contiguous sequence of characters within a string. A palindrome is a sequence that reads the same backward as forward.</p>`, functionName: 'longest_palindrome', starterCode: `def longest_palindrome(s: str) -> str:\n    # This is a hard problem requiring an efficient solution.\n    # A common approach is "expand from center".\n    # print(f"Processing string: {s}")\n    pass`, testCases: [ { input: { s: "babad" }, expected: "bab", hidden: false, detailsVisible: true }, { input: { s: "cbbd" }, expected: "bb", hidden: false, detailsVisible: false }, { input: { s: "a" }, expected: "a", hidden: false, detailsVisible: false }, { input: {s: "mississippi"}, expected: "ississi", hidden: true, detailsVisible: false} ] }
+            { id: 'two-sum', title: 'Two Sum', points: 10, statement: `<p>Given a list of integers <code>nums</code> and an integer <code>target</code>, return indices of the two numbers such that they add up to <code>target</code>.</p><p>You may assume that each input would have <strong>exactly one solution</strong>.</p>`, functionName: 'two_sum', starterCode: `from typing import List\n\ndef two_sum(nums: List[int], target: int) -> List[int]:\n    # Write your code here\n    pass`, testCases: [ { input: { nums: [2, 7, 11, 15], target: 9 }, expected: [0, 1], hidden: false, detailsVisible: true }, { input: { nums: [3, 2, 4], target: 6 }, expected: [1, 2], hidden: false, detailsVisible: true }, { input: { nums: [-1, -3, 5, 90], target: 4 }, expected: [0, 2], hidden: true, detailsVisible: true } ] },
+            { id: 'is-palindrome', title: 'Valid Palindrome', points: 10, statement: `<p>A phrase is a <strong>palindrome</strong> if, after converting all uppercase letters into lowercase and removing all non-alphanumeric characters, it reads the same forward and backward.</p><p>Given a string <code>s</code>, return <code>True</code> if it is a palindrome, or <code>False</code> otherwise.</p>`, functionName: 'is_palindrome', starterCode: `def is_palindrome(s: str) -> bool:\n    # Write your code here\n    pass`, testCases: [ { input: { s: "A man, a plan, a canal: Panama" }, expected: true, hidden: false, detailsVisible: true }, { input: { s: "race a car" }, expected: false, hidden: false, detailsVisible: true }, { input: { s: " " }, expected: true, hidden: true, detailsVisible: true } ] },
+            { id: 'longest-palindrome', title: 'Longest Palindromic Substring', points: 10, statement: `<p>Given a string <code>s</code>, find the longest palindromic substring in <code>s</code>.</p><p>A substring is a contiguous sequence of characters within a string. A palindrome is a sequence that reads the same backward as forward.</p>`, functionName: 'longest_palindrome', starterCode: `def longest_palindrome(s: str) -> str:\n    # Write your code here\n    pass`, testCases: [ { input: { s: "babad" }, expected: "bab", hidden: false, detailsVisible: true }, { input: { s: "cbbd" }, expected: "bb", hidden: false, detailsVisible: false }, { input: { s: "a" }, expected: "a", hidden: false, detailsVisible: false }, { input: {s: "mississippi"}, expected: "ississi", hidden: true, detailsVisible: false} ] }
         ];
 
         const DOMElements = { 
