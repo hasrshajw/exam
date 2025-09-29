@@ -466,7 +466,7 @@
                     const rank = listToRender.findIndex(u => u.id === user.id) + 1;
                     if(user.id === currentUserId) currentUserRendered = true;
                     const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
-                    listHtml += `<li class="${user.id === currentUserId ? 'current-user' : ''}"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
+                    listHtml += `<li class="${user.id === currentUserId ? 'current-user' : ''}"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score" style="padding-right: 8px;">${user.points} XP</p></li>`;
                 });
 
                 if (!currentUserRendered) {
