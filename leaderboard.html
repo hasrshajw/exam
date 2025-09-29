@@ -10,18 +10,34 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #111827; --text-secondary: #6B7280; --brand-green: #10B981; --hover-bg: #F3F4F6; --gold: #F59E0B; --silver: #9CA3AF; --bronze: #A16207; --danger-color: #EF4444; --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-green: #10B981;
+            --hover-bg: #F3F4F6;
+            --gold: #F59E0B;
+            --silver: #9CA3AF;
+            --bronze: #A16207;
+            --danger-color: #EF4444;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --card-height-mobile: 170px;
+            --card-height-desktop: 150px;
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
+
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; }
         .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .content-body { padding: 2rem 2.5rem 3rem; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: flex-start; max-width: 1400px; margin: 0 auto; width: 100%; }
+        
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
         .main-nav { flex-grow: 1; } .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
         .main-nav a { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
@@ -41,6 +57,7 @@
         .popup-list { list-style: none; padding-top: 0.5rem; } .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; text-decoration: none; color: var(--text-primary); }
         .popup-list a:hover { background-color: var(--hover-bg); } .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
+        
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .rank-summary-card { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; box-shadow: var(--shadow-sm); }
         .rank-item { text-align: center; padding: 1.5rem 1rem; }
@@ -52,13 +69,15 @@
         .rank-value.silver { color: var(--silver); }
         .rank-value.bronze { color: var(--bronze); }
         @keyframes shine { to { background-position: -200% center; } }
-        .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; }
+        
+        .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 24px 12px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; }
         .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .widget-header h2 { font-size: 1.125rem; font-weight: 600; }
         .leaderboard-tabs { display: flex; gap: 0.5rem; background-color: var(--hover-bg); padding: 0.25rem; border-radius: 99px; margin-bottom: 2rem; align-self: center; }
         .tab-btn { padding: 0.6rem 1.25rem; border: none; background-color: transparent; border-radius: 99px; font-weight: 600; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; transition: all 0.3s ease; }
         .tab-btn.active { background-color: var(--widget-bg); color: var(--text-primary); box-shadow: var(--shadow-sm); }
         .tab-content { display: none; width: 100%; } .tab-content.active { display: block; }
+        
         .podium-stacked-card { border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 2rem; overflow: hidden; box-shadow: var(--shadow-sm); }
         .podium-stacked-item { display: flex; align-items: center; padding: 0.75rem 1rem; gap: 1rem; position: relative; }
         .podium-stacked-item:not(:last-child) { border-bottom: 1px solid var(--border-color); }
@@ -69,16 +88,18 @@
         .podium-stacked-item.rank-3 .podium-rank-badge { background-color: var(--bronze); }
         .podium-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .podium-info { flex-grow: 1; } .podium-name { font-weight: 600; } .podium-score { font-weight: 700; color: var(--brand-green); }
+        
         .leaderboard-list { list-style: none; }
-        .leaderboard-list li { display: flex; align-items: center; padding: 0.75rem; border-radius: 8px; transition: background-color 0.2s ease; }
+        .leaderboard-list li { display: flex; align-items: center; padding: 0.75rem 0; border-radius: 8px; transition: background-color 0.2s ease; }
         .leaderboard-list li:hover { background-color: var(--hover-bg); }
         .leaderboard-list li:not(:last-child) { margin-bottom: 0.5rem; }
         .leaderboard-list .rank { font-size: 1rem; font-weight: 600; color: var(--text-secondary); width: 40px; text-align: center; }
-        .leaderboard-list img { width: 40px; height: 40px; border-radius: 50%; margin: 0 1rem; }
+        .leaderboard-list img { width: 40px; height: 40px; border-radius: 50%; margin: 0 12px 0 0; }
         .leaderboard-list .info { flex-grow: 1; } .leaderboard-list .name { font-weight: 600; }
         .leaderboard-list .affiliation { color: var(--text-secondary); font-size: 0.85rem; }
         .leaderboard-list .score { font-weight: 700; color: var(--brand-green); }
         .leaderboard-list li.current-user { background-color: #ECFDF5; border: 1px solid #A7F3D0; }
+        
         .score-history-list { list-style: none; }
         .score-history-item { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; }
         .score-history-item:not(:last-child) { border-bottom: 1px solid var(--border-color); }
@@ -86,12 +107,59 @@
         .score-history-info span { color: var(--text-secondary); font-size: 0.8rem; }
         .score-history-points { font-weight: 700; font-size: 1rem; }
         .menu-toggle, .sidebar-close-btn { display: none; }
+
+        .winner-banner { position: relative; width: 100%; height: var(--card-height-mobile); box-shadow: var(--shadow-md); border-radius: 25px; margin-bottom: 2rem; }
+        .winner-banner-content { position: relative; background: #ffdd87; width: 100%; height: 100%; border-radius: 25px; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; }
+        .winner-banner-content::before { content: ""; position: absolute; top: 0; left: -150%; width: 70%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent); transform: skewX(-30deg); animation: winner-shine 5s infinite linear; }
+        @keyframes winner-shine { 0% { left: -150%; } 40% { left: 150%; } 100% { left: 150%; } }
+        .winner-card-main { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; }
+        .winner-ranking-container { position: relative; }
+        .winner-ranking-container::after { content: ''; position: absolute; bottom: -15px; left: 0; width: 100px; height: 5px; border-radius: 5px; background-image: linear-gradient(to right, #ffe8a0, #f7b733, #ffe8a0); }
+        .winner-ranking-number { color: #d1a13a; font-weight: 700; font-size: 60px; line-height: 1; margin: 0; }
+        .winner-ranking-word { font-size: 30px; color: #424c50; }
+        .winner-score-container { text-align: right; }
+        .winner-score-label { color: #8c6d22; letter-spacing: 3px; font-weight: 600; font-size: 12px; margin: 0 0 2px 0; }
+        .winner-score-num { font-size: 36px; font-weight: 700; color: #ea9518; margin: 0; line-height: 1; }
+        .winner-card-footer { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .winner-userInfo { display: flex; align-items: center; gap: 12px; }
+        .winner-user-profile-image { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+        .winner-userText { display: flex; flex-direction: column; }
+        .winner-userName { font-weight: 600; color: #555c5f; font-size: 18px; margin: 0; line-height: 1.1; }
+        .winner-collegeName { font-weight: 400; color: #7b8386; font-size: 13px; margin: 3px 0 0 0; line-height: 1.1; }
+        .winner-medal-container { display: flex; }
+        .winner-medals { width: 55px; height: 55px; }
+
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        .skeleton-line { height: 14px; border-radius: 4px; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+
+        @media (min-width: 992px) {
+            .winner-banner { height: var(--card-height-desktop); }
+            .winner-banner-content { flex-direction: row; align-items: center; padding: 0 40px; gap: 40px; }
+            .winner-card-main, .winner-card-footer { display: contents; }
+            .winner-ranking-container { order: 1; }
+            .winner-userInfo { order: 2; }
+            .winner-score-container { order: 3; margin-left: auto; }
+            .winner-medal-container { order: 4; }
+            .winner-ranking-container::after { display: none; }
+            .winner-ranking-number { font-size: 70px; }
+            .winner-ranking-word { font-size: 35px; }
+            .winner-user-profile-image { width: 55px; height: 55px; }
+            .winner-userName { font-size: 22px; }
+            .winner-collegeName { font-size: 15px; }
+            .winner-score-label { font-size: 14px; }
+            .winner-score-num { font-size: 48px; }
+            .winner-medals { width: 70px; height: 70px; }
+        }
+        
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
-            .content-body { grid-template-columns: 1fr; padding: 1.5rem; }
+            .content-body { grid-template-columns: 1fr; padding: 16px; }
             .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 2px solid var(--border-color); border-radius: 8px; background-color: transparent }
             .menu-toggle:hover { background-color: var(--hover-bg) }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
@@ -104,14 +172,8 @@
             .rank-item p { font-size: 0.8rem; margin-bottom: 0.25rem; }
             .rank-value { font-size: 1.875rem; }
             .rank-item:first-child { border-right: 1px solid var(--border-color); }
+            .winner-banner { max-width: 100%; }
         }
-
-        @keyframes shimmer { 100% { transform: translateX(100%); } }
-        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; border-radius: 8px; }
-        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
-        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
-        .skeleton-line { height: 14px; border-radius: 4px; }
-        .skeleton-list-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem; }
     </style>
 </head>
 <body>
@@ -119,7 +181,7 @@
     <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
@@ -164,31 +226,30 @@
                 <div class="leaderboard-main">
                     <div class="rank-summary-card">
                         <div class="rank-item">
-                           <div class="skeleton skeleton-line" style="width: 120px; height: 14px; margin: 0 auto 0.75rem;"></div>
-                           <div class="skeleton" style="width: 80px; height: 36px; margin: 0 auto; border-radius: 8px;"></div>
+                            <p>Your College Rank</p>
+                            <div class="rank-value"><div class="skeleton" style="width: 80px; height: 36px; margin: 0 auto; border-radius: 8px;"></div></div>
                         </div>
                         <div class="rank-item">
-                           <div class="skeleton skeleton-line" style="width: 110px; height: 14px; margin: 0 auto 0.75rem;"></div>
-                           <div class="skeleton" style="width: 80px; height: 36px; margin: 0 auto; border-radius: 8px;"></div>
+                            <p>Your Overall Rank</p>
+                            <div class="rank-value"><div class="skeleton" style="width: 80px; height: 36px; margin: 0 auto; border-radius: 8px;"></div></div>
                         </div>
                     </div>
                     <div class="widget">
                         <div class="leaderboard-tabs skeleton" style="width: 240px; height: 42px; padding: 0;"></div>
-                        <div class="podium-stacked-card skeleton" style="height: 180px; margin-bottom: 2rem; width: 100%;"></div>
-                        <ul class="leaderboard-list" style="width: 100%;">
-                            <li class="skeleton-list-item"><div class="skeleton skeleton-line" style="width: 24px;"></div><div class="skeleton skeleton-avatar" style="margin: 0 1rem;"></div><div style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 60%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
-                            <li class="skeleton-list-item"><div class="skeleton skeleton-line" style="width: 24px;"></div><div class="skeleton skeleton-avatar" style="margin: 0 1rem;"></div><div style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 55%;"></div></div><div class="skeleton skeleton-line" style="width: 50px;"></div></li>
+                        <div class="winner-banner skeleton" style="height: var(--card-height-desktop);"></div>
+                        <ul class="leaderboard-list">
+                            <li style="gap: 1rem;"><div class="skeleton" style="width: 24px; height: 16px; border-radius: 4px;"></div><div class="skeleton skeleton-avatar" style="margin: 0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 60%; margin-bottom: 4px;"></div><div class="skeleton skeleton-line" style="width: 40%; height: 12px;"></div></div><div class="skeleton skeleton-line" style="width: 60px; height: 16px;"></div></li>
+                            <li style="gap: 1rem;"><div class="skeleton" style="width: 24px; height: 16px; border-radius: 4px;"></div><div class="skeleton skeleton-avatar" style="margin: 0;"></div><div class="info" style="flex-grow: 1;"><div class="skeleton skeleton-line" style="width: 55%; margin-bottom: 4px;"></div><div class="skeleton skeleton-line" style="width: 35%; height: 12px;"></div></div><div class="skeleton skeleton-line" style="width: 60px; height: 16px;"></div></li>
                         </ul>
                     </div>
                 </div>
-                 <div class="leaderboard-side">
-                    <div class="widget">
-                        <div class="widget-header">
-                           <div class="skeleton skeleton-line" style="width: 150px; height: 20px; border-radius: 6px;"></div>
-                        </div>
+                <div class="leaderboard-side">
+                     <div class="widget">
+                        <div class="widget-header"><div class="skeleton skeleton-line" style="width: 150px; height: 20px;"></div></div>
                         <ul class="score-history-list">
-                            <li class="score-history-item"><div class="score-history-info"><div class="skeleton skeleton-line" style="width: 80%; height: 16px; margin-bottom: 0.5rem;"></div><div class="skeleton skeleton-line" style="width: 50%; height: 12px;"></div></div><div class="skeleton skeleton-line" style="width: 70px; height: 16px;"></div></li>
-                            <li class="score-history-item"><div class="score-history-info"><div class="skeleton skeleton-line" style="width: 70%; height: 16px; margin-bottom: 0.5rem;"></div><div class="skeleton skeleton-line" style="width: 60%; height: 12px;"></div></div><div class="skeleton skeleton-line" style="width: 70px; height: 16px;"></div></li>
+                            <li class="score-history-item"><div class="score-history-info"><div class="skeleton skeleton-line" style="width: 80%; margin-bottom: 6px;"></div><div class="skeleton skeleton-line" style="width: 60%; height: 12px;"></div></div><div class="skeleton skeleton-line" style="width: 70px; height: 16px;"></div></li>
+                            <li class="score-history-item"><div class="score-history-info"><div class="skeleton skeleton-line" style="width: 75%; margin-bottom: 6px;"></div><div class="skeleton skeleton-line" style="width: 50%; height: 12px;"></div></div><div class="skeleton skeleton-line" style="width: 70px; height: 16px;"></div></li>
+                            <li class="score-history-item"><div class="score-history-info"><div class="skeleton skeleton-line" style="width: 85%; margin-bottom: 6px;"></div><div class="skeleton skeleton-line" style="width: 55%; height: 12px;"></div></div><div class="skeleton skeleton-line" style="width: 70px; height: 16px;"></div></li>
                         </ul>
                     </div>
                 </div>
@@ -223,10 +284,11 @@
             </div>
         </main>
     </div>
-    <div id="toast"></div>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
@@ -245,7 +307,7 @@
 
             let currentUserProfile = null;
             let currentUserId = null;
-            
+
             const setupEventListeners = () => {
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
                 const profileSection = document.getElementById('profile-section');
@@ -260,7 +322,6 @@
                 menuToggle.addEventListener('click', toggleMenu);
                 closeBtn.addEventListener('click', toggleMenu);
                 overlay.addEventListener('click', toggleMenu);
-                
                 const tabs = document.querySelectorAll('.tab-btn');
                 tabs.forEach(tab => {
                     tab.addEventListener('click', (e) => {
@@ -271,12 +332,12 @@
                     });
                 });
             };
-            
+
             const updateProfileUI = (userProfile) => {
                 const logoUrl = localStorage.getItem('dashboardLogoUrl');
-                if(logoUrl) document.querySelector('.logo-image').src = logoUrl;
+                if (logoUrl) { document.querySelector('.logo-image').src = logoUrl; }
                 const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
-                if(profileToUse) {
+                if (profileToUse) {
                     document.querySelectorAll('.profile-avatar').forEach(el => {
                         el.src = profileToUse.photoURL || DEFAULT_AVATAR;
                         el.onerror = () => { el.src = DEFAULT_AVATAR; };
@@ -288,6 +349,9 @@
                 }
             };
 
+            setupEventListeners();
+            updateProfileUI();
+            
             auth.onAuthStateChanged(async (user) => {
                 if (user) {
                     currentUserId = user.uid;
@@ -318,21 +382,25 @@
                         userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.pointsReceived);
                     }
                 });
+
                 codeAssignmentScoresSnap.forEach(doc => {
                     const score = doc.data();
                     if (userPoints.has(score.userId)) {
                         userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.totalScoreObtained);
                     }
                 });
+
                 return { userPoints, allUsers };
             };
 
             const loadLeaderboardData = async () => {
                 try {
                     const { userPoints, allUsers } = await calculateUserPoints();
+                    
                     const rankedList = Array.from(userPoints.entries()).map(([id, points]) => ({
                         id, points, profile: allUsers.get(id)
                     })).filter(u => u.profile).sort((a,b) => b.points - a.points);
+
                     const collegeList = rankedList.filter(u => u.profile.college === currentUserProfile.college);
                     
                     renderLeaderboard('overall-content', rankedList, true);
@@ -363,7 +431,19 @@
                 if (isOverall && topPerformers.length > 0) {
                     const winner = topPerformers[0];
                     const winnerPhoto = winner.profile.photoURL || DEFAULT_AVATAR;
-                    topPerformersHtml = `<div class="podium-stacked-card"><div class="podium-stacked-item rank-1"><div class="podium-rank-badge"><i class='bx bxs-trophy'></i></div><img src="${winnerPhoto}" alt="Avatar" class="podium-avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="podium-info"><p class="podium-name">${winner.profile.displayName}</p></div><p class="podium-score">${winner.points} XP</p></div></div>`;
+                    topPerformersHtml = `
+                    <div class="winner-banner">
+                        <div class="winner-banner-content">
+                            <div class="winner-card-main">
+                                <div class="winner-ranking-container"><p class="winner-ranking-number">1<span class="winner-ranking-word">st</span></p></div>
+                                <div class="winner-score-container"><p class="winner-score-label">SCORE</p><p class="winner-score-num">${winner.points}</p></div>
+                            </div>
+                            <div class="winner-card-footer">
+                                <div class="winner-userInfo"><img src="${winnerPhoto}" alt="Profile of ${winner.profile.displayName}" class="winner-user-profile-image" onerror="this.src='${DEFAULT_AVATAR}'"><div class="winner-userText"><p class="winner-userName">${winner.profile.displayName}</p><p class="winner-collegeName">${winner.profile.college}</p></div></div>
+                                <div class="winner-medal-container"><svg class="winner-medals" viewBox="0 0 1024 1024"><path d="M896 42.666667h-128l-170.666667 213.333333h128z" fill="#FF4C4C"></path><path d="M768 42.666667h-128l-170.666667 213.333333h128z" fill="#3B8CFF"></path><path d="M640 42.666667h-128L341.333333 256h128z" fill="#F1F1F1"></path><path d="M128 42.666667h128l170.666667 213.333333H298.666667z" fill="#FF4C4C"></path><path d="M256 42.666667h128l170.666667 213.333333h-128z" fill="#3B8CFF"></path><path d="M384 42.666667h128l170.666667 213.333333h-128z" fill="#FBFBFB"></path><path d="M298.666667 256h426.666666v213.333333H298.666667z" fill="#E3A815"></path><path d="M512 661.333333m-320 0a320 320 0 1 0 640 0 320 320 0 1 0-640 0Z" fill="#FDDC3A"></path><path d="M512 661.333333m-256 0a256 256 0 1 0 512 0 256 256 0 1 0-512 0Z" fill="#E3A815"></path><path d="M512 661.333333m-213.333333 0a213.333333 213.333333 0 1 0 426.666666 0 213.333333 213.333333 0 1 0-426.666666 0Z" fill="#F5CF41"></path><path d="M277.333333 256h469.333334a21.333333 21.333333 0 0 1 0 42.666667h-469.333334a21.333333 21.333333 0 0 1 0-42.666667z" fill="#D19A0E"></path><path d="M277.333333 264.533333a12.8 12.8 0 1 0 0 25.6h469.333334a12.8 12.8 0 1 0 0-25.6h-469.333334z m0-17.066666h469.333334a29.866667 29.866667 0 1 1 0 59.733333h-469.333334a29.866667 29.866667 0 1 1 0-59.733333z" fill="#F9D525"></path><path d="M512 746.666667l-100.309333 52.736 19.157333-111.701334-81.152-79.104 112.128-16.298666L512 490.666667l50.176 101.632 112.128 16.298666-81.152 79.104 19.157333 111.701334z" fill="#FFF2A0"></path></svg></div>
+                            </div>
+                        </div>
+                    </div>`;
                     startIndexForList = 1;
                 } else if (!isOverall && topPerformers.length > 0) {
                     topPerformersHtml = '<div class="podium-stacked-card">';
@@ -389,11 +469,13 @@
                     listHtml += `<li class="${user.id === currentUserId ? 'current-user' : ''}"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
                 });
 
-                if (!currentUserRendered && listToRender.find(u => u.id === currentUserId)) {
+                if (!currentUserRendered) {
                      const user = listToRender.find(u => u.id === currentUserId);
-                     const rank = listToRender.findIndex(u => u.id === user.id) + 1;
-                     const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
-                     listHtml += `<li class="current-user"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
+                     if(user){
+                         const rank = listToRender.findIndex(u => u.id === user.id) + 1;
+                         const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
+                         listHtml += `<li class="current-user"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
+                     }
                 }
                 listHtml += '</ul>';
                 container.innerHTML = topPerformersHtml + listHtml;
@@ -415,14 +497,17 @@
                 collegeRankEl.dataset.text = collegeRankText;
                 
                 overallRankEl.className = 'rank-value';
-                if (hasOverallScore && overallRank === 1) overallRankEl.classList.add('rank-value--shining');
-                else if (hasOverallScore && overallRank === 2) overallRankEl.classList.add('silver');
-                else if (hasOverallScore && overallRank === 3) overallRankEl.classList.add('bronze');
-
+                if (hasOverallScore) {
+                    if (overallRank === 1) overallRankEl.classList.add('rank-value--shining');
+                    else if (overallRank === 2) overallRankEl.classList.add('silver');
+                    else if (overallRank === 3) overallRankEl.classList.add('bronze');
+                }
                 collegeRankEl.className = 'rank-value';
-                if (hasCollegeScore && collegeRank === 1) collegeRankEl.classList.add('rank-value--shining');
-                else if (hasCollegeScore && collegeRank === 2) collegeRankEl.classList.add('silver');
-                else if (hasCollegeScore && collegeRank === 3) collegeRankEl.classList.add('bronze');
+                if (hasCollegeScore) {
+                    if (collegeRank === 1) collegeRankEl.classList.add('rank-value--shining');
+                    else if (collegeRank === 2) collegeRankEl.classList.add('silver');
+                    else if (collegeRank === 3) collegeRankEl.classList.add('bronze');
+                }
             };
             
             const renderScoreHistory = async () => {
@@ -435,26 +520,38 @@
                 let historyItems = [];
                 scoresSnap.forEach(doc => {
                     const data = doc.data();
-                    historyItems.push({ name: data.examName, date: data.submittedAt.toDate(), score: `${data.pointsReceived} / ${data.totalPoints} XP` });
+                    historyItems.push({
+                        name: data.examName,
+                        date: data.submittedAt.toDate(),
+                        score: `${data.pointsReceived} / ${data.totalPoints} XP`
+                    });
                 });
                 codeScoresSnap.forEach(doc => {
                     const data = doc.data();
-                    historyItems.push({ name: data.assignmentName, date: data.completedAt.toDate(), score: `${data.totalScoreObtained} / ${data.totalScorePossible} XP` });
+                    historyItems.push({
+                        name: data.assignmentName,
+                        date: data.completedAt.toDate(),
+                        score: `${data.totalScoreObtained} / ${data.totalScorePossible} XP`
+                    });
                 });
+
                 historyItems.sort((a,b) => b.date - a.date);
 
                 if(historyItems.length === 0) {
                     list.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 2rem 0;">No assessments completed yet.</p>';
                     return;
                 }
+
                 list.innerHTML = historyItems.map(item => `
                     <li class="score-history-item">
-                        <div class="score-history-info"><p>${item.name}</p><span>${item.date.toLocaleString()}</span></div>
+                        <div class="score-history-info">
+                            <p>${item.name}</p>
+                            <span>${item.date.toLocaleString()}</span>
+                        </div>
                         <strong class="score-history-points">${item.score}</strong>
-                    </li>`).join('');
+                    </li>
+                `).join('');
             };
-            
-            setupEventListeners();
         });
     </script>
 </body>
