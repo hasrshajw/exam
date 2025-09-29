@@ -3,166 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding Challenge - Exam Portal</title>
+    <title>Coding Challenge - Secure Exam Portal</title>
     <style>
         :root { --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color: #4B5563; --text-primary: #F9FAFB; --text-secondary: #9CA3AF; --accent-glow-rgb: 79, 70, 229; --accent-start: #4F46E5; --accent-end: #7C3AED; --success: #10B981; --danger: #EF4444; --warning: #F59E0B; --success-light-rgb: 16, 185, 129; --danger-light-rgb: 239, 68, 68; --border-radius: 8px; --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none; }
         html, body { height: 100%; overflow: hidden; }
         body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); }
-        body.blurred { filter: blur(8px); pointer-events: none; }
         button { font-family: inherit; cursor: pointer; border: none; background: none; }
         svg { display: block; width: 100%; height: 100%; }
-        
-        /* Pre-Exam & Overlays */
-        .exam-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.8); backdrop-filter: blur(10px); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; transition: opacity 0.3s; }
-        .overlay-content { background-color: var(--surface-dark); padding: 3rem; border-radius: 16px; border: 1px solid var(--border-color); max-width: 600px; }
-        .overlay-content h1 { font-size: 2rem; font-weight: 700; margin-bottom: 1rem; }
-        .overlay-content p { color: var(--text-secondary); line-height: 1.6; margin-bottom: 2rem; }
-        .overlay-content .icon { font-size: 4rem; margin-bottom: 1.5rem; }
-        .overlay-content .icon-warning { color: var(--warning); }
-        .overlay-content .icon-info { color: var(--accent-start); }
-        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition); display: inline-flex; align-items: center; gap: 8px; border: 1px solid transparent; }
-        .btn.primary { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; border: none; }
-        .btn.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
-        .btn.danger { background-color: var(--danger); color: white; border-color: var(--danger); }
-        .btn:disabled { background-color: var(--surface-light); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
-
+        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(8px); z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; transition: opacity 0.3s; }
+        .overlay h2 { font-size: 2rem; margin-bottom: 1rem; } .overlay p { color: var(--text-secondary); max-width: 500px; line-height: 1.6; margin-bottom: 2rem; }
+        .overlay .btn { font-size: 1rem; }
         .loading-spinner { border: 4px solid var(--surface-light); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Main Layout */
-        .ide-dashboard { display: flex; height: 100vh; flex-direction: column; }
-        .exam-status-bar { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; background-color: var(--bg-dark); border-bottom: 1px solid var(--border-color); flex-shrink: 0; }
-        .status-item { display: flex; align-items: center; gap: 8px; font-weight: 600; }
-        .status-item svg { width: 20px; height: 20px; }
-        #timer { font-size: 1.2rem; font-family: var(--font-mono); color: var(--text-primary); }
-        #infraction-counter { color: var(--warning); }
-        
-        .exam-container { display: flex; flex-grow: 1; min-height: 0; }
-        .sidebar { width: 320px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .ide-dashboard { display: flex; height: 100%; position: relative; }
+        .sidebar { width: 320px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
         .sidebar-header { margin-bottom: 24px; }
-        .sidebar-header .test-title { font-size: 1.5rem; font-weight: 700; }
+        .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
         .sidebar nav { flex-grow: 1; overflow-y: auto; }
         .problem-nav { list-style: none; }
-        .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), border-color var(--transition); border: 1px solid transparent; background-color: var(--surface-dark); }
-        .problem-item.active { background-color: var(--surface-light); border-color: var(--accent-start); }
-        .problem-item.locked { opacity: 0.6; cursor: not-allowed; background-color: var(--bg-dark); }
-        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); }
-        .problem-item.active .p-number, .problem-item.solved .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
-        .p-title { font-size: 0.95rem; font-weight: 500; }
-        .p-status { font-size: 1.5rem; color: var(--success); margin-left: auto; }
-        
+        .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; transition: background-color var(--transition), border-color var(--transition); border: 1px solid var(--surface-dark); background-color: var(--surface-dark); opacity: 0.6; }
+        .problem-item.active { background-color: var(--surface-light); border-color: var(--accent-start); box-shadow: 0 0 15px rgba(var(--accent-glow-rgb), 0.2); opacity: 1; }
+        .problem-item.solved { border-color: var(--success); opacity: 1; }
+        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); font-weight: bold; }
+        .problem-item.active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
+        .problem-item.solved .p-number { background-image: none; background-color: var(--success); color: white; }
+        .p-title-wrapper { flex-grow: 1; } .p-title { font-size: 0.95rem; font-weight: 500; }
+        .p-points { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
+        .p-status { font-size: 1.5rem; margin-left: 1rem; color: var(--success); opacity: 0; transition: opacity 0.3s; }
+        .problem-item.solved .p-status { opacity: 1; }
         .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
-        .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; gap: 16px; }
-        .header-title { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
+        .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-shrink: 0; gap: 16px; }
+        .proctor-info { display: flex; align-items: center; gap: 24px; background-color: var(--surface-dark); padding: 8px 16px; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+        .proctor-item { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+        .proctor-item svg { width: 20px; height: 20px; } .proctor-item .timer { color: var(--warning); min-width: 70px; }
+        .proctor-item .attempts { color: var(--text-primary); }
         .controls { display: flex; gap: 12px; }
-        .btn.run-btn { background-color: var(--surface-light); color: var(--text-primary); border: 1px solid var(--border-color); }
-        .btn.submit-problem-btn { background-color: var(--success); color: white; }
+        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); }
+        .btn.run-btn { background-color: var(--surface-light); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: var(--border-color); }
+        .btn.submit-problem-btn, .btn.next-problem-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; justify-content: center; }
+        .btn.submit-problem-btn:hover:not(:disabled), .btn.next-problem-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
+        .btn.end-exam-btn { background-color: var(--danger); border-color: var(--danger); color: white; }
+        .btn:disabled { background-color: var(--surface-light) !important; color: var(--text-secondary) !important; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; border-color: var(--border-color) !important; background-image: none !important; }
         .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-        
-        .ide-layout { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; gap: 16px; flex-grow: 1; height: calc(100% - 80px); }
-        #problem-details, #editor-container, .bottom-panel { border-radius: var(--border-radius); border: 1px solid var(--border-color); }
-        #problem-details { grid-row: 1 / 2; grid-column: 1 / 2; background-color: var(--surface-dark); padding: 32px; overflow-y: auto; }
-        #editor-container { grid-row: 1 / 3; grid-column: 2 / 3; overflow: hidden; }
-        .bottom-panel { grid-row: 2 / 3; grid-column: 1 / 2; background-color: var(--surface-dark); overflow: hidden; display: flex; flex-direction: column; }
-        #problem-details h2 { font-size: 1.25rem; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--border-color); }
-        #problem-statement { line-height: 1.7; color: var(--text-secondary); }
-        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
+        .ide-layout { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; gap: 16px; flex-grow: 1; height: calc(100% - 72px); }
+        #problem-details-container { grid-row: 1 / 2; grid-column: 1 / 2; background-color: var(--surface-dark); border-radius: var(--border-radius); overflow-y: auto; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        #problem-details { padding: 32px; flex-grow: 1; }
+        #problem-footer { padding: 16px 32px; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; }
+        #editor-container { grid-row: 1 / 3; grid-column: 2 / 3; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
+        .bottom-panel { grid-row: 2 / 3; grid-column: 1 / 2; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; }
+        #problem-details h2 { font-size: 1.5rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;}
+        #problem-statement { line-height: 1.7; color: var(--text-secondary); } #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
         .test-case { background-color: var(--bg-dark); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
         .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; flex-shrink: 0; }
-        .tab { padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; }
-        .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
-        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; flex-grow: 1; overflow-y: auto; }
-        .tab-content.active { display: block; }
+        .tab { padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all var(--transition); } .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
+        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; flex-grow: 1; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
         #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-        #results-summary.success { background-color: rgba(var(--success-light-rgb), 0.1); color: var(--success); }
-        #results-summary.failure { background-color: rgba(var(--danger-light-rgb), 0.1); color: var(--danger); }
-        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border-radius: var(--border-radius); margin-bottom: 8px; }
-        .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; }
-        .status-pass { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); }
-        .status-fail { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
-        
-        .results-page { display: none; } /* Re-purposed overlay */
-
+        #results-summary.success { background-color: rgba(var(--success-light-rgb), 0.1); color: var(--success); } #results-summary.failure { background-color: rgba(var(--danger-light-rgb), 0.1); color: var(--danger); }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 8px; }
+        .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
+        .status-pass { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); } .status-fail { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
+        .results-page { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; }
+        .results-page.active { display: flex; }
+        .results-card { background-color: var(--surface-dark); padding: 4rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
+        .results-card h1 { font-size: 2.5rem; font-weight: 700; } .results-card .score { font-size: 4rem; font-weight: 800; margin: 1rem 0; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; color: transparent; }
+        .results-card p { color: var(--text-secondary); } .results-card .back-btn { margin-top: 2rem; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; border: none; }
+        .mobile-nav { display: none; }
         @media (max-width: 800px) {
-            .exam-status-bar { padding: 8px 16px; flex-wrap: wrap; gap: 8px; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); }
-            .sidebar.active { transform: translateX(0); }
-            .main-content { padding: 16px; }
-            .ide-layout { display: flex; flex-direction: column; }
+            .sidebar { display: none; } .main-header { flex-wrap: wrap; }
+            .proctor-info { order: 1; width: 100%; justify-content: space-around; margin-bottom: 1rem; }
+            .controls { order: 2; flex-grow: 1; justify-content: flex-end; }
+            .main-content { padding: 16px; } .ide-layout { display: flex; flex-direction: column; height: calc(100% - 140px); }
             .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
-            .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); text-align: center; }
-            .mobile-nav-btn.active { color: var(--text-primary); border-bottom: 2px solid var(--accent-start); }
-            #problem-details, #editor-container, .bottom-panel { display: none; }
-            .mobile-view-active { display: flex !important; flex-direction: column; flex-grow: 1; min-height: 0; }
+            .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; text-align: center; font-size: 0.9rem; }
+            .mobile-nav-btn.active { color: var(--text-primary); border-bottom-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border-bottom-style: solid; border-bottom-width: 2px; }
+            #problem-details-container, #editor-container, .bottom-panel { display: none; flex-direction: column; }
+            .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
         }
     </style>
 </head>
 <body>
+    <div class="overlay" id="loading-overlay"><div class="loading-spinner"></div><p>Initializing Environment...</p></div>
+    <div class="overlay" id="fullscreen-prompt" style="display: none;">
+        <div>
+            <h2><svg style="width:48px;height:48px;margin:0 auto 1rem;" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 2h-2v3h-3v2h5v-5zm-3-2V7h-2V5h5v5h-3z"></path></svg></h2>
+            <h2>Fullscreen Mode Required</h2>
+            <p>For a secure and focused exam experience, this test must be taken in fullscreen mode. Please click the button below to begin.</p>
+            <button class="btn" id="start-exam-btn">Start Exam in Fullscreen</button>
+        </div>
+    </div>
+    <div class="overlay" id="proctor-modal" style="display: none; opacity: 0; pointer-events: none;">
+        <div>
+            <h2 id="proctor-modal-title"></h2>
+            <p id="proctor-modal-message"></p>
+            <button class="btn" id="proctor-modal-ok">I Understand</button>
+        </div>
+    </div>
     <div style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
             <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
             <symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol>
             <symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol>
             <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
-            <symbol id="icon-timer" viewBox="0 0 24 24" fill="currentColor"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"></path></symbol>
-            <symbol id="icon-shield" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"></path></symbol>
+            <symbol id="icon-timer" viewBox="0 0 24 24" fill="currentColor"><path d="M15 1H9v2h6V1zm-4 13h2V8h-2v6zm8.03-6.61l1.42-1.42c-.43-.51-.9-.99-1.41-1.41l-1.42 1.42C16.07 4.74 14.12 4 12 4c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-2.12-.74-4.07-1.97-5.61zM12 20c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7z"></path></symbol>
+            <symbol id="icon-shield" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"></path></symbol>
         </svg>
     </div>
-    
-    <div id="start-exam-overlay" class="exam-overlay">
-        <div class="overlay-content">
-            <div class="icon icon-info"><svg><use href="#icon-shield"></use></svg></div>
-            <h1 id="start-title">Loading Exam...</h1>
-            <p id="start-instructions">Please wait while we prepare your secure exam environment. This exam requires fullscreen mode and has strict proctoring rules.</p>
-            <ul id="rules-list" style="text-align: left; margin: 0 auto 2rem; max-width: 400px; color: var(--text-secondary);"></ul>
-            <button id="start-exam-btn" class="btn primary" disabled>Start Exam</button>
-        </div>
-    </div>
-    
-    <div id="warning-overlay" class="exam-overlay" style="display: none;">
-        <div class="overlay-content">
-            <div class="icon icon-warning"><svg><use href="#icon-shield"></use></svg></div>
-            <h1 id="warning-title">Warning!</h1>
-            <p id="warning-message"></p>
-            <button id="reenter-fullscreen-btn" class="btn primary">Re-enter Fullscreen</button>
-        </div>
-    </div>
-    
     <main class="ide-dashboard" style="display: none;">
-        <header class="exam-status-bar">
-            <div class="status-item">
-                <svg><use href="#icon-timer"></use></svg>
-                <span id="timer">--:--:--</span>
-            </div>
-            <div class="status-item">
-                <svg><use href="#icon-shield"></use></svg>
-                <span>Infractions Left: <span id="infraction-counter">N/A</span></span>
-            </div>
-            <button id="end-exam-btn" class="btn danger">End Exam</button>
-        </header>
-        <div class="exam-container">
-            <aside class="sidebar" id="sidebar">
-                <div class="sidebar-header"><h1 class="test-title" id="assignment-title"></h1></div>
-                <nav><ul class="problem-nav" id="problem-list"></ul></nav>
-            </aside>
-            <div class="main-content" id="main-content-ide">
-                <header class="main-header">
-                    <h1 class="header-title" id="main-header-title"></h1>
-                    <div class="controls">
-                        <button id="run-btn" class="btn run-btn" disabled><div class="loader" style="display: none;"></div><svg><use href="#icon-play"></use></svg><span class="btn-text">Run Code</span></button>
-                        <button id="submit-problem-btn" class="btn submit-problem-btn" disabled><div class="loader" style="display: none;"></div><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit & Next</span></button>
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><h1 class="test-title" id="assignment-title"></h1></div>
+            <nav><ul class="problem-nav" id="problem-list"></ul></nav>
+        </aside>
+        <div class="main-content" id="main-content-ide">
+            <header class="main-header">
+                <div class="proctor-info">
+                    <div class="proctor-item">
+                        <svg><use href="#icon-timer"></use></svg>
+                        <span class="timer" id="timer-display">--:--</span>
                     </div>
-                </header>
-                <div class="mobile-nav" style="display:none;"></div>
-                <div class="ide-layout">
-                    <div id="problem-details"><div id="problem-statement"></div></div>
-                    <div id="editor-container"></div>
-                    <div class="bottom-panel">
-                        <div class="tabs"><div class="tab active" data-tab="results">Test Results</div></div>
-                        <div id="results" class="tab-content active"><p>Run or Submit code to see results.</p></div>
+                     <div class="proctor-item">
+                        <svg><use href="#icon-shield"></use></svg>
+                        <span>Attempts Left: <span id="attempts-display">5</span></span>
                     </div>
                 </div>
+                <div class="controls">
+                    <button id="end-exam-btn" class="btn end-exam-btn">End Exam</button>
+                    <button id="run-btn" class="btn run-btn" disabled><div class="loader" style="display: none;"></div><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                </div>
+            </header>
+            <div class="mobile-nav">
+                <button class="mobile-nav-btn active" data-view="problem">Problem</button>
+                <button class="mobile-nav-btn" data-view="code">Code</button>
+                <button class="mobile-nav-btn" data-view="results">Results</button>
+            </div>
+            <div class="ide-layout">
+                <div id="problem-details-container" class="mobile-view-active">
+                    <div id="problem-details">
+                        <h2 id="main-header-title"></h2>
+                        <div id="problem-statement"></div>
+                        <h3 style="margin-top: 24px; font-size: 1.25rem;">Test Cases</h3>
+                        <div id="public-test-cases"></div>
+                    </div>
+                    <div id="problem-footer">
+                         <button id="submit-problem-btn" class="btn submit-problem-btn"><div class="loader" style="display: none;"></div><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit Answer</span></button>
+                         <button id="next-problem-btn" class="btn next-problem-btn" style="display: none;">Next Question &rarr;</button>
+                    </div>
+                </div>
+                <div id="editor-container"></div>
+                <div class="bottom-panel">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="results">Test Results</div>
+                        <div class="tab" data-tab="console">Console</div>
+                    </div>
+                    <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run code to see test results.</p></div>
+                    <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
+                </div>
+            </div>
+        </div>
+        <div class="results-page" id="results-page">
+            <div class="results-card">
+                <h1>Assignment Submitted!</h1>
+                <p>You scored</p>
+                <div class="score" id="final-score"></div>
+                <p id="score-details"></p>
+                <a href="#" class="btn back-btn" id="back-to-course-btn">Back to Course Page</a>
             </div>
         </div>
     </main>
@@ -173,460 +177,370 @@
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-            authDomain: "exam-2e799.firebaseapp.com",
-            projectId: "exam-2e799",
-            storageBucket: "exam-2e799.firebasestorage.app",
-            messagingSenderId: "472506328501",
-            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-            measurementId: "G-NX21HT3JKT"
-        };
+        // --- CONFIG & INITIALIZATION ---
+        const firebaseConfig = { apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ", authDomain: "exam-2e799.firebaseapp.com", projectId: "exam-2e799", storageBucket: "exam-2e799.firebasestorage.app", messagingSenderId: "472506328501", appId: "1:472506328501:web:f239c42baed2f4b9f925fc", measurementId: "G-NX21HT3JKT" };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // --- DOM Elements & Global State ---
+        // --- DOM ELEMENTS ---
         const DOMElements = {
-            startOverlay: document.getElementById('start-exam-overlay'),
-            startTitle: document.getElementById('start-title'),
-            startInstructions: document.getElementById('start-instructions'),
-            startBtn: document.getElementById('start-exam-btn'),
-            rulesList: document.getElementById('rules-list'),
-            warningOverlay: document.getElementById('warning-overlay'),
-            warningTitle: document.getElementById('warning-title'),
-            warningMessage: document.getElementById('warning-message'),
-            reenterBtn: document.getElementById('reenter-fullscreen-btn'),
-            dashboard: document.querySelector('.ide-dashboard'),
-            timer: document.getElementById('timer'),
-            infractionCounter: document.getElementById('infraction-counter'),
-            endExamBtn: document.getElementById('end-exam-btn'),
-            editorContainer: document.getElementById('editor-container'),
-            runBtn: document.getElementById('run-btn'),
-            submitProblemBtn: document.getElementById('submit-problem-btn'),
-            problemList: document.getElementById('problem-list'),
-            assignmentTitle: document.getElementById('assignment-title'),
-            mainHeaderTitle: document.getElementById('main-header-title'),
-            problemStatement: document.getElementById('problem-statement'),
-            resultsContent: document.getElementById('results'),
-        };
-        
-        let currentUser, assignment, problems = [], editor, pyodide, subjectPage = '';
-        const MAX_INFRACTIONS = 5;
-        let examState = {
-            assignmentId: null,
-            timerInterval: null,
-            endTime: null,
-            infractions: 0,
-            shuffledProblemIds: [],
-            currentProblemIndex: 0,
-            submittedProblems: new Set(),
-            isPaused: false
+            loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'),
+            runBtn: document.getElementById('run-btn'), submitProblemBtn: document.getElementById('submit-problem-btn'), nextProblemBtn: document.getElementById('next-problem-btn'),
+            problemList: document.getElementById('problem-list'), assignmentTitle: document.getElementById('assignment-title'), mainHeaderTitle: document.getElementById('main-header-title'),
+            problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'),
+            resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'),
+            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), mainContentIDE: document.getElementById('main-content-ide'), resultsPage: document.getElementById('results-page'),
+            finalScore: document.getElementById('final-score'), scoreDetails: document.getElementById('score-details'), backToCourseBtn: document.getElementById('back-to-course-btn'),
+            timerDisplay: document.getElementById('timer-display'), attemptsDisplay: document.getElementById('attempts-display'), endExamBtn: document.getElementById('end-exam-btn'),
+            fullscreenPrompt: document.getElementById('fullscreen-prompt'), startExamBtn: document.getElementById('start-exam-btn'),
+            proctorModal: document.getElementById('proctor-modal'), proctorModalTitle: document.getElementById('proctor-modal-title'),
+            proctorModalMessage: document.getElementById('proctor-modal-message'), proctorModalOk: document.getElementById('proctor-modal-ok'),
         };
 
-        // --- Main Initialization Flow ---
+        // --- GLOBAL STATE ---
+        let currentUser, assignmentId, assignment, problems = [], currentProblemIndex = 0, editor, pyodide, subjectPage = '',
+            timerInterval, examEndTime, proctorAttempts = 5, isMobile = false;
+
+        // --- CORE LOGIC ---
         async function main() {
             const urlParams = new URLSearchParams(window.location.search);
-            examState.assignmentId = urlParams.get('id');
-            if (!examState.assignmentId) {
-                DOMElements.startTitle.textContent = "Error";
-                DOMElements.startInstructions.textContent = "Assignment ID not found in URL.";
-                return;
-            }
+            assignmentId = urlParams.get('id');
+            if (!assignmentId) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment ID not found.</p>'; return; }
+            isMobile = /Mobi|Android/i.test(navigator.userAgent);
 
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     currentUser = user;
-                    if (await checkIfAssignmentCompleted()) return;
-                    await loadExamData();
-                    prepareStartScreen();
+                    await fetchData();
+                    const completedScoreData = await checkIfAssignmentCompleted();
+                    if (completedScoreData) {
+                        showResultsPage(completedScoreData);
+                    } else {
+                        setupProctoring();
+                    }
                 } else { window.location.href = 'index.html'; }
             });
         }
-        
-        async function checkIfAssignmentCompleted() {
-            const scoreQuery = await db.collection('codeAssignmentScores')
-                .where('userId', '==', currentUser.uid)
-                .where('assignmentId', '==', examState.assignmentId).limit(1).get();
-            if (!scoreQuery.empty) {
-                showResultsPage(scoreQuery.docs[0].data());
-                return true;
-            }
-            return false;
-        }
 
-        async function loadExamData() {
-            const assignmentDoc = await db.collection('codeAssignments').doc(examState.assignmentId).get();
-            if (!assignmentDoc.exists) { throw new Error("Assignment not found."); }
+        async function fetchData() {
+            const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
+            if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
             assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
+            DOMElements.assignmentTitle.textContent = assignment.name;
 
             const subjectDoc = await db.collection('subjects').doc(assignment.subjectId).get();
-            if (subjectDoc.exists) subjectPage = subjectDoc.data().page;
+            if(subjectDoc.exists) subjectPage = subjectDoc.data().page;
 
-            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', examState.assignmentId).get();
-            problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        }
-
-        function prepareStartScreen() {
-            DOMElements.startTitle.textContent = assignment.name;
-            DOMElements.startInstructions.textContent = `This is a timed assessment of ${assignment.duration / 60} minutes. Please read the rules carefully before you begin.`;
-            DOMElements.rulesList.innerHTML = `
-                <li>You must remain in fullscreen mode for the entire exam.</li>
-                <li>Switching tabs or applications is prohibited.</li>
-                <li>You are allowed ${MAX_INFRACTIONS} infractions. Exceeding this limit will automatically submit your exam.</li>
-                <li>Copy, paste, and right-clicking are disabled.</li>
-            `;
-            DOMElements.startBtn.disabled = false;
-            DOMElements.startBtn.textContent = "I Understand, Start Exam";
-            DOMElements.startBtn.onclick = requestFullscreenAndStart;
-        }
-
-        async function requestFullscreenAndStart() {
-            try {
-                await document.documentElement.requestFullscreen();
-                DOMElements.startBtn.innerHTML = `<div class="loader"></div> Initializing...`;
-                DOMElements.startBtn.disabled = true;
-                await initPyodideAndEditor();
-            } catch (err) {
-                alert("Fullscreen mode is required to start the exam. Please allow it and try again.");
-            }
-        }
-        
-        async function initPyodideAndEditor() {
-            try {
-                pyodide = await loadPyodide();
-                require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-                require(['vs/editor/editor.main'], () => {
-                    editor = monaco.editor.create(DOMElements.editorContainer, {
-                        language: 'python', theme: 'vs-dark', automaticLayout: true,
-                        minimap: { enabled: false }, fontSize: 14, wordWrap: 'on',
-                        contextmenu: false, // Disables right-click in editor
-                        dragAndDrop: false, // Disables drag and drop
-                    });
-                    // Further disable paste via editor command
-                    editor.onDidPaste(() => editor.trigger('keyboard', 'undo'));
-                    startExam();
-                });
-            } catch (error) {
-                DOMElements.startTitle.textContent = "Initialization Failed";
-                DOMElements.startInstructions.textContent = "Could not load the coding environment. Please refresh and try again.";
-            }
-        }
-
-        function startExam() {
-            loadState();
-            setupSecurityListeners();
-            setupEventListeners();
-            
-            DOMElements.assignmentTitle.textContent = assignment.name;
-            renderProblemList();
-            loadProblem(examState.currentProblemIndex);
-
-            DOMElements.startOverlay.style.display = 'none';
-            DOMElements.dashboard.style.display = 'flex';
-        }
-
-        // --- State Management ---
-        function getLocalStorageKey(key) { return `exam_${currentUser.uid}_${examState.assignmentId}_${key}`; }
-
-        function saveState() {
-            const stateToSave = { ...examState, timerInterval: null }; // Don't save interval ID
-            localStorage.setItem(getLocalStorageKey('state'), JSON.stringify(stateToSave));
-            
-            const codeState = {};
-            examState.shuffledProblemIds.forEach(id => {
-                const problemCode = getProblemCode(id);
-                if (problemCode) codeState[id] = problemCode;
-            });
-            localStorage.setItem(getLocalStorageKey('code'), JSON.stringify(codeState));
-        }
-
-        function loadState() {
-            const savedState = JSON.parse(localStorage.getItem(getLocalStorageKey('state')));
-            if (savedState) {
-                Object.assign(examState, savedState);
-                examState.submittedProblems = new Set(Array.from(examState.submittedProblems)); // Re-create Set
-            } else {
-                // First time starting
-                examState.endTime = Date.now() + assignment.duration * 1000;
-                examState.shuffledProblemIds = shuffleArray(problems.map(p => p.id));
-            }
-            startTimer();
-            DOMElements.infractionCounter.textContent = MAX_INFRACTIONS - examState.infractions;
-        }
-
-        function clearState() {
-            clearInterval(examState.timerInterval);
-            localStorage.removeItem(getLocalStorageKey('state'));
-            localStorage.removeItem(getLocalStorageKey('code'));
-        }
-
-        // --- Timer ---
-        function startTimer() {
-            if (examState.timerInterval) clearInterval(examState.timerInterval);
-            examState.timerInterval = setInterval(updateTimer, 1000);
-            updateTimer();
-        }
-
-        function updateTimer() {
-            if (examState.isPaused) return;
-
-            const remaining = examState.endTime - Date.now();
-            if (remaining <= 0) {
-                DOMElements.timer.textContent = "00:00:00";
-                submitFinalAssignment("Time's up!");
-                return;
-            }
-            const hours = String(Math.floor(remaining / 3600000)).padStart(2, '0');
-            const minutes = String(Math.floor((remaining % 3600000) / 60000)).padStart(2, '0');
-            const seconds = String(Math.floor((remaining % 60000) / 1000)).padStart(2, '0');
-            DOMElements.timer.textContent = `${hours}:${minutes}:${seconds}`;
-        }
-        
-        // --- Security Measures ---
-        function setupSecurityListeners() {
-            document.addEventListener('fullscreenchange', handleFullscreenChange);
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            document.addEventListener('contextmenu', e => e.preventDefault());
-            ['copy', 'paste', 'cut', 'drop'].forEach(evt => document.addEventListener(evt, e => e.preventDefault()));
-            document.addEventListener('keydown', e => {
-                if (e.ctrlKey && ['c', 'v', 'u', 's'].includes(e.key.toLowerCase())) e.preventDefault();
-                if (e.key === 'F12') e.preventDefault();
-            });
-        }
-        
-        function handleInfraction(reason) {
-            if (examState.isPaused) return; // Don't penalize for infractions while paused
-            examState.infractions++;
-            DOMElements.infractionCounter.textContent = MAX_INFRACTIONS - examState.infractions;
-            saveState();
-
-            if (examState.infractions >= MAX_INFRACTIONS) {
-                submitFinalAssignment("Violation limit reached.");
-            } else {
-                showWarningModal(reason);
-            }
-        }
-
-        function handleFullscreenChange() {
-            if (!document.fullscreenElement) {
-                if(examState.isPaused) return; // Already paused by another event
-                handleInfraction("You have exited fullscreen mode.");
-                examState.isPaused = true;
-            }
-        }
-        
-        function handleVisibilityChange() {
-            if (document.visibilityState === 'hidden') {
-                document.body.classList.add('blurred');
-                handleInfraction("You have switched to another tab or application.");
-                examState.isPaused = true;
-            } else {
-                 document.body.classList.remove('blurred');
-            }
-        }
-
-        function showWarningModal(reason) {
-            const remaining = MAX_INFRACTIONS - examState.infractions;
-            DOMElements.warningMessage.textContent = `${reason} You have ${remaining} infraction(s) remaining. Further violations will result in auto-submission.`;
-            DOMElements.warningOverlay.style.display = 'flex';
-            DOMElements.reenterBtn.onclick = async () => {
-                try {
-                    await document.documentElement.requestFullscreen();
-                    examState.isPaused = false;
-                    DOMElements.warningOverlay.style.display = 'none';
-                } catch {
-                    alert("You must re-enter fullscreen to continue.");
+            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
+            problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data(), solved: false, submitted: false }));
+            if (problems.length > 0) {
+                // Fisher-Yates Shuffle for randomization
+                for (let i = problems.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [problems[i], problems[j]] = [problems[j], problems[i]];
                 }
-            };
+            } else { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; }
         }
 
-        // --- Exam Logic ---
-        function setupEventListeners() {
+        async function startExam() {
+            DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
+            try { pyodide = await loadPyodide(); } catch (error) { DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment.</p>'; return; }
+            
+            DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
+            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+            window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
+
+            require(['vs/editor/editor.main'], () => {
+                editor = monaco.editor.create(DOMElements.editorContainer, {
+                    language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 },
+                    contextmenu: false, // Disables right-click inside editor
+                });
+                editor.onDidPaste(() => editor.trigger('keyboard', 'undo')); // Prevent paste
+                DOMElements.loadingOverlay.style.opacity = '0';
+                setTimeout(() => DOMElements.loadingOverlay.style.display = 'none', 300);
+                document.querySelector('.ide-dashboard').style.display = 'flex';
+                init();
+            });
+        }
+
+        function init() {
+            startTimer();
+            renderProblemList();
+            loadProblem(currentProblemIndex);
+            initEventListeners();
+            DOMElements.runBtn.disabled = false;
+        }
+
+        function initEventListeners() {
             DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
             DOMElements.submitProblemBtn.addEventListener('click', () => handleExecution(true));
-            DOMElements.problemList.addEventListener('click', handleProblemSelect);
+            DOMElements.nextProblemBtn.addEventListener('click', () => {
+                currentProblemIndex++;
+                if (currentProblemIndex < problems.length) loadProblem(currentProblemIndex);
+            });
             DOMElements.endExamBtn.addEventListener('click', () => {
-                if(confirm("Are you sure you want to end the exam? Your current progress will be submitted.")) {
-                    submitFinalAssignment("User submitted exam.");
+                if (confirm('Are you sure you want to end the exam? Your progress will be submitted.')) {
+                    submitFinalAssignment();
                 }
             });
-            editor.onDidBlurEditorText(() => saveState());
+            DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
+            DOMElements.mobileNavBtns.forEach(btn => btn.addEventListener('click', (e) => setMobileView(e.target.dataset.view)));
         }
 
         function renderProblemList() {
-            DOMElements.problemList.innerHTML = examState.shuffledProblemIds.map((id, index) => {
-                const p = problems.find(prob => prob.id === id);
-                const isSolved = examState.submittedProblems.has(id);
-                const isLocked = index > examState.currentProblemIndex && !examState.submittedProblems.has(examState.shuffledProblemIds[examState.currentProblemIndex]);
-                const isActive = index === examState.currentProblemIndex;
-                
-                return `
-                <li class="problem-item ${isSolved ? 'solved' : ''} ${isLocked ? 'locked' : ''} ${isActive ? 'active' : ''}" data-index="${index}">
-                    <div class="p-number">${index + 1}</div>
-                    <div class="p-title">${p.title}</div>
-                    ${isSolved ? `<div class="p-status"><svg><use href="#icon-check"></use></svg></div>` : ''}
-                </li>`;
-            }).join('');
+            DOMElements.problemList.innerHTML = problems.map((p, i) => `
+                <li class="problem-item ${p.solved ? 'solved' : ''} ${i === currentProblemIndex ? 'active' : ''}" data-index="${i}">
+                    <div class="p-number">${i + 1}</div>
+                    <div class="p-title-wrapper"><div class="p-title">${p.title}</div><div class="p-points">${p.points} pts</div></div>
+                    ${p.solved ? `<div class="p-status"><svg><use href="#icon-check"></use></svg></div>` : ''}
+                </li>`).join('');
         }
 
         function loadProblem(index) {
-            examState.currentProblemIndex = index;
-            const problemId = examState.shuffledProblemIds[index];
-            const problem = problems.find(p => p.id === problemId);
-            const isSolved = examState.submittedProblems.has(problemId);
+            if (editor) editor.setValue(getProblemCode(problems[currentProblemIndex].id));
 
-            DOMElements.mainHeaderTitle.textContent = `Problem ${index + 1}: ${problem.title}`;
-            DOMElements.problemStatement.innerHTML = `<h2>Problem Statement</h2>${problem.statement}`;
+            currentProblemIndex = index;
+            const problem = problems[currentProblemIndex];
             
-            const savedCode = JSON.parse(localStorage.getItem(getLocalStorageKey('code')) || '{}');
-            editor.setValue(savedCode[problemId] || problem.starterCode);
-            editor.updateOptions({ readOnly: isSolved });
+            editor.updateOptions({ readOnly: problem.submitted });
+            DOMElements.runBtn.disabled = problem.submitted;
+            DOMElements.submitProblemBtn.style.display = problem.submitted ? 'none' : 'flex';
+            DOMElements.nextProblemBtn.style.display = 'none';
+
+            DOMElements.mainHeaderTitle.textContent = `Question ${index + 1}: ${problem.title}`;
+            DOMElements.problemStatement.innerHTML = problem.statement;
+            editor.setValue(getProblemCode(problem.id) || problem.starterCode);
             
-            DOMElements.runBtn.disabled = isSolved;
-            DOMElements.submitProblemBtn.disabled = isSolved;
-            DOMElements.submitProblemBtn.textContent = isSolved ? "Solved" : "Submit & Next";
+            DOMElements.publicTestCases.innerHTML = problem.testCases.map((tc, i) => tc.hidden ? `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><i>This is a hidden test case.</i></p></div>` : `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
             
-            DOMElements.resultsContent.innerHTML = `<p>Run or Submit code to see results.</p>`;
             renderProblemList();
-            saveState();
+            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run code to see results.</p>';
+            DOMElements.consoleOutput.textContent = 'No console output.';
+            setMobileView('problem');
+
+            editor.onDidBlurEditorText(() => saveProblemCode(problem.id, editor.getValue()));
         }
 
-        function getProblemCode(problemId) {
-            const currentProblemId = examState.shuffledProblemIds[examState.currentProblemIndex];
-            return problemId === currentProblemId ? editor.getValue() : JSON.parse(localStorage.getItem(getLocalStorageKey('code')) || '{}')[problemId];
-        }
-
-        function handleProblemSelect(e) {
-            const target = e.target.closest('.problem-item');
-            if (!target || target.classList.contains('locked')) return;
-            const index = parseInt(target.dataset.index, 10);
-            if (index !== examState.currentProblemIndex) {
-                loadProblem(index);
-            }
-        }
-        
         async function handleExecution(isSubmission) {
             const btn = isSubmission ? DOMElements.submitProblemBtn : DOMElements.runBtn;
-            setLoadingState(true, btn);
+            setLoadingState(true, btn, isSubmission);
             DOMElements.resultsContent.innerHTML = '';
-
-            const problemId = examState.shuffledProblemIds[examState.currentProblemIndex];
-            const problem = problems.find(p => p.id === problemId);
+            DOMElements.consoleOutput.textContent = 'Executing...';
+            
+            const problem = problems[currentProblemIndex];
+            const testsToRun = problem.testCases;
             const results = [];
-            for (const test of problem.testCases) {
-                results.push(await executeTestCase(editor.getValue(), test, problem.functionName));
-            }
-            renderResults(results, isSubmission, problem);
-            setLoadingState(false, btn);
+            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
+            
+            renderResults(results, isSubmission);
+            setLoadingState(false, btn, isSubmission);
+            document.querySelector('.tab[data-tab="results"]').click();
+            setMobileView('results');
         }
         
         async function executeTestCase(code, testCase, functionName) {
             let result = { status: 'fail', error: null, output: null };
-            const inputDefs = Object.entries(testCase.input).map(([k, v]) => `${k} = ${JSON.stringify(v)}`).join('\n');
+            const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
             const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
-            const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint(json.dumps(result))`;
+            const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
+
             try {
-                pyodide.setStdout({ batched: msg => result.output = msg });
+                let consoleLogs = '';
+                pyodide.setStdout({ batched: (msg) => { consoleLogs += msg + '\n'; } });
+                pyodide.setStderr({ batched: (msg) => { consoleLogs += msg + '\n'; } });
                 await pyodide.runPythonAsync(fullScript);
-                const outputJs = JSON.parse(result.output);
-                if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
-            } catch (e) { result.error = e.toString(); } 
-            finally { pyodide.setStdout(); }
+                const resultMatch = consoleLogs.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                const consoleText = consoleLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
+                DOMElements.consoleOutput.textContent = consoleText || 'No console output.';
+                if (resultMatch && resultMatch[1]) {
+                    const outputJs = JSON.parse(resultMatch[1]);
+                    result.output = outputJs;
+                    if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
+                } else { result.error = "Execution failed to produce a valid result."; }
+            } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent = e.toString(); } 
             return { ...testCase, ...result };
         }
 
-        function renderResults(results, isSubmission, problem) {
+        function renderResults(results, isSubmission) {
             const passedCount = results.filter(r => r.status === 'pass').length;
-            const success = passedCount === results.length;
-            let summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">${success ? 'Accepted' : 'Wrong Answer'}: ${passedCount} / ${results.length} cases passed.</div>`;
-            const resultsHTML = results.map((r, i) => `<div class="result-item"><span>Test Case #${i + 1}</span><div class="status status-${r.status}">${r.status.toUpperCase()}</div></div>`).join('');
+            const totalCount = results.length;
+            const allPassed = passedCount === totalCount;
+            let summaryHTML = `<div id="results-summary" class="${allPassed ? 'success' : 'failure'}">${passedCount} / ${totalCount} test cases passed.</div>`;
+            const resultsHTML = results.map((r, i) => `<div class="result-item"><span>${r.hidden ? `Hidden Test Case #${i + 1}` : `Test Case #${i + 1}`}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join('');
             DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
 
-            if (isSubmission && success) {
-                examState.submittedProblems.add(problem.id);
-                if (examState.currentProblemIndex < problems.length - 1) {
-                    loadProblem(examState.currentProblemIndex + 1);
+            if (isSubmission) {
+                const problem = problems[currentProblemIndex];
+                problem.submitted = true;
+                problem.solved = allPassed;
+                renderProblemList();
+                editor.updateOptions({ readOnly: true });
+                DOMElements.runBtn.disabled = true;
+                DOMElements.submitProblemBtn.style.display = 'none';
+
+                if (currentProblemIndex < problems.length - 1) {
+                    DOMElements.nextProblemBtn.style.display = 'flex';
                 } else {
-                    alert("Congratulations! You have solved all problems. You can now submit your assignment.");
-                    DOMElements.submitProblemBtn.disabled = true;
-                    DOMElements.submitProblemBtn.textContent = "All Solved!";
+                    DOMElements.nextProblemBtn.style.display = 'none';
+                    DOMElements.endExamBtn.textContent = 'Submit Final Results';
+                    alert("All questions answered. Please click 'Submit Final Results' to complete the exam.");
                 }
-                saveScore(problem, true);
             }
         }
         
-        async function saveScore(problem, wasCorrect) {
-            const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
-            if ((await scoreRef.get()).empty) {
-                await db.collection('codeScores').add({
-                    userId: currentUser.uid, assignmentId: assignment.id, problemId: problem.id,
-                    pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-            }
-        }
-
-        // --- Submission & Cleanup ---
-        async function submitFinalAssignment(reason = "Unknown") {
-            if (examState.isSubmitting) return;
-            examState.isSubmitting = true;
-            
-            clearInterval(examState.timerInterval);
-            if (document.fullscreenElement) document.exitFullscreen();
-            
+        async function submitFinalAssignment() {
+            clearInterval(timerInterval);
             let totalScoreObtained = 0;
             const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
-            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignment.id).get();
-            scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
 
+            problems.forEach(p => { if (p.solved) totalScoreObtained += p.points; });
+            
             const finalScoreData = {
-                userId: currentUser.uid, assignmentId: assignment.id,
-                assignmentName: assignment.name, subjectId: assignment.subjectId,
-                totalScoreObtained, totalScorePossible,
-                problemsSolved: examState.submittedProblems.size, totalProblems: problems.length,
-                completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                submissionReason: reason
+                userId: currentUser.uid, assignmentId: assignmentId, assignmentName: assignment.name, subjectId: assignment.subjectId,
+                totalScoreObtained, totalScorePossible, problemsSolved: problems.filter(p => p.solved).length, totalProblems: problems.length,
+                completedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
-            await db.collection('codeAssignmentScores').add(finalScoreData);
-            clearState();
-            showResultsPage(finalScoreData);
-        }
-
-        function showResultsPage(scoreData) {
-            DOMElements.dashboard.style.display = 'none';
-            const scoreText = `${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
-            const detailsText = `You successfully solved ${scoreData.problemsSolved} out of ${scoreData.totalProblems} problems.`;
-            DOMElements.startTitle.textContent = "Assignment Completed!";
-            DOMElements.startInstructions.innerHTML = `<p>Your score is</p><h2 style="font-size: 3rem; margin: 1rem 0;">${scoreText}</h2><p>${detailsText}</p>`;
-            DOMElements.rulesList.style.display = 'none';
-            DOMElements.startBtn.textContent = "Back to Course";
-            DOMElements.startBtn.disabled = false;
-            DOMElements.startBtn.onclick = () => { window.location.href = subjectPage || 'dashboard.html'; };
-            DOMElements.startOverlay.style.display = 'flex';
-        }
-
-        // --- Utilities ---
-        function setLoadingState(isLoading, btn) {
-            const btnText = btn.querySelector('.btn-text');
-            const loader = btn.querySelector('.loader');
-            btn.disabled = isLoading;
-            if (loader) loader.style.display = isLoading ? 'block' : 'none';
-            if(btnText) btnText.style.display = isLoading ? 'none' : 'inline';
-        }
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+            try {
+                await db.collection('codeAssignmentScores').add(finalScoreData);
+                problems.forEach(p => localStorage.removeItem(`code_${p.id}_${assignmentId}`));
+                localStorage.removeItem(`examEndTime_${assignmentId}`);
+                showResultsPage(finalScoreData);
+            } catch (error) {
+                alert('Error submitting results. Please check your connection.');
             }
-            return array;
         }
 
-        main().catch(err => {
-            console.error("Fatal Error:", err);
-            DOMElements.startTitle.textContent = "An Error Occurred";
-            DOMElements.startInstructions.textContent = "Could not load the exam. Please check your connection and try again. Error: " + err.message;
-        });
+        // --- PROCTORING & SECURITY ---
+        function setupProctoring() {
+            // Anti-cheat event listeners
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            document.addEventListener('copy', e => e.preventDefault());
+            document.addEventListener('paste', e => e.preventDefault());
+            document.addEventListener('cut', e => e.preventDefault());
+            document.addEventListener('dragover', e => e.preventDefault());
+            document.addEventListener('drop', e => e.preventDefault());
+            document.addEventListener('keydown', e => {
+                if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ['I', 'J', 'C'].includes(e.key.toUpperCase())) || (e.ctrlKey && ['U', 'S', 'C', 'V', 'X'].includes(e.key.toUpperCase()))) {
+                    e.preventDefault();
+                }
+            });
+
+            // Tab switch detection
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) handleProctoringViolation('You have switched to another tab or application.');
+            });
+
+            // Fullscreen enforcement for desktop
+            if (!isMobile) {
+                DOMElements.fullscreenPrompt.style.display = 'flex';
+                DOMElements.startExamBtn.onclick = () => {
+                    document.documentElement.requestFullscreen().then(() => {
+                        DOMElements.fullscreenPrompt.style.display = 'none';
+                        startExam();
+                    }).catch(err => alert(`Fullscreen is required to start the exam. Error: ${err.message}`));
+                };
+                document.addEventListener('fullscreenchange', () => {
+                    if (!document.fullscreenElement) {
+                        handleProctoringViolation('You have exited fullscreen mode. The exam is paused.', true);
+                    } else {
+                        DOMElements.proctorModal.style.opacity = '0';
+                        DOMElements.proctorModal.style.pointerEvents = 'none';
+                        startTimer(true); // resume timer
+                    }
+                });
+            } else {
+                startExam(); // Mobile users start directly
+            }
+        }
+
+        function handleProctoringViolation(message, pauseTimer = false) {
+            proctorAttempts--;
+            DOMElements.attemptsDisplay.textContent = proctorAttempts;
+            
+            if (proctorAttempts <= 0) {
+                alert('You have run out of integrity attempts. The exam will be submitted automatically.');
+                submitFinalAssignment();
+                return;
+            }
+
+            if(pauseTimer) clearInterval(timerInterval);
+
+            DOMElements.proctorModalTitle.textContent = `Warning (${proctorAttempts} attempts left)`;
+            DOMElements.proctorModalMessage.textContent = message + ' Continuing this behavior will result in automatic submission of your exam.';
+            DOMElements.proctorModal.style.opacity = '1';
+            DOMElements.proctorModal.style.pointerEvents = 'auto';
+            DOMElements.proctorModalOk.onclick = () => {
+                if(!document.fullscreenElement && !isMobile) {
+                   alert('Please re-enter fullscreen mode to continue.');
+                } else {
+                    DOMElements.proctorModal.style.opacity = '0';
+                    DOMElements.proctorModal.style.pointerEvents = 'none';
+                }
+            };
+        }
+
+        function startTimer(isResuming = false) {
+            clearInterval(timerInterval);
+            if (!isResuming) {
+                const storedEndTime = localStorage.getItem(`examEndTime_${assignmentId}`);
+                examEndTime = storedEndTime ? parseInt(storedEndTime, 10) : Date.now() + assignment.duration * 1000;
+                localStorage.setItem(`examEndTime_${assignmentId}`, examEndTime);
+            }
+            
+            timerInterval = setInterval(() => {
+                const remaining = examEndTime - Date.now();
+                if (remaining <= 0) {
+                    clearInterval(timerInterval);
+                    DOMElements.timerDisplay.textContent = "00:00";
+                    alert('Time is up! Your exam will be submitted automatically.');
+                    submitFinalAssignment();
+                    return;
+                }
+                const minutes = Math.floor((remaining / 1000) / 60);
+                const seconds = Math.floor((remaining / 1000) % 60);
+                DOMElements.timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }, 1000);
+        }
+
+        // --- HELPERS ---
+        function saveProblemCode(problemId, code) { localStorage.setItem(`code_${problemId}_${assignmentId}`, code); }
+        function getProblemCode(problemId) { return localStorage.getItem(`code_${problemId}_${assignmentId}`); }
+        async function checkIfAssignmentCompleted() {
+            const scoreQuery = await db.collection('codeAssignmentScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
+            return scoreQuery.empty ? false : scoreQuery.docs[0].data();
+        }
+        function showResultsPage(scoreData) {
+            DOMElements.mainContentIDE.style.display = 'none'; DOMElements.sidebar.style.display = 'none';
+            DOMElements.resultsPage.classList.add('active');
+            DOMElements.finalScore.textContent = `${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
+            DOMElements.scoreDetails.textContent = `You answered ${scoreData.problemsSolved} out of ${scoreData.totalProblems} problems correctly.`;
+            DOMElements.backToCourseBtn.href = subjectPage || 'dashboard.html';
+            DOMElements.loadingOverlay.style.display = 'none';
+            document.querySelector('.ide-dashboard').style.display = 'flex';
+        }
+        function setMobileView(view) {
+            if (!isMobile) return;
+            DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+            [document.getElementById('problem-details-container'), DOMElements.editorContainer, DOMElements.bottomPanel].forEach(p => p.classList.remove('mobile-view-active'));
+            if (view === 'problem') document.getElementById('problem-details-container').classList.add('mobile-view-active');
+            else if (view === 'code') DOMElements.editorContainer.classList.add('mobile-view-active');
+            else if (view === 'results') DOMElements.bottomPanel.classList.add('mobile-view-active');
+        }
+        function setLoadingState(isLoading, btn, isSubmission) {
+            const btnText = btn.querySelector('.btn-text'); const loader = btn.querySelector('.loader'); const icon = btn.querySelector('svg');
+            btn.disabled = isLoading;
+            if (isLoading) {
+                btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
+                loader.style.display = 'block'; icon.style.display = 'none';
+            } else {
+                btnText.textContent = isSubmission ? 'Submit Answer' : 'Run';
+                loader.style.display = 'none'; icon.style.display = 'block';
+            }
+        }
+        function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
+        
+        main();
     </script>
 </body>
 </html>
