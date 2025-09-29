@@ -3,173 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coding Challenge - Exam Portal</title>
+    <title>ProCoder IDE - Proctored Exam</title>
     <style>
-        :root { --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace; --bg-dark: #111827; --surface-dark: #1F2937; --surface-light: #374151; --border-color: #4B5563; --text-primary: #F9FAFB; --text-secondary: #9CA3AF; --accent-glow-rgb: 79, 70, 229; --accent-start: #4F46E5; --accent-end: #7C3AED; --success: #10B981; --danger: #EF4444; --warning: #F59E0B; --success-light-rgb: 16, 185, 129; --danger-light-rgb: 239, 68, 68; --border-radius: 8px; --transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1); }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
+            --bg-dark: #0d1117;
+            --surface-dark-rgb: 22, 27, 34;
+            --surface-light-rgb: 33, 38, 45;
+            --border-color-rgb: 48, 54, 61;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-glow-rgb: 88, 80, 236;
+            --accent-start: #5850EC;
+            --accent-end: #8A2BE2;
+            --success-rgb: 35, 134, 54;
+            --danger-rgb: 218, 54, 51;
+            --warning-rgb: 227, 179, 65;
+            --border-radius: 8px;
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
-        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); user-select: none; -webkit-user-select: none; -moz-user-select: none; }
-        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; }
+        
+        .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
+        .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; }
+        .aurora-bg::before { background: radial-gradient(circle, var(--accent-start), transparent 70%); top: -20%; left: -10%; animation: moveAurora1 20s infinite alternate; }
+        .aurora-bg::after { background: radial-gradient(circle, var(--accent-end), transparent 70%); bottom: -20%; right: -10%; animation: moveAurora2 25s infinite alternate; }
+        @keyframes moveAurora1 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(100px, 50px) rotate(30deg); } }
+        @keyframes moveAurora2 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-100px, -50px) rotate(-30deg); } }
+
+        button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
         svg { display: block; width: 100%; height: 100%; }
+        
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); transition: opacity 0.3s; }
-        .loading-spinner { border: 4px solid var(--surface-light); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        .loading-spinner { border: 4px solid rgba(var(--surface-light-rgb), 0.5); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .ide-dashboard { display: flex; height: 100%; position: relative; }
-        .sidebar { width: 320px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
+
+        .ide-dashboard { display: none; height: 100%; position: relative; }
+        .sidebar { width: 320px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-right: 1px solid rgba(var(--border-color-rgb), 0.5); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform var(--transition-smooth), width var(--transition-smooth); }
         .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
-        .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
-        .sidebar nav { flex-grow: 1; overflow-y: auto; margin-right: -12px; padding-right: 12px; }
+        .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .sidebar nav { flex-grow: 1; overflow-y: auto; }
         .problem-nav { list-style: none; }
-        .problem-item { display: flex; flex-direction: column; align-items: stretch; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), border-color var(--transition); border: 1px solid transparent; background-color: var(--surface-dark); }
-        .problem-item:hover { background-color: var(--surface-light); }
-        .problem-item.active { background-color: var(--surface-light); border-color: var(--accent-start); box-shadow: 0 0 15px rgba(var(--accent-glow-rgb), 0.2); }
-        .problem-item-header { display: flex; align-items: center; }
-        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: var(--surface-light); transition: all var(--transition); }
-        .problem-item.active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
-        .problem-item.solved .p-number { background-image: none; background-color: var(--success); color: white; }
-        .p-title-wrapper { flex-grow: 1; }
-        .p-title { font-size: 0.95rem; font-weight: 500; }
-        .p-points { font-size: 0.8rem; color: var(--text-secondary); font-weight: 500; }
-        .p-status { font-size: 1.25rem; color: var(--success); opacity: 0; transition: opacity 0.3s; margin-left: 8px; }
-        .problem-item.solved .p-status { opacity: 1; }
-        .problem-item-footer { margin-top: 12px; display: none; }
-        .problem-item.active .problem-item-footer { display: block; }
-        .sidebar-footer { padding-top: 1rem; margin-top: 1rem; border-top: 1px solid var(--border-color); }
-        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
-        .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; gap: 16px; }
-        .header-title { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
-        .controls { display: flex; gap: 12px; align-items: center; }
-        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition); display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); }
+        .problem-item { position: relative; display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; overflow: hidden; }
+        .problem-item::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: linear-gradient(var(--accent-start), var(--accent-end)); transform: translateX(-100%); transition: transform var(--transition-fast); }
+        .problem-item:not(.locked):not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
+        .problem-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
+        .problem-item.active::before { transform: translateX(0); }
+        .problem-item.locked { cursor: not-allowed; opacity: 0.5; }
+        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
+        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
+        .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
+        .p-status-icon { width: 20px; height: 20px; margin-left: 8px; opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
+        .problem-item.solved .p-status-icon, .problem-item.attempted .p-status-icon { opacity: 1; transform: scale(1); }
+        
+        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); padding: 12px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); }
+        .header-title-group { display: flex; align-items: center; gap: 16px; }
+        .header-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
+        .proctor-info { display: flex; align-items: center; gap: 24px; }
+        .timer-container, .attempts-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
+        .timer-container svg, .attempts-container svg { width: 18px; height: 18px; }
+        .controls { display: flex; gap: 12px; }
+        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(var(--border-color-rgb), 0.7); }
         .btn svg { width: 18px; height: 18px; }
-        .btn.run-btn { background-color: var(--surface-light); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: var(--border-color); }
-        .btn.submit-problem-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; width: 100%; justify-content: center; }
-        .btn.submit-problem-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
-        .btn.end-exam-btn { background-color: var(--danger); color: white; border-color: var(--danger); }
-        .btn:disabled { background-color: var(--surface-light); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
+        .btn.run-btn { background-color: rgba(var(--surface-light-rgb), 0.8); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: rgba(var(--border-color-rgb), 0.7); }
+        .btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
+        #end-test-btn { color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); } #end-test-btn:hover:not(:disabled) { background-color: rgba(var(--danger-rgb), 0.1); }
+        .btn:disabled { background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
         .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-        .timer-display { font-size: 1.2rem; font-weight: 600; background-color: var(--surface-dark); padding: 10px 20px; border-radius: var(--border-radius); border: 1px solid var(--border-color); font-family: var(--font-mono); }
-        .ide-layout { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr auto; gap: 16px; flex-grow: 1; height: calc(100% - 80px); }
-        #problem-details { grid-row: 1 / 2; grid-column: 1 / 2; background-color: var(--surface-dark); border-radius: var(--border-radius); padding: 32px; overflow-y: auto; border: 1px solid var(--border-color); }
-        #editor-container { grid-row: 1 / 3; grid-column: 2 / 3; border-radius: var(--border-radius); overflow: hidden; border: 1px solid var(--border-color); }
-        .bottom-panel { grid-row: 2 / 3; grid-column: 1 / 2; background-color: var(--surface-dark); border-radius: var(--border-radius); border: 1px solid var(--border-color); overflow: hidden; display: flex; flex-direction: column; }
-        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;}
+        
+        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 90px); }
+        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
+        .ide-panel { background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); overflow: hidden; display: flex; flex-direction: column; }
+        #problem-details { flex: 1; padding: 24px; overflow-y: auto; }
+        #problem-details-content { animation: fadeIn 0.5s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; color: var(--text-primary); }
         #problem-statement { line-height: 1.7; color: var(--text-secondary); }
-        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid var(--border-color); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
-        .test-case { background-color: var(--bg-dark); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
-        .tabs { display: flex; border-bottom: 1px solid var(--border-color); background-color: var(--bg-dark); padding: 0 12px; flex-shrink: 0; }
-        .tab { padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); border-bottom: 2px solid transparent; transition: all var(--transition); } .tab.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
-        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; flex-grow: 1; overflow-y: auto; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
+        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid rgba(var(--border-color-rgb), 0.8); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
+        .test-case { background-color: rgba(var(--surface-light-rgb), 0.4); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
+        #editor-container { flex: 1; }
+        .resizer { background: transparent; display: flex; align-items: center; justify-content: center; }
+        #resizer-h { height: 16px; cursor: row-resize; } #resizer-h::before { content: '•••'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        #resizer-v { width: 16px; cursor: col-resize; } #resizer-v::before { content: '⋮'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        .bottom-panel { flex-shrink: 0; display: flex; flex-direction: column; }
+        .tabs { display: flex; padding: 0 12px; background-color: var(--bg-dark); }
+        .tab { position: relative; padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all var(--transition-fast); } .tab::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); transform: scaleX(0); transition: transform var(--transition-fast); } .tab.active { color: var(--text-primary); } .tab.active::after { transform: scaleX(1); }
+        .tab-content-area { flex-grow: 1; overflow-y: auto; }
+        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
         #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-        #results-summary.success { background-color: rgba(var(--success-light-rgb), 0.1); color: var(--success); } #results-summary.failure { background-color: rgba(var(--danger-light-rgb), 0.1); color: var(--danger); }
-        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: var(--bg-dark); border: 1px solid var(--border-color); border-radius: var(--border-radius); margin-bottom: 8px; }
+        #results-summary.success { background-color: rgba(var(--success-rgb), 0.1); color: rgb(var(--success-rgb)); border-left: 4px solid rgb(var(--success-rgb)); } #results-summary.failure { background-color: rgba(var(--danger-rgb), 0.1); color: rgb(var(--danger-rgb)); border-left: 4px solid rgb(var(--danger-rgb)); }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: rgba(var(--surface-light-rgb), 0.3); border-radius: var(--border-radius); margin-bottom: 8px; }
         .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
-        .status-pass { color: var(--success); background-color: rgba(var(--success-light-rgb), 0.1); } .status-fail { color: var(--danger); background-color: rgba(var(--danger-light-rgb), 0.1); }
-        .results-page { display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; height: 100%; }
-        .results-page.active { display: flex; }
-        .results-card { background-color: var(--surface-dark); padding: 4rem; border-radius: var(--border-radius); border: 1px solid var(--border-color); }
-        .results-card h1 { font-size: 2.5rem; font-weight: 700; }
-        .results-card .score { font-size: 4rem; font-weight: 800; margin: 1rem 0; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; color: transparent; }
-        .results-card p { color: var(--text-secondary); }
-        .results-card .back-btn { margin-top: 2rem; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; border: none; }
-        .proctoring-overlay { position: fixed; inset: 0; z-index: 10000; background-color: rgba(17, 24, 39, 0.8); backdrop-filter: blur(8px); display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
-        .proctoring-overlay.active { display: flex; }
-        .proctoring-content { max-width: 500px; } .proctoring-content h2 { font-size: 2rem; color: var(--warning); margin-bottom: 1rem; }
-        .proctoring-content p { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 2rem; }
-        .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
-        @media (max-width: 800px) {
-            .main-content { padding: 0; padding-bottom: 70px; }
-            .main-header { padding: 12px 16px; margin-bottom: 0; border-radius: 0; }
-            .ide-layout { display: flex; flex-direction: column; height: 100%; gap: 0; }
-            .mobile-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; height: 70px; background-color: var(--surface-dark); border-top: 1px solid var(--border-color); z-index: 100; }
-            .mobile-nav-btn { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: var(--text-secondary); transition: color var(--transition); }
-            .mobile-nav-btn svg { width: 24px; height: 24px; }
-            .mobile-nav-btn span { font-size: 0.75rem; font-weight: 500; }
-            .mobile-nav-btn.active { color: var(--text-primary); }
-            #problem-details, #editor-container, .bottom-panel { display: none; flex-direction: column; }
+        .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
+        
+        #results-overlay, #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        #results-overlay.show, #fullscreen-overlay.show { display: flex; opacity: 1; }
+        .results-card, .fullscreen-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
+        .results-card h2, .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p, .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
+        .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
+        .final-status.solved { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); }
+        .final-status.attempted { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
+        .final-status.not-attempted { color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 1); }
+        
+        #alert-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .advanced-alert { display: flex; align-items: flex-start; width: 350px; max-width: 90vw; background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(10px); border-radius: var(--border-radius); padding: 16px; border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; position: relative; overflow: hidden; }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .advanced-alert.fade-out { animation: slideOutRight 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) both; }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+        .alert-icon { flex-shrink: 0; width: 24px; height: 24px; margin-right: 12px; }
+        .alert-content { flex-grow: 1; }
+        .alert-title { font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+        .alert-message { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+        .alert-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background-color: rgba(255,255,255,0.2); }
+        .alert-progress::after { content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: currentColor; animation: progressShrink 5s linear forwards; }
+        @keyframes progressShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        .advanced-alert.alert-warning { border-color: rgb(var(--warning-rgb)); color: rgb(var(--warning-rgb)); }
+        .advanced-alert.alert-error { border-color: rgb(var(--danger-rgb)); color: rgb(var(--danger-rgb)); }
+        
+        .mobile-header, .mobile-nav, .mobile-footer { display: none; }
+        .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        
+        @media (max-width: 900px) {
+            .main-header { display: none; }
+            .ide-layout { height: 100%; }
+            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
+            .main-content { padding: 0; height: 100%; }
+            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
+            .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
+            .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
+            
+            .ide-layout { display: flex; flex-direction: column; }
+            .top-panel { display: flex; flex-grow: 1; min-height: 0; background: transparent; backdrop-filter: none; border: none; }
+            .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; border: none; background: transparent; backdrop-filter: none; }
+            .bottom-panel { margin: 0 16px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); }
+            #problem-details, #editor-container { padding: 0 16px 16px; }
             .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
-            #problem-details { padding: 24px 16px; }
-            .bottom-panel { border-radius: 0; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: var(--shadow-lg); } .sidebar.active { transform: translateX(0); }
-            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--surface-light); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
-            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
-            .menu-toggle { display: flex; }
-            .header-title { display: none; }
-            .controls .btn.run-btn { padding: 0; width: 40px; height: 40px; justify-content: center; border-radius: 50%; } .controls .btn.run-btn .btn-text { display: none; }
-            .controls .btn.end-exam-btn { padding: 10px 16px; }
+            
+            #resizer-h, #resizer-v { display: none; }
+            
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); } .sidebar.active { transform: translateX(0); }
+            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(var(--surface-light-rgb), 0.8); border-radius: 50%; color: white; cursor: pointer; z-index: 1001; } .close-menu-btn svg { width: 18px; height: 18px; }
+            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity var(--transition-smooth); } .overlay.active { opacity: 1; pointer-events: auto; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
+            
+            .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
+            .mobile-footer.active { display: flex; }
+            .mobile-footer .btn { flex: 1; }
+            
+            .results-card, .fullscreen-card { padding: 24px; } .results-card h2, .fullscreen-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay"><div class="loading-spinner"></div><p>Initializing Environment...</p></div>
+    <div class="aurora-bg"></div>
+    <div id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Initializing Environment...</p>
+    </div>
+    <div id="alert-container"></div>
     <div style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
             <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
             <symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol>
             <symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol>
+            <symbol id="icon-solved-check" viewBox="0 0 24 24" fill="none"><path d="M7 13L10 16L17 9" stroke="rgb(var(--success-rgb))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="rgb(var(--success-rgb))" stroke-width="2"></circle></symbol>
+            <symbol id="icon-attempted-x" viewBox="0 0 24 24" fill="none"><path d="M15 9L9 15M9 9L15 15" stroke="rgb(var(--danger-rgb))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="rgb(var(--danger-rgb))" stroke-width="2"></circle></symbol>
             <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
             <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
-            <symbol id="icon-problem" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></symbol>
-            <symbol id="icon-code" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></symbol>
-            <symbol id="icon-results" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></symbol>
+            <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-shield-warning" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 00-1-1H9a1 1 0 000 2h1a1 1 0 001-1z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-info-circle" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /></symbol>
         </svg>
     </div>
-    <main class="ide-dashboard" style="display: none;">
+
+    <main class="ide-dashboard" id="ide-dashboard">
         <aside class="sidebar" id="sidebar">
             <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
-            <div class="sidebar-header"><h1 class="test-title" id="assignment-title"></h1></div>
+            <div class="sidebar-header"><h1 class="test-title" id="assignment-title">Problem Set</h1></div>
             <nav><ul class="problem-nav" id="problem-list"></ul></nav>
-            <div class="sidebar-footer">
-                <button id="submit-assignment-btn" class="btn submit-problem-btn" disabled>Submit Assignment</button>
-            </div>
         </aside>
-        <div class="main-content" id="main-content-ide">
+        <div class="main-content">
             <header class="main-header">
-                <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                <h1 class="header-title" id="main-header-title"></h1>
+                <div class="header-title-group">
+                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                    <h1 class="header-title" id="main-header-title"></h1>
+                </div>
+                <div class="proctor-info">
+                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">00:00:00</span></div>
+                    <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left">5</span></div>
+                </div>
                 <div class="controls">
-                    <div id="timer" class="timer-display">00:00:00</div>
-                    <button id="run-btn" class="btn run-btn" disabled><div class="loader" style="display: none;"></div><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
-                    <button id="end-exam-btn" class="btn end-exam-btn">End Exam</button>
+                    <button id="end-test-btn" class="btn">End Test</button>
+                    <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                    <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
                 </div>
             </header>
-            <div class="ide-layout">
-                <div id="problem-details" class="mobile-view-active">
-                    <div id="problem-statement"></div>
-                    <h2 style="margin-top: 24px;">Test Cases</h2>
-                    <div id="public-test-cases"></div>
+            
+            <header class="mobile-header">
+                <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                 <div class="proctor-info">
+                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00:00</span></div>
+                    <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="mobile-attempts-left">5</span></div>
                 </div>
-                <div id="editor-container"></div>
-                <div class="bottom-panel">
+                <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
+            </header>
+
+            <div class="mobile-nav">
+                <button class="mobile-nav-btn active" data-view="problem">Problem</button>
+                <button class="mobile-nav-btn" data-view="code">Code</button>
+                <button class="mobile-nav-btn" data-view="results">Results</button>
+            </div>
+
+            <div class="ide-layout">
+                <div class="top-panel">
+                    <div id="problem-details" class="ide-panel mobile-view-active">
+                         <div id="problem-details-content">
+                             <div id="problem-statement"></div>
+                             <h2 style="margin-top: 24px;">Test Cases</h2>
+                             <div id="public-test-cases"></div>
+                         </div>
+                    </div>
+                    <div id="resizer-v" class="resizer"></div>
+                    <div id="editor-container" class="ide-panel"></div>
+                </div>
+                <div id="resizer-h" class="resizer"></div>
+                <div class="bottom-panel ide-panel">
                     <div class="tabs">
                         <div class="tab active" data-tab="results">Test Results</div>
                         <div class="tab" data-tab="console">Console</div>
                     </div>
-                    <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit code to see results.</p></div>
-                    <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
+                    <div class="tab-content-area">
+                        <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit to see results.</p></div>
+                        <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
+                    </div>
                 </div>
             </div>
-            <div class="mobile-nav">
-                <button class="mobile-nav-btn active" data-view="problem"><svg><use href="#icon-problem"></use></svg><span>Problem</span></button>
-                <button class="mobile-nav-btn" data-view="code"><svg><use href="#icon-code"></use></svg><span>Code</span></button>
-                <button class="mobile-nav-btn" data-view="results"><svg><use href="#icon-results"></use></svg><span>Results</span></button>
-            </div>
-        </div>
-        <div class="results-page" id="results-page">
-            <div class="results-card">
-                <h1>Assignment Completed!</h1>
-                <p>You scored</p>
-                <div class="score" id="final-score"></div>
-                <p id="score-details"></p>
-                <a href="#" class="btn back-btn" id="back-to-course-btn">Back to Course</a>
+             <footer class="mobile-footer">
+                <button id="mobile-run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                <button id="mobile-submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
+            </footer>
+            <div id="fullscreen-overlay">
+                <div class="fullscreen-card">
+                    <h2 id="fullscreen-title">Fullscreen Required</h2>
+                    <p id="fullscreen-message">Please enter fullscreen mode to begin the test.</p>
+                    <button id="enter-fullscreen-btn" class="btn submit-btn">Enter Fullscreen & Start</button>
+                </div>
             </div>
         </div>
         <div class="overlay" id="overlay"></div>
     </main>
-    <div id="proctoring-overlay" class="proctoring-overlay">
-        <div class="proctoring-content">
-            <h2 id="proctoring-title"></h2>
-            <p id="proctoring-message"></p>
-            <button id="proctoring-action-btn" class="btn submit-problem-btn"></button>
+    <div id="results-overlay">
+        <div class="results-card">
+            <h2 id="final-result-title">Test Finished</h2>
+            <p id="final-score-message">Here is a summary of your session.</p>
+            <ul class="final-results-list" id="final-results-list"></ul>
+            <a href="#" class="btn submit-btn" id="back-to-course-btn" style="margin-top: 2rem;">Back to Course</a>
         </div>
     </div>
     
@@ -192,13 +286,49 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), endExamBtn: document.getElementById('end-exam-btn'), problemList: document.getElementById('problem-list'), assignmentTitle: document.getElementById('assignment-title'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), submitAssignmentBtn: document.getElementById('submit-assignment-btn'), mainContentIDE: document.getElementById('main-content-ide'), resultsPage: document.getElementById('results-page'), finalScore: document.getElementById('final-score'), scoreDetails: document.getElementById('score-details'), backToCourseBtn: document.getElementById('back-to-course-btn'), timer: document.getElementById('timer'), proctoringOverlay: document.getElementById('proctoring-overlay'), proctoringTitle: document.getElementById('proctoring-title'), proctoringMessage: document.getElementById('proctoring-message'), proctoringActionBtn: document.getElementById('proctoring-action-btn') };
+        const DOMElements = {
+            loadingOverlay: document.getElementById('loading-overlay'),
+            ideDashboard: document.getElementById('ide-dashboard'),
+            editorContainer: document.getElementById('editor-container'),
+            runBtn: document.getElementById('run-btn'), mobileRunBtn: document.getElementById('mobile-run-btn'),
+            submitBtn: document.getElementById('submit-btn'), mobileSubmitBtn: document.getElementById('mobile-submit-btn'),
+            endTestBtn: document.getElementById('end-test-btn'), mobileEndTestBtn: document.getElementById('mobile-end-test-btn'),
+            timer: document.getElementById('timer'), mobileTimer: document.getElementById('mobile-timer'),
+            attemptsLeft: document.getElementById('attempts-left'), mobileAttemptsLeft: document.getElementById('mobile-attempts-left'),
+            assignmentTitle: document.getElementById('assignment-title'),
+            problemList: document.getElementById('problem-list'),
+            mainHeaderTitle: document.getElementById('main-header-title'),
+            problemDetails: document.getElementById('problem-details'),
+            problemDetailsContent: document.getElementById('problem-details-content'),
+            problemStatement: document.getElementById('problem-statement'),
+            publicTestCases: document.getElementById('public-test-cases'),
+            bottomPanel: document.querySelector('.bottom-panel'),
+            resultsContent: document.getElementById('results'),
+            consoleOutput: document.getElementById('console-output'),
+            tabs: document.querySelectorAll('.tab'),
+            menuToggle: document.getElementById('menu-toggle'), mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
+            closeMenuBtn: document.getElementById('close-menu-btn'),
+            sidebar: document.getElementById('sidebar'),
+            overlay: document.getElementById('overlay'),
+            mobileNav: document.querySelector('.mobile-nav'),
+            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'),
+            mobileFooter: document.querySelector('.mobile-footer'),
+            resultsOverlay: document.getElementById('results-overlay'),
+            finalResultTitle: document.getElementById('final-result-title'),
+            finalResultsList: document.getElementById('final-results-list'),
+            finalScoreMessage: document.getElementById('final-score-message'),
+            backToCourseBtn: document.getElementById('back-to-course-btn'),
+            fullscreenOverlay: document.getElementById('fullscreen-overlay'),
+            fullscreenTitle: document.getElementById('fullscreen-title'),
+            fullscreenMessage: document.getElementById('fullscreen-message'),
+            enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'),
+            alertContainer: document.getElementById('alert-container')
+        };
         
-        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, editor, pyodide, solvedProblems = new Set(), subjectPage = '';
-        let timerInterval, isSubmitting = false;
-        const IS_DESKTOP = window.innerWidth > 800;
-        const MAX_ATTEMPTS = 5;
-        
+        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isSubmitting = false, subjectPage = '', isTestEnded = false;
+        const MAX_VIOLATIONS = 5;
+        let violationCount = 0;
+
         async function main() {
             const urlParams = new URLSearchParams(window.location.search);
             assignmentId = urlParams.get('id');
@@ -210,20 +340,17 @@
                     await fetchData();
                     const completedScoreData = await checkIfAssignmentCompleted();
                     if (completedScoreData) {
-                        showResultsPage(completedScoreData);
+                        showResultsPage(completedScoreData, "Assignment Already Completed");
                     } else {
-                        initSecurityListeners();
-                        if (IS_DESKTOP) { initFullscreenEnforcement(); } 
-                        else { initVisibilityChecks(); }
+                        initPyodideAndEditor();
                     }
                 } else { window.location.href = 'index.html'; }
             });
         }
 
         async function startExam() {
-            DOMElements.proctoringOverlay.classList.remove('active');
-            await initPyodideAndEditor();
             initTimer();
+            initSecurityListeners();
         }
 
         async function fetchData() {
@@ -233,17 +360,21 @@
             DOMElements.assignmentTitle.textContent = assignment.name;
 
             const subjectDoc = await db.collection('subjects').doc(assignment.subjectId).get();
-            if(subjectDoc.exists) subjectPage = subjectDoc.data().page;
+            if (subjectDoc.exists) subjectPage = subjectDoc.data().page;
 
             const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
             problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
             scoresSnap.forEach(doc => {
-                if(doc.data().pointsReceived > 0) solvedProblems.add(doc.data().problemId);
+                const data = doc.data();
+                problemStatus[data.problemId] = data.pointsReceived > 0 ? 'solved' : 'attempted';
             });
+             problems.forEach(p => {
+                if (!problemStatus[p.id]) problemStatus[p.id] = 'not-attempted';
+             });
 
-            if(problems.length > 0) { currentProblemId = problems[0].id; } 
+            if (problems.length > 0) { currentProblemId = problems[0].id; } 
             else { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; }
         }
 
@@ -252,114 +383,95 @@
             return scoreQuery.empty ? false : scoreQuery.docs[0].data();
         }
 
-        function showResultsPage(scoreData) {
-            DOMElements.mainContentIDE.style.display = 'none';
-            DOMElements.sidebar.style.display = 'none';
-            DOMElements.resultsPage.classList.add('active');
-            DOMElements.finalScore.textContent = `${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
-            DOMElements.scoreDetails.textContent = `You have successfully completed ${scoreData.problemsSolved} out of ${scoreData.totalProblems} problems.`;
+        function showResultsPage(scoreData, title = "Assignment Completed!") {
+            DOMElements.ideDashboard.style.display = 'flex';
+            const userScore = scoreData.totalScoreObtained;
+            const totalPossibleScore = scoreData.totalScorePossible;
+            DOMElements.finalScoreMessage.textContent = `Final Score: ${userScore} / ${totalPossibleScore}`;
+            DOMElements.finalResultTitle.textContent = title;
+            DOMElements.finalResultsList.innerHTML = `<p>${scoreData.problemsSolved} out of ${scoreData.totalProblems} problems solved.</p>`;
             DOMElements.backToCourseBtn.href = subjectPage || 'dashboard.html';
+            DOMElements.resultsOverlay.classList.add('show');
             DOMElements.loadingOverlay.style.display = 'none';
-            document.querySelector('.ide-dashboard').style.display = 'flex';
         }
-        
+
         function initTimer() {
-            const storageKey = `examEndTime_${assignmentId}`;
+            const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             let endTime = localStorage.getItem(storageKey);
             if (!endTime) {
                 endTime = Date.now() + assignment.duration * 1000;
                 localStorage.setItem(storageKey, endTime);
             }
-
             timerInterval = setInterval(() => {
                 const remaining = endTime - Date.now();
                 if (remaining <= 0) {
                     clearInterval(timerInterval);
-                    DOMElements.timer.textContent = "00:00:00";
+                    updateTimerDisplay(0);
                     submitFinalAssignment("Time limit reached");
                     return;
                 }
-                const hours = Math.floor((remaining / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
-                const minutes = Math.floor((remaining / 1000 / 60) % 60).toString().padStart(2, '0');
-                const seconds = Math.floor((remaining / 1000) % 60).toString().padStart(2, '0');
-                DOMElements.timer.textContent = `${hours}:${minutes}:${seconds}`;
+                updateTimerDisplay(remaining);
             }, 1000);
         }
 
-        function initSecurityListeners() {
-            const preventAction = (e) => e.preventDefault();
-            ['cut', 'copy', 'paste', 'contextmenu', 'dragover', 'drop'].forEach(event => {
-                window.addEventListener(event, preventAction);
-            });
+        function updateTimerDisplay(remainingMs) {
+            const hours = Math.floor((remainingMs / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+            const minutes = Math.floor((remainingMs / 1000 / 60) % 60).toString().padStart(2, '0');
+            const seconds = Math.floor((remainingMs / 1000) % 60).toString().padStart(2, '0');
+            const timeString = `${hours}:${minutes}:${seconds}`;
+            DOMElements.timer.textContent = timeString;
+            DOMElements.mobileTimer.textContent = timeString;
         }
         
-        function getAttemptCount(key) { return parseInt(localStorage.getItem(key) || '0'); }
-        function incrementAttemptCount(key) { const count = getAttemptCount(key) + 1; localStorage.setItem(key, count); return count; }
+        // --- Enhanced Security & Proctoring ---
+        function initSecurityListeners() {
+            checkFullscreen();
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
 
-        function initFullscreenEnforcement() {
-            const storageKey = `fullscreenAttempts_${assignmentId}`;
-            if (!document.fullscreenElement) {
-                showProctoringOverlay(
-                    "Fullscreen Required",
-                    "This exam must be taken in fullscreen mode to ensure a secure environment. Please click below to begin.",
-                    "Enter Fullscreen & Start Exam",
-                    () => document.documentElement.requestFullscreen().catch(err => alert(`Error entering fullscreen: ${err.message}`))
-                );
+            const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
+            document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
+            document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
+            document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
+        }
+
+        function handleViolation(type) {
+            if (isTestEnded) return;
+            violationCount++;
+            const remaining = MAX_VIOLATIONS - violationCount;
+            [DOMElements.attemptsLeft, DOMElements.mobileAttemptsLeft].forEach(el => el.textContent = `${remaining}`);
+            if (violationCount >= MAX_VIOLATIONS) {
+                submitFinalAssignment(`Test ended due to excessive ${type}.`);
+            } else {
+                showAdvancedAlert('warning', 'Proctoring Warning', `${type} detected. (${violationCount}/${MAX_VIOLATIONS} attempts remaining)`);
             }
-
-            document.addEventListener('fullscreenchange', async () => {
-                if (!document.fullscreenElement) {
-                    const attempts = incrementAttemptCount(storageKey);
-                    if (attempts >= MAX_ATTEMPTS) {
-                        await submitFinalAssignment("Exceeded fullscreen exit limit");
-                    } else {
-                        showProctoringOverlay(
-                            "Warning: Fullscreen Exited",
-                            `You have left fullscreen mode. Please re-enter to continue the exam. You have ${MAX_ATTEMPTS - attempts} attempts remaining.`,
-                            "Re-enter Fullscreen",
-                            () => document.documentElement.requestFullscreen()
-                        );
-                    }
-                } else {
-                    if (!editor) { await startExam(); }
-                    else { DOMElements.proctoringOverlay.classList.remove('active'); }
-                }
-            });
+        }
+        function handleVisibilityChange() { if (document.hidden) handleViolation('Tab switching'); }
+        function handleFullscreenChange() {
+            if (document.fullscreenElement) {
+                DOMElements.fullscreenOverlay.classList.remove('show');
+            } else if (!isTestEnded) {
+                handleViolation('Fullscreen exit');
+                DOMElements.fullscreenTitle.textContent = 'Exam Paused';
+                DOMElements.fullscreenMessage.textContent = 'Please re-enter fullscreen mode to resume the test.';
+                DOMElements.fullscreenOverlay.classList.add('show');
+            }
+        }
+        function checkFullscreen() { if (!document.fullscreenElement) DOMElements.fullscreenOverlay.classList.add('show'); }
+        
+        function showAdvancedAlert(type, title, message) {
+            const alertId = `alert-${Date.now()}`;
+            const alertEl = document.createElement('div');
+            alertEl.id = alertId;
+            alertEl.className = `advanced-alert alert-${type}`;
+            const iconId = type === 'warning' ? '#icon-alert-triangle' : '#icon-info-circle';
+            alertEl.innerHTML = `<div class="alert-icon"><svg><use href="${iconId}"></use></svg></div><div class="alert-content"><div class="alert-title">${title}</div><div class="alert-message">${message}</div></div><div class="alert-progress"></div>`;
+            DOMElements.alertContainer.appendChild(alertEl);
+            setTimeout(() => { const elToRemove = document.getElementById(alertId); if (elToRemove) { elToRemove.classList.add('fade-out'); elToRemove.addEventListener('animationend', () => elToRemove.remove()); } }, 5000);
         }
 
-        function initVisibilityChecks() {
-            const storageKey = `visibilityAttempts_${assignmentId}`;
-            document.addEventListener('visibilitychange', async () => {
-                if (document.hidden) {
-                    const attempts = incrementAttemptCount(storageKey);
-                    if (attempts >= MAX_ATTEMPTS) {
-                        await submitFinalAssignment("Exceeded tab switch limit");
-                    } else {
-                         showProctoringOverlay(
-                            "Warning: Tab Switched",
-                            `You have switched tabs. Please return to the exam immediately. You have ${MAX_ATTEMPTS - attempts} attempts remaining.`,
-                            "I Understand",
-                            () => DOMElements.proctoringOverlay.classList.remove('active')
-                        );
-                    }
-                }
-            });
-             showProctoringOverlay(
-                "Mobile Exam",
-                `Please stay on this page for the duration of the exam. Switching tabs or apps ${MAX_ATTEMPTS} times will result in automatic submission.`,
-                "Start Exam",
-                startExam
-            );
-        }
-
-        function showProctoringOverlay(title, message, buttonText, onAction) {
-            DOMElements.proctoringTitle.textContent = title;
-            DOMElements.proctoringMessage.textContent = message;
-            DOMElements.proctoringActionBtn.textContent = buttonText;
-            DOMElements.proctoringActionBtn.onclick = onAction;
-            DOMElements.proctoringOverlay.classList.add('active');
-        }
-
+        // --- Pyodide & Editor Initialization ---
         async function initPyodideAndEditor() {
             if (!problems.length) return;
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
@@ -368,86 +480,187 @@
             
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-            window.MonacoEnvironment = { getWorkerUrl: () => `vs/base/worker/workerMain.js` };
-
             require(['vs/editor/editor.main'], () => {
-                editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
+                monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [{ background: '0D1117' }], colors: { 'editor.background': '#0D1117' } });
+                editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
                 DOMElements.loadingOverlay.style.opacity = '0';
                 setTimeout(() => DOMElements.loadingOverlay.style.display = 'none', 300);
-                document.querySelector('.ide-dashboard').style.display = 'flex';
+                DOMElements.ideDashboard.style.display = 'flex';
                 init();
             });
         }
-
+        
         function init() {
             problems.forEach(p => { if (!userCodeState[p.id]) userCodeState[p.id] = p.starterCode; });
             renderProblemList();
             loadProblem(currentProblemId);
             initEventListeners();
-            DOMElements.runBtn.disabled = false;
-            updateSubmitAssignmentButton();
+            DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
+            DOMElements.mobileRunBtn.disabled = false; DOMElements.mobileSubmitBtn.disabled = false;
+            setMobileView('problem');
+            startExam();
         }
-
+        
+        // --- UI Event Listeners & Handlers ---
         function initEventListeners() {
-            DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
-            DOMElements.endExamBtn.addEventListener('click', () => {
-                if (confirm("Are you sure you want to end the exam? Your current progress will be submitted.")) {
-                    submitFinalAssignment("User ended exam");
-                }
-            });
+            [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
+            [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
+            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => { if(confirm("Are you sure you want to end the test? This action cannot be undone.")){ submitFinalAssignment("User ended test manually"); } }));
             DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
             DOMElements.problemList.addEventListener('click', handleProblemSelect);
-            DOMElements.submitAssignmentBtn.addEventListener('click', () => submitFinalAssignment("User submitted final"));
+            [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
             const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
-            DOMElements.menuToggle.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); });
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
-            DOMElements.mobileNavBtns.forEach(btn => btn.addEventListener('click', (e) => setMobileView(e.currentTarget.dataset.view)));
+            DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
+            DOMElements.enterFullscreenBtn.addEventListener('click', () => { document.documentElement.requestFullscreen().catch(err => alert(`Could not enter fullscreen: ${err.message}`)); });
+            initResizers();
+        }
+
+        function isProblemUnlocked(problemId) {
+            // Sequential unlocking logic
+            const problemIndex = problems.findIndex(p => p.id === problemId);
+            if (problemIndex === 0) return true;
+            const prevProblemId = problems[problemIndex - 1].id;
+            return problemStatus[prevProblemId] === 'solved'; // or 'attempted' to unlock on any submission
         }
 
         function renderProblemList() {
-            DOMElements.problemList.innerHTML = problems.map((p, i) => `
-                <li class="problem-item ${solvedProblems.has(p.id) ? 'solved' : ''}" data-id="${p.id}">
-                    <div class="problem-item-header">
-                        <div class="p-number">${i + 1}</div>
-                        <div class="p-title-wrapper"><div class="p-title">${p.title}</div><div class="p-points">${p.points} pts</div></div>
-                        <div class="p-status"><svg><use href="#icon-check"></use></svg></div>
-                    </div>
-                    <div class="problem-item-footer">
-                         <button class="btn submit-problem-btn" data-id="${p.id}"><div class="loader" style="display: none;"></div><svg><use href="#icon-send"></use></svg><span class="btn-text">${solvedProblems.has(p.id) ? 'Solved' : 'Submit Problem'}</span></button>
-                    </div>
-                </li>`).join('');
-            document.querySelectorAll('.problem-item.solved .p-status').forEach(el => el.style.opacity = '1');
-            DOMElements.problemList.querySelectorAll('.submit-problem-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (solvedProblems.has(e.currentTarget.dataset.id)) return;
-                    if(e.currentTarget.closest('.problem-item').dataset.id === currentProblemId) { handleExecution(true); } 
-                    else { alert("Please select this problem to submit it."); }
-                });
-            });
+            DOMElements.problemList.innerHTML = problems.map((p, i) => {
+                const status = problemStatus[p.id];
+                const isUnlocked = true; // Set to true to allow non-sequential problem solving. Use isProblemUnlocked(p.id) for sequential.
+                const isActive = p.id === currentProblemId;
+                const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
+                const statusIconHTML = (status === 'solved' || status === 'attempted') ? `<div class="p-status-icon"><svg><use href="${icon}"></use></svg></div>` : '';
+                return `<li class="problem-item ${status} ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}" data-id="${p.id}">
+                            <div class="p-number">${i + 1}</div>
+                            <div class="p-title">${p.title}</div>
+                            ${statusIconHTML}
+                        </li>`;
+            }).join('');
         }
 
-        function loadProblem(problemId) { 
-            if (!problemId) return; if (editor && currentProblemId) userCodeState[currentProblemId] = editor.getValue(); currentProblemId = problemId; const problem = problems.find(p => p.id === problemId); const isSolved = solvedProblems.has(problemId); editor.updateOptions({ readOnly: isSolved }); DOMElements.runBtn.disabled = isSolved; DOMElements.mainHeaderTitle.textContent = problem.title; DOMElements.problemStatement.innerHTML = problem.statement; editor.setValue(userCodeState[problemId]); DOMElements.publicTestCases.innerHTML = problem.testCases.map((tc, i) => tc.hidden ? `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><i>Hidden</i></p></div>` : `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join(''); document.querySelectorAll('.problem-item').forEach(item => item.classList.toggle('active', item.dataset.id === problemId)); DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit code to see results.</p>'; DOMElements.consoleOutput.textContent = 'No console output.'; if (!IS_DESKTOP) setMobileView('problem');
+        function loadProblem(problemId) {
+            if (editor && currentProblemId) userCodeState[currentProblemId] = editor.getValue();
+            currentProblemId = problemId;
+            const problem = problems.find(p => p.id === problemId);
+            const status = problemStatus[problemId];
+            const isSolved = status === 'solved';
+
+            DOMElements.mainHeaderTitle.textContent = problem.title;
+            DOMElements.problemStatement.innerHTML = problem.statement;
+            DOMElements.problemDetailsContent.style.animation = 'none';
+            DOMElements.problemDetailsContent.offsetHeight; 
+            DOMElements.problemDetailsContent.style.animation = null; 
+
+            if (editor) { editor.setValue(userCodeState[problemId]); editor.updateOptions({ readOnly: isSolved }); }
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSolved);
+            
+            DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Public Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
+            
+            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit code to see results.</p>';
+            DOMElements.consoleOutput.textContent = 'No console output.';
+
+            renderProblemList();
+            setMobileView('problem');
         }
+
+        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
         
-        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
-        function setMobileView(view) { DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view)); [DOMElements.problemDetails, DOMElements.editorContainer, DOMElements.bottomPanel].forEach(p => p.classList.remove('mobile-view-active')); if (view === 'problem') DOMElements.problemDetails.classList.add('mobile-view-active'); else if (view === 'code') DOMElements.editorContainer.classList.add('mobile-view-active'); else if (view === 'results') DOMElements.bottomPanel.classList.add('mobile-view-active'); }
-        async function handleExecution(isSubmission) { const btn = isSubmission ? document.querySelector(`.submit-problem-btn[data-id="${currentProblemId}"]`) : DOMElements.runBtn; setLoadingState(true, btn); DOMElements.resultsContent.innerHTML = ''; DOMElements.consoleOutput.textContent = 'Executing...'; pyodide.setStdout({ batched: () => {} }); const problem = problems.find(p => p.id === currentProblemId); const testsToRun = problem.testCases; const results = []; for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); } renderResults(results, isSubmission); setLoadingState(false, btn); document.querySelector('.tab[data-tab="results"]').click(); if (!IS_DESKTOP) setMobileView('results'); }
-        async function executeTestCase(code, testCase, functionName) { let result = { status: 'fail', error: null, output: null }; const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n'); const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`; const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`; try { const capturedOutput = { lines: [] }; let consoleLogs = ''; pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); consoleLogs += msg + '\n'; } }); pyodide.setStderr({ batched: (msg) => { capturedOutput.lines.push(msg); consoleLogs += msg + '\n'; } }); await pyodide.runPythonAsync(fullScript); const outputStr = capturedOutput.lines.join('\n'); const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/); const consoleText = consoleLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim(); DOMElements.consoleOutput.textContent = consoleText || 'No console output.'; if (resultMatch && resultMatch[1]) { const outputJs = JSON.parse(resultMatch[1]); result.output = outputJs; if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass'; } else { result.error = "Execution failed to produce a valid result."; } } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent = e.toString(); } finally { pyodide.setStdout(); pyodide.setStderr(); } return { ...testCase, ...result }; }
-        function renderResults(results, isSubmission) { const passedCount = results.filter(r => r.status === 'pass').length; const totalCount = results.length; const success = passedCount === totalCount; let summaryHTML; if (isSubmission) { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><svg><use href="${success ? '#icon-check' : '#icon-close'}"></use></svg><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; const problem = problems.find(p => p.id === currentProblemId); saveScore(problem, success); } else { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} test cases passed.</div>`; } const resultsHTML = results.map((r, i) => `<div class="result-item"><span>${r.hidden ? `Hidden Test Case #${i + 1}` : `Test Case #${i + 1}`}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join(''); DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML; }
-        async function saveScore(problem, wasCorrect) { const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id); const scoreSnap = await scoreRef.get(); if (!scoreSnap.empty) return; const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() }; try { await db.collection('codeScores').add(scoreData); if (wasCorrect) solvedProblems.add(problem.id); renderProblemList(); updateSubmitAssignmentButton(); } catch (e) { console.error("Error saving score:", e); } }
+        function setMobileView(view) {
+            DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+            const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
+            Object.values(views).forEach(panel => panel.classList.remove('mobile-view-active'));
+            if (views[view]) views[view].classList.add('mobile-view-active');
+            DOMElements.mobileFooter.classList.toggle('active', view === 'code');
+        }
 
-        function updateSubmitAssignmentButton() {
-            const allAttempted = problems.every(p => solvedProblems.has(p.id));
-            DOMElements.submitAssignmentBtn.disabled = !allAttempted;
+        // --- Code Execution & Submission ---
+        async function handleExecution(isSubmission) {
+            setLoadingState(true, isSubmission);
+            DOMElements.resultsContent.innerHTML = '';
+            DOMElements.consoleOutput.textContent = 'No console output.';
+            const problem = problems.find(p => p.id === currentProblemId);
+            const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
+            const results = [];
+            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
+            
+            renderResults(results, isSubmission);
+            
+            if (isSubmission) {
+                const allPassed = results.every(r => r.status === 'pass');
+                await saveScore(problem, allPassed);
+            }
+
+            setLoadingState(false, isSubmission);
+            document.querySelector('.tab[data-tab="results"]').click();
+            setMobileView('results');
+        }
+
+        async function executeTestCase(code, testCase, functionName) {
+            let result = { status: 'fail', error: null, output: null };
+            const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
+            const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
+            const driverCode = `\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
+            const fullScript = code + driverCode;
+            try {
+                const capturedOutput = { lines: [] };
+                let consoleLogs = '';
+                pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); consoleLogs += msg + '\n'; } });
+                await pyodide.runPythonAsync(fullScript);
+                const outputStr = capturedOutput.lines.join('\n');
+                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                const userLogs = outputStr.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
+                const consoleElement = DOMElements.consoleOutput;
+                if(consoleElement.textContent === 'No console output.') consoleElement.textContent = '';
+                if(userLogs) consoleElement.textContent += userLogs + '\n';
+
+                if (resultMatch && resultMatch[1]) {
+                    const outputJs = JSON.parse(resultMatch[1]);
+                    result.output = outputJs;
+                    if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
+                } else { result.error = "Failed to capture result. Check console for errors."; }
+            } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent += `\n--- ERROR ---\n${e.toString()}`; } 
+            finally { pyodide.setStdout(); }
+            return { ...testCase, ...result };
+        }
+
+        function renderResults(results, isSubmission) {
+            const passedCount = results.filter(r => r.status === 'pass').length, totalCount = results.length;
+            const success = passedCount === totalCount;
+            let summaryHTML;
+            if (isSubmission) { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; } 
+            else { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`; }
+            const resultsHTML = results.map((r, i) => {
+                const caseTitle = r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`;
+                const statusIcon = r.status === 'pass' ? '#icon-check' : '#icon-close';
+                return `<div class="result-item"><span>${caseTitle}</span><div class="status status-${r.status}"><svg><use href="${statusIcon}"></use></svg>${r.status.toUpperCase() === 'PASS' ? 'PASSED' : 'FAILED'}</div></div>`;
+            }).join('');
+            DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
+        }
+
+        async function saveScore(problem, wasCorrect) {
+            const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
+            const scoreSnap = await scoreRef.get();
+            if (!scoreSnap.empty && problemStatus[problem.id] === 'solved') return; // Don't overwrite a correct solution
+
+            const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
+            try {
+                if (scoreSnap.empty) { await db.collection('codeScores').add(scoreData); } 
+                else { await scoreSnap.docs[0].ref.update(scoreData); }
+                
+                problemStatus[problem.id] = wasCorrect ? 'solved' : 'attempted';
+                renderProblemList();
+                loadProblem(currentProblemId); // Reload to update readonly state
+            } catch (e) { console.error("Error saving score:", e); }
         }
 
         async function submitFinalAssignment(reason = "Unknown") {
             if (isSubmitting) return;
             isSubmitting = true;
+            isTestEnded = true;
             clearInterval(timerInterval);
+            
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Submitting your assignment...';
             DOMElements.loadingOverlay.style.opacity = '1';
             DOMElements.loadingOverlay.style.display = 'flex';
@@ -456,28 +669,58 @@
             const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
             
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
-            scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
+            const solvedProblemIds = new Set();
+            scoresSnap.forEach(doc => { 
+                const data = doc.data();
+                if(data.pointsReceived > 0) {
+                    totalScoreObtained += data.pointsReceived; 
+                    solvedProblemIds.add(data.problemId);
+                }
+            });
 
             const finalScoreData = {
                 userId: currentUser.uid, assignmentId: assignmentId,
                 assignmentName: assignment.name, subjectId: assignment.subjectId,
                 totalScoreObtained, totalScorePossible,
-                problemsSolved: solvedProblems.size, totalProblems: problems.length,
+                problemsSolved: solvedProblemIds.size, totalProblems: problems.length,
                 completedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 submissionReason: reason
             };
             await db.collection('codeAssignmentScores').add(finalScoreData);
             
-            localStorage.removeItem(`examEndTime_${assignmentId}`);
-            localStorage.removeItem(`fullscreenAttempts_${assignmentId}`);
-            localStorage.removeItem(`visibilityAttempts_${assignmentId}`);
+            localStorage.removeItem(`examEndTime_${currentUser.uid}_${assignmentId}`);
             
-            showResultsPage(finalScoreData);
+            showResultsPage(finalScoreData, "Test Submitted");
         }
 
-        function setLoadingState(isLoading, btn) { const btnText = btn.querySelector('.btn-text'); const loader = btn.querySelector('.loader'); const icon = btn.querySelector('svg'); const problem = problems.find(p => p.id === currentProblemId); const isSolved = solvedProblems.has(problem.id); btn.disabled = isLoading || (isSolved && btn.classList.contains('submit-problem-btn')); if (isLoading) { btnText.textContent = btn.classList.contains('submit-problem-btn') ? 'Submitting...' : 'Running...'; loader.style.display = 'block'; icon.style.display = 'none'; } else { btnText.textContent = btn.classList.contains('submit-problem-btn') ? (isSolved ? 'Solved' : 'Submit Problem') : 'Run'; loader.style.display = 'none'; icon.style.display = 'block'; } }
+        // --- UI Helpers ---
+        function setLoadingState(isLoading, isSubmission) {
+            const btns = isSubmission ? [DOMElements.submitBtn, DOMElements.mobileSubmitBtn] : [DOMElements.runBtn, DOMElements.mobileRunBtn];
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading);
+            btns.forEach(btn => {
+                const btnText = btn.querySelector('.btn-text');
+                if (isLoading) { 
+                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; 
+                    const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); btn.querySelector('svg').style.display = 'none'; 
+                } else { 
+                    btn.querySelector('.loader')?.remove(); 
+                    btnText.textContent = isSubmission ? 'Submit' : 'Run'; 
+                    btn.querySelector('svg').style.display = 'inline-block'; 
+                }
+            });
+        }
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
-        
+        function initResizers() {
+            const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
+            const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
+            const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flex = `0 1 ${Math.max(25, Math.min(75, percentage))}%`; bottomPanel.style.flex = `0 1 ${100 - parseFloat(topPanel.style.flexBasis)}%`; };
+            const onMouseUpH = () => document.removeEventListener('mousemove', onMouseMoveH);
+            resizerH.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveH); document.addEventListener('mouseup', onMouseUpH, { once: true }); });
+            const onMouseMoveV = (e) => { const containerWidth = problemDetails.parentElement.clientWidth, newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; const percentage = newLeftWidth / containerWidth * 100; problemDetails.style.flex = `0 1 ${Math.max(25, Math.min(75, percentage))}%`; editorContainer.style.flex = `0 1 ${100 - parseFloat(problemDetails.style.flexBasis)}%`; };
+            const onMouseUpV = () => document.removeEventListener('mousemove', onMouseMoveV);
+            resizerV.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', onMouseUpV, { once: true }); });
+        }
+
         main();
     </script>
 </body>
