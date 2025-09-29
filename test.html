@@ -449,8 +449,15 @@
 
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
-            if (editor) { editor.setValue(userCodeState[problemId]); editor.updateOptions({ readOnly: isSolved }); }
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSolved);
+            if (editor) { editor.setValue(userCodeState[problemId]); const hasBeenSubmitted = status === 'solved' || status === 'attempted';
+
+// Make editor read-only if problem was already submitted
+editor.updateOptions({ readOnly: hasBeenSubmitted });
+
+// Hide the Run and Submit buttons if problem was already submitted
+[DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => {
+    btn.style.display = hasBeenSubmitted ? 'none' : 'flex';
+});
             
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => {
                 return tc.detailsVisible ? `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>` : `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><i>Hidden</i></p></div>`;
