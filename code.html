@@ -11,8 +11,6 @@
         body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); }
         button { font-family: inherit; cursor: pointer; border: none; background: none; }
         svg { display: block; width: 100%; height: 100%; }
-        
-        /* Overlays and Modals */
         .page-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(17, 24, 39, 0.8); backdrop-filter: blur(8px); z-index: 9998; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1rem; transition: opacity 0.3s; }
         .page-overlay h2 { font-size: 1.75rem; margin-bottom: 1rem; color: var(--text-primary); }
         .page-overlay p { font-size: 1rem; color: var(--text-secondary); max-width: 500px; line-height: 1.6; }
@@ -20,8 +18,6 @@
         .page-overlay .warning-icon { font-size: 4rem; color: var(--warning); margin-bottom: 1rem; }
         .loading-spinner { border: 4px solid var(--surface-light); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Main Layout */
         .ide-dashboard { display: flex; height: 100%; position: relative; }
         .sidebar { width: 320px; background-color: var(--bg-dark); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
         .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
@@ -271,7 +267,7 @@
             if (sessionData.problemOrder) {
                 problems = sessionData.problemOrder.map(id => fetchedProblems.find(p => p.id === id)).filter(Boolean);
             } else {
-                problems = fetchedProblems.sort(() => Math.random() - 0.5); // Shuffle
+                problems = fetchedProblems.sort(() => Math.random() - 0.5);
                 sessionData.problemOrder = problems.map(p => p.id);
                 localStorage.setItem(sessionKey, JSON.stringify(sessionData));
             }
@@ -430,7 +426,6 @@
             }
         }
         
-        // ... (existing executeTestCase and renderResults functions, slightly adapted for new flow)
         async function executeTestCase(code, testCase, functionName) { let result = { status: 'fail', error: null, output: null }; const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n'); const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`; const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`; try { let consoleLogs = ''; pyodide.setStdout({ batched: (msg) => { consoleLogs += msg + '\n'; } }); pyodide.setStderr({ batched: (msg) => { consoleLogs += msg + '\n'; } }); await pyodide.runPythonAsync(fullScript); const resultMatch = consoleLogs.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/); const consoleText = consoleLogs.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim(); DOMElements.consoleOutput.textContent = consoleText || 'No console output.'; if (resultMatch && resultMatch[1]) { const outputJs = JSON.parse(resultMatch[1]); result.output = outputJs; if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass'; } else { result.error = "Execution failed to produce a valid result."; } } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent = e.toString(); } finally { pyodide.setStdout(); pyodide.setStderr(); } return { ...testCase, ...result }; }
         function renderResults(results, isSubmission) { const passedCount = results.filter(r => r.status === 'pass').length; const totalCount = results.length; const success = passedCount === totalCount; let summaryHTML; if (isSubmission) { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><svg><use href="${success ? '#icon-check' : '#icon-close'}"></use></svg><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; } else { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public test cases passed.</div>`; } const resultsHTML = results.map((r, i) => `<div class="result-item"><span>${r.hidden ? `Hidden Test Case #${i + 1}` : `Public Test Case #${i + 1}`}</span><div class="status status-${r.status}"><svg><use href="${r.status === 'pass' ? '#icon-check' : '#icon-close'}"></use></svg>${r.status.toUpperCase()}</div></div>`).join(''); DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML; }
 
@@ -456,7 +451,6 @@
             showResultsPage(finalScoreData, reason);
         }
 
-        // Timer and Proctoring
         function initTimer() {
             const sessionKey = `examSession_${currentUser.uid}_${assignmentId}`;
             let sessionData = JSON.parse(localStorage.getItem(sessionKey)) || {};
@@ -516,7 +510,7 @@
                     document.documentElement.requestFullscreen();
                 }
                 DOMElements.warningOverlay.style.display = 'none';
-                initTimer(); // Re-initialize to resume from correct time
+                initTimer();
             };
         }
 
@@ -528,7 +522,6 @@
             if (remaining <= 1) DOMElements.attemptsDisplay.classList.add('danger');
         }
 
-        // Utility Functions
         function setLoadingState(isLoading, btn, isSubmission) {
             const btnText = btn.querySelector('.btn-text'); const loader = btn.querySelector('.loader'); const icon = btn.querySelector('svg');
             btn.disabled = isLoading;
