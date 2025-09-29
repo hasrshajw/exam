@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCoder IDE - Advanced UI</title>
+    <title>ProCoder IDE - Final Build</title>
     <style>
         :root {
             --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -26,6 +26,8 @@
             --radius-md: 12px;
             --radius-lg: 16px;
             --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --mobile-header-height: 65px;
+            --mobile-nav-height: 74px;
         }
         
         @font-face { font-family: 'Inter'; src: url('https://rsms.me/inter/inter.css'); }
@@ -83,20 +85,20 @@
         .problem-item__status { width: 22px; height: 22px; margin-left: 8px; opacity: 0; transform: scale(0.5); transition: all 0.2s; }
         .problem-item.solved .problem-item__status, .problem-item.attempted .problem-item__status { opacity: 1; transform: scale(1); }
         
-        .mobile-header { position: fixed; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background-color: rgba(var(--surface-color-rgb), 0.6); backdrop-filter: blur(30px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.4); z-index: 100; height: 65px; }
+        .mobile-header { position: fixed; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background-color: rgba(var(--surface-color-rgb), 0.6); backdrop-filter: blur(30px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.4); z-index: 100; height: var(--mobile-header-height); }
         .mobile-header__menu-btn { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(var(--border-color-rgb), 0.5); }
         .mobile-header__menu-btn svg { width: 20px; height: 20px; }
         .proctor-info { display: flex; align-items: center; gap: 12px; }
         .proctor-info__item { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--radius-md); background-color: rgba(var(--border-color-rgb), 0.2); font-family: var(--font-mono); font-size: 0.9rem; color: var(--text-secondary); }
         .proctor-info__item svg { width: 18px; height: 18px; }
         
-        .mobile-nav-container { position: fixed; top: 65px; left: 0; width: 100%; padding: 0 16px 16px 16px; background-color: var(--bg-main); z-index: 99; }
+        .mobile-nav-container { position: fixed; top: var(--mobile-header-height); left: 0; width: 100%; padding: 0 16px 16px 16px; background-color: var(--bg-main); z-index: 99; height: var(--mobile-nav-height); }
         .mobile-nav__tabs { display: flex; background-color: rgba(var(--surface-color-rgb), 0.6); backdrop-filter: blur(30px); border: 1px solid rgba(var(--border-color-rgb), 0.4); border-radius: var(--radius-md); padding: 6px; }
         .mobile-nav__btn { flex: 1; text-align: center; padding: 10px; border-radius: 8px; font-weight: 600; color: var(--text-secondary); transition: all 0.2s; }
         .mobile-nav__btn.is-active { color: var(--text-primary); background-color: rgba(var(--border-color-rgb), 0.4); }
 
-        .main-content { width: 100%; display: flex; flex-direction: column; height: 100vh; padding: 180px 16px 0 16px; }
-        .ide-grid { display: flex; flex-grow: 1; min-height: 0; }
+        .main-content { width: 100%; display: flex; flex-direction: column; height: 100vh; padding: calc(var(--mobile-header-height) + var(--mobile-nav-height)) 16px 0 16px; }
+        .ide-grid { display: flex; flex-grow: 1; min-height: 0; padding-top: 50px; }
         .ide-view { display: none; flex-grow: 1; min-height: 0; }
         .ide-view.is-active { display: flex; flex-direction: column; }
         .ide-view .card { flex-grow: 1; }
@@ -163,16 +165,19 @@
         @media (min-width: 1024px) {
             .mobile-header, .mobile-nav-container, .mobile-footer, .sidebar__close-btn { display: none; }
             .sidebar { position: static; transform: translateX(0); flex-shrink: 0; width: 320px; background-color: transparent; backdrop-filter: none; border: none; }
-            .main-content { flex-grow: 1; padding: 24px 24px 24px 0; height: 100vh; display: flex; flex-direction: column; margin-top: 0; }
+            .main-content { flex-grow: 1; padding: 24px 24px 24px 0; height: 100vh; display: flex; flex-direction: column; }
             .desktop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; }
             .desktop-header__title { font-size: 1.75rem; font-weight: 700; }
-            .ide-grid { display: grid; grid-template-columns: 1fr auto 1fr; grid-template-rows: 3fr auto 2fr; gap: 16px; padding: 0; }
+            .ide-grid { display: grid; grid-template-columns: 1fr 16px 1.2fr; grid-template-rows: 3fr 16px 2fr; gap: 0; padding-top: 0; }
             #problem-view { grid-area: 1 / 1 / 2 / 2; }
-            #resizer-v { display: flex; grid-area: 1 / 2 / 2 / 3; }
+            #resizer-v { display: flex; grid-area: 1 / 2 / 4 / 3; cursor: col-resize; }
             #editor-view { grid-area: 1 / 3 / 4 / 4; }
-            #resizer-h { display: flex; grid-area: 2 / 1 / 3 / 2; }
+            #resizer-h { display: flex; grid-area: 2 / 1 / 3 / 2; cursor: row-resize; }
             #results-view { grid-area: 3 / 1 / 4 / 2; }
             .ide-view { display: flex !important; }
+            .resizer::before { color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+            #resizer-h::before { content: '•••'; }
+            #resizer-v::before { content: '⋮'; }
         }
     </style>
 </head>
@@ -187,7 +192,7 @@
     </div>
 
     <div style="display: none;">
-        <svg xmlns="http://www.w3.org/2000/svg">
+        <svg xmlns="http://www.w.org/2000/svg">
             <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
             <symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol>
             <symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol>
@@ -209,14 +214,14 @@
             <nav class="sidebar__nav"><ul class="problem-list" id="problem-list"></ul></nav>
         </aside>
 
-        <header class="mobile-header">
+        <div class="mobile-header">
             <button class="mobile-header__menu-btn" id="mobile-menu-btn"><svg><use href="#icon-menu"></use></svg></button>
             <div class="proctor-info">
                 <div class="proctor-info__item"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00</span></div>
                 <div class="proctor-info__item"><svg><use href="#icon-shield-warning"></use></svg><span id="mobile-attempts">5</span></div>
             </div>
             <button id="mobile-end-test-btn" class="btn btn--danger" style="padding: 8px 12px; font-size: 0.85rem;">End Test</button>
-        </header>
+        </div>
 
         <div class="mobile-nav-container">
             <div class="mobile-nav__tabs">
@@ -226,7 +231,7 @@
             </div>
         </div>
             
-        <main class="main-content" style="padding-top: 50px;">
+        <main class="main-content">
              <header class="desktop-header">
                 <h1 class="desktop-header__title" id="desktop-header-title"></h1>
                 <div class="proctor-info">
@@ -583,7 +588,7 @@
                 <div class="result-item">
                     <span>${r.hidden ? 'Hidden Test Case' : `Test Case #${i + 1}`}</span>
                     <div class="status-badge status-${r.status}">
-                        <svg><use href="#icon-${r.status === 'pass' ? 'check' : 'close'}"></use></svg>
+                        <svg><use href="#icon-check"></use></svg>
                         ${r.status.toUpperCase()}
                     </div>
                 </div>`).join('');
@@ -659,7 +664,6 @@
 
             btns.forEach(btn => {
                 const textEl = btn.querySelector('.btn-text');
-                const originalText = textEl.textContent;
                 const iconEl = btn.querySelector('svg');
 
                 if (isLoading) {
@@ -704,21 +708,22 @@
             if (!resizerH || !resizerV) return;
             const ideGrid = document.querySelector('.ide-grid');
 
-            const onMouseMove = (resizer, dimension) => (e) => {
-                const clientPos = dimension === 'rows' ? e.clientY : e.clientX;
+            const onMouseMove = (dimension) => (e) => {
                 const rect = ideGrid.getBoundingClientRect();
-                const totalSize = dimension === 'rows' ? rect.height : rect.width;
-                const startPos = dimension === 'rows' ? rect.top : rect.left;
+                const isRow = dimension === 'rows';
+                const clientPos = isRow ? e.clientY : e.clientX;
+                const totalSize = isRow ? rect.height : rect.width;
+                const startPos = isRow ? rect.top : rect.left;
                 
                 const pos = clientPos - startPos;
-                const gutterSize = 16;
-                const part1 = (pos - gutterSize/2) / (totalSize - gutterSize) * 100;
-                const part2 = 100 - part1;
-
-                if (dimension === 'rows') {
-                    ideGrid.style.gridTemplateRows = `${part1}fr ${gutterSize}px ${part2}fr`;
+                const gutter = 16; 
+                let part1 = (pos - gutter / 2) / (totalSize - gutter) * 100;
+                part1 = Math.max(20, Math.min(80, part1));
+                
+                if (isRow) {
+                    ideGrid.style.gridTemplateRows = `${part1}% ${gutter}px auto`;
                 } else {
-                    ideGrid.style.gridTemplateColumns = `${part1}fr ${gutterSize}px ${part2}fr`;
+                    ideGrid.style.gridTemplateColumns = `${part1}% ${gutter}px auto`;
                 }
             };
             
@@ -726,14 +731,14 @@
             
             resizerH.addEventListener('mousedown', (e) => {
                 e.preventDefault();
-                const handler = onMouseMove(resizerH, 'rows');
+                const handler = onMouseMove('rows');
                 document.addEventListener('mousemove', handler);
                 document.addEventListener('mouseup', onMouseUp(handler), { once: true });
             });
             
             resizerV.addEventListener('mousedown', (e) => {
                 e.preventDefault();
-                const handler = onMouseMove(resizerV, 'columns');
+                const handler = onMouseMove('columns');
                 document.addEventListener('mousemove', handler);
                 document.addEventListener('mouseup', onMouseUp(handler), { once: true });
             });
