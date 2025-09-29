@@ -18,8 +18,11 @@
             --accent-start: #5850EC;
             --accent-end: #8A2BE2;
             --success-rgb: 35, 134, 54;
+            --success-glow-rgb: 35, 134, 54;
             --danger-rgb: 218, 54, 51;
+            --danger-glow-rgb: 218, 54, 51;
             --warning-rgb: 227, 179, 65;
+            --warning-glow-rgb: 227, 179, 65;
             --border-radius: 8px;
             --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -110,8 +113,23 @@
         .final-status.attempted { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
         .final-status.not-attempted { color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 1); }
         
-        #warning-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: rgb(var(--warning-rgb)); color: black; padding: 16px 24px; border-radius: var(--border-radius); z-index: 10000; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: bottom 0.4s ease-in-out; }
-        #warning-toast.show { bottom: 20px; }
+        /* --- New Advanced Alert System --- */
+        #alert-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .advanced-alert { display: flex; align-items: flex-start; width: 350px; max-width: 90vw; background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(10px); border-radius: var(--border-radius); padding: 16px; border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; position: relative; overflow: hidden; }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .advanced-alert.fade-out { animation: slideOutRight 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) both; }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+        .alert-icon { flex-shrink: 0; width: 24px; height: 24px; margin-right: 12px; }
+        .alert-content { flex-grow: 1; }
+        .alert-title { font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+        .alert-message { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+        .alert-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background-color: rgba(255,255,255,0.2); }
+        .alert-progress::after { content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: currentColor; animation: progressShrink 5s linear forwards; }
+        @keyframes progressShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        
+        .advanced-alert.alert-warning { border-color: rgb(var(--warning-rgb)); color: rgb(var(--warning-rgb)); }
+        .advanced-alert.alert-error { border-color: rgb(var(--danger-rgb)); color: rgb(var(--danger-rgb)); }
+        .advanced-alert.alert-success { border-color: rgb(var(--success-rgb)); color: rgb(var(--success-rgb)); }
         
         .mobile-header, .mobile-nav, .mobile-footer { display: none; }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
@@ -170,7 +188,7 @@
         <p>Initializing Python Environment...</p>
     </div>
 
-    <div id="warning-toast"></div>
+    <div id="alert-container"></div>
 
     <div style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
@@ -183,6 +201,8 @@
             <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
             <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" /></symbol>
             <symbol id="icon-shield-warning" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 00-1-1H9a1 1 0 000 2h1a1 1 0 001-1z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-info-circle" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /></symbol>
         </svg>
     </div>
 
@@ -311,7 +331,7 @@
             finalScoreMessage: document.getElementById('final-score-message'), 
             fullscreenOverlay: document.getElementById('fullscreen-overlay'), 
             enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
-            warningToast: document.getElementById('warning-toast') 
+            alertContainer: document.getElementById('alert-container')
         };
         let currentProblemId = problems[0].id, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, timeLeft = EXAM_DURATION_SECONDS, isTestEnded = false, violationCount = 0;
 
@@ -356,24 +376,45 @@
             if (violationCount >= MAX_VIOLATIONS) {
                 endExam(`Test ended due to excessive ${type}.`);
             } else {
-                showWarningToast(`Warning: ${type} detected. (${violationCount}/${MAX_VIOLATIONS} allowed)`);
+                showAdvancedAlert('warning', 'Proctoring Warning', `${type} detected. (${violationCount}/${MAX_VIOLATIONS} attempts remaining)`);
             }
         }
 
-        function showWarningToast(message) {
-            DOMElements.warningToast.textContent = message;
-            DOMElements.warningToast.classList.add('show');
-            setTimeout(() => DOMElements.warningToast.classList.remove('show'), 4000);
+        function showAdvancedAlert(type, title, message) {
+            const alertId = `alert-${Date.now()}`;
+            const alertEl = document.createElement('div');
+            alertEl.id = alertId;
+            alertEl.className = `advanced-alert alert-${type}`;
+            const iconId = type === 'warning' ? '#icon-alert-triangle' : '#icon-info-circle';
+
+            alertEl.innerHTML = `
+                <div class="alert-icon"><svg><use href="${iconId}"></use></svg></div>
+                <div class="alert-content">
+                    <div class="alert-title">${title}</div>
+                    <div class="alert-message">${message}</div>
+                </div>
+                <div class="alert-progress"></div>
+            `;
+            
+            DOMElements.alertContainer.appendChild(alertEl);
+
+            setTimeout(() => {
+                const elToRemove = document.getElementById(alertId);
+                if (elToRemove) {
+                    elToRemove.classList.add('fade-out');
+                    elToRemove.addEventListener('animationend', () => elToRemove.remove());
+                }
+            }, 5000);
         }
 
-        function handleVisibilityChange() { if (document.hidden) handleViolation('tab switching'); }
+        function handleVisibilityChange() { if (document.hidden) handleViolation('Tab switching'); }
         function handleFullscreenChange() {
             if (document.fullscreenElement) {
                 DOMElements.fullscreenOverlay.classList.remove('show');
                 if (!timerInterval && !isTestEnded) startTimer();
             } else {
                 if (!isTestEnded) {
-                    handleViolation('fullscreen exits');
+                    handleViolation('Fullscreen exits');
                     DOMElements.fullscreenOverlay.classList.add('show');
                 }
             }
@@ -431,7 +472,7 @@
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
             
-            const preventedActionHandler = (e, action) => { e.preventDefault(); showWarningToast(`${action} has been disabled.`); };
+            const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
             document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
             document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
             document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
@@ -543,12 +584,16 @@
                 problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
                 saveSubmission(currentProblemId, DOMElements.resultsContent.innerHTML, problemStatus[currentProblemId]);
                 renderProblemList();
-                const nextProblemIndex = problems.findIndex(p => p.id === currentProblemId) + 1;
-                if (allPassed && nextProblemIndex < problems.length) {
-                    loadProblem(problems[nextProblemIndex].id);
-                } else if (allPassed && nextProblemIndex >= problems.length) {
-                    endExam("Congratulations! All problems solved.");
+                
+                // *** MODIFIED LOGIC: ALWAYS GO TO NEXT PROBLEM ON SUBMIT ***
+                const currentProblemIndex = problems.findIndex(p => p.id === currentProblemId);
+                if (currentProblemIndex < problems.length - 1) {
+                    const nextProblemId = problems[currentProblemIndex + 1].id;
+                    setTimeout(() => loadProblem(nextProblemId), 500); // Small delay to see result
+                } else {
+                    endExam("Test Finished");
                 }
+
             } else if (problemStatus[currentProblemId] !== 'solved') {
                 problemStatus[currentProblemId] = 'attempted';
             }
