@@ -45,9 +45,8 @@
 
         .ide-dashboard { display: flex; height: 100%; position: relative; background: rgba(13, 17, 23, 0.8); backdrop-filter: blur(20px); }
         .sidebar { width: 320px; background-color: rgba(13, 17, 23, 0.8); border-right: 1px solid var(--border-color); color: var(--text-primary); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; }
-        .sidebar-header { margin-bottom: 16px; padding-left: 12px; }
+        .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
         .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
-        #end-test-btn-sidebar { width: 100%; margin-bottom: 24px; }
         .sidebar nav { flex-grow: 1; overflow-y: auto; }
         .problem-nav { list-style: none; }
         .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), color var(--transition), opacity var(--transition), box-shadow var(--transition), border-color var(--transition); border: 1px solid transparent; }
@@ -109,29 +108,22 @@
         #warning-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--warning); color: black; padding: 16px 24px; border-radius: var(--border-radius); z-index: 10000; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: bottom 0.4s ease-in-out; }
         #warning-toast.show { bottom: 20px; }
         
-        .mobile-header, .mobile-footer, .mobile-nav { display: none; }
-        .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
         
         @media (max-width: 800px) {
-            .main-content { padding: 70px 0 80px 0; }
+            .main-content { padding: 70px 16px 16px; }
+            .main-header { position: fixed; top: 0; left: 0; width: 100%; background: var(--bg-dark); padding: 12px 16px; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.2); gap: 12px; margin-bottom: 0; }
+            .header-bottom-row { justify-content: flex-end; }
+            .menu-toggle { position: absolute; left: 16px; }
             .ide-layout { height: 100%; }
-            .mobile-header { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 70px; background-color: rgba(13, 17, 23, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); align-items: center; justify-content: space-between; padding: 0 16px; z-index: 100; }
-            .mobile-footer { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background-color: rgba(13, 17, 23, 0.8); backdrop-filter: blur(10px); border-top: 1px solid var(--border-color); padding: 12px; gap: 12px; z-index: 100; }
-            .mobile-footer .btn { flex-grow: 1; justify-content: center; }
-            
-            .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin: 0 16px 16px 16px; }
-            .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; text-align: center; font-size: 0.9rem; }
-            .mobile-nav-btn.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
-            .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; padding: 0 16px; }
+            .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
+            .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; }
             .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
-            #problem-details { padding: 16px; }
             #resizer-h, #resizer-v { display: none; }
-            
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: var(--shadow-lg); } .sidebar.active { transform: translateX(0); }
             .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--surface-light); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--border-color); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
-            .main-header { display: none; }
+            .header-title { display: none; }
         }
     </style>
 </head>
@@ -163,28 +155,19 @@
         <aside class="sidebar" id="sidebar">
             <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
             <div class="sidebar-header"><h1 class="test-title">Problem Set</h1></div>
-            <button id="end-test-btn-sidebar" class="btn">End Test</button>
             <nav><ul class="problem-nav" id="problem-list"></ul></nav>
         </aside>
-
-        <div class="mobile-header">
-            <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-            <div class="proctor-info">
-                <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer-mobile">10:00</span></div>
-                <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left-mobile">5</span></div>
-            </div>
-        </div>
-        
         <div class="main-content">
             <header class="main-header">
                 <div class="header-top-row">
                     <div class="proctor-info">
-                        <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer-desktop">10:00</span></div>
-                        <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left-desktop">5 Attempts Left</span></div>
+                        <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">10:00</span></div>
+                        <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left">5 Attempts Left</span></div>
                     </div>
-                    <button id="end-test-btn-desktop" class="btn">End Test</button>
+                    <button id="end-test-btn" class="btn">End Test</button>
                 </div>
                 <div class="header-bottom-row">
+                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
                     <h1 class="header-title" id="main-header-title"></h1>
                     <div class="controls">
                         <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
@@ -225,11 +208,6 @@
                 </div>
             </div>
         </div>
-
-        <footer class="mobile-footer">
-            <button id="run-btn-mobile" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
-            <button id="submit-btn-mobile" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
-        </footer>
         <div class="overlay" id="overlay"></div>
     </main>
     <div id="results-overlay">
@@ -252,23 +230,7 @@
             { id: 'longest-palindrome', title: 'Longest Palindromic Substring', points: 10, statement: `<p>Given a string <code>s</code>, find the longest palindromic substring in <code>s</code>.</p><p>A substring is a contiguous sequence of characters within a string. A palindrome is a sequence that reads the same backward as forward.</p>`, functionName: 'longest_palindrome', starterCode: `def longest_palindrome(s: str) -> str:\n    # This is a hard problem requiring an efficient solution.\n    # A common approach is "expand from center".\n    # print(f"Processing string: {s}")\n    pass`, testCases: [ { input: { s: "babad" }, expected: "bab", hidden: false, detailsVisible: true }, { input: { s: "cbbd" }, expected: "bb", hidden: false, detailsVisible: false }, { input: { s: "a" }, expected: "a", hidden: false, detailsVisible: false }, { input: {s: "mississippi"}, expected: "ississi", hidden: true, detailsVisible: false} ] }
         ];
 
-        const DOMElements = { 
-            loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), 
-            runBtns: [document.getElementById('run-btn'), document.getElementById('run-btn-mobile')], 
-            submitBtns: [document.getElementById('submit-btn'), document.getElementById('submit-btn-mobile')],
-            endTestBtns: [document.getElementById('end-test-btn-desktop'), document.getElementById('end-test-btn-sidebar')],
-            timers: [document.getElementById('timer-desktop'), document.getElementById('timer-mobile')],
-            attemptsLefts: [document.getElementById('attempts-left-desktop'), document.getElementById('attempts-left-mobile')],
-            problemList: document.getElementById('problem-list'), mainHeaderTitle: document.getElementById('main-header-title'), 
-            problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), 
-            bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), 
-            tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), 
-            sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNav: document.querySelector('.mobile-nav'), 
-            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), resultsOverlay: document.getElementById('results-overlay'), 
-            finalResultsList: document.getElementById('final-results-list'), finalScoreMessage: document.getElementById('final-score-message'), 
-            fullscreenOverlay: document.getElementById('fullscreen-overlay'), enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
-            warningToast: document.getElementById('warning-toast') 
-        };
+        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), endTestBtn: document.getElementById('end-test-btn'), timer: document.getElementById('timer'), attemptsLeft: document.getElementById('attempts-left'), problemList: document.getElementById('problem-list'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNav: document.querySelector('.mobile-nav'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), resultsOverlay: document.getElementById('results-overlay'), finalResultsList: document.getElementById('final-results-list'), finalScoreMessage: document.getElementById('final-score-message'), fullscreenOverlay: document.getElementById('fullscreen-overlay'), enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), warningToast: document.getElementById('warning-toast') };
         let currentProblemId = problems[0].id, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, timeLeft = EXAM_DURATION_SECONDS, isTestEnded = false, violationCount = 0;
 
         async function initPyodide() {
@@ -291,8 +253,7 @@
             renderProblemList();
             loadProblem(currentProblemId);
             initEventListeners();
-            DOMElements.runBtns.forEach(btn => btn.disabled = false); 
-            DOMElements.submitBtns.forEach(btn => btn.disabled = false);
+            DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
             setMobileView('problem');
             checkFullscreen();
         }
@@ -301,10 +262,7 @@
             if (isTestEnded) return;
             violationCount++;
             const remaining = MAX_VIOLATIONS - violationCount;
-            DOMElements.attemptsLefts.forEach(el => {
-                const text = window.innerWidth <= 800 ? remaining : `${remaining} Attempt${remaining !== 1 ? 's' : ''} Left`;
-                el.textContent = text;
-            });
+            DOMElements.attemptsLeft.textContent = `${remaining} Attempt${remaining !== 1 ? 's' : ''} Left`;
             if (violationCount > MAX_VIOLATIONS) {
                 endExam(`Test ended due to excessive ${type}.`);
             } else {
@@ -344,14 +302,14 @@
         
         function saveSubmission(problemId, resultsHTML, status) { localStorage.setItem(`submission-${problemId}`, JSON.stringify({ code: editor.getValue(), resultsHTML: resultsHTML, status: status, savedAt: new Date().toISOString() })); }
         function startTimer() { updateTimerDisplay(); timerInterval = setInterval(() => { timeLeft--; updateTimerDisplay(); if (timeLeft <= 0) { endExam("Time's up!"); } }, 1000); }
-        function updateTimerDisplay() { const minutes = Math.floor(timeLeft / 60); const seconds = timeLeft % 60; DOMElements.timers.forEach(t => t.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`); }
+        function updateTimerDisplay() { const minutes = Math.floor(timeLeft / 60); const seconds = timeLeft % 60; DOMElements.timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; }
         
         function endExam(title = "Test Finished") {
             if(isTestEnded) return;
             isTestEnded = true;
             clearInterval(timerInterval);
             editor.updateOptions({ readOnly: true });
-            [...DOMElements.runBtns, ...DOMElements.submitBtns, ...DOMElements.endTestBtns].forEach(btn => btn.disabled = true);
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn].forEach(btn => btn.disabled = true);
             updateAttemptedStatus();
 
             const userScore = problems.reduce((score, problem) => problemStatus[problem.id] === 'solved' ? score + problem.points : score, 0);
@@ -371,9 +329,9 @@
         }
 
         function initEventListeners() {
-            DOMElements.runBtns.forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
-            DOMElements.submitBtns.forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
-            DOMElements.endTestBtns.forEach(btn => btn.addEventListener('click', () => endExam()));
+            DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
+            DOMElements.submitBtn.addEventListener('click', () => handleExecution(true));
+            DOMElements.endTestBtn.addEventListener('click', () => endExam());
             DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
             DOMElements.problemList.addEventListener('click', handleProblemSelect);
             DOMElements.menuToggle.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); });
@@ -407,12 +365,13 @@
                 const status = problemStatus[p.id];
                 const isUnlocked = isProblemUnlocked(p.id);
                 const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
-                return `<li class="problem-item ${status} ${!isUnlocked ? 'locked' : ''} ${p.id === currentProblemId ? 'active' : ''}" data-id="${p.id}">
+                return `<li class="problem-item ${status} ${!isUnlocked ? 'locked' : ''}" data-id="${p.id}">
                             <div class="p-number">${i + 1}</div>
                             <div class="p-title">${p.title}</div>
                             <div class="p-status-icon"><svg><use href="${icon}"></use></svg></div>
                         </li>`;
             }).join('');
+            document.querySelector(`.problem-item[data-id="${currentProblemId}"]`)?.classList.add('active');
         }
         
         function updateAttemptedStatus() {
@@ -431,8 +390,7 @@
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             if (editor) { editor.setValue(userCodeState[problemId]); editor.updateOptions({ readOnly: isSolved }); }
-            DOMElements.runBtns.forEach(btn => btn.disabled = isSolved); 
-            DOMElements.submitBtns.forEach(btn => btn.disabled = isSolved);
+            DOMElements.runBtn.disabled = isSolved; DOMElements.submitBtn.disabled = isSolved;
             
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => {
                 return tc.detailsVisible ? `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>` : `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><i>Hidden</i></p></div>`;
@@ -448,8 +406,8 @@
                 DOMElements.consoleOutput.textContent = 'No console output.';
             }
 
-            setMobileView('problem');
             renderProblemList();
+            setMobileView('problem');
         }
         
         function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
@@ -488,7 +446,9 @@
 
             setLoadingState(false, isSubmission);
             document.querySelector('.tab[data-tab="results"]').click();
-            setMobileView('results');
+            if(window.innerWidth <= 800) {
+                setMobileView(isSubmission ? 'problem' : 'results');
+            }
         }
         
         async function executeTestCase(code, testCase, functionName) {
@@ -537,21 +497,11 @@
         }
 
         function setLoadingState(isLoading, isSubmission) {
-            const btns = isSubmission ? DOMElements.submitBtns : DOMElements.runBtns;
-            DOMElements.runBtns.forEach(btn => btn.disabled = isLoading);
-            DOMElements.submitBtns.forEach(btn => btn.disabled = isLoading);
-            btns.forEach(btn => {
-                const btnText = btn.querySelector('.btn-text');
-                if (isLoading) {
-                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
-                    const loader = document.createElement('div'); loader.className = 'loader';
-                    btn.prepend(loader); btn.querySelector('svg').style.display = 'none';
-                } else {
-                    btn.querySelector('.loader')?.remove();
-                    btnText.textContent = isSubmission ? 'Submit' : 'Run';
-                    btn.querySelector('svg').style.display = 'inline-block';
-                }
-            });
+            const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
+            const btnText = btn.querySelector('.btn-text');
+            DOMElements.runBtn.disabled = isLoading; DOMElements.submitBtn.disabled = isLoading;
+            if (isLoading) { btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); btn.querySelector('svg').style.display = 'none'; } 
+            else { btn.querySelector('.loader')?.remove(); btnText.textContent = isSubmission ? 'Submit' : 'Run'; btn.querySelector('svg').style.display = 'inline-block'; }
         }
         
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
