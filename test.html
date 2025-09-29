@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>ProCoder IDE - Proctored Exam</title>
     <style>
         :root {
@@ -49,7 +49,7 @@
         .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; }
         .sidebar nav { flex-grow: 1; overflow-y: auto; }
         .problem-nav { list-style: none; }
-        .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), color var(--transition), opacity var(--transition), box-shadow var(--transition); border: 1px solid transparent; }
+        .problem-item { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: background-color var(--transition), color var(--transition), opacity var(--transition), box-shadow var(--transition), border-color var(--transition); border: 1px solid transparent; }
         .problem-item:not(.locked):hover { background-color: var(--surface-dark); }
         .problem-item.active { background-color: var(--surface-dark); color: white; font-weight: 600; border-color: var(--accent-start); box-shadow: 0 0 20px rgba(var(--accent-glow-rgb), 0.25); }
         .problem-item.locked { cursor: not-allowed; opacity: 0.5; }
@@ -108,14 +108,23 @@
         #warning-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--warning); color: black; padding: 16px 24px; border-radius: var(--border-radius); z-index: 10000; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: bottom 0.4s ease-in-out; }
         #warning-toast.show { bottom: 20px; }
         
-        .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        .mobile-nav, .mobile-footer-controls { display: none; }
+        .menu-toggle, .overlay, .close-menu-btn { display: none; }
         
         @media (max-width: 800px) {
-            .main-content { padding: 16px; }
-            .ide-layout { height: calc(100% - 130px); }
+            .main-content { padding: 16px; padding-bottom: 100px; }
+            .main-header { padding-top: env(safe-area-inset-top, 16px); }
+            .header-top-row { flex-direction: row-reverse; }
+            .header-bottom-row { display: none; }
+            .ide-layout { height: calc(100% - 70px); }
+            
             .mobile-nav { display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 16px; }
             .mobile-nav-btn { flex: 1; padding: 12px; font-weight: 600; color: var(--text-secondary); border-bottom: 2px solid transparent; text-align: center; font-size: 0.9rem; }
-            .mobile-nav-btn.active { color: var(--text-primary); border-bottom-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border-bottom-style: solid; border-bottom-width: 2px; }
+            .mobile-nav-btn.active { color: var(--text-primary); border-bottom-color: var(--accent-start); }
+            
+            .mobile-footer-controls { display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--surface-dark); padding: 16px; padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); border-top: 1px solid var(--border-color); z-index: 100; gap: 12px; }
+            .mobile-footer-controls .btn { flex: 1; justify-content: center; }
+
             .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; }
             .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
             #resizer-h, #resizer-v { display: none; }
@@ -123,6 +132,7 @@
             .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--surface-light); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
             .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--border-color); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
+            #end-test-btn { position: absolute; left: 60px; }
             .header-title { display: none; }
         }
     </style>
@@ -160,6 +170,7 @@
         <div class="main-content">
             <header class="main-header">
                 <div class="header-top-row">
+                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
                     <div class="proctor-info">
                         <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">10:00</span></div>
                         <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left">5 Attempts Left</span></div>
@@ -167,7 +178,6 @@
                     <button id="end-test-btn" class="btn">End Test</button>
                 </div>
                 <div class="header-bottom-row">
-                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
                     <h1 class="header-title" id="main-header-title"></h1>
                     <div class="controls">
                         <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
@@ -200,6 +210,10 @@
                     <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
                 </div>
             </div>
+            <div class="mobile-footer-controls">
+                <button id="mobile-run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                <button id="mobile-submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
+            </div>
             <div id="fullscreen-overlay">
                 <div class="fullscreen-card">
                     <h2>Fullscreen Required</h2>
@@ -230,7 +244,7 @@
             { id: 'longest-palindrome', title: 'Longest Palindromic Substring', points: 10, statement: `<p>Given a string <code>s</code>, find the longest palindromic substring in <code>s</code>.</p><p>A substring is a contiguous sequence of characters within a string. A palindrome is a sequence that reads the same backward as forward.</p>`, functionName: 'longest_palindrome', starterCode: `def longest_palindrome(s: str) -> str:\n    # This is a hard problem requiring an efficient solution.\n    # A common approach is "expand from center".\n    # print(f"Processing string: {s}")\n    pass`, testCases: [ { input: { s: "babad" }, expected: "bab", hidden: false, detailsVisible: true }, { input: { s: "cbbd" }, expected: "bb", hidden: false, detailsVisible: false }, { input: { s: "a" }, expected: "a", hidden: false, detailsVisible: false }, { input: {s: "mississippi"}, expected: "ississi", hidden: true, detailsVisible: false} ] }
         ];
 
-        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), endTestBtn: document.getElementById('end-test-btn'), timer: document.getElementById('timer'), attemptsLeft: document.getElementById('attempts-left'), problemList: document.getElementById('problem-list'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNav: document.querySelector('.mobile-nav'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), resultsOverlay: document.getElementById('results-overlay'), finalResultsList: document.getElementById('final-results-list'), finalScoreMessage: document.getElementById('final-score-message'), fullscreenOverlay: document.getElementById('fullscreen-overlay'), enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), warningToast: document.getElementById('warning-toast') };
+        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), mobileRunBtn: document.getElementById('mobile-run-btn'), mobileSubmitBtn: document.getElementById('mobile-submit-btn'), endTestBtn: document.getElementById('end-test-btn'), timer: document.getElementById('timer'), attemptsLeft: document.getElementById('attempts-left'), problemList: document.getElementById('problem-list'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNav: document.querySelector('.mobile-nav'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), resultsOverlay: document.getElementById('results-overlay'), finalResultsList: document.getElementById('final-results-list'), finalScoreMessage: document.getElementById('final-score-message'), fullscreenOverlay: document.getElementById('fullscreen-overlay'), enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), warningToast: document.getElementById('warning-toast') };
         let currentProblemId = problems[0].id, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, timeLeft = EXAM_DURATION_SECONDS, isTestEnded = false, violationCount = 0;
 
         async function initPyodide() {
@@ -253,7 +267,7 @@
             renderProblemList();
             loadProblem(currentProblemId);
             initEventListeners();
-            DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = false);
             setMobileView('problem');
             checkFullscreen();
         }
@@ -309,7 +323,7 @@
             isTestEnded = true;
             clearInterval(timerInterval);
             editor.updateOptions({ readOnly: true });
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn].forEach(btn => btn.disabled = true);
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.endTestBtn].forEach(btn => btn.disabled = true);
             updateAttemptedStatus();
 
             const userScore = problems.reduce((score, problem) => problemStatus[problem.id] === 'solved' ? score + problem.points : score, 0);
@@ -329,8 +343,9 @@
         }
 
         function initEventListeners() {
-            DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
-            DOMElements.submitBtn.addEventListener('click', () => handleExecution(true));
+            [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
+            [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
+            
             DOMElements.endTestBtn.addEventListener('click', () => endExam());
             DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
             DOMElements.problemList.addEventListener('click', handleProblemSelect);
@@ -365,7 +380,7 @@
                 const status = problemStatus[p.id];
                 const isUnlocked = isProblemUnlocked(p.id);
                 const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
-                return `<li class="problem-item ${status}" data-id="${p.id}" ${!isUnlocked ? 'style="cursor: not-allowed; opacity: 0.5;"' : ''}>
+                return `<li class="problem-item ${status} ${!isUnlocked ? 'locked' : ''}" data-id="${p.id}">
                             <div class="p-number">${i + 1}</div>
                             <div class="p-title">${p.title}</div>
                             <div class="p-status-icon"><svg><use href="${icon}"></use></svg></div>
@@ -385,10 +400,11 @@
             currentProblemId = problemId;
             const problem = problems.find(p => p.id === problemId);
             const isSolved = problemStatus[problemId] === 'solved';
+
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             if (editor) { editor.setValue(userCodeState[problemId]); editor.updateOptions({ readOnly: isSolved }); }
-            DOMElements.runBtn.disabled = isSolved; DOMElements.submitBtn.disabled = isSolved;
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isSolved);
             
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => {
                 return tc.detailsVisible ? `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>` : `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><i>Hidden</i></p></div>`;
@@ -409,7 +425,7 @@
             renderProblemList();
         }
         
-        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.style.cursor) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
+        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
         function setMobileView(view) {
             DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
             [DOMElements.problemDetails, DOMElements.editorContainer, DOMElements.bottomPanel].forEach(p => p.classList.remove('mobile-view-active'));
@@ -445,7 +461,9 @@
 
             setLoadingState(false, isSubmission);
             document.querySelector('.tab[data-tab="results"]').click();
-            setMobileView('results');
+            if(window.innerWidth <= 800) {
+                 isSubmission ? setMobileView('problem') : setMobileView('results');
+            }
         }
         
         async function executeTestCase(code, testCase, functionName) {
@@ -494,11 +512,28 @@
         }
 
         function setLoadingState(isLoading, isSubmission) {
-            const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
-            const btnText = btn.querySelector('.btn-text');
-            DOMElements.runBtn.disabled = isLoading; DOMElements.submitBtn.disabled = isLoading;
-            if (isLoading) { btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); btn.querySelector('svg').style.display = 'none'; } 
-            else { btn.querySelector('.loader')?.remove(); btnText.textContent = isSubmission ? 'Submit' : 'Run'; btn.querySelector('svg').style.display = 'inline-block'; }
+            const btns = [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn];
+            const targetBtn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
+            const mobileTargetBtn = isSubmission ? DOMElements.mobileSubmitBtn : DOMElements.mobileRunBtn;
+            
+            btns.forEach(b => b.disabled = isLoading);
+            
+            if (isLoading) {
+                [targetBtn, mobileTargetBtn].forEach(b => {
+                    const btnText = b.querySelector('.btn-text');
+                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
+                    const loader = document.createElement('div');
+                    loader.className = 'loader';
+                    b.prepend(loader);
+                    b.querySelector('svg').style.display = 'none';
+                });
+            } else {
+                 [targetBtn, mobileTargetBtn].forEach(b => {
+                    b.querySelector('.loader')?.remove();
+                    b.querySelector('.btn-text').textContent = isSubmission ? 'Submit' : 'Run';
+                    b.querySelector('svg').style.display = 'inline-block';
+                });
+            }
         }
         
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
