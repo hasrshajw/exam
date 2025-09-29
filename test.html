@@ -112,23 +112,30 @@
         #warning-toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: var(--warning); color: black; padding: 16px 24px; border-radius: var(--border-radius); z-index: 10000; font-weight: 600; box-shadow: 0 10px 25px rgba(0,0,0,0.3); transition: bottom 0.4s ease-in-out; }
         #warning-toast.show { bottom: 20px; }
         
-        .mobile-nav { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        .mobile-header, .mobile-nav, .mobile-footer { display: none; }
+        .menu-toggle, .overlay, .close-menu-btn { display: none; }
         
         @media (max-width: 900px) {
-            .main-content { padding: 16px; padding-top: 82px; }
-            .ide-layout { height: calc(100% - 60px); }
-            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin-bottom: 16px; padding: 4px; }
+            .main-header { display: none; }
+            .ide-layout { height: 100%; }
+            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
+            .main-content { padding: 0; height: 100%; }
+            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; }
             .mobile-nav-btn { flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
             .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
-            .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; }
+            .ide-layout { display: flex; flex-direction: column; }
+            .top-panel, .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; border: none; background: transparent; backdrop-filter: none; }
+            #problem-details, #editor-container { padding: 0 16px; }
+            .bottom-panel { background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); margin: 0 16px 16px; border: 1px solid rgba(var(--border-color-rgb), 0.5); }
             .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
             #resizer-h, #resizer-v { display: none; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: var(--shadow-lg); } .sidebar.active { transform: translateX(0); }
             .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(var(--surface-light-rgb), 0.8); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn svg { width: 18px; height: 18px; }
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
-            .main-header { position: fixed; top: 16px; left: 16px; right: 16px; width: auto; z-index: 5; margin-bottom: 0; }
-            .header-title { display: none; } .proctor-info { display: none; }
-            .menu-toggle { display: flex; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
+            .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); }
+            .mobile-footer.active { display: flex; }
+            .results-card, .fullscreen-card { padding: 24px; } .results-card h2, .fullscreen-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p { font-size: 1rem; }
         }
     </style>
 </head>
@@ -178,6 +185,16 @@
                     <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
                 </div>
             </header>
+            
+            <header class="mobile-header">
+                <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                 <div class="proctor-info">
+                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">10:00</span></div>
+                    <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="mobile-attempts-left">5</span></div>
+                </div>
+                <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
+            </header>
+
             <div class="mobile-nav">
                 <button class="mobile-nav-btn active" data-view="problem">Problem</button>
                 <button class="mobile-nav-btn" data-view="code">Code</button>
@@ -205,6 +222,10 @@
                     </div>
                 </div>
             </div>
+             <footer class="mobile-footer">
+                <button id="mobile-run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                <button id="mobile-submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
+            </footer>
             <div id="fullscreen-overlay">
                 <div class="fullscreen-card">
                     <h2>Fullscreen Required</h2>
@@ -235,7 +256,37 @@
             { id: 'longest-palindrome', title: 'Longest Palindromic Substring', points: 10, statement: `<p>Given a string <code>s</code>, find the longest palindromic substring in <code>s</code>.</p><p>A substring is a contiguous sequence of characters within a string. A palindrome is a sequence that reads the same backward as forward.</p>`, functionName: 'longest_palindrome', starterCode: `def longest_palindrome(s: str) -> str:\n    # This is a hard problem requiring an efficient solution.\n    # A common approach is "expand from center".\n    # print(f"Processing string: {s}")\n    pass`, testCases: [ { input: { s: "babad" }, expected: "bab", hidden: false, detailsVisible: true }, { input: { s: "cbbd" }, expected: "bb", hidden: false, detailsVisible: false }, { input: { s: "a" }, expected: "a", hidden: false, detailsVisible: false }, { input: {s: "mississippi"}, expected: "ississi", hidden: true, detailsVisible: false} ] }
         ];
 
-        const DOMElements = { loadingOverlay: document.getElementById('loading-overlay'), editorContainer: document.getElementById('editor-container'), runBtn: document.getElementById('run-btn'), submitBtn: document.getElementById('submit-btn'), endTestBtn: document.getElementById('end-test-btn'), timer: document.getElementById('timer'), attemptsLeft: document.getElementById('attempts-left'), problemList: document.getElementById('problem-list'), mainHeaderTitle: document.getElementById('main-header-title'), problemDetails: document.getElementById('problem-details'), problemStatement: document.getElementById('problem-statement'), publicTestCases: document.getElementById('public-test-cases'), bottomPanel: document.querySelector('.bottom-panel'), resultsContent: document.getElementById('results'), consoleOutput: document.getElementById('console-output'), tabs: document.querySelectorAll('.tab'), menuToggle: document.getElementById('menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'), sidebar: document.getElementById('sidebar'), overlay: document.getElementById('overlay'), mobileNav: document.querySelector('.mobile-nav'), mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), resultsOverlay: document.getElementById('results-overlay'), finalResultsList: document.getElementById('final-results-list'), finalScoreMessage: document.getElementById('final-score-message'), fullscreenOverlay: document.getElementById('fullscreen-overlay'), enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), warningToast: document.getElementById('warning-toast') };
+        const DOMElements = { 
+            loadingOverlay: document.getElementById('loading-overlay'), 
+            editorContainer: document.getElementById('editor-container'), 
+            runBtn: document.getElementById('run-btn'), mobileRunBtn: document.getElementById('mobile-run-btn'),
+            submitBtn: document.getElementById('submit-btn'), mobileSubmitBtn: document.getElementById('mobile-submit-btn'),
+            endTestBtn: document.getElementById('end-test-btn'), mobileEndTestBtn: document.getElementById('mobile-end-test-btn'),
+            timer: document.getElementById('timer'), mobileTimer: document.getElementById('mobile-timer'),
+            attemptsLeft: document.getElementById('attempts-left'), mobileAttemptsLeft: document.getElementById('mobile-attempts-left'),
+            problemList: document.getElementById('problem-list'), 
+            mainHeaderTitle: document.getElementById('main-header-title'), 
+            problemDetails: document.getElementById('problem-details'), 
+            problemStatement: document.getElementById('problem-statement'), 
+            publicTestCases: document.getElementById('public-test-cases'), 
+            bottomPanel: document.querySelector('.bottom-panel'), 
+            resultsContent: document.getElementById('results'), 
+            consoleOutput: document.getElementById('console-output'), 
+            tabs: document.querySelectorAll('.tab'), 
+            menuToggle: document.getElementById('menu-toggle'), mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
+            closeMenuBtn: document.getElementById('close-menu-btn'), 
+            sidebar: document.getElementById('sidebar'), 
+            overlay: document.getElementById('overlay'), 
+            mobileNav: document.querySelector('.mobile-nav'), 
+            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), 
+            mobileFooter: document.querySelector('.mobile-footer'),
+            resultsOverlay: document.getElementById('results-overlay'), 
+            finalResultsList: document.getElementById('final-results-list'), 
+            finalScoreMessage: document.getElementById('final-score-message'), 
+            fullscreenOverlay: document.getElementById('fullscreen-overlay'), 
+            enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
+            warningToast: document.getElementById('warning-toast') 
+        };
         let currentProblemId = problems[0].id, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, timeLeft = EXAM_DURATION_SECONDS, isTestEnded = false, violationCount = 0;
 
         async function initPyodide() {
@@ -259,6 +310,7 @@
             loadProblem(currentProblemId);
             initEventListeners();
             DOMElements.runBtn.disabled = false; DOMElements.submitBtn.disabled = false;
+            DOMElements.mobileRunBtn.disabled = false; DOMElements.mobileSubmitBtn.disabled = false;
             setMobileView('problem');
             checkFullscreen();
         }
@@ -267,8 +319,8 @@
             if (isTestEnded) return;
             violationCount++;
             const remaining = MAX_VIOLATIONS - violationCount;
-            DOMElements.attemptsLeft.textContent = `${remaining} Attempt${remaining !== 1 ? 's' : ''} Left`;
-            if (violationCount > MAX_VIOLATIONS) {
+            [DOMElements.attemptsLeft, DOMElements.mobileAttemptsLeft].forEach(el => el.textContent = `${remaining}`);
+            if (violationCount >= MAX_VIOLATIONS) {
                 endExam(`Test ended due to excessive ${type}.`);
             } else {
                 showWarningToast(`Warning: ${type} detected. (${violationCount}/${MAX_VIOLATIONS} allowed)`);
@@ -307,14 +359,14 @@
         
         function saveSubmission(problemId, resultsHTML, status) { localStorage.setItem(`submission-${problemId}`, JSON.stringify({ code: editor.getValue(), resultsHTML: resultsHTML, status: status, savedAt: new Date().toISOString() })); }
         function startTimer() { updateTimerDisplay(); timerInterval = setInterval(() => { timeLeft--; updateTimerDisplay(); if (timeLeft <= 0) { endExam("Time's up!"); } }, 1000); }
-        function updateTimerDisplay() { const minutes = Math.floor(timeLeft / 60); const seconds = timeLeft % 60; DOMElements.timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; }
+        function updateTimerDisplay() { const minutes = Math.floor(timeLeft / 60); const seconds = timeLeft % 60; const timeString = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`; DOMElements.timer.textContent = timeString; DOMElements.mobileTimer.textContent = timeString; }
         
         function endExam(title = "Test Finished") {
             if(isTestEnded) return;
             isTestEnded = true;
             clearInterval(timerInterval);
             editor.updateOptions({ readOnly: true });
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn].forEach(btn => btn.disabled = true);
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
             updateAttemptedStatus();
 
             const userScore = problems.reduce((score, problem) => problemStatus[problem.id] === 'solved' ? score + problem.points : score, 0);
@@ -334,12 +386,13 @@
         }
 
         function initEventListeners() {
-            DOMElements.runBtn.addEventListener('click', () => handleExecution(false));
-            DOMElements.submitBtn.addEventListener('click', () => handleExecution(true));
-            DOMElements.endTestBtn.addEventListener('click', () => endExam());
+            [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
+            [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
+            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => endExam()));
+
             DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
             DOMElements.problemList.addEventListener('click', handleProblemSelect);
-            DOMElements.menuToggle.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); });
+            [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
             const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
@@ -397,7 +450,7 @@
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             if (editor) { editor.setValue(userCodeState[problemId]); editor.updateOptions({ readOnly: isSolved }); }
-            DOMElements.runBtn.disabled = isSolved; DOMElements.submitBtn.disabled = isSolved;
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSolved);
             
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => {
                 return tc.detailsVisible ? `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>` : `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><i>Hidden</i></p></div>`;
@@ -426,6 +479,7 @@
             if (view === 'problem') DOMElements.problemDetails.classList.add('mobile-view-active');
             else if (view === 'code') DOMElements.editorContainer.classList.add('mobile-view-active');
             else if (view === 'results') DOMElements.bottomPanel.classList.add('mobile-view-active');
+            DOMElements.mobileFooter.classList.toggle('active', view === 'code');
         }
 
         async function handleExecution(isSubmission) {
@@ -504,11 +558,23 @@
         }
 
         function setLoadingState(isLoading, isSubmission) {
-            const btn = isSubmission ? DOMElements.submitBtn : DOMElements.runBtn;
-            const btnText = btn.querySelector('.btn-text');
-            DOMElements.runBtn.disabled = isLoading; DOMElements.submitBtn.disabled = isLoading;
-            if (isLoading) { btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); btn.querySelector('svg').style.display = 'none'; } 
-            else { btn.querySelector('.loader')?.remove(); btnText.textContent = isSubmission ? 'Submit' : 'Run'; btn.querySelector('svg').style.display = 'inline-block'; }
+            const btns = isSubmission ? [DOMElements.submitBtn, DOMElements.mobileSubmitBtn] : [DOMElements.runBtn, DOMElements.mobileRunBtn];
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading);
+            
+            btns.forEach(btn => {
+                const btnText = btn.querySelector('.btn-text');
+                if (isLoading) { 
+                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; 
+                    const loader = document.createElement('div'); 
+                    loader.className = 'loader'; 
+                    btn.prepend(loader); 
+                    btn.querySelector('svg').style.display = 'none'; 
+                } else { 
+                    btn.querySelector('.loader')?.remove(); 
+                    btnText.textContent = isSubmission ? 'Submit' : 'Run'; 
+                    btn.querySelector('svg').style.display = 'inline-block'; 
+                }
+            });
         }
         
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
