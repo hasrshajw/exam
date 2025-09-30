@@ -53,14 +53,17 @@
         .active .q-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
         .q-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
         .q-status-icon { width: 20px; height: 20px; margin-left: auto; opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
-        .question-item.answered .q-status-icon { opacity: 1; transform: scale(1); }
+        .question-item.answered .q-status-icon, .question-item.attempted .q-status-icon { opacity: 1; transform: scale(1); }
+        .question-item.answered .q-status-icon { color: rgb(var(--success-rgb)); }
+        .question-item.attempted .q-status-icon { color: rgb(var(--danger-rgb)); }
         .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); padding: 12px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); }
-        .header-title-group { display: flex; align-items: center; gap: 16px; }
-        .timer-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
+        .header-controls { display: flex; align-items: center; gap: 16px; }
+        .timer-container, .attempts-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
         .timer-container.warning { color: rgb(var(--warning-rgb)); } .timer-container.danger { color: rgb(var(--danger-rgb)); animation: pulse-danger 1.5s infinite; }
         @keyframes pulse-danger { 0% { box-shadow: 0 0 0 0 rgba(var(--danger-rgb), 0.4); } 70% { box-shadow: 0 0 0 10px rgba(var(--danger-rgb), 0); } 100% { box-shadow: 0 0 0 0 rgba(var(--danger-rgb), 0); } }
-        .timer-container svg { width: 18px; height: 18px; }
+        .timer-container svg, .attempts-container svg { width: 18px; height: 18px; }
+        .attempts-container { color: rgb(var(--warning-rgb)); }
         .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(var(--border-color-rgb), 0.7); }
         .btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
         #end-exam-btn { color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); } #end-exam-btn:hover:not(:disabled) { background-color: rgba(var(--danger-rgb), 0.1); }
@@ -87,6 +90,7 @@
         .review-item-btn { width: 50px; height: 50px; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 2px solid rgba(var(--border-color-rgb), 0.8); transition: all var(--transition-fast); }
         .review-item-btn:hover { border-color: var(--accent-start); }
         .review-item-btn.answered { background-color: rgba(var(--success-rgb), 0.1); color: rgb(var(--success-rgb)); border-color: rgb(var(--success-rgb)); }
+        .review-item-btn.attempted { background-color: rgba(var(--danger-rgb), 0.1); color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); }
         #redirect-message { font-size: 1rem; margin-top: -16px; }
         #alert-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
         .advanced-alert { display: flex; align-items: flex-start; width: 350px; max-width: 90vw; background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(10px); border-radius: var(--border-radius); padding: 16px; border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; position: relative; overflow: hidden; }
@@ -124,10 +128,12 @@
     <div style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
             <symbol id="icon-check-circle" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-attempted-x" viewBox="0 0 24 24" fill="none"><path d="M15 9L9 15M9 9L15 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"></circle></symbol>
             <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
             <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
             <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" /></symbol>
             <symbol id="icon-info-circle" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-warning-shield" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 1.954c2.828 0 5.378 1.05 7.424 2.783l.001.001c2.1 1.768 3.575 4.38 3.575 7.262 0 2.883-1.475 5.494-3.576 7.262-2.046 1.733-4.596 2.783-7.424 2.783s-5.378-1.05-7.424-2.783C2.475 17.494 1 14.883 1 12c0-2.882 1.475-5.494 3.576-7.262C6.622 2.994 9.172 1.954 12 1.954zM11 7a1 1 0 112 0v6a1 1 0 11-2 0V7zm0 9a1 1 0 112 0 1 1 0 01-2 0z" clip-rule="evenodd"></path></symbol>
         </svg>
     </div>
     
@@ -141,13 +147,19 @@
         <div class="main-content">
             <header class="main-header">
                 <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                <div class="timer-container" id="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer-display">00:00</span></div>
+                <div class="header-controls">
+                    <div class="attempts-container" id="attempts-container"><svg><use href="#icon-warning-shield"></use></svg><span id="attempts-display"></span></div>
+                    <div class="timer-container" id="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer-display">00:00</span></div>
+                </div>
                 <button id="end-exam-btn" class="btn">End Exam</button>
             </header>
             <header class="mobile-header">
                 <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                <div class="timer-container" id="mobile-timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer-display">00:00</span></div>
-                <button id="mobile-end-exam-btn" class="btn" style="padding: 8px 16px;">End Exam</button>
+                <div class="header-controls">
+                    <div class="attempts-container" id="mobile-attempts-container"><svg><use href="#icon-warning-shield"></use></svg><span id="mobile-attempts-display"></span></div>
+                    <div class="timer-container" id="mobile-timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer-display">00:00</span></div>
+                </div>
+                <button id="mobile-end-exam-btn" class="btn" style="padding: 8px 16px;">End</button>
             </header>
 
             <div class="question-area">
@@ -165,9 +177,19 @@
     <div id="fullscreen-overlay" class="custom-modal-overlay show">
         <div class="custom-modal-card">
              <h2>Exam Integrity Protocol</h2>
-            <p>For a fair and secure testing environment, this exam must be taken in fullscreen mode. Leaving fullscreen, switching tabs, or minimizing the window will be flagged. You have 3 attempts before the exam is automatically submitted.</p>
+            <p>For a fair and secure testing environment, this exam must be taken in fullscreen mode. Leaving fullscreen will pause the exam and count as a violation. You have 3 attempts before the exam is automatically submitted.</p>
             <div class="custom-modal-actions">
                 <button id="start-exam-btn" class="btn submit-btn">I Understand, Start Exam</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="pause-overlay" class="custom-modal-overlay">
+        <div class="custom-modal-card">
+            <h2>Exam Paused</h2>
+            <p>You have left fullscreen mode. Please re-enter fullscreen to continue the exam. This action has been recorded.</p>
+            <div class="custom-modal-actions">
+                <button id="resume-exam-btn" class="btn submit-btn">Re-enter Fullscreen & Resume</button>
             </div>
         </div>
     </div>
@@ -220,6 +242,8 @@
             mobileTimerContainer: document.getElementById('mobile-timer-container'),
             timerDisplay: document.getElementById('timer-display'),
             mobileTimerDisplay: document.getElementById('mobile-timer-display'),
+            attemptsDisplay: document.getElementById('attempts-display'),
+            mobileAttemptsDisplay: document.getElementById('mobile-attempts-display'),
             endExamBtn: document.getElementById('end-exam-btn'),
             mobileEndExamBtn: document.getElementById('mobile-end-exam-btn'),
             questionTitle: document.getElementById('question-title'),
@@ -234,6 +258,8 @@
             alertContainer: document.getElementById('alert-container'),
             fullscreenOverlay: document.getElementById('fullscreen-overlay'),
             startExamBtn: document.getElementById('start-exam-btn'),
+            pauseOverlay: document.getElementById('pause-overlay'),
+            resumeExamBtn: document.getElementById('resume-exam-btn'),
             resultsOverlay: document.getElementById('results-overlay'),
             resultsTitle: document.getElementById('results-title'),
             resultsMessage: document.getElementById('results-message'),
@@ -244,7 +270,7 @@
             reviewConfirmBtn: document.getElementById('review-confirm-btn')
         };
 
-        let currentUser, examId, examData, questions = [], userAnswers = {}, currentQuestionIndex = 0, timerInterval, isExamEnded = false;
+        let currentUser, examId, examData, questions = [], userAnswers = {}, visitedQuestions = new Set(), currentQuestionIndex = 0, timerInterval, isExamEnded = false, pauseStartTime = null;
         let leaveAttempts = 0;
         const MAX_LEAVE_ATTEMPTS = 3;
 
@@ -268,10 +294,7 @@
         }
 
         function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
-            }
+            for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; }
             return array;
         }
 
@@ -291,9 +314,7 @@
 
         function enterFullScreen() {
             const elem = document.documentElement;
-            if (elem.requestFullscreen) { elem.requestFullscreen(); } 
-            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
-            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+            if (elem.requestFullscreen) { elem.requestFullscreen(); } else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
         }
 
         function startExam() {
@@ -304,6 +325,7 @@
         
         function init() {
             DOMElements.examTitleSidebar.textContent = examData.name;
+            updateAttemptsDisplay();
             renderQuestionNav();
             loadQuestion(currentQuestionIndex);
             initEventListeners();
@@ -325,6 +347,7 @@
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.reviewCancelBtn.addEventListener('click', () => DOMElements.reviewOverlay.classList.remove('show'));
             DOMElements.reviewConfirmBtn.addEventListener('click', () => endExam("Test Finished", false, "User Submitted"));
+            DOMElements.resumeExamBtn.addEventListener('click', resumeExam);
             
             document.addEventListener('visibilitychange', handleLeaveAttempt);
             document.addEventListener('fullscreenchange', handleLeaveAttempt);
@@ -334,29 +357,62 @@
         }
 
         function handleLeaveAttempt() {
-            if (isExamEnded) return;
-            if (!document.fullscreenElement || document.hidden) {
+            if (isExamEnded || DOMElements.pauseOverlay.classList.contains('show')) return;
+            if (!document.fullscreenElement) {
                 leaveAttempts++;
+                updateAttemptsDisplay();
                 const attemptsRemaining = MAX_LEAVE_ATTEMPTS - leaveAttempts;
-                if (attemptsRemaining > 0) {
-                    showAdvancedAlert('error', 'Proctoring Warning', `You have left the exam window. You have ${attemptsRemaining} attempt(s) remaining.`);
-                } else {
-                    showAdvancedAlert('error', 'Exam Terminated', 'You have exceeded the maximum number of allowed leave attempts.');
+                if (attemptsRemaining >= 0) {
+                    clearInterval(timerInterval);
+                    pauseStartTime = Date.now();
+                    DOMElements.pauseOverlay.classList.add('show');
+                } 
+                if (attemptsRemaining < 0) {
                     endExam("Exam Terminated", true, "Exceeded leave attempts");
                 }
             }
         }
+
+        function resumeExam() {
+            enterFullScreen();
+            DOMElements.pauseOverlay.classList.remove('show');
+            const pauseDuration = Date.now() - pauseStartTime;
+            const storageKey = `examEndTime_${currentUser.uid}_${examId}`;
+            const currentEndTime = parseInt(localStorage.getItem(storageKey));
+            const newEndTime = currentEndTime + pauseDuration;
+            localStorage.setItem(storageKey, newEndTime);
+            startTimer();
+        }
+
+        function updateAttemptsDisplay() {
+            const attemptsRemaining = Math.max(0, MAX_LEAVE_ATTEMPTS - leaveAttempts);
+            const text = `${attemptsRemaining}/${MAX_LEAVE_ATTEMPTS}`;
+            DOMElements.attemptsDisplay.textContent = text;
+            DOMElements.mobileAttemptsDisplay.textContent = text;
+        }
         
         function renderQuestionNav() {
-            DOMElements.questionNav.innerHTML = questions.map((q, index) => `
-                <li class="question-item ${index === currentQuestionIndex ? 'active' : ''} ${userAnswers[index] !== null ? 'answered' : ''}" data-index="${index}">
+            DOMElements.questionNav.innerHTML = questions.map((q, index) => {
+                let statusClass = '';
+                let iconHref = '';
+                if (userAnswers[index] !== null) {
+                    statusClass = 'answered';
+                    iconHref = '#icon-check-circle';
+                } else if (visitedQuestions.has(index)) {
+                    statusClass = 'attempted';
+                    iconHref = '#icon-attempted-x';
+                }
+                return `
+                <li class="question-item ${statusClass} ${index === currentQuestionIndex ? 'active' : ''}" data-index="${index}">
                     <div class="q-number">${index + 1}</div><div class="q-title">Question ${index + 1}</div>
-                    <div class="q-status-icon"><svg><use href="#icon-check-circle"></use></svg></div>
-                </li>`).join('');
+                    ${iconHref ? `<div class="q-status-icon"><svg><use href="${iconHref}"></use></svg></div>` : ''}
+                </li>`;
+            }).join('');
         }
 
         function loadQuestion(index) {
             currentQuestionIndex = index;
+            visitedQuestions.add(index);
             const question = questions[index];
             if (!question) return;
 
@@ -422,8 +478,12 @@
         }
 
         function showReviewOverlay() {
-            DOMElements.reviewGrid.innerHTML = questions.map((q, index) => `
-                <button class="review-item-btn ${userAnswers[index] !== null ? 'answered' : ''}" data-index="${index}">${index + 1}</button>`).join('');
+            DOMElements.reviewGrid.innerHTML = questions.map((q, index) => {
+                let statusClass = '';
+                 if (userAnswers[index] !== null) { statusClass = 'answered'; } 
+                 else if (visitedQuestions.has(index)) { statusClass = 'attempted'; }
+                return `<button class="review-item-btn ${statusClass}" data-index="${index}">${index + 1}</button>`;
+            }).join('');
             
             DOMElements.reviewGrid.querySelectorAll('.review-item-btn').forEach(btn => {
                 btn.addEventListener('click', () => { navigateToQuestion(parseInt(btn.dataset.index)); DOMElements.reviewOverlay.classList.remove('show'); });
@@ -447,7 +507,7 @@
 
             const scoreData = {
                 userId: currentUser.uid, examId, examName: examData.name, subjectId: examData.subjectId, 
-                pointsReceived, totalPoints, reason, submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                pointsReceived, totalPoints, reason, leaveAttempts, submittedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             await db.collection('scores').add(scoreData);
