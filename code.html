@@ -100,10 +100,15 @@
         .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
         .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
         
-        #results-overlay, #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        #results-overlay.show, #fullscreen-overlay.show { display: flex; opacity: 1; }
-        .results-card, .fullscreen-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
-        .results-card h2, .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p, .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        #results-overlay, #fullscreen-overlay, .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        #results-overlay.show, #fullscreen-overlay.show, .custom-modal-overlay.show { display: flex; opacity: 1; }
+        .results-card, .fullscreen-card, .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; animation: fadeIn 0.3s ease-out; }
+        .results-card h2, .fullscreen-card h2, .custom-modal-card h2 { font-size: 2rem; margin-bottom: 8px; }
+        .results-card p, .fullscreen-card p, .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        .custom-modal-card h2 { font-size: 1.75rem; }
+        .custom-modal-card p { font-size: 1.1rem; line-height: 1.6; }
+        .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
+        .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
         .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
         .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
         .final-status.solved { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); }
@@ -151,7 +156,7 @@
             .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
             .mobile-footer.active { display: flex; }
             .mobile-footer .btn { flex: 1; }
-            .results-card, .fullscreen-card { padding: 24px; } .results-card h2, .fullscreen-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p { font-size: 1rem; }
+            .results-card, .fullscreen-card, .custom-modal-card { padding: 24px; } .results-card h2, .fullscreen-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p, .custom-modal-card p { font-size: 1rem; }
         }
     </style>
 </head>
@@ -264,6 +269,16 @@
             <ul class="final-results-list" id="final-results-list"></ul>
         </div>
     </div>
+    <div id="final-problem-overlay" class="custom-modal-overlay">
+        <div class="custom-modal-card">
+            <h2>Final Problem Submitted</h2>
+            <p>You have submitted the final problem. Do you want to end the exam now and see your final score?</p>
+            <div class="custom-modal-actions">
+                <button id="final-problem-cancel-btn" class="btn">Return to Problem</button>
+                <button id="final-problem-confirm-btn" class="btn submit-btn">End Exam & See Score</button>
+            </div>
+        </div>
+    </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
@@ -285,7 +300,6 @@
         const db = firebase.firestore();
         
         const MAX_VIOLATIONS = 5;
-        const IS_DESKTOP = window.innerWidth > 900;
         
         const DOMElements = { 
             loadingOverlay: document.getElementById('loading-overlay'), 
@@ -321,7 +335,8 @@
             fullscreenTitle: document.getElementById('fullscreen-title'),
             fullscreenMessage: document.getElementById('fullscreen-message'),
             enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
-            alertContainer: document.getElementById('alert-container')
+            alertContainer: document.getElementById('alert-container'),
+            finalProblemOverlay: document.getElementById('final-problem-overlay')
         };
         
         let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0;
@@ -362,11 +377,13 @@
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
             scoresSnap.forEach(doc => {
                 const score = doc.data();
-                if(score.pointsReceived > 0) problemStatus[score.problemId] = 'solved';
+                if (problemStatus[score.problemId]) { // Check if problem exists
+                    problemStatus[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
+                }
             });
             
-            const firstUnsolvedIndex = problems.findIndex(p => problemStatus[p.id] !== 'solved');
-            currentProblemId = firstUnsolvedIndex === -1 ? (problems.length > 0 ? problems[problems.length - 1].id : null) : problems[firstUnsolvedIndex].id;
+            const firstUnsolvedIndex = problems.findIndex(p => problemStatus[p.id] !== 'solved' && problemStatus[p.id] !== 'attempted');
+            currentProblemId = firstUnsolvedIndex === -1 ? (problems.length > 0 ? problems[0].id : null) : problems[firstUnsolvedIndex].id;
         }
 
         async function checkIfAssignmentCompleted() {
@@ -400,7 +417,7 @@
         }
 
         async function initPyodide() {
-            if (!problems.length) { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; return; }
+            if (!problems.length) { DOMElements.loadingOverlay.innerHTML = '<p>No problems found for this assignment.</p>'; return; }
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
             try { pyodide = await loadPyodide(); } 
             catch (error) { DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>'; return; }
@@ -426,9 +443,7 @@
             renderProblemList();
             loadProblem(currentProblemId);
             initEventListeners();
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = false);
-            setMobileView('problem');
-            if (IS_DESKTOP) checkFullscreen(); else startTimer();
+            checkFullscreen(); // Enforce fullscreen for all devices now
         }
         
         function handleViolation(type) {
@@ -461,7 +476,7 @@
                 DOMElements.fullscreenOverlay.classList.remove('show');
                 if (!timerInterval && !isTestEnded) startTimer();
             } else {
-                if (!isTestEnded && IS_DESKTOP) {
+                if (!isTestEnded) {
                     pauseTimer();
                     handleViolation('Fullscreen exit');
                     DOMElements.fullscreenTitle.textContent = 'Exam Paused';
@@ -473,6 +488,7 @@
         function checkFullscreen() { if (!document.fullscreenElement) DOMElements.fullscreenOverlay.classList.add('show'); }
         
         function startTimer() {
+            if (timerInterval) return;
             const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             let endTime = localStorage.getItem(storageKey);
             if (!endTime) {
@@ -545,11 +561,7 @@
         function initEventListeners() {
             [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
             [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
-            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
-                if(confirm("Are you sure you want to end the test and submit your answers?")) {
-                    endExam();
-                }
-            }));
+            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => { if(confirm("Are you sure you want to end the test and submit your answers?")) { endExam(); } }));
             DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
             DOMElements.problemList.addEventListener('click', handleProblemSelect);
             [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
@@ -557,6 +569,9 @@
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
+            
+            document.getElementById('final-problem-confirm-btn').addEventListener('click', () => { DOMElements.finalProblemOverlay.classList.remove('show'); endExam("Test Finished", "User submitted final problem"); });
+            document.getElementById('final-problem-cancel-btn').addEventListener('click', () => { DOMElements.finalProblemOverlay.classList.remove('show'); });
             
             const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
             document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
@@ -570,7 +585,13 @@
             initResizers();
         }
 
-        function isProblemUnlocked(problemId) { return true; }
+        function isProblemUnlocked(problemId) {
+            const problemIndex = problems.findIndex(p => p.id === problemId);
+            if (problemIndex === 0) return true;
+            const prevProblemId = problems[problemIndex - 1].id;
+            const prevStatus = problemStatus[prevProblemId];
+            return prevStatus === 'solved' || prevStatus === 'attempted';
+        }
 
         function renderProblemList() {
             DOMElements.problemList.innerHTML = problems.map((p, i) => {
@@ -624,10 +645,18 @@
             setMobileView('problem');
         }
         
-        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
+        function handleProblemSelect(e) { 
+            const target = e.target.closest('.problem-item'); 
+            if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { 
+                loadProblem(target.dataset.id); 
+                DOMElements.sidebar.classList.remove('active'); 
+                DOMElements.overlay.classList.remove('active'); 
+            } 
+        }
         
         function setMobileView(view) {
-            if (IS_DESKTOP) return;
+            const IS_MOBILE = window.innerWidth <= 900;
+            if (!IS_MOBILE) return;
             DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
             const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
             Object.values(views).forEach(panel => panel.classList.remove('mobile-view-active'));
@@ -645,9 +674,7 @@
             for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
             if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
             
-            // This logic block handles the core user request
             if (isSubmission) {
-                renderResults(results, true); // Show submission results first
                 const allPassed = results.every(r => r.status === 'pass');
                 const previousStatus = problemStatus[currentProblemId];
                 problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
@@ -658,25 +685,20 @@
                 const isLastProblem = currentProblemIndex === problems.length - 1;
 
                 if (isLastProblem) {
-                    setTimeout(() => {
-                        if (confirm("You have submitted the final problem. Do you want to end the exam now and see your final score?")) {
-                            endExam("Test Finished", "User submitted final problem");
-                        }
-                    }, 500);
+                    DOMElements.finalProblemOverlay.classList.add('show');
                 } else {
                     showAdvancedAlert('info', 'Submission Received', `Moving to the next problem...`);
                     const nextProblemId = problems[currentProblemIndex + 1].id;
                     setTimeout(() => loadProblem(nextProblemId), 1500);
                 }
             } else {
-                // This is the "Run" button logic
                 renderResults(results, false);
                 if (problemStatus[currentProblemId] !== 'solved') {
                     problemStatus[currentProblemId] = 'attempted';
                     renderProblemList();
                 }
                 document.querySelector('.tab[data-tab="results"]').click();
-                if (!IS_DESKTOP) setMobileView('results');
+                setMobileView('results');
             }
 
             setLoadingState(false, isSubmission);
@@ -753,7 +775,8 @@
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
         
         function initResizers() {
-            if (!IS_DESKTOP) return;
+            const IS_MOBILE = window.innerWidth <= 900;
+            if (IS_MOBILE) return;
             const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
             const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
             const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
