@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCoder IDE - Coding Environment</title>
+    <title>Exam In Progress - Exam Portal</title>
     <style>
         :root {
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -12,21 +12,22 @@
             --surface-dark-rgb: 22, 27, 34;
             --surface-light-rgb: 33, 38, 45;
             --border-color-rgb: 48, 54, 61;
-            --text-primary: #e6edf3;
-            --text-secondary: #7d8590;
-            --accent-glow-rgb: 29, 161, 242;
-            --accent-start: #00A6D6;
-            --accent-end: #1DE9B6;
-            --success-rgb: 40, 167, 69;
-            --danger-rgb: 220, 53, 69;
-            --warning-rgb: 255, 193, 7;
+            --text-primary: #c9d1d9;
+            --text-secondary: #8b949e;
+            --accent-glow-rgb: 88, 80, 236;
+            --accent-start: #6D28D9;
+            --accent-end: #8A2BE2;
+            --success-rgb: 35, 134, 54;
+            --danger-rgb: 218, 54, 51;
+            --warning-rgb: 227, 179, 65;
             --border-radius: 8px;
             --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --color-primary-light: rgba(139, 92, 246, 0.1);
         }
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
-        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; }
+        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; user-select: none; -webkit-user-select: none; -moz-user-select: none; }
         .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
         .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; }
         .aurora-bg::before { background: radial-gradient(circle, var(--accent-start), transparent 70%); top: -20%; left: -10%; animation: moveAurora1 20s infinite alternate; }
@@ -38,71 +39,51 @@
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); transition: opacity 0.3s; }
         .loading-spinner { border: 4px solid rgba(var(--surface-light-rgb), 0.5); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .ide-dashboard { display: flex; height: 100%; position: relative; }
-        .sidebar { width: 320px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-right: 1px solid rgba(var(--border-color-rgb), 0.5); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform var(--transition-smooth), width var(--transition-smooth); }
+        .view-container { display: none; width: 100%; height: 100%; }
+        .view-container.active { display: flex; }
+        .exam-dashboard { display: flex; height: 100%; position: relative; }
+        .sidebar { width: 320px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-right: 1px solid rgba(var(--border-color-rgb), 0.5); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform var(--transition-smooth); }
         .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
         .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .sidebar nav { flex-grow: 1; overflow-y: auto; }
-        .problem-nav { list-style: none; }
-        .problem-item { position: relative; display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; overflow: hidden; }
-        .problem-item::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: linear-gradient(var(--accent-start), var(--accent-end)); transform: translateX(-100%); transition: transform var(--transition-fast); }
-        .problem-item:not(.locked):not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
-        .problem-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
-        .problem-item.active::before { transform: translateX(0); }
-        .problem-item.locked { cursor: not-allowed; opacity: 0.6; }
-        .problem-item.locked:hover { background-color: transparent; }
-        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
-        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
-        .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
-        .p-status-icon { width: 20px; height: 20px; margin-left: 8px; opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
-        .problem-item.solved .p-status-icon, .problem-item.attempted .p-status-icon { opacity: 1; transform: scale(1); }
-        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        .question-nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 12px; }
+        .question-item-btn { width: 45px; height: 45px; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 2px solid rgba(var(--border-color-rgb), 0.5); color: var(--text-secondary); cursor: pointer; transition: all var(--transition-fast); }
+        .question-item-btn:hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
+        .question-item-btn.answered { background-color: var(--color-primary-light); color: var(--accent-start); border-color: var(--accent-start); }
+        .question-item-btn.active { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; transform: scale(1.1); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
+        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
         .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); padding: 12px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); }
         .header-title-group { display: flex; align-items: center; gap: 16px; }
-        .header-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
-        .timer-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
-        .timer-container svg { width: 18px; height: 18px; }
-        .controls { display: flex; gap: 12px; }
+        .proctor-info { display: flex; align-items: center; gap: 24px; }
+        .timer-container, .attempts-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
+        .timer-container svg, .attempts-container svg { width: 18px; height: 18px; }
+        .timer-container.warning { color: rgb(var(--warning-rgb)); } .timer-container.danger { color: rgb(var(--danger-rgb)); animation: pulse-danger 1.5s infinite; }
+        @keyframes pulse-danger { 0% { box-shadow: 0 0 0 0 rgba(var(--danger-rgb), 0.4); } 70% { box-shadow: 0 0 0 10px rgba(var(--danger-rgb), 0); } 100% { box-shadow: 0 0 0 0 rgba(var(--danger-rgb), 0); } }
         .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(var(--border-color-rgb), 0.7); }
-        .btn svg { width: 18px; height: 18px; }
-        .btn.run-btn { background-color: rgba(var(--surface-light-rgb), 0.8); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: rgba(var(--border-color-rgb), 0.7); }
-        .btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
         #end-test-btn { color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); } #end-test-btn:hover:not(:disabled) { background-color: rgba(var(--danger-rgb), 0.1); }
-        .btn:disabled { background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
-        .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 90px); }
-        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
-        .ide-panel { background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); overflow: hidden; display: flex; flex-direction: column; }
-        #problem-details { flex: 1; padding: 24px; overflow-y: auto; }
-        #problem-details-content { animation: fadeIn 0.5s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; color: var(--text-primary); }
-        #problem-statement { line-height: 1.7; color: var(--text-secondary); }
-        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid rgba(var(--border-color-rgb), 0.8); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
-        .test-case { background-color: rgba(var(--surface-light-rgb), 0.4); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
-        #editor-container { flex: 1; }
-        .resizer { background: transparent; display: flex; align-items: center; justify-content: center; }
-        #resizer-h { height: 16px; cursor: row-resize; } #resizer-h::before { content: '•••'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
-        #resizer-v { width: 16px; cursor: col-resize; } #resizer-v::before { content: '⋮'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
-        .bottom-panel { flex-shrink: 0; display: flex; flex-direction: column; }
-        .tabs { display: flex; padding: 0 12px; background-color: var(--bg-dark); }
-        .tab { position: relative; padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all var(--transition-fast); } .tab::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); transform: scaleX(0); transition: transform var(--transition-fast); } .tab.active { color: var(--text-primary); } .tab.active::after { transform: scaleX(1); }
-        .tab-content-area { flex-grow: 1; overflow-y: auto; }
-        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
-        #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-        #results-summary.success { background-color: rgba(var(--success-rgb), 0.1); color: rgb(var(--success-rgb)); border-left: 4px solid rgb(var(--success-rgb)); } #results-summary.failure { background-color: rgba(var(--danger-rgb), 0.1); color: rgb(var(--danger-rgb)); border-left: 4px solid rgb(var(--danger-rgb)); }
-        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: rgba(var(--surface-light-rgb), 0.3); border-radius: var(--border-radius); margin-bottom: 8px; }
-        .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
-        .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
-        #results-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        #results-overlay.show { display: flex; opacity: 1; }
-        .results-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
-        .results-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
-        #redirect-message { font-size: 1rem; margin-top: -16px; }
-        .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
-        .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
-        .final-status.solved { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); }
-        .final-status.attempted { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
-        .final-status.notattempted { color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 1); }
+        .question-area { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); padding: 2.5rem; }
+        .question-title-text { font-size: 1.5rem; font-weight: 600; margin-bottom: 2rem; }
+        .options-container { display: flex; flex-direction: column; gap: 1rem; }
+        .option { display: flex; align-items: center; padding: 1rem; border: 1px solid rgba(var(--border-color-rgb), 0.8); border-radius: var(--border-radius); cursor: pointer; transition: all var(--transition-fast); }
+        .option:hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
+        .option.selected { border-color: var(--accent-start); background-color: var(--color-primary-light); }
+        .option-letter { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(var(--border-color-rgb), 0.8); display: grid; place-items: center; flex-shrink: 0; margin-right: 1rem; transition: all var(--transition-fast); }
+        .selected .option-letter { border-color: var(--accent-start); background-color: var(--accent-start); color: white; }
+        .question-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 2.5rem; border-top: 1px solid rgba(var(--border-color-rgb), 0.5); padding-top: 1.5rem; }
+        .nav-btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
+        .nav-btn.next-btn, .nav-btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; border: none; }
+        .nav-btn:disabled { background-image: none; background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; }
+        #review-view, #results-view { flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; width: 100%; height: 100%; overflow-y: auto; }
+        .review-card, .results-summary { background: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(20px); border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: var(--border-radius); padding: 40px; width: 100%; max-width: 800px; }
+        .review-header h2 { font-size: 1.75rem; text-align: center; } .review-header p { color: var(--text-secondary); text-align: center; }
+        .review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 12px; margin: 24px 0; }
+        .review-item-btn { width: 50px; height: 50px; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 2px solid; }
+        .review-item-btn.unanswered { border-color: rgba(var(--border-color-rgb), 0.5); }
+        .review-item-btn.answered { background-color: var(--color-primary-light); color: var(--accent-start); border-color: var(--accent-start); }
+        #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        #fullscreen-overlay.show { display: flex; opacity: 1; }
+        .fullscreen-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
+        .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; } .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
         #alert-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
         .advanced-alert { display: flex; align-items: flex-start; width: 350px; max-width: 90vw; background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(10px); border-radius: var(--border-radius); padding: 16px; border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; position: relative; overflow: hidden; }
         @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -115,146 +96,103 @@
         .alert-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background-color: rgba(255,255,255,0.2); }
         .alert-progress::after { content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: currentColor; animation: progressShrink 5s linear forwards; }
         @keyframes progressShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        .advanced-alert.alert-warning { border-color: rgb(var(--warning-rgb)); color: rgb(var(--warning-rgb)); }
         .advanced-alert.alert-error { border-color: rgb(var(--danger-rgb)); color: rgb(var(--danger-rgb)); }
-        .advanced-alert.alert-info { border-color: var(--accent-start); color: var(--accent-start); }
-        .mobile-header, .mobile-nav, .mobile-footer { display: none; }
+        .mobile-header, .mobile-footer { display: none; }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
-        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        .custom-modal-overlay.show { display: flex; opacity: 1; }
-        .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 500px; text-align: center; animation: fadeIn 0.3s ease-out; }
-        .custom-modal-card h2 { font-size: 1.75rem; margin-bottom: 8px; }
-        .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem; line-height: 1.6; }
-        .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
-        .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
         @media (max-width: 900px) {
-            .main-content { padding: 0; height: 100%; }
+            .main-content { padding: 0; }
             .main-header { display: none; }
-            .ide-layout { height: 100%; }
             .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
-            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
-            .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
-            .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
-            .ide-layout { display: flex; flex-direction: column; }
-            .top-panel { display: flex; flex-grow: 1; min-height: 0; background: transparent; backdrop-filter: none; border: none; }
-            .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; border: none; background: transparent; backdrop-filter: none; }
-            .bottom-panel { margin: 0 16px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); }
-            #problem-details, #editor-container { padding: 0 16px 16px; }
-            .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
-            #resizer-h, #resizer-v { display: none; }
+            .question-area { border-radius: 0; border: none; padding: 1.5rem; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); } .sidebar.active { transform: translateX(0); }
-            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(var(--surface-light-rgb), 0.8); border-radius: 50%; color: white; cursor: pointer; z-index: 1001; } .close-menu-btn svg { width: 18px; height: 18px; }
+            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(var(--surface-light-rgb), 0.8); border-radius: 50%; color: white; cursor: pointer; z-index: 1001; }
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity var(--transition-smooth); } .overlay.active { opacity: 1; pointer-events: auto; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
-            .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
-            .mobile-footer.active { display: flex; }
-            .mobile-footer .btn { flex: 1; }
-            .results-card, .custom-modal-card { padding: 24px; } .results-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .custom-modal-card p { font-size: 1rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: 50%; color: var(--text-secondary); }
+            .fullscreen-card { padding: 24px; } .fullscreen-card h2 { font-size: 1.5rem; } .fullscreen-card p { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
     <div class="aurora-bg"></div>
-    <div id="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p>Initializing Environment...</p>
-    </div>
+    <div id="loading-overlay"><div class="loading-spinner"></div><p>Initializing Exam Environment...</p></div>
     <div id="alert-container"></div>
+    
+    <div class="view-container" id="exam-view">
+        <div class="exam-dashboard">
+            <aside class="sidebar" id="sidebar">
+                <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
+                <div class="sidebar-header"><h1 class="test-title" id="exam-title-sidebar"></h1></div>
+                <nav><div class="question-nav-grid" id="question-nav"></div></nav>
+            </aside>
+
+            <main class="main-content">
+                <header class="main-header">
+                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                    <div class="proctor-info">
+                        <div class="timer-container" id="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer-display"></span></div>
+                        <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left"></span></div>
+                    </div>
+                    <button id="end-test-btn" class="btn">End Exam</button>
+                </header>
+
+                <header class="mobile-header">
+                    <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                    <div class="proctor-info">
+                        <div class="timer-container" id="mobile-timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer-display"></span></div>
+                        <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="mobile-attempts-left"></span></div>
+                    </div>
+                    <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End</button>
+                </header>
+
+                <div class="question-area">
+                    <h2 class="question-title-text" id="question-title"></h2>
+                    <div class="options-container" id="options-container"></div>
+                    <footer class="question-footer">
+                        <button class="btn nav-btn prev-btn" id="prev-btn">&larr; Previous</button>
+                        <div>
+                            <button class="btn nav-btn next-btn" id="next-btn">Save & Next &rarr;</button>
+                            <button class="btn nav-btn submit-btn" id="submit-btn" style="display: none;">Review & Submit</button>
+                        </div>
+                    </footer>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <div class="view-container" id="review-view">
+        <div class="review-card">
+            <div class="review-header"><h2>Review Your Answers</h2><p>Click a number to jump to that question. Submit when ready.</p></div>
+            <div class="review-grid" id="review-grid"></div>
+            <div class="review-footer" style="text-align: center; margin-top: 1.5rem;"><button class="btn nav-btn submit-btn" id="final-submit-btn">Confirm & Submit Test</button></div>
+        </div>
+    </div>
+
+    <div class="view-container" id="results-view"></div>
+    <div id="fullscreen-overlay" style="display: none;">
+        <div class="fullscreen-card">
+            <h2 id="fullscreen-title">Fullscreen Required</h2>
+            <p id="fullscreen-message">Please enter fullscreen mode to begin the test.</p>
+            <button id="enter-fullscreen-btn" class="btn submit-btn">Enter Fullscreen</button>
+        </div>
+    </div>
+    <div class="overlay" id="overlay"></div>
+
     <div style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
-            <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
-            <symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol>
-            <symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol>
-            <symbol id="icon-solved-check" viewBox="0 0 24 24" fill="none"><path d="M7 13L10 16L17 9" stroke="rgb(var(--success-rgb))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="rgb(var(--success-rgb))" stroke-width="2"></circle></symbol>
-            <symbol id="icon-attempted-x" viewBox="0 0 24 24" fill="none"><path d="M15 9L9 15M9 9L15 15" stroke="rgb(var(--danger-rgb))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="rgb(var(--danger-rgb))" stroke-width="2"></circle></symbol>
-            <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
-            <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
             <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-shield-warning" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 00-1-1H9a1 1 0 000 2h1a1 1 0 001-1z" clip-rule="evenodd" /></symbol>
             <symbol id="icon-info-circle" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /></symbol>
+            <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
         </svg>
     </div>
-    <main class="ide-dashboard" style="display: none;">
-        <aside class="sidebar" id="sidebar">
-            <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
-            <div class="sidebar-header"><h1 class="test-title" id="assignment-title"></h1></div>
-            <nav><ul class="problem-nav" id="problem-list"></ul></nav>
-        </aside>
-        <div class="main-content">
-            <header class="main-header">
-                <div class="header-title-group">
-                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                    <h1 class="header-title" id="main-header-title"></h1>
-                </div>
-                <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">00:00:00</span></div>
-                <div class="controls">
-                    <button id="end-test-btn" class="btn">End Test</button>
-                    <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
-                    <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
-                </div>
-            </header>
-            <header class="mobile-header">
-                <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                 <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00:00</span></div>
-                <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
-            </header>
-            <div class="mobile-nav">
-                <button class="mobile-nav-btn active" data-view="problem">Problem</button>
-                <button class="mobile-nav-btn" data-view="code">Code</button>
-                <button class="mobile-nav-btn" data-view="results">Results</button>
-            </div>
-            <div class="ide-layout">
-                <div class="top-panel">
-                    <div id="problem-details" class="ide-panel mobile-view-active">
-                         <div id="problem-details-content">
-                             <div id="problem-statement"></div>
-                             <h2 style="margin-top: 24px;">Test Cases</h2>
-                             <div id="public-test-cases"></div>
-                         </div>
-                    </div>
-                    <div id="resizer-v" class="resizer"></div>
-                    <div id="editor-container" class="ide-panel"></div>
-                </div>
-                <div id="resizer-h" class="resizer"></div>
-                <div class="bottom-panel ide-panel">
-                    <div class="tabs">
-                        <div class="tab active" data-tab="results">Test Results</div>
-                        <div class="tab" data-tab="console">Console</div>
-                    </div>
-                    <div class="tab-content-area">
-                        <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit to see results.</p></div>
-                        <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
-                    </div>
-                </div>
-            </div>
-             <footer class="mobile-footer">
-                <button id="mobile-run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
-                <button id="mobile-submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
-            </footer>
-        </div>
-        <div class="overlay" id="overlay"></div>
-    </main>
-    <div id="results-overlay">
-        <div class="results-card">
-            <h2>Test Finished</h2>
-            <p id="final-score-message">Here is a summary of your session.</p>
-            <ul class="final-results-list" id="final-results-list"></ul>
-            <p id="redirect-message"></p>
-        </div>
-    </div>
-    <div id="final-problem-overlay" class="custom-modal-overlay">
-        <div class="custom-modal-card">
-            <h2>Final Problem Submitted</h2>
-            <p>You have submitted the final problem. Do you want to end the exam now and see your final score?</p>
-            <div class="custom-modal-actions">
-                <button id="final-problem-cancel-btn" class="btn">Return to Problem</button>
-                <button id="final-problem-confirm-btn" class="btn submit-btn">End Exam & See Score</button>
-            </div>
-        </div>
-    </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
@@ -269,506 +207,278 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        const DOMElements = {
+        const MAX_VIOLATIONS = 5;
+
+        const dom = {
             loadingOverlay: document.getElementById('loading-overlay'),
-            ideDashboard: document.querySelector('.ide-dashboard'),
-            editorContainer: document.getElementById('editor-container'),
-            runBtn: document.getElementById('run-btn'), mobileRunBtn: document.getElementById('mobile-run-btn'),
-            submitBtn: document.getElementById('submit-btn'), mobileSubmitBtn: document.getElementById('mobile-submit-btn'),
+            views: document.querySelectorAll('.view-container'), examTitleSidebar: document.getElementById('exam-title-sidebar'),
+            questionNav: document.getElementById('question-nav'),
+            timerContainer: document.getElementById('timer-container'), timerDisplay: document.getElementById('timer-display'),
+            mobileTimerContainer: document.getElementById('mobile-timer-container'), mobileTimerDisplay: document.getElementById('mobile-timer-display'),
+            attemptsLeft: document.getElementById('attempts-left'), mobileAttemptsLeft: document.getElementById('mobile-attempts-left'),
             endTestBtn: document.getElementById('end-test-btn'), mobileEndTestBtn: document.getElementById('mobile-end-test-btn'),
-            timer: document.getElementById('timer'), mobileTimer: document.getElementById('mobile-timer'),
-            problemList: document.getElementById('problem-list'),
-            assignmentTitle: document.getElementById('assignment-title'),
-            mainHeaderTitle: document.getElementById('main-header-title'),
-            problemDetails: document.getElementById('problem-details'),
-            problemDetailsContent: document.getElementById('problem-details-content'),
-            problemStatement: document.getElementById('problem-statement'),
-            publicTestCases: document.getElementById('public-test-cases'),
-            bottomPanel: document.querySelector('.bottom-panel'),
-            resultsContent: document.getElementById('results'),
-            consoleOutput: document.getElementById('console-output'),
-            tabs: document.querySelectorAll('.tab'),
-            menuToggle: document.getElementById('menu-toggle'), mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
-            closeMenuBtn: document.getElementById('close-menu-btn'),
-            sidebar: document.getElementById('sidebar'),
-            overlay: document.getElementById('overlay'),
-            mobileNav: document.querySelector('.mobile-nav'),
-            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'),
-            mobileFooter: document.querySelector('.mobile-footer'),
-            resultsOverlay: document.getElementById('results-overlay'),
-            finalResultsList: document.getElementById('final-results-list'),
-            finalScoreMessage: document.getElementById('final-score-message'),
+            questionTitle: document.getElementById('question-title'), optionsContainer: document.getElementById('options-container'),
+            prevBtn: document.getElementById('prev-btn'), nextBtn: document.getElementById('next-btn'),
+            submitBtn: document.getElementById('submit-btn'), reviewGrid: document.getElementById('review-grid'),
+            finalSubmitBtn: document.getElementById('final-submit-btn'), resultsView: document.getElementById('results-view'),
             alertContainer: document.getElementById('alert-container'),
-            finalProblemOverlay: document.getElementById('final-problem-overlay')
+            fullscreenOverlay: document.getElementById('fullscreen-overlay'), enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'),
+            fullscreenTitle: document.getElementById('fullscreen-title'), fullscreenMessage: document.getElementById('fullscreen-message'),
+            sidebar: document.getElementById('sidebar'), menuToggle: document.getElementById('menu-toggle'),
+            mobileMenuToggle: document.getElementById('mobile-menu-toggle'), closeMenuBtn: document.getElementById('close-menu-btn'),
+            overlay: document.getElementById('overlay')
         };
 
-        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false;
+        let examState = {}, currentUser, timerInterval, violationCount = 0, isTestEnded = false;
 
-        function seededRandom(seed) {
-            let state = seed % 2147483647;
-            if (state <= 0) state += 2147483646;
-            return () => {
-                state = (state * 16807) % 2147483647;
-                return (state - 1) / 2147483646;
-            };
-        }
+        const showView = (viewId) => {
+            dom.views.forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+        };
 
-        function shuffleArray(array, seedString) {
-            const seed = seedString.split('').reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0) | 0, 0);
-            const random = seededRandom(seed);
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex !== 0) {
-                randomIndex = Math.floor(random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                currentUser = user;
+                initializePage();
+            } else {
+                window.location.href = 'index.html';
             }
-            return array;
-        }
+        });
 
-        function sanitizeHTML(str) {
-            const temp = document.createElement('div');
-            temp.innerHTML = str;
-            const allowedTags = ['P', 'B', 'I', 'EM', 'STRONG', 'CODE', 'PRE', 'BLOCKQUOTE', 'H2', 'H3', 'UL', 'OL', 'LI', 'BR'];
-            const sanitizeNode = (node) => {
-                if (node.nodeType === Node.TEXT_NODE) return;
-                if (node.nodeType !== Node.ELEMENT_NODE || !allowedTags.includes(node.tagName)) {
-                    node.parentNode.removeChild(node);
-                    return;
-                }
-                for (let i = node.attributes.length - 1; i >= 0; i--) {
-                    node.removeAttribute(node.attributes[i].name);
-                }
-                [...node.childNodes].forEach(sanitizeNode);
+        const initializePage = async () => {
+            const examId = new URLSearchParams(window.location.search).get('id');
+            if (!examId) { alert('Invalid exam ID.'); window.location.href = 'dashboard.html'; return; }
+            
+            const prevScoreQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
+            if (!prevScoreQuery.empty) {
+                renderResultsPage(prevScoreQuery.docs[0].data());
+                return;
+            }
+
+            const examDoc = await db.collection('exams').doc(examId).get();
+            if (!examDoc.exists || examDoc.data().isLocked) { 
+                alert('Exam not found or is currently locked.'); 
+                window.location.href = 'dashboard.html'; 
+                return; 
+            }
+            
+            const examData = { id: examDoc.id, ...examDoc.data() };
+            examState = {
+                currentExamData: examData,
+                questions: examData.questions.map(q => ({...q, userAnswer: null, isAnswered: false})),
+                currentQuestionIndex: 0,
+                timeLeft: examData.duration,
             };
-            [...temp.childNodes].forEach(sanitizeNode);
-            return temp.innerHTML;
-        }
-
-        async function main() {
-            const urlParams = new URLSearchParams(window.location.search);
-            assignmentId = urlParams.get('id');
-            if (!assignmentId) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment ID not found.</p>'; return; }
-            auth.onAuthStateChanged(async user => {
-                if (user) {
-                    currentUser = user;
-                    await fetchData();
-                    const completedScoreData = await checkIfAssignmentCompleted();
-                    if (completedScoreData) {
-                        showFinalResultsPage(completedScoreData);
-                    } else {
-                        await initPyodide();
-                    }
-                } else { window.location.href = 'index.html'; }
-            });
-        }
-
-        async function fetchData() {
-            const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
-            if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
-            assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
-            DOMElements.assignmentTitle.textContent = assignment.name;
-            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
-            problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            shuffleArray(problems, currentUser.uid);
-            problems.forEach(p => {
-                userCodeState[p.id] = p.starterCode;
-                problemStatus[p.id] = 'not-attempted';
-            });
-            currentProblemId = problems.length > 0 ? problems[0].id : null;
-        }
-
-        async function checkIfAssignmentCompleted() {
-            const scoreQuery = await db.collection('codeAssignmentScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
-            return scoreQuery.empty ? false : scoreQuery.docs[0].data();
-        }
-
-        function showFinalResultsPage(scoreData) {
-            DOMElements.loadingOverlay.style.display = 'none';
-            DOMElements.ideDashboard.style.display = 'none';
-            DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
-            DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
-            db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
-                const problemScores = {};
-                scoresSnap.forEach(doc => {
-                    const score = doc.data();
-                    problemScores[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
-                });
-                renderFinalResultsList(problemScores);
-            });
-            DOMElements.resultsOverlay.classList.add('show');
-        }
-
-        async function initPyodide() {
-            if (!problems.length) { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; return; }
-            DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
-            try { pyodide = await loadPyodide(); }
-            catch (error) { DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>'; return; }
-            DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
-            initEditor();
-        }
-
-        function initEditor() {
-            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-            require(['vs/editor/editor.main'], () => {
-                monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [], colors: { 'editor.background': '#0D1117' } });
-                editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
-                DOMElements.loadingOverlay.style.opacity = '0';
-                setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.ideDashboard.style.display = 'flex'; }, 300);
-                init();
-            });
-        }
-
-        function init() {
-            renderProblemList();
-            loadProblem(currentProblemId);
+            
+            dom.examTitleSidebar.textContent = examData.name;
+            [dom.attemptsLeft, dom.mobileAttemptsLeft].forEach(el => el.textContent = MAX_VIOLATIONS);
+            renderSidebar();
+            renderQuestion();
             initEventListeners();
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = false);
-            setMobileView('problem');
-            startTimer();
-        }
+            checkFullscreen();
+        };
+        
+        const renderSidebar = () => {
+            dom.questionNav.innerHTML = '';
+            examState.questions.forEach((q, index) => {
+                const item = document.createElement('button');
+                item.className = `question-item-btn ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}`;
+                item.textContent = index + 1;
+                item.addEventListener('click', () => navigateToQuestion(index));
+                dom.questionNav.appendChild(item);
+            });
+        };
 
-        function showAdvancedAlert(type, title, message) {
+        const renderQuestion = () => {
+            const question = examState.questions[examState.currentQuestionIndex];
+            dom.questionTitle.textContent = `${examState.currentQuestionIndex + 1}. ${question.title}`;
+            dom.optionsContainer.innerHTML = '';
+            question.options.forEach((opt, index) => {
+                const optionDiv = document.createElement('div');
+                optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`;
+                optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span>`;
+                optionDiv.addEventListener('click', () => selectOption(index));
+                dom.optionsContainer.appendChild(optionDiv);
+            });
+            updateNavButtons();
+        };
+
+        const selectOption = (index) => {
+            const q = examState.questions[examState.currentQuestionIndex];
+            q.userAnswer = (q.userAnswer === index) ? null : index;
+            q.isAnswered = q.userAnswer !== null;
+            renderQuestion();
+            renderSidebar();
+        };
+
+        const navigateToQuestion = (index) => {
+            examState.currentQuestionIndex = index;
+            renderQuestion();
+            renderSidebar();
+        };
+
+        const updateNavButtons = () => {
+            dom.prevBtn.disabled = examState.currentQuestionIndex === 0;
+            const isLast = examState.currentQuestionIndex === examState.questions.length - 1;
+            dom.nextBtn.style.display = isLast ? 'none' : 'inline-flex';
+            dom.submitBtn.style.display = isLast ? 'inline-flex' : 'none';
+        };
+        
+        const handleNext = () => {
+            if (examState.currentQuestionIndex < examState.questions.length - 1) {
+                navigateToQuestion(examState.currentQuestionIndex + 1);
+            }
+        };
+
+        const renderReviewGrid = () => {
+            dom.reviewGrid.innerHTML = '';
+            examState.questions.forEach((q, index) => {
+                const btn = document.createElement('button');
+                btn.className = `review-item-btn ${q.isAnswered ? 'answered' : 'unanswered'}`;
+                btn.textContent = index + 1;
+                btn.onclick = () => { navigateToQuestion(index); showView('exam-view'); };
+                dom.reviewGrid.appendChild(btn);
+            });
+        };
+
+        const handleSubmit = async (isAutoSubmit = false) => {
+            if(isTestEnded) return;
+            if (!isAutoSubmit && !confirm("Are you sure you want to submit your test?")) return;
+            isTestEnded = true;
+            clearInterval(timerInterval);
+            dom.loadingOverlay.querySelector('p').textContent = 'Submitting & Calculating Score...';
+            dom.loadingOverlay.style.display = 'flex';
+            
+            let pointsReceived = 0;
+            let totalPoints = 0;
+
+            examState.questions.forEach(q => {
+                totalPoints += q.points;
+                if (q.userAnswer === q.correctAnswer) {
+                    pointsReceived += q.points;
+                }
+            });
+
+            const scoreData = {
+                userId: currentUser.uid, examId: examState.currentExamData.id, 
+                examName: examState.currentExamData.name, subjectId: examState.currentExamData.subjectId,
+                pointsReceived, totalPoints, timeTaken: examState.currentExamData.duration - examState.timeLeft,
+                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            await db.collection('scores').add(scoreData);
+            renderResultsPage(scoreData);
+        };
+
+        const renderResultsPage = (scoreData) => {
+            const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
+            dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is</p><h1 style="font-size: 4rem; color: var(--accent-start); margin: 1rem 0;">${percentage}%</h1><h3>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</h3></div>`;
+            showView('results-view');
+            dom.loadingOverlay.style.display = 'none';
+        };
+
+        const startTimer = () => {
+            if (timerInterval) clearInterval(timerInterval);
+            const storageKey = `examEndTime_mcq_${currentUser.uid}_${examState.currentExamData.id}`;
+            let endTime = localStorage.getItem(storageKey);
+            if (!endTime) {
+                endTime = Date.now() + examState.timeLeft * 1000;
+                localStorage.setItem(storageKey, endTime);
+            }
+            timerInterval = setInterval(() => {
+                const remaining = Math.max(0, endTime - Date.now());
+                examState.timeLeft = Math.round(remaining / 1000);
+                const mins = Math.floor(examState.timeLeft / 60);
+                const secs = examState.timeLeft % 60;
+                const timeString = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                [dom.timerDisplay, dom.mobileTimerDisplay].forEach(el => el.textContent = timeString);
+                
+                const timerContainers = [dom.timerContainer, dom.mobileTimerContainer];
+                if (examState.timeLeft <= 60) { timerContainers.forEach(c => { c.classList.remove('warning'); c.classList.add('danger'); }); }
+                else if (examState.timeLeft <= 300) { timerContainers.forEach(c => c.classList.add('warning')); }
+                
+                if (examState.timeLeft <= 0) { clearInterval(timerInterval); handleSubmit(true); }
+            }, 1000);
+        };
+
+        const handleViolation = (type) => {
+            if (isTestEnded) return;
+            violationCount++;
+            const remaining = MAX_VIOLATIONS - violationCount;
+            [dom.attemptsLeft, dom.mobileAttemptsLeft].forEach(el => el.textContent = remaining);
+            if (violationCount >= MAX_VIOLATIONS) {
+                handleSubmit(true);
+            } else {
+                showAdvancedAlert('warning', 'Proctoring Warning', `${type} detected. (${violationCount}/${MAX_VIOLATIONS} attempts remaining)`);
+            }
+        };
+
+        const showAdvancedAlert = (type, title, message) => {
             const alertId = `alert-${Date.now()}`;
             const alertEl = document.createElement('div');
             alertEl.id = alertId;
             alertEl.className = `advanced-alert alert-${type}`;
-            const iconId = '#icon-info-circle';
+            const iconId = type === 'warning' ? '#icon-alert-triangle' : '#icon-info-circle';
             alertEl.innerHTML = `<div class="alert-icon"><svg><use href="${iconId}"></use></svg></div><div class="alert-content"><div class="alert-title">${title}</div><div class="alert-message">${message}</div></div><div class="alert-progress"></div>`;
-            DOMElements.alertContainer.appendChild(alertEl);
+            dom.alertContainer.appendChild(alertEl);
             setTimeout(() => { const el = document.getElementById(alertId); if (el) { el.classList.add('fade-out'); el.addEventListener('animationend', () => el.remove()); } }, 5000);
-        }
-
-        function startTimer() {
-            const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
-            let endTime = localStorage.getItem(storageKey);
-            if (!endTime) {
-                endTime = Date.now() + assignment.duration * 1000;
-                localStorage.setItem(storageKey, endTime);
-            }
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const remaining = endTime - Date.now();
-                if (remaining <= 0) {
-                    endExam("Time's up!", "Time limit reached");
-                    return;
-                }
-                updateTimerDisplay(remaining);
-            }, 1000);
-        }
-
-        function updateTimerDisplay(remainingMs) {
-            const totalSeconds = Math.floor(remainingMs / 1000);
-            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-            const timeString = `${hours}:${minutes}:${seconds}`;
-            DOMElements.timer.textContent = timeString;
-            DOMElements.mobileTimer.textContent = timeString;
-        }
-
-        async function endExam(title = "Test Finished", reason = "User ended exam") {
-            if(isTestEnded || isSubmitting) return;
-            isSubmitting = true;
-            isTestEnded = true;
-            clearInterval(timerInterval);
-            if(editor) editor.updateOptions({ readOnly: true });
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
-            let totalScoreObtained = 0;
-            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
-            scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
-            const solvedCount = Object.values(problemStatus).filter(s => s === 'solved').length;
-            const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
-            const finalScoreData = {
-                userId: currentUser.uid, assignmentId: assignmentId,
-                assignmentName: assignment.name, subjectId: assignment.subjectId,
-                totalScoreObtained, totalScorePossible,
-                problemsSolved: solvedCount, totalProblems: problems.length,
-                completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                submissionReason: reason
-            };
-            await db.collection('codeAssignmentScores').add(finalScoreData);
-
-            localStorage.removeItem(`examEndTime_${currentUser.uid}_${assignmentId}`);
-
-            DOMElements.finalScoreMessage.textContent = `Final Score: ${totalScoreObtained} / ${totalScorePossible}`;
-            renderFinalResultsList(problemStatus);
-            DOMElements.resultsOverlay.querySelector('h2').textContent = title;
-            DOMElements.resultsOverlay.classList.add('show');
-            let countdown = 30;
-            const redirectMessageEl = document.getElementById('redirect-message');
-            const countdownInterval = setInterval(() => {
-                redirectMessageEl.textContent = `Redirecting in ${countdown} seconds...`;
-                countdown--;
-                if (countdown < 0) {
-                    clearInterval(countdownInterval);
-                    window.location.href = '/course.html';
-                }
-            }, 1000);
-            isSubmitting = false;
-        }
+        };
         
-        function renderFinalResultsList(statuses) {
-            DOMElements.finalResultsList.innerHTML = '';
-            problems.forEach(p => {
-                const status = statuses[p.id] || 'notattempted';
-                const statusClass = `final-status ${status}`;
-                const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
-
-                const li = document.createElement('li');
-                const titleSpan = document.createElement('span');
-                titleSpan.textContent = p.title;
-                const statusSpan = document.createElement('span');
-                statusSpan.className = statusClass;
-                statusSpan.textContent = statusText;
-
-                li.appendChild(titleSpan);
-                li.appendChild(statusSpan);
-                DOMElements.finalResultsList.appendChild(li);
-            });
-        }
-
-        function initEventListeners() {
-            [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
-            [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
-            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
-                if(confirm("Are you sure you want to end the test and submit your answers?")) {
-                    endExam();
-                }
-            }));
-            document.getElementById('final-problem-confirm-btn').addEventListener('click', () => {
-                DOMElements.finalProblemOverlay.classList.remove('show');
-                endExam("Test Finished", "User submitted final problem");
-            });
-            document.getElementById('final-problem-cancel-btn').addEventListener('click', () => {
-                DOMElements.finalProblemOverlay.classList.remove('show');
-            });
-            DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
-            DOMElements.problemList.addEventListener('click', handleProblemSelect);
-            [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
-            const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
-            DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
-            DOMElements.overlay.addEventListener('click', closeMobileMenu);
-            DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
-            initResizers();
-        }
-
-        function isProblemUnlocked(problemId) {
-            const problemIndex = problems.findIndex(p => p.id === problemId);
-            if (problemIndex === 0) return true;
-            const prevProblemId = problems[problemIndex - 1].id;
-            return problemStatus[prevProblemId] === 'solved' || problemStatus[prevProblemId] === 'attempted';
-        }
-
-        function renderProblemList() {
-            DOMElements.problemList.innerHTML = '';
-            problems.forEach((p, i) => {
-                const li = document.createElement('li');
-                const status = problemStatus[p.id];
-                const isUnlocked = isProblemUnlocked(p.id);
-                const isActive = p.id === currentProblemId;
-
-                li.className = `problem-item ${status} ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`;
-                li.dataset.id = p.id;
-                
-                const pNumber = document.createElement('div');
-                pNumber.className = 'p-number';
-                pNumber.textContent = i + 1;
-                
-                const pTitle = document.createElement('div');
-                pTitle.className = 'p-title';
-                pTitle.textContent = p.title;
-                
-                li.appendChild(pNumber);
-                li.appendChild(pTitle);
-                
-                if (status === 'solved' || status === 'attempted') {
-                    const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
-                    const iconContainer = document.createElement('div');
-                    iconContainer.className = 'p-status-icon';
-                    iconContainer.innerHTML = `<svg><use href="${icon}"></use></svg>`;
-                    li.appendChild(iconContainer);
-                }
-                
-                DOMElements.problemList.appendChild(li);
-            });
-        }
-
-        function loadProblem(problemId) {
-            currentProblemId = problemId;
-            const problem = problems.find(p => p.id === problemId);
-            if (!problem) return;
-            const status = problemStatus[problemId];
-            const isSubmitted = status === 'solved' || status === 'attempted';
-            DOMElements.mainHeaderTitle.textContent = problem.title;
-            DOMElements.problemStatement.innerHTML = sanitizeHTML(problem.statement);
-            DOMElements.problemDetailsContent.style.animation = 'none';
-            DOMElements.problemDetailsContent.offsetHeight;
-            DOMElements.problemDetailsContent.style.animation = null;
-            if (editor) {
-                editor.setValue(userCodeState[problemId] || problem.starterCode);
-                editor.updateOptions({ readOnly: isSubmitted });
-            }
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSubmitted);
-            
-            DOMElements.publicTestCases.innerHTML = '';
-            problem.testCases.filter(tc => !tc.hidden).forEach((tc, i) => {
-                const caseDiv = document.createElement('div');
-                caseDiv.className = 'test-case';
-                caseDiv.innerHTML = `<h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code></code></p><p><strong>Output:</strong> <code></code></p>`;
-                caseDiv.querySelectorAll('code')[0].textContent = JSON.stringify(tc.input);
-                caseDiv.querySelectorAll('code')[1].textContent = JSON.stringify(tc.expected);
-                DOMElements.publicTestCases.appendChild(caseDiv);
-            });
-
-            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
-            DOMElements.consoleOutput.textContent = 'No console output.';
-            renderProblemList();
-            setMobileView('problem');
-        }
-
-        function handleProblemSelect(e) {
-            const target = e.target.closest('.problem-item');
-            if (!target) return;
-            if (target.classList.contains('locked')) {
-                showAdvancedAlert('info', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
-                return;
-            }
-            if (target.dataset.id !== currentProblemId) {
-                loadProblem(target.dataset.id);
-                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active');
-            }
-        }
-
-        function setMobileView(view) {
-            if (window.innerWidth > 900) return;
-            DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
-            const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
-            Object.values(views).forEach(panel => panel.classList.remove('mobile-view-active'));
-            if (views[view]) views[view].classList.add('mobile-view-active');
-            DOMElements.mobileFooter.classList.toggle('active', view === 'code');
-        }
-
-        async function handleExecution(isSubmission) {
-            setLoadingState(true, isSubmission);
-            DOMElements.resultsContent.innerHTML = '';
-            DOMElements.consoleOutput.textContent = '';
-            const problem = problems.find(p => p.id === currentProblemId);
-            const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
-            const results = [];
-            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
-            if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
-
-            if (isSubmission) {
-                const allPassed = results.every(r => r.status === 'pass');
-                const previousStatus = problemStatus[currentProblemId];
-                problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
-                if (previousStatus !== 'solved') { await saveScore(problem, allPassed); }
-                renderProblemList();
-
-                const currentProblemIndex = problems.findIndex(p => p.id === currentProblemId);
-                const isLastProblem = currentProblemIndex === problems.length - 1;
-
-                if (isLastProblem) {
-                    DOMElements.finalProblemOverlay.classList.add('show');
-                } else {
-                    showAdvancedAlert('info', 'Submission Received', `Moving to the next problem...`);
-                    const nextProblemId = problems[currentProblemIndex + 1].id;
-                    setTimeout(() => loadProblem(nextProblemId), 1500);
+        const handleVisibilityChange = () => { if (document.hidden) handleViolation('Tab switching'); }
+        
+        const handleFullscreenChange = () => {
+            if (document.fullscreenElement) {
+                dom.fullscreenOverlay.classList.remove('show');
+                if (!timerInterval && !isTestEnded) {
+                   startTimer();
+                   dom.loadingOverlay.style.display = 'none';
+                   showView('exam-view');
                 }
             } else {
-                renderResults(results, false);
-                if (problemStatus[currentProblemId] === 'not-attempted') {
-                    problemStatus[currentProblemId] = 'attempted';
-                    renderProblemList();
+                if (!isTestEnded) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    handleViolation('Fullscreen exit');
+                    dom.fullscreenTitle.textContent = 'Exam Paused';
+                    dom.fullscreenMessage.textContent = 'Please re-enter fullscreen mode to resume the test.';
+                    dom.fullscreenOverlay.classList.add('show');
                 }
-                document.querySelector('.tab[data-tab="results"]').click();
-                if (window.innerWidth <= 900) setMobileView('results');
             }
-            userCodeState[currentProblemId] = editor.getValue();
-            setLoadingState(false, isSubmission);
-        }
+        };
 
-        async function executeTestCase(code, testCase, functionName) {
-            let result = { status: 'fail', error: null, output: null };
-            const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
-            const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
-            const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
-            try {
-                const capturedOutput = { lines: [] };
-                pyodide.setStdout({ batched: (msg) => capturedOutput.lines.push(msg) });
-                pyodide.setStderr({ batched: (msg) => capturedOutput.lines.push(msg) });
-                await pyodide.runPythonAsync(fullScript);
-                const outputStr = capturedOutput.lines.join('\n');
-                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
-                const userLogs = outputStr.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
-                if (userLogs) DOMElements.consoleOutput.textContent += `${userLogs}\n`;
-                if (resultMatch && resultMatch[1]) {
-                    const outputJs = JSON.parse(resultMatch[1]);
-                    result.output = outputJs;
-                    if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
-                } else { result.error = "Execution failed to produce a valid result."; }
-            } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent += `\n--- ERROR ---\n${e.toString()}`; }
-            finally { pyodide.setStdout(); pyodide.setStderr(); }
-            return { ...testCase, ...result };
-        }
-
-        async function saveScore(problem, wasCorrect) {
-            const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
-            const scoreSnap = await scoreRef.get();
-            if (scoreSnap.empty) {
-                const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
-                try { await db.collection('codeScores').add(scoreData); } catch (e) { showAdvancedAlert('error', 'Save Failed', 'Could not save your score.'); }
+        const checkFullscreen = () => { 
+            if (!document.fullscreenElement) {
+                dom.fullscreenOverlay.classList.add('show');
+                dom.loadingOverlay.style.display = 'none';
+            } else {
+                dom.loadingOverlay.style.display = 'none';
+                showView('exam-view');
+                startTimer();
             }
-        }
+        };
 
-        function renderResults(results, isSubmission) {
-            const passedCount = results.filter(r => r.status === 'pass').length, totalCount = results.length;
-            const success = passedCount === totalCount;
-            let summaryHTML;
-            if (isSubmission) { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; }
-            else { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`; }
-            const resultsHTML = results.map((r, i) => {
-                const caseTitle = r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`;
-                const statusIcon = r.status === 'pass' ? '#icon-check' : '#icon-close';
-                return `<div class="result-item"><span>${caseTitle}</span><div class="status status-${r.status}"><svg><use href="${statusIcon}"></use></svg>${r.status.toUpperCase() === 'PASS' ? 'PASSED' : 'FAILED'}</div></div>`;
-            }).join('');
-            DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
-        }
+        const initEventListeners = () => {
+            const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
+            document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
+            document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
+            document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
+            
+            dom.prevBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex - 1));
+            dom.nextBtn.addEventListener('click', handleNext);
+            dom.submitBtn.addEventListener('click', () => { renderReviewGrid(); showView('review-view'); });
+            [dom.endTestBtn, dom.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => { renderReviewGrid(); showView('review-view'); }));
+            dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
+            
+            document.addEventListener('visibilitychange', handleVisibilityChange); 
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            dom.enterFullscreenBtn.addEventListener('click', () => { document.documentElement.requestFullscreen().catch(err => console.error(err)); });
 
-        function setLoadingState(isLoading, isSubmission) {
-            const btns = isSubmission ? [DOMElements.submitBtn, DOMElements.mobileSubmitBtn] : [DOMElements.runBtn, DOMElements.mobileRunBtn];
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading || isTestEnded);
-            btns.forEach(btn => {
-                const btnText = btn.querySelector('.btn-text');
-                const isSubmitted = problemStatus[currentProblemId] === 'solved' || problemStatus[currentProblemId] === 'attempted';
-                if (isLoading) {
-                    btn.querySelector('svg').style.display = 'none';
-                    const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader);
-                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
-                } else {
-                    btn.querySelector('.loader')?.remove();
-                    btn.querySelector('svg').style.display = 'block';
-                    btnText.textContent = isSubmission ? 'Submit' : 'Run';
-                    btn.disabled = isSubmitted || isTestEnded;
-                }
-            });
-        }
-
-        function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
-
-        function initResizers() {
-            if (window.innerWidth <= 900) return;
-            const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling;
-            const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling;
-            const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
-            const onMouseUpH = () => document.removeEventListener('mousemove', onMouseMoveH);
-            resizerH.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveH); document.addEventListener('mouseup', onMouseUpH, { once: true }); });
-            const onMouseMoveV = (e) => { const containerWidth = problemDetails.parentElement.clientWidth, newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; const percentage = newLeftWidth / containerWidth * 100; problemDetails.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
-            const onMouseUpV = () => document.removeEventListener('mousemove', onMouseMoveV);
-            resizerV.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', onMouseUpV, { once: true }); });
-        }
-
-        main();
+            [dom.menuToggle, dom.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); }));
+            const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
+            dom.closeMenuBtn.addEventListener('click', closeMobileMenu);
+            dom.overlay.addEventListener('click', closeMobileMenu);
+        };
     </script>
 </body>
 </html>
