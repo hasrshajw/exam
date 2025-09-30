@@ -8,18 +8,18 @@
         :root {
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
-            --bg-dark: #0a192f;
-            --surface-dark-rgb: 23, 42, 69;
-            --surface-light-rgb: 42, 61, 88;
-            --border-color-rgb: 72, 94, 122;
-            --text-primary: #ccd6f6;
-            --text-secondary: #8892b0;
-            --accent-glow-rgb: 100, 255, 218;
-            --accent-start: #64FFDA;
-            --accent-end: #36D1DC;
-            --success-rgb: 100, 255, 218;
-            --danger-rgb: 255, 107, 107;
-            --warning-rgb: 253, 186, 116;
+            --bg-dark: #0d1117;
+            --surface-dark-rgb: 22, 27, 34;
+            --surface-light-rgb: 33, 38, 45;
+            --border-color-rgb: 48, 54, 61;
+            --text-primary: #e6edf3;
+            --text-secondary: #7d8590;
+            --accent-glow-rgb: 29, 161, 242;
+            --accent-start: #00A6D6;
+            --accent-end: #1DE9B6;
+            --success-rgb: 40, 167, 69;
+            --danger-rgb: 220, 53, 69;
+            --warning-rgb: 255, 193, 7;
             --border-radius: 8px;
             --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -28,7 +28,7 @@
         html, body { height: 100%; overflow: hidden; }
         body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; }
         .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
-        .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.1; }
+        .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; }
         .aurora-bg::before { background: radial-gradient(circle, var(--accent-start), transparent 70%); top: -20%; left: -10%; animation: moveAurora1 20s infinite alternate; }
         .aurora-bg::after { background: radial-gradient(circle, var(--accent-end), transparent 70%); bottom: -20%; right: -10%; animation: moveAurora2 25s infinite alternate; }
         @keyframes moveAurora1 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(100px, 50px) rotate(30deg); } }
@@ -45,14 +45,14 @@
         .sidebar nav { flex-grow: 1; overflow-y: auto; }
         .problem-nav { list-style: none; }
         .problem-item { position: relative; display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; overflow: hidden; }
-        .problem-item::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: var(--accent-start); transform: translateX(-100%); transition: transform var(--transition-fast); }
+        .problem-item::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: linear-gradient(var(--accent-start), var(--accent-end)); transform: translateX(-100%); transition: transform var(--transition-fast); }
         .problem-item:not(.locked):not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
         .problem-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
         .problem-item.active::before { transform: translateX(0); }
         .problem-item.locked { cursor: not-allowed; opacity: 0.6; }
         .problem-item.locked:hover { background-color: transparent; }
         .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
-        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: var(--bg-dark); font-weight: bold; }
+        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
         .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
         .p-status-icon { width: 20px; height: 20px; margin-left: 8px; opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
         .problem-item.solved .p-status-icon, .problem-item.attempted .p-status-icon { opacity: 1; transform: scale(1); }
@@ -63,19 +63,19 @@
         .timer-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
         .timer-container svg { width: 18px; height: 18px; }
         .controls { display: flex; gap: 12px; }
-        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--accent-start); color: var(--accent-start); }
+        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(var(--border-color-rgb), 0.7); }
         .btn svg { width: 18px; height: 18px; }
-        .btn.run-btn:hover:not(:disabled) { background-color: rgba(var(--accent-glow-rgb), 0.1); }
-        .btn.submit-btn { background-color: var(--accent-start); border-color: var(--accent-start); color: var(--bg-dark); } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); background-color: var(--accent-start); }
+        .btn.run-btn { background-color: rgba(var(--surface-light-rgb), 0.8); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: rgba(var(--border-color-rgb), 0.7); }
+        .btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
         #end-test-btn { color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); } #end-test-btn:hover:not(:disabled) { background-color: rgba(var(--danger-rgb), 0.1); }
-        .btn:disabled { background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; border-color: rgba(var(--border-color-rgb), 0.7); }
+        .btn:disabled { background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
         .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
         .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 90px); }
         .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
         .ide-panel { background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); overflow: hidden; display: flex; flex-direction: column; }
         #problem-details { flex: 1; padding: 24px; overflow-y: auto; }
         #problem-details-content { animation: fadeIn 0.5s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; color: var(--text-primary); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); }
+        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; color: var(--text-primary); }
         #problem-statement { line-height: 1.7; color: var(--text-secondary); }
         #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid rgba(var(--border-color-rgb), 0.8); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
         .test-case { background-color: rgba(var(--surface-light-rgb), 0.4); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
@@ -85,7 +85,7 @@
         #resizer-v { width: 16px; cursor: col-resize; } #resizer-v::before { content: '⋮'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
         .bottom-panel { flex-shrink: 0; display: flex; flex-direction: column; }
         .tabs { display: flex; padding: 0 12px; background-color: var(--bg-dark); }
-        .tab { position: relative; padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all var(--transition-fast); } .tab::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--accent-start); transform: scaleX(0); transition: transform var(--transition-fast); } .tab.active { color: var(--accent-start); } .tab.active::after { transform: scaleX(1); }
+        .tab { position: relative; padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all var(--transition-fast); } .tab::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); transform: scaleX(0); transition: transform var(--transition-fast); } .tab.active { color: var(--text-primary); } .tab.active::after { transform: scaleX(1); }
         .tab-content-area { flex-grow: 1; overflow-y: auto; }
         .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
         #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
@@ -93,10 +93,10 @@
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: rgba(var(--surface-light-rgb), 0.3); border-radius: var(--border-radius); margin-bottom: 8px; }
         .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
         .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
-        #results-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 25, 47, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        #results-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
         #results-overlay.show { display: flex; opacity: 1; }
         .results-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
-        .results-card h2 { font-size: 2rem; margin-bottom: 8px; color: var(--accent-start); } .results-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        .results-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
         #redirect-message { font-size: 1rem; margin-top: -16px; }
         .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
         .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
@@ -119,12 +119,13 @@
         .advanced-alert.alert-info { border-color: var(--accent-start); color: var(--accent-start); }
         .mobile-header, .mobile-nav, .mobile-footer { display: none; }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
-        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 25, 47, 0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
         .custom-modal-overlay.show { display: flex; opacity: 1; }
         .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 500px; text-align: center; animation: fadeIn 0.3s ease-out; }
-        .custom-modal-card h2 { font-size: 1.75rem; margin-bottom: 8px; color: var(--accent-start); }
+        .custom-modal-card h2 { font-size: 1.75rem; margin-bottom: 8px; }
         .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem; line-height: 1.6; }
         .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
+        .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
         @media (max-width: 900px) {
             .main-content { padding: 0; height: 100%; }
             .main-header { display: none; }
@@ -132,7 +133,7 @@
             .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
             .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
             .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
-            .mobile-nav-btn.active { color: var(--accent-start); }
+            .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
             .ide-layout { display: flex; flex-direction: column; }
             .top-panel { display: flex; flex-grow: 1; min-height: 0; background: transparent; backdrop-filter: none; border: none; }
             .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; border: none; background: transparent; backdrop-filter: none; }
@@ -192,7 +193,7 @@
             </header>
             <header class="mobile-header">
                 <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                 <div class="timer-container"><svg><use href="#mobile-timer">00:00:00</use></svg><span id="mobile-timer"></span></div>
+                 <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00:00</span></div>
                 <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
             </header>
             <div class="mobile-nav">
@@ -205,7 +206,7 @@
                     <div id="problem-details" class="ide-panel mobile-view-active">
                          <div id="problem-details-content">
                              <div id="problem-statement"></div>
-                             <h2 style="margin-top: 24px;">Public Test Cases</h2>
+                             <h2 style="margin-top: 24px;">Test Cases</h2>
                              <div id="public-test-cases"></div>
                          </div>
                     </div>
@@ -219,7 +220,7 @@
                         <div class="tab" data-tab="console">Console</div>
                     </div>
                     <div class="tab-content-area">
-                        <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run your code against public test cases to see results.</p></div>
+                        <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit to see results.</p></div>
                         <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
                     </div>
                 </div>
@@ -267,42 +268,42 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.firestore();
-        
-        const DOMElements = { 
-            loadingOverlay: document.getElementById('loading-overlay'), 
+
+        const DOMElements = {
+            loadingOverlay: document.getElementById('loading-overlay'),
             ideDashboard: document.querySelector('.ide-dashboard'),
-            editorContainer: document.getElementById('editor-container'), 
+            editorContainer: document.getElementById('editor-container'),
             runBtn: document.getElementById('run-btn'), mobileRunBtn: document.getElementById('mobile-run-btn'),
             submitBtn: document.getElementById('submit-btn'), mobileSubmitBtn: document.getElementById('mobile-submit-btn'),
             endTestBtn: document.getElementById('end-test-btn'), mobileEndTestBtn: document.getElementById('mobile-end-test-btn'),
             timer: document.getElementById('timer'), mobileTimer: document.getElementById('mobile-timer'),
-            problemList: document.getElementById('problem-list'), 
+            problemList: document.getElementById('problem-list'),
             assignmentTitle: document.getElementById('assignment-title'),
-            mainHeaderTitle: document.getElementById('main-header-title'), 
+            mainHeaderTitle: document.getElementById('main-header-title'),
             problemDetails: document.getElementById('problem-details'),
             problemDetailsContent: document.getElementById('problem-details-content'),
-            problemStatement: document.getElementById('problem-statement'), 
-            publicTestCases: document.getElementById('public-test-cases'), 
-            bottomPanel: document.querySelector('.bottom-panel'), 
-            resultsContent: document.getElementById('results'), 
-            consoleOutput: document.getElementById('console-output'), 
-            tabs: document.querySelectorAll('.tab'), 
+            problemStatement: document.getElementById('problem-statement'),
+            publicTestCases: document.getElementById('public-test-cases'),
+            bottomPanel: document.querySelector('.bottom-panel'),
+            resultsContent: document.getElementById('results'),
+            consoleOutput: document.getElementById('console-output'),
+            tabs: document.querySelectorAll('.tab'),
             menuToggle: document.getElementById('menu-toggle'), mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
-            closeMenuBtn: document.getElementById('close-menu-btn'), 
-            sidebar: document.getElementById('sidebar'), 
-            overlay: document.getElementById('overlay'), 
-            mobileNav: document.querySelector('.mobile-nav'), 
-            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), 
+            closeMenuBtn: document.getElementById('close-menu-btn'),
+            sidebar: document.getElementById('sidebar'),
+            overlay: document.getElementById('overlay'),
+            mobileNav: document.querySelector('.mobile-nav'),
+            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'),
             mobileFooter: document.querySelector('.mobile-footer'),
-            resultsOverlay: document.getElementById('results-overlay'), 
-            finalResultsList: document.getElementById('final-results-list'), 
-            finalScoreMessage: document.getElementById('final-score-message'), 
+            resultsOverlay: document.getElementById('results-overlay'),
+            finalResultsList: document.getElementById('final-results-list'),
+            finalScoreMessage: document.getElementById('final-score-message'),
             alertContainer: document.getElementById('alert-container'),
             finalProblemOverlay: document.getElementById('final-problem-overlay')
         };
-        
-        let currentUser, assignmentId, assignment, problems = [], currentProblem, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isExecuting = false;
-        
+
+        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false;
+
         function seededRandom(seed) {
             let state = seed % 2147483647;
             if (state <= 0) state += 2147483646;
@@ -324,6 +325,25 @@
             return array;
         }
 
+        function sanitizeHTML(str) {
+            const temp = document.createElement('div');
+            temp.innerHTML = str;
+            const allowedTags = ['P', 'B', 'I', 'EM', 'STRONG', 'CODE', 'PRE', 'BLOCKQUOTE', 'H2', 'H3', 'UL', 'OL', 'LI', 'BR'];
+            const sanitizeNode = (node) => {
+                if (node.nodeType === Node.TEXT_NODE) return;
+                if (node.nodeType !== Node.ELEMENT_NODE || !allowedTags.includes(node.tagName)) {
+                    node.parentNode.removeChild(node);
+                    return;
+                }
+                for (let i = node.attributes.length - 1; i >= 0; i--) {
+                    node.removeAttribute(node.attributes[i].name);
+                }
+                [...node.childNodes].forEach(sanitizeNode);
+            };
+            [...temp.childNodes].forEach(sanitizeNode);
+            return temp.innerHTML;
+        }
+
         async function main() {
             const urlParams = new URLSearchParams(window.location.search);
             assignmentId = urlParams.get('id');
@@ -331,48 +351,30 @@
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     currentUser = user;
+                    await fetchData();
                     const completedScoreData = await checkIfAssignmentCompleted();
                     if (completedScoreData) {
-                        await fetchProblemListForResults();
                         showFinalResultsPage(completedScoreData);
                     } else {
-                        await fetchInitialData();
                         await initPyodide();
                     }
                 } else { window.location.href = 'index.html'; }
             });
         }
 
-        async function fetchInitialData() {
+        async function fetchData() {
             const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
             if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
             assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
             DOMElements.assignmentTitle.textContent = assignment.name;
-
             const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
-            let problemMetas = problemsSnap.docs.map(doc => ({ id: doc.id, title: doc.data().title, starterCode: doc.data().starterCode }));
-            problems = shuffleArray(problemMetas, currentUser.uid);
-
-            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
-            scoresSnap.forEach(doc => {
-                const score = doc.data();
-                problemStatus[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
-            });
-            
+            problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            shuffleArray(problems, currentUser.uid);
             problems.forEach(p => {
                 userCodeState[p.id] = p.starterCode;
-                if (!problemStatus[p.id]) problemStatus[p.id] = 'not-attempted';
+                problemStatus[p.id] = 'not-attempted';
             });
-            
-            const firstUnsolved = problems.find(p => problemStatus[p.id] !== 'solved') || problems[problems.length-1];
-            currentProblem = firstUnsolved;
-        }
-
-        async function fetchProblemListForResults() {
-            if (problems.length > 0) return;
-            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
-            let problemMetas = problemsSnap.docs.map(doc => ({ id: doc.id, title: doc.data().title }));
-            problems = shuffleArray(problemMetas, currentUser.uid);
+            currentProblemId = problems.length > 0 ? problems[0].id : null;
         }
 
         async function checkIfAssignmentCompleted() {
@@ -385,52 +387,46 @@
             DOMElements.ideDashboard.style.display = 'none';
             DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
             DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
-            
-            const scoresRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId);
-            scoresRef.get().then(scoresSnap => {
+            db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
                 const problemScores = {};
                 scoresSnap.forEach(doc => {
                     const score = doc.data();
                     problemScores[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
                 });
-
-                DOMElements.finalResultsList.innerHTML = problems.map(p => {
-                    const status = problemScores[p.id] || 'notattempted';
-                    const statusClass = `final-status ${status}`;
-                    const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
-                    return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
-                }).join('');
-                DOMElements.resultsOverlay.classList.add('show');
+                renderFinalResultsList(problemScores);
             });
+            DOMElements.resultsOverlay.classList.add('show');
         }
 
         async function initPyodide() {
             if (!problems.length) { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; return; }
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
-            try { pyodide = await loadPyodide(); } 
+            try { pyodide = await loadPyodide(); }
             catch (error) { DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>'; return; }
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
             initEditor();
         }
-        
+
         function initEditor() {
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
             require(['vs/editor/editor.main'], () => {
-                monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [], colors: { 'editor.background': '#0A192F' } });
+                monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [], colors: { 'editor.background': '#0D1117' } });
                 editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
                 DOMElements.loadingOverlay.style.opacity = '0';
                 setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.ideDashboard.style.display = 'flex'; }, 300);
                 init();
             });
         }
-        
-        async function init() {
+
+        function init() {
+            renderProblemList();
+            loadProblem(currentProblemId);
             initEventListeners();
-            await loadProblem(currentProblem.id);
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = false);
             setMobileView('problem');
             startTimer();
         }
-        
+
         function showAdvancedAlert(type, title, message) {
             const alertId = `alert-${Date.now()}`;
             const alertEl = document.createElement('div');
@@ -442,17 +438,13 @@
             setTimeout(() => { const el = document.getElementById(alertId); if (el) { el.classList.add('fade-out'); el.addEventListener('animationend', () => el.remove()); } }, 5000);
         }
 
-        async function startTimer() {
-            const userStateRef = db.collection('examStates').doc(`${currentUser.uid}_${assignmentId}`);
-            const userStateDoc = await userStateRef.get();
-            let endTime;
-            if (userStateDoc.exists && userStateDoc.data().endTime) {
-                endTime = userStateDoc.data().endTime.toMillis();
-            } else {
+        function startTimer() {
+            const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
+            let endTime = localStorage.getItem(storageKey);
+            if (!endTime) {
                 endTime = Date.now() + assignment.duration * 1000;
-                await userStateRef.set({ endTime: new Date(endTime) }, { merge: true });
+                localStorage.setItem(storageKey, endTime);
             }
-
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const remaining = endTime - Date.now();
@@ -464,19 +456,19 @@
             }, 1000);
         }
 
-        function updateTimerDisplay(remainingMs) { 
+        function updateTimerDisplay(remainingMs) {
             const totalSeconds = Math.floor(remainingMs / 1000);
             const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
             const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
             const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-            const timeString = `${hours}:${minutes}:${seconds}`; 
-            DOMElements.timer.textContent = timeString; 
-            DOMElements.mobileTimer.textContent = timeString; 
+            const timeString = `${hours}:${minutes}:${seconds}`;
+            DOMElements.timer.textContent = timeString;
+            DOMElements.mobileTimer.textContent = timeString;
         }
-        
+
         async function endExam(title = "Test Finished", reason = "User ended exam") {
-            if(isTestEnded || isExecuting) return;
-            isExecuting = true;
+            if(isTestEnded || isSubmitting) return;
+            isSubmitting = true;
             isTestEnded = true;
             clearInterval(timerInterval);
             if(editor) editor.updateOptions({ readOnly: true });
@@ -485,9 +477,7 @@
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
             scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
             const solvedCount = Object.values(problemStatus).filter(s => s === 'solved').length;
-
-            const totalScorePossible = (await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get()).docs.reduce((sum, doc) => sum + doc.data().points, 0);
-
+            const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
             const finalScoreData = {
                 userId: currentUser.uid, assignmentId: assignmentId,
                 assignmentName: assignment.name, subjectId: assignment.subjectId,
@@ -497,16 +487,11 @@
                 submissionReason: reason
             };
             await db.collection('codeAssignmentScores').add(finalScoreData);
-            
-            await db.collection('examStates').doc(`${currentUser.uid}_${assignmentId}`).delete();
+
+            localStorage.removeItem(`examEndTime_${currentUser.uid}_${assignmentId}`);
 
             DOMElements.finalScoreMessage.textContent = `Final Score: ${totalScoreObtained} / ${totalScorePossible}`;
-            DOMElements.finalResultsList.innerHTML = problems.map(p => {
-                const status = problemStatus[p.id] || 'notattempted';
-                const statusClass = `final-status ${status}`;
-                const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
-                return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
-            }).join('');
+            renderFinalResultsList(problemStatus);
             DOMElements.resultsOverlay.querySelector('h2').textContent = title;
             DOMElements.resultsOverlay.classList.add('show');
             let countdown = 30;
@@ -519,12 +504,32 @@
                     window.location.href = '/course.html';
                 }
             }, 1000);
-            isExecuting = false;
+            isSubmitting = false;
+        }
+        
+        function renderFinalResultsList(statuses) {
+            DOMElements.finalResultsList.innerHTML = '';
+            problems.forEach(p => {
+                const status = statuses[p.id] || 'notattempted';
+                const statusClass = `final-status ${status}`;
+                const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
+
+                const li = document.createElement('li');
+                const titleSpan = document.createElement('span');
+                titleSpan.textContent = p.title;
+                const statusSpan = document.createElement('span');
+                statusSpan.className = statusClass;
+                statusSpan.textContent = statusText;
+
+                li.appendChild(titleSpan);
+                li.appendChild(statusSpan);
+                DOMElements.finalResultsList.appendChild(li);
+            });
         }
 
         function initEventListeners() {
-            [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleRun()));
-            [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleSubmit()));
+            [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
+            [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
             [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
                 if(confirm("Are you sure you want to end the test and submit your answers?")) {
                     endExam();
@@ -549,77 +554,93 @@
 
         function isProblemUnlocked(problemId) {
             const problemIndex = problems.findIndex(p => p.id === problemId);
-            if (problemIndex <= 0) return true;
+            if (problemIndex === 0) return true;
             const prevProblemId = problems[problemIndex - 1].id;
             return problemStatus[prevProblemId] === 'solved' || problemStatus[prevProblemId] === 'attempted';
         }
 
         function renderProblemList() {
-            DOMElements.problemList.innerHTML = problems.map((p, i) => {
+            DOMElements.problemList.innerHTML = '';
+            problems.forEach((p, i) => {
+                const li = document.createElement('li');
                 const status = problemStatus[p.id];
                 const isUnlocked = isProblemUnlocked(p.id);
-                const isActive = p.id === currentProblem.id;
-                const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
-                const statusIconHTML = (status === 'solved' || status === 'attempted') ? `<div class="p-status-icon"><svg><use href="${icon}"></use></svg></div>` : '';
-                return `<li class="problem-item ${status} ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}" data-id="${p.id}">
-                            <div class="p-number">${i + 1}</div>
-                            <div class="p-title">${p.title}</div>
-                            ${statusIconHTML}
-                        </li>`;
-            }).join('');
+                const isActive = p.id === currentProblemId;
+
+                li.className = `problem-item ${status} ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}`;
+                li.dataset.id = p.id;
+                
+                const pNumber = document.createElement('div');
+                pNumber.className = 'p-number';
+                pNumber.textContent = i + 1;
+                
+                const pTitle = document.createElement('div');
+                pTitle.className = 'p-title';
+                pTitle.textContent = p.title;
+                
+                li.appendChild(pNumber);
+                li.appendChild(pTitle);
+                
+                if (status === 'solved' || status === 'attempted') {
+                    const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
+                    const iconContainer = document.createElement('div');
+                    iconContainer.className = 'p-status-icon';
+                    iconContainer.innerHTML = `<svg><use href="${icon}"></use></svg>`;
+                    li.appendChild(iconContainer);
+                }
+                
+                DOMElements.problemList.appendChild(li);
+            });
         }
-        
-        async function loadProblem(problemId) {
-            const problemDoc = await db.collection('codeProblems').doc(problemId).get();
-            if (!problemDoc.exists) {
-                showAdvancedAlert('error', 'Error', 'Could not load problem details.');
-                return;
-            }
-            
-            const fullProblemData = { id: problemDoc.id, ...problemDoc.data() };
-            currentProblem = fullProblemData;
-            
+
+        function loadProblem(problemId) {
+            currentProblemId = problemId;
+            const problem = problems.find(p => p.id === problemId);
+            if (!problem) return;
             const status = problemStatus[problemId];
             const isSubmitted = status === 'solved' || status === 'attempted';
-            
-            DOMElements.mainHeaderTitle.textContent = currentProblem.title;
-            DOMElements.problemStatement.innerHTML = currentProblem.statement;
+            DOMElements.mainHeaderTitle.textContent = problem.title;
+            DOMElements.problemStatement.innerHTML = sanitizeHTML(problem.statement);
             DOMElements.problemDetailsContent.style.animation = 'none';
-            DOMElements.problemDetailsContent.offsetHeight; 
-            DOMElements.problemDetailsContent.style.animation = null; 
-            
-            if (editor) { 
-                editor.setValue(userCodeState[problemId] || currentProblem.starterCode);
+            DOMElements.problemDetailsContent.offsetHeight;
+            DOMElements.problemDetailsContent.style.animation = null;
+            if (editor) {
+                editor.setValue(userCodeState[problemId] || problem.starterCode);
                 editor.updateOptions({ readOnly: isSubmitted });
             }
-            
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSubmitted);
             
-            const publicTestCases = currentProblem.testCases.filter(tc => !tc.hidden);
-            DOMElements.publicTestCases.innerHTML = publicTestCases.map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
-            
-            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run code to see results against public cases.</p>';
+            DOMElements.publicTestCases.innerHTML = '';
+            problem.testCases.filter(tc => !tc.hidden).forEach((tc, i) => {
+                const caseDiv = document.createElement('div');
+                caseDiv.className = 'test-case';
+                caseDiv.innerHTML = `<h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code></code></p><p><strong>Output:</strong> <code></code></p>`;
+                caseDiv.querySelectorAll('code')[0].textContent = JSON.stringify(tc.input);
+                caseDiv.querySelectorAll('code')[1].textContent = JSON.stringify(tc.expected);
+                DOMElements.publicTestCases.appendChild(caseDiv);
+            });
+
+            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
             DOMElements.consoleOutput.textContent = 'No console output.';
             renderProblemList();
             setMobileView('problem');
         }
-        
-        async function handleProblemSelect(e) { 
+
+        function handleProblemSelect(e) {
             const target = e.target.closest('.problem-item');
             if (!target) return;
             if (target.classList.contains('locked')) {
-                showAdvancedAlert('info', 'Problem Locked', 'You must attempt or solve the current problem to proceed.');
+                showAdvancedAlert('info', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
                 return;
             }
-            if (target.dataset.id !== currentProblem.id) { 
-                await loadProblem(target.dataset.id); 
-                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); 
+            if (target.dataset.id !== currentProblemId) {
+                loadProblem(target.dataset.id);
+                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active');
             }
         }
-        
+
         function setMobileView(view) {
-            const IS_DESKTOP = window.innerWidth > 900;
-            if (IS_DESKTOP) return;
+            if (window.innerWidth > 900) return;
             DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
             const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
             Object.values(views).forEach(panel => panel.classList.remove('mobile-view-active'));
@@ -627,68 +648,46 @@
             DOMElements.mobileFooter.classList.toggle('active', view === 'code');
         }
 
-        async function handleRun() {
-            setLoadingState(true, false);
+        async function handleExecution(isSubmission) {
+            setLoadingState(true, isSubmission);
             DOMElements.resultsContent.innerHTML = '';
             DOMElements.consoleOutput.textContent = '';
-            
-            const testsToRun = currentProblem.testCases.filter(tc => !tc.hidden);
+            const problem = problems.find(p => p.id === currentProblemId);
+            const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
             const results = [];
-            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, currentProblem.functionName)); }
-            
+            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
             if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
-            
-            renderResults(results, false);
-            document.querySelector('.tab[data-tab="results"]').click();
-            if (window.innerWidth <= 900) setMobileView('results');
 
-            userCodeState[currentProblem.id] = editor.getValue();
-            setLoadingState(false, false);
-        }
+            if (isSubmission) {
+                const allPassed = results.every(r => r.status === 'pass');
+                const previousStatus = problemStatus[currentProblemId];
+                problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
+                if (previousStatus !== 'solved') { await saveScore(problem, allPassed); }
+                renderProblemList();
 
-        async function handleSubmit() {
-            setLoadingState(true, true);
-            const userCode = editor.getValue();
-            userCodeState[currentProblem.id] = userCode;
+                const currentProblemIndex = problems.findIndex(p => p.id === currentProblemId);
+                const isLastProblem = currentProblemIndex === problems.length - 1;
 
-            const response = await mockBackendSubmission(userCode, currentProblem.id);
-            
-            problemStatus[currentProblem.id] = response.allPassed ? 'solved' : 'attempted';
-            await saveScore(currentProblem, response.allPassed);
-
-            renderResults(response.results, true);
-            showAdvancedAlert('info', 'Submission Received', response.allPassed ? 'All test cases passed!' : 'Some test cases failed.');
-            renderProblemList();
-            
-            const currentProblemIndex = problems.findIndex(p => p.id === currentProblem.id);
-            const isLastProblem = currentProblemIndex === problems.length - 1;
-
-            if (isLastProblem) {
-                DOMElements.finalProblemOverlay.classList.add('show');
+                if (isLastProblem) {
+                    DOMElements.finalProblemOverlay.classList.add('show');
+                } else {
+                    showAdvancedAlert('info', 'Submission Received', `Moving to the next problem...`);
+                    const nextProblemId = problems[currentProblemIndex + 1].id;
+                    setTimeout(() => loadProblem(nextProblemId), 1500);
+                }
             } else {
-                const nextProblemId = problems[currentProblemIndex + 1].id;
-                setTimeout(() => loadProblem(nextProblemId), 2000);
+                renderResults(results, false);
+                if (problemStatus[currentProblemId] === 'not-attempted') {
+                    problemStatus[currentProblemId] = 'attempted';
+                    renderProblemList();
+                }
+                document.querySelector('.tab[data-tab="results"]').click();
+                if (window.innerWidth <= 900) setMobileView('results');
             }
+            userCodeState[currentProblemId] = editor.getValue();
+            setLoadingState(false, isSubmission);
+        }
 
-            setLoadingState(false, true);
-        }
-        
-        async function mockBackendSubmission(code, problemId) {
-            return new Promise(resolve => {
-                setTimeout(async () => {
-                    const problemDoc = await db.collection('codeProblems').doc(problemId).get();
-                    const problemData = problemDoc.data();
-                    const results = [];
-                    for (const testCase of problemData.testCases) {
-                        const execResult = await executeTestCase(code, testCase, problemData.functionName);
-                        results.push(execResult);
-                    }
-                    const allPassed = results.every(r => r.status === 'pass');
-                    resolve({ allPassed, results });
-                }, 1500);
-            });
-        }
-        
         async function executeTestCase(code, testCase, functionName) {
             let result = { status: 'fail', error: null, output: null };
             const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
@@ -708,7 +707,7 @@
                     result.output = outputJs;
                     if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
                 } else { result.error = "Execution failed to produce a valid result."; }
-            } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent += `\n--- ERROR ---\n${e.toString()}`; } 
+            } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent += `\n--- ERROR ---\n${e.toString()}`; }
             finally { pyodide.setStdout(); pyodide.setStderr(); }
             return { ...testCase, ...result };
         }
@@ -718,7 +717,7 @@
             const scoreSnap = await scoreRef.get();
             if (scoreSnap.empty) {
                 const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
-                await db.collection('codeScores').add(scoreData);
+                try { await db.collection('codeScores').add(scoreData); } catch (e) { showAdvancedAlert('error', 'Save Failed', 'Could not save your score.'); }
             }
         }
 
@@ -726,10 +725,10 @@
             const passedCount = results.filter(r => r.status === 'pass').length, totalCount = results.length;
             const success = passedCount === totalCount;
             let summaryHTML;
-            if (isSubmission) { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; } 
+            if (isSubmission) { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; }
             else { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`; }
             const resultsHTML = results.map((r, i) => {
-                const caseTitle = r.hidden ? `Hidden Test Case ${i + 1}` : `Public Test Case ${i + 1}`;
+                const caseTitle = r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`;
                 const statusIcon = r.status === 'pass' ? '#icon-check' : '#icon-close';
                 return `<div class="result-item"><span>${caseTitle}</span><div class="status status-${r.status}"><svg><use href="${statusIcon}"></use></svg>${r.status.toUpperCase() === 'PASS' ? 'PASSED' : 'FAILED'}</div></div>`;
             }).join('');
@@ -737,27 +736,26 @@
         }
 
         function setLoadingState(isLoading, isSubmission) {
-            isExecuting = isLoading;
             const btns = isSubmission ? [DOMElements.submitBtn, DOMElements.mobileSubmitBtn] : [DOMElements.runBtn, DOMElements.mobileRunBtn];
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading || isTestEnded);
             btns.forEach(btn => {
                 const btnText = btn.querySelector('.btn-text');
-                const isSubmitted = problemStatus[currentProblem.id] === 'solved' || problemStatus[currentProblem.id] === 'attempted';
-                if (isLoading) { 
+                const isSubmitted = problemStatus[currentProblemId] === 'solved' || problemStatus[currentProblemId] === 'attempted';
+                if (isLoading) {
                     btn.querySelector('svg').style.display = 'none';
-                    const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); 
-                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; 
-                } else { 
-                    btn.querySelector('.loader')?.remove(); 
-                    btn.querySelector('svg').style.display = 'block'; 
+                    const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader);
+                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...';
+                } else {
+                    btn.querySelector('.loader')?.remove();
+                    btn.querySelector('svg').style.display = 'block';
                     btnText.textContent = isSubmission ? 'Submit' : 'Run';
                     btn.disabled = isSubmitted || isTestEnded;
                 }
             });
         }
-        
+
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
-        
+
         function initResizers() {
             if (window.innerWidth <= 900) return;
             const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling;
@@ -769,7 +767,7 @@
             const onMouseUpV = () => document.removeEventListener('mousemove', onMouseMoveV);
             resizerV.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', onMouseUpV, { once: true }); });
         }
-        
+
         main();
     </script>
 </body>
