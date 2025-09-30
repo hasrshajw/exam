@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCoder IDE - Proctored Exam</title>
+    <title>ProCoder IDE - Coding Environment</title>
     <style>
         :root {
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -26,7 +26,7 @@
         }
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
-        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; user-select: none; -webkit-user-select: none; -moz-user-select: none; }
+        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; }
         .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
         .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; }
         .aurora-bg::before { background: radial-gradient(circle, var(--accent-start), transparent 70%); top: -20%; left: -10%; animation: moveAurora1 20s infinite alternate; }
@@ -60,9 +60,8 @@
         .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); padding: 12px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); }
         .header-title-group { display: flex; align-items: center; gap: 16px; }
         .header-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
-        .proctor-info { display: flex; align-items: center; gap: 24px; }
-        .timer-container, .attempts-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
-        .timer-container svg, .attempts-container svg { width: 18px; height: 18px; }
+        .timer-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
+        .timer-container svg { width: 18px; height: 18px; }
         .controls { display: flex; gap: 12px; }
         .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(var(--border-color-rgb), 0.7); }
         .btn svg { width: 18px; height: 18px; }
@@ -94,10 +93,10 @@
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: rgba(var(--surface-light-rgb), 0.3); border-radius: var(--border-radius); margin-bottom: 8px; }
         .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
         .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
-        #results-overlay, #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        #results-overlay.show, #fullscreen-overlay.show { display: flex; opacity: 1; }
-        .results-card, .fullscreen-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
-        .results-card h2, .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p, .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        #results-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        #results-overlay.show { display: flex; opacity: 1; }
+        .results-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
+        .results-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
         #redirect-message { font-size: 1rem; margin-top: -16px; }
         .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
         .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
@@ -116,7 +115,6 @@
         .alert-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background-color: rgba(255,255,255,0.2); }
         .alert-progress::after { content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: currentColor; animation: progressShrink 5s linear forwards; }
         @keyframes progressShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-        .advanced-alert.alert-warning { border-color: rgb(var(--warning-rgb)); color: rgb(var(--warning-rgb)); }
         .advanced-alert.alert-error { border-color: rgb(var(--danger-rgb)); color: rgb(var(--danger-rgb)); }
         .advanced-alert.alert-info { border-color: var(--accent-start); color: var(--accent-start); }
         .mobile-header, .mobile-nav, .mobile-footer { display: none; }
@@ -132,8 +130,8 @@
             .main-content { padding: 0; height: 100%; }
             .main-header { display: none; }
             .ide-layout { height: 100%; }
-            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 50px 16px 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
-            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding:4px; flex-shrink: 0; }
+            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
+            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
             .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
             .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
             .ide-layout { display: flex; flex-direction: column; }
@@ -150,7 +148,7 @@
             .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
             .mobile-footer.active { display: flex; }
             .mobile-footer .btn { flex: 1; }
-            .results-card, .fullscreen-card, .custom-modal-card { padding: 24px; } .results-card h2, .fullscreen-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p, .custom-modal-card p { font-size: 1rem; }
+            .results-card, .custom-modal-card { padding: 24px; } .results-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .custom-modal-card p { font-size: 1rem; }
         }
     </style>
 </head>
@@ -171,9 +169,7 @@
             <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
             <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
             <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" /></symbol>
-            <symbol id="icon-shield-warning" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.649 2 6.319 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 00-1-1H9a1 1 0 000 2h1a1 1 0 001-1z" clip-rule="evenodd" /></symbol>
             <symbol id="icon-info-circle" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" clip-rule="evenodd" /></symbol>
-            <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /></symbol>
         </svg>
     </div>
     <main class="ide-dashboard" style="display: none;">
@@ -188,10 +184,7 @@
                     <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
                     <h1 class="header-title" id="main-header-title"></h1>
                 </div>
-                <div class="proctor-info">
-                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">00:00:00</span></div>
-                    <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left">5</span></div>
-                </div>
+                <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">00:00:00</span></div>
                 <div class="controls">
                     <button id="end-test-btn" class="btn">End Test</button>
                     <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
@@ -200,10 +193,7 @@
             </header>
             <header class="mobile-header">
                 <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                 <div class="proctor-info">
-                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00:00</span></div>
-                    <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="mobile-attempts-left">5</span></div>
-                </div>
+                 <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00:00</span></div>
                 <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
             </header>
             <div class="mobile-nav">
@@ -239,13 +229,6 @@
                 <button id="mobile-run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
                 <button id="mobile-submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
             </footer>
-            <div id="fullscreen-overlay">
-                <div class="fullscreen-card">
-                    <h2 id="fullscreen-title">Fullscreen Required</h2>
-                    <p id="fullscreen-message">Please enter fullscreen mode to begin the test.</p>
-                    <button id="enter-fullscreen-btn" class="btn submit-btn">Enter Fullscreen</button>
-                </div>
-            </div>
         </div>
         <div class="overlay" id="overlay"></div>
     </main>
@@ -286,9 +269,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         
-        const MAX_VIOLATIONS = 5;
-        const IS_DESKTOP = window.innerWidth > 900;
-        
         const DOMElements = { 
             loadingOverlay: document.getElementById('loading-overlay'), 
             ideDashboard: document.querySelector('.ide-dashboard'),
@@ -297,7 +277,6 @@
             submitBtn: document.getElementById('submit-btn'), mobileSubmitBtn: document.getElementById('mobile-submit-btn'),
             endTestBtn: document.getElementById('end-test-btn'), mobileEndTestBtn: document.getElementById('mobile-end-test-btn'),
             timer: document.getElementById('timer'), mobileTimer: document.getElementById('mobile-timer'),
-            attemptsLeft: document.getElementById('attempts-left'), mobileAttemptsLeft: document.getElementById('mobile-attempts-left'),
             problemList: document.getElementById('problem-list'), 
             assignmentTitle: document.getElementById('assignment-title'),
             mainHeaderTitle: document.getElementById('main-header-title'), 
@@ -319,15 +298,11 @@
             resultsOverlay: document.getElementById('results-overlay'), 
             finalResultsList: document.getElementById('final-results-list'), 
             finalScoreMessage: document.getElementById('final-score-message'), 
-            fullscreenOverlay: document.getElementById('fullscreen-overlay'),
-            fullscreenTitle: document.getElementById('fullscreen-title'),
-            fullscreenMessage: document.getElementById('fullscreen-message'),
-            enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
             alertContainer: document.getElementById('alert-container'),
             finalProblemOverlay: document.getElementById('final-problem-overlay')
         };
         
-        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0;
+        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false;
 
         async function main() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -396,35 +371,11 @@
             initEditor();
         }
         
-        function disableEditorActions(editorInstance) {
-            const actionsToDisable = [
-                { id: 'editor.action.clipboardCopyAction', key: monaco.KeyCode.KeyC, label: 'Copy' },
-                { id: 'editor.action.clipboardCutAction', key: monaco.KeyCode.KeyX, label: 'Cut' },
-                { id: 'editor.action.clipboardPasteAction', key: monaco.KeyCode.KeyV, label: 'Paste' }
-            ];
-
-            actionsToDisable.forEach(action => {
-                editorInstance.addAction({
-                    id: action.id,
-                    label: action.label,
-                    keybindings: [
-                        monaco.KeyMod.CtrlCmd | action.key,
-                    ],
-                    contextMenuGroupId: '9_cutcopypaste',
-                    contextMenuOrder: 1.5,
-                    run: (ed) => {
-                        showAdvancedAlert('error', 'Action Disabled', `${action.label} has been disabled during the exam.`);
-                        return;
-                    }
-                });
-            });
-        }
         function initEditor() {
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
             require(['vs/editor/editor.main'], () => {
                 monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [{ background: '0D1117' }], colors: { 'editor.background': '#0D1117' } });
                 editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
-                disableEditorActions(editor);
                 DOMElements.loadingOverlay.style.opacity = '0';
                 setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.ideDashboard.style.display = 'flex'; }, 300);
                 init();
@@ -437,19 +388,7 @@
             initEventListeners();
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = false);
             setMobileView('problem');
-            checkFullscreen();
-        }
-        
-        function handleViolation(type) {
-            if (isTestEnded) return;
-            violationCount++;
-            const remaining = MAX_VIOLATIONS - violationCount;
-            [DOMElements.attemptsLeft, DOMElements.mobileAttemptsLeft].forEach(el => el.textContent = `${remaining}`);
-            if (violationCount >= MAX_VIOLATIONS) {
-                endExam(`Test ended due to excessive ${type}.`, `Exceeded ${type} limit`);
-            } else {
-                showAdvancedAlert('warning', 'Proctoring Warning', `${type} detected. (${violationCount}/${MAX_VIOLATIONS} attempts remaining)`);
-            }
+            startTimer();
         }
 
         function showAdvancedAlert(type, title, message) {
@@ -457,30 +396,12 @@
             const alertEl = document.createElement('div');
             alertEl.id = alertId;
             alertEl.className = `advanced-alert alert-${type}`;
-            const iconId = type === 'warning' ? '#icon-alert-triangle' : (type === 'info' ? '#icon-info-circle' : '#icon-info-circle');
+            const iconId = '#icon-info-circle';
             alertEl.innerHTML = `<div class="alert-icon"><svg><use href="${iconId}"></use></svg></div><div class="alert-content"><div class="alert-title">${title}</div><div class="alert-message">${message}</div></div><div class="alert-progress"></div>`;
             DOMElements.alertContainer.appendChild(alertEl);
             setTimeout(() => { const el = document.getElementById(alertId); if (el) { el.classList.add('fade-out'); el.addEventListener('animationend', () => el.remove()); } }, 5000);
         }
 
-        function handleVisibilityChange() { if (document.hidden) handleViolation('Tab switching'); }
-        
-        function handleFullscreenChange() {
-            if (document.fullscreenElement) {
-                DOMElements.fullscreenOverlay.classList.remove('show');
-                if (!timerInterval && !isTestEnded) startTimer();
-            } else {
-                if (!isTestEnded) {
-                    pauseTimer();
-                    handleViolation('Fullscreen exit');
-                    DOMElements.fullscreenTitle.textContent = 'Exam Paused';
-                    DOMElements.fullscreenMessage.textContent = 'Please re-enter fullscreen mode to resume the test.';
-                    DOMElements.fullscreenOverlay.classList.add('show');
-                }
-            }
-        }
-        function checkFullscreen() { if (!document.fullscreenElement) DOMElements.fullscreenOverlay.classList.add('show'); }
-        
         function startTimer() {
             const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             let endTime = localStorage.getItem(storageKey);
@@ -499,8 +420,6 @@
             }, 1000);
         }
 
-        function pauseTimer() { clearInterval(timerInterval); timerInterval = null; }
-
         function updateTimerDisplay(remainingMs) { 
             const totalSeconds = Math.floor(remainingMs / 1000);
             const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
@@ -515,7 +434,7 @@
             if(isTestEnded || isSubmitting) return;
             isSubmitting = true;
             isTestEnded = true;
-            pauseTimer();
+            clearInterval(timerInterval);
             if(editor) editor.updateOptions({ readOnly: true });
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
             let totalScoreObtained = 0;
@@ -534,8 +453,6 @@
             await db.collection('codeAssignmentScores').add(finalScoreData);
             
             localStorage.removeItem(`examEndTime_${currentUser.uid}_${assignmentId}`);
-            localStorage.removeItem(`fullscreenAttempts_${assignmentId}`);
-            localStorage.removeItem(`visibilityAttempts_${assignmentId}`);
 
             DOMElements.finalScoreMessage.textContent = `Final Score: ${totalScoreObtained} / ${totalScorePossible}`;
             DOMElements.finalResultsList.innerHTML = problems.map(p => {
@@ -560,14 +477,6 @@
         }
 
         function initEventListeners() {
-            // This is the SINGLE, correct block for disabling actions.
-            const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
-            document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
-            document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
-            document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
-            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
-
-            // All other event listeners
             [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
             [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
             [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
@@ -589,9 +498,6 @@
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
-            document.addEventListener('visibilitychange', handleVisibilityChange); 
-            document.addEventListener('fullscreenchange', handleFullscreenChange);
-            DOMElements.enterFullscreenBtn.addEventListener('click', () => { document.documentElement.requestFullscreen().catch(err => console.error(err)); });
             initResizers();
         }
 
@@ -644,7 +550,7 @@
             const target = e.target.closest('.problem-item');
             if (!target) return;
             if (target.classList.contains('locked')) {
-                showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
+                showAdvancedAlert('info', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
                 return;
             }
             if (target.dataset.id !== currentProblemId) { 
@@ -654,6 +560,7 @@
         }
         
         function setMobileView(view) {
+            const IS_DESKTOP = window.innerWidth > 900;
             if (IS_DESKTOP) return;
             DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
             const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
@@ -771,6 +678,7 @@
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
         
         function initResizers() {
+            const IS_DESKTOP = window.innerWidth > 900;
             if (!IS_DESKTOP) return;
             const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
             const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
