@@ -395,12 +395,36 @@
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
             initEditor();
         }
+        
+        function disableEditorActions(editorInstance) {
+            const actionsToDisable = [
+                { id: 'editor.action.clipboardCopyAction', key: monaco.KeyCode.KeyC, label: 'Copy' },
+                { id: 'editor.action.clipboardCutAction', key: monaco.KeyCode.KeyX, label: 'Cut' },
+                { id: 'editor.action.clipboardPasteAction', key: monaco.KeyCode.KeyV, label: 'Paste' }
+            ];
 
+            actionsToDisable.forEach(action => {
+                editorInstance.addAction({
+                    id: action.id,
+                    label: action.label,
+                    keybindings: [
+                        monaco.KeyMod.CtrlCmd | action.key,
+                    ],
+                    contextMenuGroupId: '9_cutcopypaste',
+                    contextMenuOrder: 1.5,
+                    run: (ed) => {
+                        showAdvancedAlert('error', 'Action Disabled', `${action.label} has been disabled during the exam.`);
+                        return;
+                    }
+                });
+            });
+        }
         function initEditor() {
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
             require(['vs/editor/editor.main'], () => {
                 monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [{ background: '0D1117' }], colors: { 'editor.background': '#0D1117' } });
                 editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
+                disableEditorActions(editor);
                 DOMElements.loadingOverlay.style.opacity = '0';
                 setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.ideDashboard.style.display = 'flex'; }, 300);
                 init();
