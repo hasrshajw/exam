@@ -252,6 +252,7 @@
             <h2>Test Finished</h2>
             <p id="final-score-message">Here is a summary of your session.</p>
             <ul class="final-results-list" id="final-results-list"></ul>
+            <p id="redirect-message" style="margin-top: 2rem; color: var(--text-secondary);"></p>
         </div>
     </div>
     <div id="final-problem-overlay" class="custom-modal-overlay">
@@ -284,7 +285,6 @@
         const db = firebase.firestore();
         
         const MAX_VIOLATIONS = 5;
-        const IS_DESKTOP = window.innerWidth > 900;
         
         const DOMElements = { 
             loadingOverlay: document.getElementById('loading-overlay'), 
@@ -321,7 +321,8 @@
             fullscreenMessage: document.getElementById('fullscreen-message'),
             enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
             alertContainer: document.getElementById('alert-container'),
-            finalProblemOverlay: document.getElementById('final-problem-overlay')
+            finalProblemOverlay: document.getElementById('final-problem-overlay'),
+            redirectMessage: document.getElementById('redirect-message')
         };
         
         let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0;
@@ -359,8 +360,9 @@
             scoresSnap.forEach(doc => {
                 const score = doc.data();
                 if(score.pointsReceived > 0) problemStatus[score.problemId] = 'solved';
+                else problemStatus[score.problemId] = 'attempted';
             });
-            const firstUnsolvedIndex = problems.findIndex(p => problemStatus[p.id] !== 'solved');
+            const firstUnsolvedIndex = problems.findIndex(p => problemStatus[p.id] === 'not-attempted');
             currentProblemId = firstUnsolvedIndex === -1 ? (problems.length > 0 ? problems[problems.length - 1].id : null) : problems[firstUnsolvedIndex].id;
         }
 
@@ -436,7 +438,7 @@
             const alertEl = document.createElement('div');
             alertEl.id = alertId;
             alertEl.className = `advanced-alert alert-${type}`;
-            const iconId = type === 'warning' ? '#icon-alert-triangle' : (type === 'info' ? '#icon-info-circle' : '#icon-info-circle');
+            const iconId = type === 'warning' ? '#icon-alert-triangle' : (type === 'info' ? '#icon-info-circle' : '#icon-alert-triangle');
             alertEl.innerHTML = `<div class="alert-icon"><svg><use href="${iconId}"></use></svg></div><div class="alert-content"><div class="alert-title">${title}</div><div class="alert-message">${message}</div></div><div class="alert-progress"></div>`;
             DOMElements.alertContainer.appendChild(alertEl);
             setTimeout(() => { const el = document.getElementById(alertId); if (el) { el.classList.add('fade-out'); el.addEventListener('animationend', () => el.remove()); } }, 5000);
@@ -524,6 +526,19 @@
             DOMElements.resultsOverlay.querySelector('h2').textContent = title;
             DOMElements.resultsOverlay.classList.add('show');
             isSubmitting = false;
+
+            let countdown = 30;
+            DOMElements.redirectMessage.textContent = `You will be redirected in ${countdown} seconds...`;
+            const redirectInterval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    DOMElements.redirectMessage.textContent = `You will be redirected in ${countdown} seconds...`;
+                } else {
+                    clearInterval(redirectInterval);
+                    DOMElements.redirectMessage.textContent = 'Redirecting...';
+                    window.location.href = '/course.html';
+                }
+            }, 1000);
         }
 
         function initEventListeners() {
@@ -559,7 +574,18 @@
             initResizers();
         }
 
-        function isProblemUnlocked(problemId) { return true; }
+        function isProblemUnlocked(problemId) {
+            const problemIndex = problems.findIndex(p => p.id === problemId);
+            if (problemIndex === 0) return true;
+            for (let i = 0; i < problemIndex; i++) {
+                const prevProblemId = problems[i].id;
+                const status = problemStatus[prevProblemId];
+                if (status === 'not-attempted') {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         function renderProblemList() {
             DOMElements.problemList.innerHTML = problems.map((p, i) => {
@@ -593,14 +619,19 @@
             const problem = problems.find(p => p.id === problemId);
             if (!problem) return;
             const status = problemStatus[problemId];
-            const isSolved = status === 'solved';
+            const isSubmitted = status === 'solved' || status === 'attempted';
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             DOMElements.problemDetailsContent.style.animation = 'none';
             DOMElements.problemDetailsContent.offsetHeight; 
             DOMElements.problemDetailsContent.style.animation = null; 
-            if (editor) { editor.setValue(userCodeState[problemId] || problem.starterCode); editor.updateOptions({ readOnly: isSolved }); }
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSolved);
+            if (editor) { 
+                editor.setValue(userCodeState[problemId] || problem.starterCode);
+                editor.updateOptions({ readOnly: isSubmitted });
+            }
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => {
+                btn.disabled = isSubmitted;
+            });
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
             DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
             DOMElements.consoleOutput.textContent = 'No console output.';
@@ -608,10 +639,22 @@
             setMobileView('problem');
         }
         
-        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
+        function handleProblemSelect(e) { 
+            const target = e.target.closest('.problem-item'); 
+            if (target && target.dataset.id !== currentProblemId) {
+                if (!target.classList.contains('locked')) {
+                    loadProblem(target.dataset.id);
+                    DOMElements.sidebar.classList.remove('active');
+                    DOMElements.overlay.classList.remove('active');
+                } else {
+                    showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before moving to the next one.');
+                }
+            }
+        }
         
         function setMobileView(view) {
-            if (IS_DESKTOP) return;
+            const IS_DESKTOP_LOCAL = window.innerWidth > 900;
+            if (IS_DESKTOP_LOCAL) return;
             DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
             const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
             Object.values(views).forEach(panel => panel.classList.remove('mobile-view-active'));
@@ -649,12 +692,13 @@
                 }
             } else {
                 renderResults(results, false);
-                if (problemStatus[currentProblemId] !== 'solved') {
+                if (problemStatus[currentProblemId] === 'not-attempted') {
                     problemStatus[currentProblemId] = 'attempted';
                     renderProblemList();
                 }
                 document.querySelector('.tab[data-tab="results"]').click();
-                if (!IS_DESKTOP) setMobileView('results');
+                const IS_DESKTOP_LOCAL = window.innerWidth > 900;
+                if (!IS_DESKTOP_LOCAL) setMobileView('results');
             }
 
             setLoadingState(false, isSubmission);
@@ -712,7 +756,7 @@
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading || isTestEnded);
             btns.forEach(btn => {
                 const btnText = btn.querySelector('.btn-text');
-                const isSolved = problemStatus[currentProblemId] === 'solved';
+                const isSubmitted = problemStatus[currentProblemId] === 'solved' || problemStatus[currentProblemId] === 'attempted';
                 if (isLoading) { 
                     btn.querySelector('svg').style.display = 'none';
                     const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); 
@@ -721,7 +765,7 @@
                     btn.querySelector('.loader')?.remove(); 
                     btn.querySelector('svg').style.display = 'block'; 
                     btnText.textContent = isSubmission ? 'Submit' : 'Run';
-                    btn.disabled = isSolved || isTestEnded;
+                    btn.disabled = isSubmitted || isTestEnded;
                 }
             });
         }
@@ -729,7 +773,8 @@
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
         
         function initResizers() {
-            if (!IS_DESKTOP) return;
+            const IS_DESKTOP_LOCAL = window.innerWidth > 900;
+            if (!IS_DESKTOP_LOCAL) return;
             const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
             const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
             const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
