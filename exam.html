@@ -74,7 +74,6 @@
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--color-background); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--color-text-secondary);"><div class="loading-spinner"></div><p>Initializing Exam Environment...</p></div>
-    
     <div class="view-container" id="exam-view">
         <div class="exam-dashboard">
             <aside class="sidebar" id="sidebar">
@@ -108,7 +107,6 @@
             </main>
         </div>
     </div>
-    
     <div class="view-container" id="review-view">
         <div class="review-card">
             <div class="review-header"><h2>Review Your Answers</h2><p>Click a number to jump to that question. Submit when ready.</p></div>
@@ -116,7 +114,6 @@
             <div class="review-footer" style="text-align: center; margin-top: 1.5rem;"><button class="nav-btn submit-btn" id="final-submit-btn">Confirm & Submit Test</button></div>
         </div>
     </div>
-
     <div class="view-container" id="results-view"></div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -129,16 +126,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
-                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e799",
-                storageBucket: "exam-2e799.firebasestorage.app",
-                messagingSenderId: "472506328501",
-                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-                measurementId: "G-NX21HT3JKT"
+                apiKey: "API_KEY",
+                authDomain: "PROJECT_ID.firebaseapp.com",
+                projectId: "PROJECT_ID",
+                storageBucket: "PROJECT_ID.appspot.com",
+                messagingSenderId: "SENDER_ID",
+                appId: "APP_ID"
             };
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
+            const db = firebase.firestore();
             const functions = firebase.functions();
 
             let examState = {}, currentUser, editor, pyodide;
@@ -174,6 +171,7 @@
                     editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'vs-dark', automaticLayout: true, minimap: { enabled: false } });
                     auth.onAuthStateChanged(user => user ? (currentUser = user, initializePage()) : window.location.href = 'index.html');
                 } catch (error) {
+                    console.error("Initialization failed:", error);
                     dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
                 }
             };
@@ -184,60 +182,51 @@
                 const examId = new URLSearchParams(window.location.search).get('id');
                 if (!examId) { alert('Invalid exam ID.'); window.location.href = 'dashboard.html'; return; }
                 
-                const getExamData = functions.httpsCallable('getExamData');
-                const response = await getExamData({ examId, questionIndex: 'metadata' });
-
-                if (response.data.wasCompleted) {
-                    renderResultsPage(response.data.scoreData);
+                const prevScoreQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
+                if (!prevScoreQuery.empty) {
+                    renderResultsPage(prevScoreQuery.docs[0].data());
                     dom.loadingOverlay.style.display = 'none';
                     return;
                 }
 
+                const examDoc = await db.collection('exams').doc(examId).get();
+                if (!examDoc.exists || examDoc.data().isLocked) { alert('Exam not found or is currently locked.'); window.location.href = 'dashboard.html'; return; }
+                
+                const examData = { id: examDoc.id, ...examDoc.data() };
+                const questionsForClient = examData.questions.map(q => {
+                    const { correctAnswer, testCases, ...questionData } = q;
+                    return { ...questionData, userAnswer: null, isAnswered: false, publicTestCases: testCases ? testCases.filter(tc => !tc.hidden) : [] };
+                });
+
                 examState = {
-                    examId: examId,
-                    currentQuestionData: null,
-                    userAnswers: Array(response.data.totalQuestions).fill(null),
+                    currentExamData: examData,
+                    questions: questionsForClient,
                     currentQuestionIndex: 0,
-                    totalQuestions: response.data.totalQuestions,
-                    duration: response.data.duration,
-                    timeLeft: response.data.duration,
+                    timeLeft: examData.duration,
                     timerInterval: null
                 };
                 
-                dom.examTitleSidebar.textContent = response.data.examName;
-                await loadQuestion(0);
+                dom.examTitleSidebar.textContent = examData.name;
+                renderSidebar();
+                renderQuestion();
                 startTimer();
                 showView('exam-view');
                 dom.loadingOverlay.style.display = 'none';
             };
-            
-            const loadQuestion = async (index) => {
-                saveCurrentAnswer();
-                examState.currentQuestionIndex = index;
-                
-                const getExamData = functions.httpsCallable('getExamData');
-                const response = await getExamData({ examId: examState.examId, questionIndex: index });
-                examState.currentQuestionData = response.data.question;
-
-                renderQuestion();
-                renderSidebar();
-            };
 
             const renderSidebar = () => {
                 dom.questionNav.innerHTML = '';
-                for(let i = 0; i < examState.totalQuestions; i++) {
-                    const isAnswered = examState.userAnswers[i] !== null;
+                examState.questions.forEach((q, index) => {
                     const item = document.createElement('li');
-                    item.className = `question-item ${i === examState.currentQuestionIndex ? 'active' : ''} ${isAnswered ? 'answered' : ''}`;
-                    item.innerHTML = `<div class="q-number">${i + 1}</div>`;
-                    item.addEventListener('click', () => loadQuestion(i));
+                    item.className = `question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}`;
+                    item.innerHTML = `<div class="q-number">${index + 1}</div><div class="q-details"><span class="q-type">${q.type}</span><span class="q-points">${q.points} Points</span></div>`;
+                    item.addEventListener('click', () => navigateToQuestion(index));
                     dom.questionNav.appendChild(item);
-                }
+                });
             };
 
             const renderQuestion = () => {
-                const question = examState.currentQuestionData;
-                const userAnswer = examState.userAnswers[examState.currentQuestionIndex];
+                const question = examState.questions[examState.currentQuestionIndex];
                 dom.questionTitle.textContent = `${examState.currentQuestionIndex + 1}. ${question.title}`;
                 
                 const isCoding = question.type === 'Coding';
@@ -246,12 +235,13 @@
 
                 if (isCoding) {
                     dom.problemDetails.innerHTML = `<h3>Problem Statement</h3>${question.statement}`;
-                    editor.setValue(userAnswer || question.starterCode || '');
+                    editor.setValue(question.userAnswer || question.starterCode || '');
+                    dom.consoleOutput.textContent = 'Run code to see results against public test cases.';
                 } else {
                     dom.optionsContainer.innerHTML = '';
                     question.options.forEach((opt, index) => {
                         const optionDiv = document.createElement('div');
-                        optionDiv.className = `option ${userAnswer === index ? 'selected' : ''}`;
+                        optionDiv.className = `option ${question.userAnswer === index ? 'selected' : ''}`;
                         optionDiv.innerHTML = `<span class="option-letter">${String.fromCharCode(65 + index)}</span><span class="option-text">${opt}</span>`;
                         optionDiv.addEventListener('click', () => selectOption(index));
                         dom.optionsContainer.appendChild(optionDiv);
@@ -261,24 +251,34 @@
             };
 
             const selectOption = (index) => {
-                examState.userAnswers[examState.currentQuestionIndex] = index;
+                const q = examState.questions[examState.currentQuestionIndex];
+                q.userAnswer = index;
+                q.isAnswered = true;
+                renderSidebar();
                 renderQuestion();
+            };
+
+            const navigateToQuestion = (index) => {
+                saveCurrentAnswer();
+                examState.currentQuestionIndex = index;
+                renderQuestion();
+                renderSidebar();
             };
             
             const saveCurrentAnswer = () => {
-                if (!examState.currentQuestionData) return;
-                const currentQuestion = examState.currentQuestionData;
+                const currentQuestion = examState.questions[examState.currentQuestionIndex];
                 if (currentQuestion.type === 'Coding' && editor) {
                     const code = editor.getValue();
+                    currentQuestion.userAnswer = code;
                     if (code && code.trim() !== (currentQuestion.starterCode || '').trim() && code.trim() !== '') {
-                        examState.userAnswers[examState.currentQuestionIndex] = code;
+                        currentQuestion.isAnswered = true;
                     }
                 }
             };
 
             const updateNavButtons = () => {
                 dom.prevBtn.disabled = examState.currentQuestionIndex === 0;
-                const isLast = examState.currentQuestionIndex === examState.totalQuestions - 1;
+                const isLast = examState.currentQuestionIndex === examState.questions.length - 1;
                 dom.nextBtn.style.display = isLast ? 'none' : 'inline-flex';
                 dom.submitBtn.style.display = isLast ? 'inline-flex' : 'none';
             };
@@ -297,7 +297,31 @@
             };
 
             const runCode = async () => {
-                // This function remains client-side for non-graded public test cases
+                const question = examState.questions[examState.currentQuestionIndex];
+                const code = editor.getValue();
+                dom.consoleOutput.textContent = 'Executing...';
+                
+                try {
+                    const testCases = question.publicTestCases;
+                    if (testCases.length === 0) {
+                        dom.consoleOutput.textContent = "No public test cases to run against.";
+                        return;
+                    }
+                    let resultsHTML = '';
+                    for (const tc of testCases) {
+                        const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
+                        const fullCode = `${code}\nprint(${question.functionName}(${inputArgs}))`;
+                        let output = await pyodide.runPythonAsync(fullCode);
+                        if (JSON.stringify(output) === JSON.stringify(tc.expected)) {
+                             resultsHTML += `<p style="color: var(--color-success);">Test Case Passed</p>`;
+                        } else {
+                            resultsHTML += `<p style="color: var(--color-danger);">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
+                        }
+                    }
+                    dom.consoleOutput.innerHTML = resultsHTML || "Execution finished with no output.";
+                } catch(e) {
+                    dom.consoleOutput.textContent = `Error: ${e.message}`;
+                }
             };
             
             const handleSubmit = async (isAutoSubmit = false) => {
@@ -307,36 +331,43 @@
                 dom.loadingOverlay.style.display = 'flex';
                 saveCurrentAnswer();
 
-                const submitExam = functions.httpsCallable('submitExam');
-                const response = await submitExam({
-                    examId: examState.examId,
-                    userAnswers: examState.userAnswers,
-                    timeTaken: examState.duration - examState.timeLeft
-                });
-
-                renderResultsPage(response.data);
+                const userAnswers = examState.questions.map(q => ({ id: q.id, answer: q.userAnswer }));
+                
+                try {
+                    const submitExam = functions.httpsCallable('submitExam');
+                    const response = await submitExam({ 
+                        examId: examState.currentExamData.id, 
+                        userAnswers: userAnswers,
+                        timeLeft: examState.timeLeft
+                    });
+                    renderResultsPage(response.data);
+                } catch (error) {
+                    console.error("Submission failed:", error);
+                    alert(`An error occurred during submission: ${error.message}`);
+                    dom.loadingOverlay.style.display = 'none';
+                }
             };
 
             const renderResultsPage = (scoreData) => {
                 const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is</p><h1 style="font-size: 4rem; color: var(--color-primary); margin: 1rem 0;">${percentage}%</h1><h3>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</h3><a href="dashboard.html" class="nav-btn" style="margin-top: 1.5rem;">Back to Dashboard</a></div>`;
+                dom.resultsView.innerHTML = `<div class="results-summary"><h2>Test Submitted!</h2><p>Your score is</p><h1 style="font-size: 4rem; color: var(--color-primary); margin: 1rem 0;">${percentage}%</h1><h3>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</h3><a href="dashboard.html" class="nav-btn" style="margin-top: 1.5rem; text-decoration: none;">Back to Dashboard</a></div>`;
                 showView('results-view');
                 dom.loadingOverlay.style.display = 'none';
             };
 
             const renderReviewGrid = () => {
                 dom.reviewGrid.innerHTML = '';
-                for(let i = 0; i < examState.totalQuestions; i++) {
+                examState.questions.forEach((q, index) => {
                     const btn = document.createElement('button');
-                    btn.className = `review-item-btn ${examState.userAnswers[i] !== null ? 'answered' : 'unanswered'}`;
-                    btn.textContent = i + 1;
-                    btn.onclick = () => { loadQuestion(i); showView('exam-view'); };
+                    btn.className = `review-item-btn ${q.isAnswered ? 'answered' : 'unanswered'}`;
+                    btn.textContent = index + 1;
+                    btn.onclick = () => { navigateToQuestion(index); showView('exam-view'); };
                     dom.reviewGrid.appendChild(btn);
-                }
+                });
             };
-            
-            dom.prevBtn.addEventListener('click', () => loadQuestion(examState.currentQuestionIndex - 1));
-            dom.nextBtn.addEventListener('click', () => loadQuestion(examState.currentQuestionIndex + 1));
+
+            dom.prevBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex - 1));
+            dom.nextBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex + 1));
             dom.submitBtn.addEventListener('click', () => { saveCurrentAnswer(); renderReviewGrid(); showView('review-view'); });
             dom.endRoundBtn.addEventListener('click', () => { saveCurrentAnswer(); renderReviewGrid(); showView('review-view'); });
             dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
