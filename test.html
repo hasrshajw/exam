@@ -27,21 +27,17 @@
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
         body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; user-select: none; -webkit-user-select: none; -moz-user-select: none; }
-        
         .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
         .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; }
         .aurora-bg::before { background: radial-gradient(circle, var(--accent-start), transparent 70%); top: -20%; left: -10%; animation: moveAurora1 20s infinite alternate; }
         .aurora-bg::after { background: radial-gradient(circle, var(--accent-end), transparent 70%); bottom: -20%; right: -10%; animation: moveAurora2 25s infinite alternate; }
         @keyframes moveAurora1 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(100px, 50px) rotate(30deg); } }
         @keyframes moveAurora2 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-100px, -50px) rotate(-30deg); } }
-
         button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
         svg { display: block; width: 100%; height: 100%; }
-        
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); transition: opacity 0.3s; }
         .loading-spinner { border: 4px solid rgba(var(--surface-light-rgb), 0.5); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
         .ide-dashboard { display: flex; height: 100%; position: relative; }
         .sidebar { width: 320px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-right: 1px solid rgba(var(--border-color-rgb), 0.5); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform var(--transition-smooth), width var(--transition-smooth); }
         .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
@@ -53,13 +49,13 @@
         .problem-item:not(.locked):not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
         .problem-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
         .problem-item.active::before { transform: translateX(0); }
-        .problem-item.locked { cursor: not-allowed; opacity: 0.5; }
+        .problem-item.locked { cursor: not-allowed; opacity: 0.6; }
+        .problem-item.locked:hover { background-color: transparent; }
         .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
         .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
         .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
         .p-status-icon { width: 20px; height: 20px; margin-left: 8px; opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
         .problem-item.solved .p-status-icon, .problem-item.attempted .p-status-icon { opacity: 1; transform: scale(1); }
-        
         .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); padding: 12px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); }
         .header-title-group { display: flex; align-items: center; gap: 16px; }
@@ -75,7 +71,6 @@
         #end-test-btn { color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); } #end-test-btn:hover:not(:disabled) { background-color: rgba(var(--danger-rgb), 0.1); }
         .btn:disabled { background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
         .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-        
         .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 90px); }
         .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
         .ide-panel { background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); overflow: hidden; display: flex; flex-direction: column; }
@@ -99,17 +94,16 @@
         .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: rgba(var(--surface-light-rgb), 0.3); border-radius: var(--border-radius); margin-bottom: 8px; }
         .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
         .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
-        
         #results-overlay, #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
         #results-overlay.show, #fullscreen-overlay.show { display: flex; opacity: 1; }
         .results-card, .fullscreen-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
         .results-card h2, .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p, .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        #redirect-message { font-size: 1rem; margin-top: -16px; }
         .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
         .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
         .final-status.solved { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); }
         .final-status.attempted { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
         .final-status.notattempted { color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 1); }
-        
         #alert-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
         .advanced-alert { display: flex; align-items: flex-start; width: 350px; max-width: 90vw; background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(10px); border-radius: var(--border-radius); padding: 16px; border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; position: relative; overflow: hidden; }
         @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -124,16 +118,22 @@
         @keyframes progressShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
         .advanced-alert.alert-warning { border-color: rgb(var(--warning-rgb)); color: rgb(var(--warning-rgb)); }
         .advanced-alert.alert-error { border-color: rgb(var(--danger-rgb)); color: rgb(var(--danger-rgb)); }
-        
+        .advanced-alert.alert-info { border-color: var(--accent-start); color: var(--accent-start); }
         .mobile-header, .mobile-nav, .mobile-footer { display: none; }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
-        
+        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        .custom-modal-overlay.show { display: flex; opacity: 1; }
+        .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 500px; text-align: center; animation: fadeIn 0.3s ease-out; }
+        .custom-modal-card h2 { font-size: 1.75rem; margin-bottom: 8px; }
+        .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem; line-height: 1.6; }
+        .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
+        .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
         @media (max-width: 900px) {
             .main-content { padding: 0; height: 100%; }
             .main-header { display: none; }
             .ide-layout { height: 100%; }
-            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
-            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
+            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 50px 16px 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
+            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding:4px; flex-shrink: 0; }
             .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
             .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
             .ide-layout { display: flex; flex-direction: column; }
@@ -150,20 +150,17 @@
             .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
             .mobile-footer.active { display: flex; }
             .mobile-footer .btn { flex: 1; }
-            .results-card, .fullscreen-card { padding: 24px; } .results-card h2, .fullscreen-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p { font-size: 1rem; }
+            .results-card, .fullscreen-card, .custom-modal-card { padding: 24px; } .results-card h2, .fullscreen-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p, .custom-modal-card p { font-size: 1rem; }
         }
     </style>
 </head>
 <body>
     <div class="aurora-bg"></div>
-
     <div id="loading-overlay">
         <div class="loading-spinner"></div>
         <p>Initializing Environment...</p>
     </div>
-
     <div id="alert-container"></div>
-
     <div style="display: none;">
         <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
             <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
@@ -179,7 +176,6 @@
             <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z" /></symbol>
         </svg>
     </div>
-
     <main class="ide-dashboard" style="display: none;">
         <aside class="sidebar" id="sidebar">
             <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
@@ -202,7 +198,6 @@
                     <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
                 </div>
             </header>
-            
             <header class="mobile-header">
                 <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
                  <div class="proctor-info">
@@ -211,13 +206,11 @@
                 </div>
                 <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
             </header>
-
             <div class="mobile-nav">
                 <button class="mobile-nav-btn active" data-view="problem">Problem</button>
                 <button class="mobile-nav-btn" data-view="code">Code</button>
                 <button class="mobile-nav-btn" data-view="results">Results</button>
             </div>
-
             <div class="ide-layout">
                 <div class="top-panel">
                     <div id="problem-details" class="ide-panel mobile-view-active">
@@ -261,9 +254,19 @@
             <h2>Test Finished</h2>
             <p id="final-score-message">Here is a summary of your session.</p>
             <ul class="final-results-list" id="final-results-list"></ul>
+            <p id="redirect-message"></p>
         </div>
     </div>
-
+    <div id="final-problem-overlay" class="custom-modal-overlay">
+        <div class="custom-modal-card">
+            <h2>Final Problem Submitted</h2>
+            <p>You have submitted the final problem. Do you want to end the exam now and see your final score?</p>
+            <div class="custom-modal-actions">
+                <button id="final-problem-cancel-btn" class="btn">Return to Problem</button>
+                <button id="final-problem-confirm-btn" class="btn submit-btn">End Exam & See Score</button>
+            </div>
+        </div>
+    </div>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -298,9 +301,13 @@
             problemList: document.getElementById('problem-list'), 
             assignmentTitle: document.getElementById('assignment-title'),
             mainHeaderTitle: document.getElementById('main-header-title'), 
+            problemDetails: document.getElementById('problem-details'),
             problemDetailsContent: document.getElementById('problem-details-content'),
             problemStatement: document.getElementById('problem-statement'), 
             publicTestCases: document.getElementById('public-test-cases'), 
+            bottomPanel: document.querySelector('.bottom-panel'), 
+            resultsContent: document.getElementById('results'), 
+            consoleOutput: document.getElementById('console-output'), 
             tabs: document.querySelectorAll('.tab'), 
             menuToggle: document.getElementById('menu-toggle'), mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
             closeMenuBtn: document.getElementById('close-menu-btn'), 
@@ -317,9 +324,7 @@
             fullscreenMessage: document.getElementById('fullscreen-message'),
             enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
             alertContainer: document.getElementById('alert-container'),
-            // Added missing elements for mobile view switching
-            problemDetails: document.getElementById('problem-details'),
-            bottomPanel: document.querySelector('.bottom-panel')
+            finalProblemOverlay: document.getElementById('final-problem-overlay')
         };
         
         let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0;
@@ -328,7 +333,6 @@
             const urlParams = new URLSearchParams(window.location.search);
             assignmentId = urlParams.get('id');
             if (!assignmentId) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment ID not found.</p>'; return; }
-
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     currentUser = user;
@@ -348,31 +352,13 @@
             if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
             assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
             DOMElements.assignmentTitle.textContent = assignment.name;
-
-            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).orderBy('order', 'asc').get();
+            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
             problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-            // Initialize local state for all problems
             problems.forEach(p => {
                 userCodeState[p.id] = p.starterCode;
                 problemStatus[p.id] = 'not-attempted';
             });
-
-            // Override status for problems that already have a score in Firestore
-            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
-            scoresSnap.forEach(doc => {
-                const score = doc.data();
-                if(score.pointsReceived > 0) {
-                    problemStatus[score.problemId] = 'solved';
-                } else if (problemStatus[score.problemId] !== 'solved') {
-                    problemStatus[score.problemId] = 'attempted';
-                }
-            });
-            
-            // Determine starting problem (first one not solved)
-            const firstUnsolvedIndex = problems.findIndex(p => problemStatus[p.id] !== 'solved');
-            currentProblemId = firstUnsolvedIndex === -1 ? problems[problems.length - 1]?.id : problems[firstUnsolvedIndex]?.id;
-            if (!currentProblemId && problems.length > 0) currentProblemId = problems[0].id;
+            currentProblemId = problems.length > 0 ? problems[0].id : null;
         }
 
         async function checkIfAssignmentCompleted() {
@@ -383,18 +369,14 @@
         function showFinalResultsPage(scoreData) {
             DOMElements.loadingOverlay.style.display = 'none';
             DOMElements.ideDashboard.style.display = 'none';
-            
             DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
             DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
-            
-            // Fetch individual scores to populate the final list correctly
             db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
                 const problemScores = {};
                 scoresSnap.forEach(doc => {
                     const score = doc.data();
                     problemScores[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
                 });
-            
                 DOMElements.finalResultsList.innerHTML = problems.map(p => {
                     const status = problemScores[p.id] || 'notattempted';
                     const statusClass = `final-status ${status}`;
@@ -402,7 +384,6 @@
                     return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
                 }).join('');
             });
-            
             DOMElements.resultsOverlay.classList.add('show');
         }
 
@@ -411,20 +392,41 @@
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
             try { pyodide = await loadPyodide(); } 
             catch (error) { DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>'; return; }
-            
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
             initEditor();
         }
+        
+        function disableEditorActions(editorInstance) {
+            const actionsToDisable = [
+                { id: 'editor.action.clipboardCopyAction', key: monaco.KeyCode.KeyC, label: 'Copy' },
+                { id: 'editor.action.clipboardCutAction', key: monaco.KeyCode.KeyX, label: 'Cut' },
+                { id: 'editor.action.clipboardPasteAction', key: monaco.KeyCode.KeyV, label: 'Paste' }
+            ];
 
+            actionsToDisable.forEach(action => {
+                editorInstance.addAction({
+                    id: action.id,
+                    label: action.label,
+                    keybindings: [
+                        monaco.KeyMod.CtrlCmd | action.key,
+                    ],
+                    contextMenuGroupId: '9_cutcopypaste',
+                    contextMenuOrder: 1.5,
+                    run: (ed) => {
+                        showAdvancedAlert('error', 'Action Disabled', `${action.label} has been disabled during the exam.`);
+                        return;
+                    }
+                });
+            });
+        }
         function initEditor() {
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
             require(['vs/editor/editor.main'], () => {
                 monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [{ background: '0D1117' }], colors: { 'editor.background': '#0D1117' } });
                 editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
-                
+                disableEditorActions(editor);
                 DOMElements.loadingOverlay.style.opacity = '0';
                 setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.ideDashboard.style.display = 'flex'; }, 300);
-                
                 init();
             });
         }
@@ -435,10 +437,9 @@
             initEventListeners();
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = false);
             setMobileView('problem');
-            if (IS_DESKTOP) checkFullscreen(); else startTimer();
+            checkFullscreen();
         }
         
-        // --- Proctoring & Security ---
         function handleViolation(type) {
             if (isTestEnded) return;
             violationCount++;
@@ -456,7 +457,7 @@
             const alertEl = document.createElement('div');
             alertEl.id = alertId;
             alertEl.className = `advanced-alert alert-${type}`;
-            const iconId = type === 'warning' ? '#icon-alert-triangle' : '#icon-info-circle';
+            const iconId = type === 'warning' ? '#icon-alert-triangle' : (type === 'info' ? '#icon-info-circle' : '#icon-info-circle');
             alertEl.innerHTML = `<div class="alert-icon"><svg><use href="${iconId}"></use></svg></div><div class="alert-content"><div class="alert-title">${title}</div><div class="alert-message">${message}</div></div><div class="alert-progress"></div>`;
             DOMElements.alertContainer.appendChild(alertEl);
             setTimeout(() => { const el = document.getElementById(alertId); if (el) { el.classList.add('fade-out'); el.addEventListener('animationend', () => el.remove()); } }, 5000);
@@ -469,7 +470,7 @@
                 DOMElements.fullscreenOverlay.classList.remove('show');
                 if (!timerInterval && !isTestEnded) startTimer();
             } else {
-                if (!isTestEnded && IS_DESKTOP) {
+                if (!isTestEnded) {
                     pauseTimer();
                     handleViolation('Fullscreen exit');
                     DOMElements.fullscreenTitle.textContent = 'Exam Paused';
@@ -480,15 +481,14 @@
         }
         function checkFullscreen() { if (!document.fullscreenElement) DOMElements.fullscreenOverlay.classList.add('show'); }
         
-        // --- Timer ---
         function startTimer() {
-            if (timerInterval) return;
             const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             let endTime = localStorage.getItem(storageKey);
             if (!endTime) {
                 endTime = Date.now() + assignment.duration * 1000;
                 localStorage.setItem(storageKey, endTime);
             }
+            clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const remaining = endTime - Date.now();
                 if (remaining <= 0) {
@@ -518,14 +518,11 @@
             pauseTimer();
             if(editor) editor.updateOptions({ readOnly: true });
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
-            updateAttemptedStatus();
-
             let totalScoreObtained = 0;
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
             scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
             const solvedCount = Object.values(problemStatus).filter(s => s === 'solved').length;
             const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
-            
             const finalScoreData = {
                 userId: currentUser.uid, assignmentId: assignmentId,
                 assignmentName: assignment.name, subjectId: assignment.subjectId,
@@ -534,15 +531,11 @@
                 completedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 submissionReason: reason
             };
+            await db.collection('codeAssignmentScores').add(finalScoreData);
             
-            // Check if a final score already exists before adding a new one
-            const finalScoreQuery = await db.collection('codeAssignmentScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
-            if (finalScoreQuery.empty) {
-                await db.collection('codeAssignmentScores').add(finalScoreData);
-            }
-            
-            const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
-            localStorage.removeItem(storageKey);
+            localStorage.removeItem(`examEndTime_${currentUser.uid}_${assignmentId}`);
+            localStorage.removeItem(`fullscreenAttempts_${assignmentId}`);
+            localStorage.removeItem(`visibilityAttempts_${assignmentId}`);
 
             DOMElements.finalScoreMessage.textContent = `Final Score: ${totalScoreObtained} / ${totalScorePossible}`;
             DOMElements.finalResultsList.innerHTML = problems.map(p => {
@@ -553,13 +546,42 @@
             }).join('');
             DOMElements.resultsOverlay.querySelector('h2').textContent = title;
             DOMElements.resultsOverlay.classList.add('show');
+            let countdown = 30;
+            const redirectMessageEl = document.getElementById('redirect-message');
+            const countdownInterval = setInterval(() => {
+                redirectMessageEl.textContent = `Redirecting in ${countdown} seconds...`;
+                countdown--;
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = '/course.html';
+                }
+            }, 1000);
             isSubmitting = false;
         }
 
         function initEventListeners() {
+            // This is the SINGLE, correct block for disabling actions.
+            const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
+            document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
+            document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
+            document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
+
+            // All other event listeners
             [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
             [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
-            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => endExam()));
+            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
+                if(confirm("Are you sure you want to end the test and submit your answers?")) {
+                    endExam();
+                }
+            }));
+            document.getElementById('final-problem-confirm-btn').addEventListener('click', () => {
+                DOMElements.finalProblemOverlay.classList.remove('show');
+                endExam("Test Finished", "User submitted final problem");
+            });
+            document.getElementById('final-problem-cancel-btn').addEventListener('click', () => {
+                DOMElements.finalProblemOverlay.classList.remove('show');
+            });
             DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
             DOMElements.problemList.addEventListener('click', handleProblemSelect);
             [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
@@ -567,13 +589,6 @@
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
-            
-            const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
-            document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
-            document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
-            document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
-            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
-
             document.addEventListener('visibilitychange', handleVisibilityChange); 
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             DOMElements.enterFullscreenBtn.addEventListener('click', () => { document.documentElement.requestFullscreen().catch(err => console.error(err)); });
@@ -581,15 +596,10 @@
         }
 
         function isProblemUnlocked(problemId) {
-            // All problems are unlocked by default in this configuration.
-            // To enable sequential unlocking, uncomment the following lines:
-            /*
             const problemIndex = problems.findIndex(p => p.id === problemId);
             if (problemIndex === 0) return true;
             const prevProblemId = problems[problemIndex - 1].id;
             return problemStatus[prevProblemId] === 'solved' || problemStatus[prevProblemId] === 'attempted';
-            */
-            return true;
         }
 
         function renderProblemList() {
@@ -607,53 +617,40 @@
             }).join('');
         }
         
-        function updateAttemptedStatus() {
-            if (isTestEnded || !editor || !currentProblemId) return;
-            const currentCode = editor.getValue();
-            const problem = problems.find(p => p.id === currentProblemId);
-            if (!problem) return;
-            if (currentCode.trim() !== problem.starterCode.trim() && problemStatus[currentProblemId] === 'not-attempted') {
-                problemStatus[currentProblemId] = 'attempted';
-                renderProblemList();
-            }
-            userCodeState[currentProblemId] = currentCode;
-        }
-
         function loadProblem(problemId) {
-            if (!problemId) return;
-            updateAttemptedStatus();
             currentProblemId = problemId;
             const problem = problems.find(p => p.id === problemId);
             if (!problem) return;
-            
             const status = problemStatus[problemId];
-            const isSolved = status === 'solved';
-
+            const isSubmitted = status === 'solved' || status === 'attempted';
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             DOMElements.problemDetailsContent.style.animation = 'none';
             DOMElements.problemDetailsContent.offsetHeight; 
             DOMElements.problemDetailsContent.style.animation = null; 
-
-            if (editor) { editor.setValue(userCodeState[problemId]); editor.updateOptions({ readOnly: isSolved }); }
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSolved);
-            
+            if (editor) { 
+                editor.setValue(userCodeState[problemId] || problem.starterCode);
+                editor.updateOptions({ readOnly: isSubmitted });
+            }
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSubmitted);
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
-            
             DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
             DOMElements.consoleOutput.textContent = 'No console output.';
-            
             renderProblemList();
-            if (!IS_DESKTOP) setMobileView('problem');
+            setMobileView('problem');
         }
         
         function handleProblemSelect(e) { 
-            const target = e.target.closest('.problem-item'); 
-            if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { 
+            const target = e.target.closest('.problem-item');
+            if (!target) return;
+            if (target.classList.contains('locked')) {
+                showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
+                return;
+            }
+            if (target.dataset.id !== currentProblemId) { 
                 loadProblem(target.dataset.id); 
-                DOMElements.sidebar.classList.remove('active'); 
-                DOMElements.overlay.classList.remove('active'); 
-            } 
+                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); 
+            }
         }
         
         function setMobileView(view) {
@@ -674,29 +671,35 @@
             const results = [];
             for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
             if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
-            renderResults(results, isSubmission);
             
             if (isSubmission) {
                 const allPassed = results.every(r => r.status === 'pass');
                 const previousStatus = problemStatus[currentProblemId];
                 problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
-                if (previousStatus !== 'solved') { // Only save score if not already solved
-                    await saveScore(problem, allPassed);
-                }
+                if (previousStatus !== 'solved') { await saveScore(problem, allPassed); }
                 renderProblemList();
                 
-                const allProblemsSolved = problems.every(p => problemStatus[p.id] === 'solved');
-                if (allProblemsSolved) {
-                    setTimeout(() => endExam("Congratulations! All Problems Solved!", "All problems solved"), 1500);
-                }
-            } else if (problemStatus[currentProblemId] !== 'solved') {
-                problemStatus[currentProblemId] = 'attempted';
-                renderProblemList();
-            }
+                const currentProblemIndex = problems.findIndex(p => p.id === currentProblemId);
+                const isLastProblem = currentProblemIndex === problems.length - 1;
 
+                if (isLastProblem) {
+                    DOMElements.finalProblemOverlay.classList.add('show');
+                } else {
+                    showAdvancedAlert('info', 'Submission Received', `Moving to the next problem...`);
+                    const nextProblemId = problems[currentProblemIndex + 1].id;
+                    setTimeout(() => loadProblem(nextProblemId), 1500);
+                }
+            } else {
+                renderResults(results, false);
+                if (problemStatus[currentProblemId] === 'not-attempted') {
+                    problemStatus[currentProblemId] = 'attempted';
+                    renderProblemList();
+                }
+                document.querySelector('.tab[data-tab="results"]').click();
+                if (!IS_DESKTOP) setMobileView('results');
+            }
+            userCodeState[currentProblemId] = editor.getValue();
             setLoadingState(false, isSubmission);
-            document.querySelector('.tab[data-tab="results"]').click();
-            if (!IS_DESKTOP) setMobileView('results');
         }
         
         async function executeTestCase(code, testCase, functionName) {
@@ -726,10 +729,9 @@
         async function saveScore(problem, wasCorrect) {
             const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
             const scoreSnap = await scoreRef.get();
-            // Only add a new score if one doesn't exist. We don't update scores.
             if (scoreSnap.empty) {
                 const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
-                try { await db.collection('codeScores').add(scoreData); } catch (e) { console.error("Error saving score:", e); showAdvancedAlert('error', 'Save Failed', 'Could not save your score. Please check your connection.'); }
+                try { await db.collection('codeScores').add(scoreData); } catch (e) { console.error("Error saving score:", e); showAdvancedAlert('error', 'Save Failed', 'Could not save your score.'); }
             }
         }
 
@@ -750,10 +752,9 @@
         function setLoadingState(isLoading, isSubmission) {
             const btns = isSubmission ? [DOMElements.submitBtn, DOMElements.mobileSubmitBtn] : [DOMElements.runBtn, DOMElements.mobileRunBtn];
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading || isTestEnded);
-            
             btns.forEach(btn => {
                 const btnText = btn.querySelector('.btn-text');
-                const isSolved = problemStatus[currentProblemId] === 'solved';
+                const isSubmitted = problemStatus[currentProblemId] === 'solved' || problemStatus[currentProblemId] === 'attempted';
                 if (isLoading) { 
                     btn.querySelector('svg').style.display = 'none';
                     const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); 
@@ -762,7 +763,7 @@
                     btn.querySelector('.loader')?.remove(); 
                     btn.querySelector('svg').style.display = 'block'; 
                     btnText.textContent = isSubmission ? 'Submit' : 'Run';
-                    btn.disabled = isSolved || isTestEnded;
+                    btn.disabled = isSubmitted || isTestEnded;
                 }
             });
         }
