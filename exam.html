@@ -76,10 +76,17 @@
         .option-text { flex-grow: 1; line-height: 1.5; }
         .selected .option-letter { border-color: var(--accent-start); background-color: var(--accent-start); color: white; }
         .question-footer { margin-top: auto; padding-top: 24px; display: flex; justify-content: space-between; align-items: center; }
-        .results-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        .results-overlay.show { display: flex; opacity: 1; }
-        .results-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
-        .results-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        .custom-modal-overlay.show { display: flex; opacity: 1; }
+        .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 700px; text-align: center; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .custom-modal-card h2 { font-size: 2rem; margin-bottom: 8px; } .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
+        .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
+        .review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 12px; margin: 24px 0; max-height: 40vh; overflow-y: auto; padding: 10px; }
+        .review-item-btn { width: 50px; height: 50px; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 2px solid rgba(var(--border-color-rgb), 0.8); transition: all var(--transition-fast); }
+        .review-item-btn:hover { border-color: var(--accent-start); }
+        .review-item-btn.answered { background-color: rgba(var(--success-rgb), 0.1); color: rgb(var(--success-rgb)); border-color: rgb(var(--success-rgb)); }
         #redirect-message { font-size: 1rem; margin-top: -16px; }
         #alert-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
         .advanced-alert { display: flex; align-items: flex-start; width: 350px; max-width: 90vw; background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(10px); border-radius: var(--border-radius); padding: 16px; border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; position: relative; overflow: hidden; }
@@ -93,18 +100,6 @@
         .advanced-alert.alert-error { border-color: rgb(var(--danger-rgb)); color: rgb(var(--danger-rgb)); }
         .advanced-alert.alert-info { border-color: var(--accent-start); color: var(--accent-start); }
         .mobile-header { display: none; } .menu-toggle, .overlay, .close-menu-btn { display: none; }
-        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        .custom-modal-overlay.show { display: flex; opacity: 1; }
-        .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 700px; text-align: center; animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .custom-modal-card h2 { font-size: 1.75rem; margin-bottom: 8px; }
-        .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem; line-height: 1.6; }
-        .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
-        .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
-        .review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 12px; margin: 24px 0; max-height: 40vh; overflow-y: auto; padding: 10px; }
-        .review-item-btn { width: 50px; height: 50px; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 2px solid rgba(var(--border-color-rgb), 0.8); transition: all var(--transition-fast); }
-        .review-item-btn:hover { border-color: var(--accent-start); }
-        .review-item-btn.answered { background-color: rgba(var(--success-rgb), 0.1); color: rgb(var(--success-rgb)); border-color: rgb(var(--success-rgb)); }
         @media (max-width: 900px) {
             .main-content { padding: 0; }
             .main-header { display: none; }
@@ -115,7 +110,7 @@
             .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(var(--surface-light-rgb), 0.8); border-radius: 50%; color: white; cursor: pointer; z-index: 1001; } .close-menu-btn svg { width: 18px; height: 18px; }
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity var(--transition-smooth); } .overlay.active { opacity: 1; pointer-events: auto; }
             .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
-            .results-card, .custom-modal-card { padding: 24px; } .results-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .custom-modal-card p { font-size: 1rem; }
+            .custom-modal-card { padding: 24px; } .custom-modal-card h2 { font-size: 1.5rem; } .custom-modal-card p { font-size: 1rem; }
         }
     </style>
 </head>
@@ -156,9 +151,7 @@
             </header>
 
             <div class="question-area">
-                <div class="question-header">
-                    <h2 class="question-title-text" id="question-title"></h2>
-                </div>
+                <div class="question-header"><h2 class="question-title-text" id="question-title"></h2></div>
                 <div class="options-container" id="options-container"></div>
                 <footer class="question-footer">
                     <button id="prev-btn" class="btn"><svg style="width:18px; height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>Previous</button>
@@ -168,9 +161,19 @@
         </div>
         <div class="overlay" id="overlay"></div>
     </main>
+    
+    <div id="fullscreen-overlay" class="custom-modal-overlay show">
+        <div class="custom-modal-card">
+             <h2>Exam Integrity Protocol</h2>
+            <p>For a fair and secure testing environment, this exam must be taken in fullscreen mode. Leaving fullscreen, switching tabs, or minimizing the window will be flagged. You have 3 attempts before the exam is automatically submitted.</p>
+            <div class="custom-modal-actions">
+                <button id="start-exam-btn" class="btn submit-btn">I Understand, Start Exam</button>
+            </div>
+        </div>
+    </div>
 
-    <div id="results-overlay" class="results-overlay">
-        <div class="results-card">
+    <div id="results-overlay" class="custom-modal-overlay">
+        <div class="custom-modal-card">
             <h2 id="results-title"></h2>
             <p id="results-message"></p>
             <div style="font-size: 4rem; font-weight: bold; margin: 2rem 0; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" id="final-score-display"></div>
@@ -229,6 +232,8 @@
             sidebar: document.getElementById('sidebar'),
             overlay: document.getElementById('overlay'),
             alertContainer: document.getElementById('alert-container'),
+            fullscreenOverlay: document.getElementById('fullscreen-overlay'),
+            startExamBtn: document.getElementById('start-exam-btn'),
             resultsOverlay: document.getElementById('results-overlay'),
             resultsTitle: document.getElementById('results-title'),
             resultsMessage: document.getElementById('results-message'),
@@ -240,6 +245,8 @@
         };
 
         let currentUser, examId, examData, questions = [], userAnswers = {}, currentQuestionIndex = 0, timerInterval, isExamEnded = false;
+        let leaveAttempts = 0;
+        const MAX_LEAVE_ATTEMPTS = 3;
 
         async function main() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -254,20 +261,27 @@
                         showFinalResultsPage(completedScoreData, true);
                     } else {
                         await fetchData();
-                        init();
+                        DOMElements.startExamBtn.addEventListener('click', startExam);
                     }
-                } else {
-                    window.location.href = 'index.html';
-                }
+                } else { window.location.href = 'index.html'; }
             });
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
         }
 
         async function fetchData() {
             const examDoc = await db.collection('exams').doc(examId).get();
             if (!examDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Exam not found.</p>'; throw new Error("Exam not found"); }
             examData = { id: examDoc.id, ...examDoc.data() };
-            questions = examData.questions;
+            questions = shuffleArray(examData.questions);
             questions.forEach((q, index) => { userAnswers[index] = null; });
+            DOMElements.loadingOverlay.style.display = 'none';
         }
 
         async function checkIfExamCompleted() {
@@ -275,40 +289,70 @@
             return scoreQuery.empty ? false : scoreQuery.docs[0].data();
         }
 
+        function enterFullScreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) { elem.requestFullscreen(); } 
+            else if (elem.webkitRequestFullscreen) { elem.webkitRequestFullscreen(); } 
+            else if (elem.msRequestFullscreen) { elem.msRequestFullscreen(); }
+        }
+
+        function startExam() {
+            enterFullScreen();
+            DOMElements.fullscreenOverlay.classList.remove('show');
+            init();
+        }
+        
         function init() {
             DOMElements.examTitleSidebar.textContent = examData.name;
             renderQuestionNav();
             loadQuestion(currentQuestionIndex);
             initEventListeners();
             startTimer();
-            DOMElements.loadingOverlay.style.opacity = '0';
-            setTimeout(() => {
-                DOMElements.loadingOverlay.style.display = 'none';
-                DOMElements.examDashboard.style.display = 'flex';
-            }, 300);
+            DOMElements.examDashboard.style.display = 'flex';
         }
 
         function initEventListeners() {
             [DOMElements.endExamBtn, DOMElements.mobileEndExamBtn].forEach(btn => btn.addEventListener('click', showReviewOverlay));
             DOMElements.prevBtn.addEventListener('click', () => navigateToQuestion(currentQuestionIndex - 1));
-            DOMElements.nextBtn.addEventListener('click', () => navigateToQuestion(currentQuestionIndex + 1));
+            DOMElements.nextBtn.addEventListener('click', () => {
+                const isLastQuestion = currentQuestionIndex === questions.length - 1;
+                isLastQuestion ? showReviewOverlay() : navigateToQuestion(currentQuestionIndex + 1);
+            });
             DOMElements.questionNav.addEventListener('click', handleQuestionSelect);
             [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
             const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.reviewCancelBtn.addEventListener('click', () => DOMElements.reviewOverlay.classList.remove('show'));
-            DOMElements.reviewConfirmBtn.addEventListener('click', endExam);
+            DOMElements.reviewConfirmBtn.addEventListener('click', () => endExam("Test Finished", false, "User Submitted"));
+            
+            document.addEventListener('visibilitychange', handleLeaveAttempt);
+            document.addEventListener('fullscreenchange', handleLeaveAttempt);
+            document.addEventListener('contextmenu', e => { e.preventDefault(); showAdvancedAlert('error', 'Action Blocked', 'Right-clicking is disabled during the exam.'); });
+            document.addEventListener('copy', e => { e.preventDefault(); showAdvancedAlert('error', 'Action Blocked', 'Copying is disabled during the exam.'); });
+            document.addEventListener('paste', e => { e.preventDefault(); showAdvancedAlert('error', 'Action Blocked', 'Pasting is disabled during the exam.'); });
         }
 
+        function handleLeaveAttempt() {
+            if (isExamEnded) return;
+            if (!document.fullscreenElement || document.hidden) {
+                leaveAttempts++;
+                const attemptsRemaining = MAX_LEAVE_ATTEMPTS - leaveAttempts;
+                if (attemptsRemaining > 0) {
+                    showAdvancedAlert('error', 'Proctoring Warning', `You have left the exam window. You have ${attemptsRemaining} attempt(s) remaining.`);
+                } else {
+                    showAdvancedAlert('error', 'Exam Terminated', 'You have exceeded the maximum number of allowed leave attempts.');
+                    endExam("Exam Terminated", true, "Exceeded leave attempts");
+                }
+            }
+        }
+        
         function renderQuestionNav() {
             DOMElements.questionNav.innerHTML = questions.map((q, index) => `
                 <li class="question-item ${index === currentQuestionIndex ? 'active' : ''} ${userAnswers[index] !== null ? 'answered' : ''}" data-index="${index}">
-                    <div class="q-number">${index + 1}</div>
-                    <div class="q-title">Question ${index + 1}</div>
+                    <div class="q-number">${index + 1}</div><div class="q-title">Question ${index + 1}</div>
                     <div class="q-status-icon"><svg><use href="#icon-check-circle"></use></svg></div>
-                </li>
-            `).join('');
+                </li>`).join('');
         }
 
         function loadQuestion(index) {
@@ -319,10 +363,8 @@
             DOMElements.questionTitle.textContent = `${index + 1}. ${question.title}`;
             DOMElements.optionsContainer.innerHTML = question.options.map((opt, optIndex) => `
                 <div class="option ${userAnswers[index] === optIndex ? 'selected' : ''}" data-opt-index="${optIndex}">
-                    <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span>
-                    <span class="option-text">${opt}</span>
-                </div>
-            `).join('');
+                    <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span><span class="option-text">${opt}</span>
+                </div>`).join('');
 
             DOMElements.optionsContainer.querySelectorAll('.option').forEach(opt => {
                 opt.addEventListener('click', () => selectOption(parseInt(opt.dataset.optIndex)));
@@ -341,38 +383,26 @@
             const target = e.target.closest('.question-item');
             if (target && target.dataset.index) { 
                 navigateToQuestion(parseInt(target.dataset.index));
-                if(window.innerWidth <= 900) {
-                    DOMElements.sidebar.classList.remove('active');
-                    DOMElements.overlay.classList.remove('active');
-                }
+                if(window.innerWidth <= 900) { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); }
             }
         }
         
-        function navigateToQuestion(index) {
-            if (index >= 0 && index < questions.length) {
-                loadQuestion(index);
-            }
-        }
+        function navigateToQuestion(index) { if (index >= 0 && index < questions.length) { loadQuestion(index); } }
 
         function updateNavButtons() {
             DOMElements.prevBtn.disabled = currentQuestionIndex === 0;
-            DOMElements.nextBtn.disabled = currentQuestionIndex === questions.length - 1;
+            const isLastQuestion = currentQuestionIndex === questions.length - 1;
+            DOMElements.nextBtn.innerHTML = isLastQuestion ? `Review & Submit <svg style="width:18px; height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>` : `Next <svg style="width:18px; height:18px;" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>`;
         }
 
         function startTimer() {
             const storageKey = `examEndTime_${currentUser.uid}_${examId}`;
             let endTime = localStorage.getItem(storageKey);
-            if (!endTime) {
-                endTime = Date.now() + examData.duration * 1000;
-                localStorage.setItem(storageKey, endTime);
-            }
+            if (!endTime) { endTime = Date.now() + examData.duration * 1000; localStorage.setItem(storageKey, endTime); }
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const remaining = endTime - Date.now();
-                if (remaining <= 0) {
-                    endExam("Time's up!", true);
-                    return;
-                }
+                if (remaining <= 0) { endExam("Time's up!", true, "Time Expired"); return; }
                 updateTimerDisplay(remaining);
             }, 1000);
         }
@@ -384,69 +414,54 @@
             const timeString = `${minutes}:${seconds}`;
             DOMElements.timerDisplay.textContent = timeString;
             DOMElements.mobileTimerDisplay.textContent = timeString;
-
-            DOMElements.timerContainer.classList.toggle('warning', totalSeconds <= 300 && totalSeconds > 60);
-            DOMElements.timerContainer.classList.toggle('danger', totalSeconds <= 60);
-            DOMElements.mobileTimerContainer.classList.toggle('warning', totalSeconds <= 300 && totalSeconds > 60);
-            DOMElements.mobileTimerContainer.classList.toggle('danger', totalSeconds <= 60);
+            const containers = [DOMElements.timerContainer, DOMElements.mobileTimerContainer];
+            containers.forEach(c => {
+                c.classList.toggle('warning', totalSeconds <= 300 && totalSeconds > 60);
+                c.classList.toggle('danger', totalSeconds <= 60);
+            });
         }
 
         function showReviewOverlay() {
             DOMElements.reviewGrid.innerHTML = questions.map((q, index) => `
-                <button class="review-item-btn ${userAnswers[index] !== null ? 'answered' : ''}" data-index="${index}">
-                    ${index + 1}
-                </button>
-            `).join('');
+                <button class="review-item-btn ${userAnswers[index] !== null ? 'answered' : ''}" data-index="${index}">${index + 1}</button>`).join('');
             
             DOMElements.reviewGrid.querySelectorAll('.review-item-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    navigateToQuestion(parseInt(btn.dataset.index));
-                    DOMElements.reviewOverlay.classList.remove('show');
-                });
+                btn.addEventListener('click', () => { navigateToQuestion(parseInt(btn.dataset.index)); DOMElements.reviewOverlay.classList.remove('show'); });
             });
 
             DOMElements.reviewOverlay.classList.add('show');
         }
 
-        async function endExam(title = "Test Finished", isAutoSubmit = false) {
+        async function endExam(title, isAutoSubmit, reason) {
             if (isExamEnded) return;
             isExamEnded = true;
             clearInterval(timerInterval);
 
-            if (typeof title !== 'string') title = "Test Finished";
-            
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Submitting & Calculating Score...';
             DOMElements.loadingOverlay.style.display = 'flex';
             DOMElements.examDashboard.style.display = 'none';
 
             let pointsReceived = 0;
             const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
-
-            questions.forEach((q, index) => {
-                if (q.type === 'Mcq' && userAnswers[index] === q.correctAnswer) {
-                    pointsReceived += q.points;
-                }
-            });
+            questions.forEach((q, index) => { if (q.type === 'Mcq' && userAnswers[index] === q.correctAnswer) { pointsReceived += q.points; } });
 
             const scoreData = {
-                userId: currentUser.uid, examId: examId, examName: examData.name,
-                subjectId: examData.subjectId, pointsReceived, totalPoints,
-                submittedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                reason: isAutoSubmit ? "Time Expired" : "User Submitted"
+                userId: currentUser.uid, examId, examName: examData.name, subjectId: examData.subjectId, 
+                pointsReceived, totalPoints, reason, submittedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
             await db.collection('scores').add(scoreData);
             localStorage.removeItem(`examEndTime_${currentUser.uid}_${examId}`);
-            showFinalResultsPage(scoreData, false);
+            showFinalResultsPage(scoreData, false, title);
         }
 
-        function showFinalResultsPage(scoreData, isAlreadyCompleted) {
+        function showFinalResultsPage(scoreData, isAlreadyCompleted, title = "Test Finished!") {
             DOMElements.loadingOverlay.style.display = 'none';
             DOMElements.examDashboard.style.display = 'none';
             DOMElements.reviewOverlay.classList.remove('show');
             
             const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-            DOMElements.resultsTitle.textContent = isAlreadyCompleted ? "Exam Already Completed" : "Test Finished!";
+            DOMElements.resultsTitle.textContent = isAlreadyCompleted ? "Exam Already Completed" : title;
             DOMElements.resultsMessage.textContent = `Here is your final score for ${scoreData.examName}.`;
             DOMElements.finalScoreDisplay.innerHTML = `${percentage}% <br><span style="font-size: 1.5rem; color: var(--text-secondary);">${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</span>`;
             DOMElements.resultsOverlay.classList.add('show');
@@ -456,10 +471,7 @@
             const countdownInterval = setInterval(() => {
                 redirectMessageEl.textContent = `Redirecting to dashboard in ${countdown} seconds...`;
                 countdown--;
-                if (countdown < 0) {
-                    clearInterval(countdownInterval);
-                    window.location.href = 'dashboard.html';
-                }
+                if (countdown < 0) { clearInterval(countdownInterval); window.location.href = 'dashboard.html'; }
             }, 1000);
         }
 
