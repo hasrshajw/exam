@@ -536,6 +536,14 @@
         }
 
         function initEventListeners() {
+            // This is the SINGLE, correct block for disabling actions.
+            const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
+            document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
+            document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
+            document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
+            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
+
+            // All other event listeners
             [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
             [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
             [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
@@ -557,11 +565,6 @@
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
-            const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
-            document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
-            document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
-            document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
-            document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
             document.addEventListener('visibilitychange', handleVisibilityChange); 
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             DOMElements.enterFullscreenBtn.addEventListener('click', () => { document.documentElement.requestFullscreen().catch(err => console.error(err)); });
