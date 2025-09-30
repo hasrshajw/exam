@@ -104,7 +104,7 @@
         #results-overlay.show, #fullscreen-overlay.show { display: flex; opacity: 1; }
         .results-card, .fullscreen-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
         .results-card h2, .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p, .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
-        .final-results-list { list-style: none; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
+        .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
         .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
         .final-status.solved { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); }
         .final-status.attempted { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
@@ -129,32 +129,27 @@
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
         
         @media (max-width: 900px) {
+            .main-content { padding: 0; height: 100%; }
             .main-header { display: none; }
             .ide-layout { height: 100%; }
             .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
-            .main-content { padding: 0; height: 100%; }
             .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
             .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
             .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
-            
             .ide-layout { display: flex; flex-direction: column; }
             .top-panel { display: flex; flex-grow: 1; min-height: 0; background: transparent; backdrop-filter: none; border: none; }
             .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; border: none; background: transparent; backdrop-filter: none; }
             .bottom-panel { margin: 0 16px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); }
             #problem-details, #editor-container { padding: 0 16px 16px; }
             .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
-            
             #resizer-h, #resizer-v { display: none; }
-            
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); } .sidebar.active { transform: translateX(0); }
             .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(var(--surface-light-rgb), 0.8); border-radius: 50%; color: white; cursor: pointer; z-index: 1001; } .close-menu-btn svg { width: 18px; height: 18px; }
             .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity var(--transition-smooth); } .overlay.active { opacity: 1; pointer-events: auto; }
             .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
-            
             .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
             .mobile-footer.active { display: flex; }
             .mobile-footer .btn { flex: 1; }
-            
             .results-card, .fullscreen-card { padding: 24px; } .results-card h2, .fullscreen-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p { font-size: 1rem; }
         }
     </style>
@@ -198,7 +193,7 @@
                     <h1 class="header-title" id="main-header-title"></h1>
                 </div>
                 <div class="proctor-info">
-                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">00:00</span></div>
+                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">00:00:00</span></div>
                     <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="attempts-left">5</span></div>
                 </div>
                 <div class="controls">
@@ -211,7 +206,7 @@
             <header class="mobile-header">
                 <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
                  <div class="proctor-info">
-                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00</span></div>
+                    <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00:00</span></div>
                     <div class="attempts-container"><svg><use href="#icon-shield-warning"></use></svg><span id="mobile-attempts-left">5</span></div>
                 </div>
                 <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
@@ -303,13 +298,9 @@
             problemList: document.getElementById('problem-list'), 
             assignmentTitle: document.getElementById('assignment-title'),
             mainHeaderTitle: document.getElementById('main-header-title'), 
-            problemDetails: document.getElementById('problem-details'),
             problemDetailsContent: document.getElementById('problem-details-content'),
             problemStatement: document.getElementById('problem-statement'), 
             publicTestCases: document.getElementById('public-test-cases'), 
-            bottomPanel: document.querySelector('.bottom-panel'), 
-            resultsContent: document.getElementById('results'), 
-            consoleOutput: document.getElementById('console-output'), 
             tabs: document.querySelectorAll('.tab'), 
             menuToggle: document.getElementById('menu-toggle'), mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
             closeMenuBtn: document.getElementById('close-menu-btn'), 
@@ -325,7 +316,10 @@
             fullscreenTitle: document.getElementById('fullscreen-title'),
             fullscreenMessage: document.getElementById('fullscreen-message'),
             enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
-            alertContainer: document.getElementById('alert-container')
+            alertContainer: document.getElementById('alert-container'),
+            // Added missing elements for mobile view switching
+            problemDetails: document.getElementById('problem-details'),
+            bottomPanel: document.querySelector('.bottom-panel')
         };
         
         let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0;
@@ -355,22 +349,30 @@
             assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
             DOMElements.assignmentTitle.textContent = assignment.name;
 
-            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
+            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).orderBy('order', 'asc').get();
             problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
+            // Initialize local state for all problems
             problems.forEach(p => {
                 userCodeState[p.id] = p.starterCode;
                 problemStatus[p.id] = 'not-attempted';
             });
 
+            // Override status for problems that already have a score in Firestore
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
             scoresSnap.forEach(doc => {
                 const score = doc.data();
-                if(score.pointsReceived > 0) problemStatus[score.problemId] = 'solved';
+                if(score.pointsReceived > 0) {
+                    problemStatus[score.problemId] = 'solved';
+                } else if (problemStatus[score.problemId] !== 'solved') {
+                    problemStatus[score.problemId] = 'attempted';
+                }
             });
             
+            // Determine starting problem (first one not solved)
             const firstUnsolvedIndex = problems.findIndex(p => problemStatus[p.id] !== 'solved');
             currentProblemId = firstUnsolvedIndex === -1 ? problems[problems.length - 1]?.id : problems[firstUnsolvedIndex]?.id;
+            if (!currentProblemId && problems.length > 0) currentProblemId = problems[0].id;
         }
 
         async function checkIfAssignmentCompleted() {
@@ -385,6 +387,7 @@
             DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
             DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
             
+            // Fetch individual scores to populate the final list correctly
             db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
                 const problemScores = {};
                 scoresSnap.forEach(doc => {
@@ -393,9 +396,9 @@
                 });
             
                 DOMElements.finalResultsList.innerHTML = problems.map(p => {
-                    const status = problemScores[p.id] || 'not attempted';
-                    const statusClass = `final-status ${status.replace(/ /g, '')}`;
-                    const statusText = status.replace(/\b\w/g, l => l.toUpperCase());
+                    const status = problemScores[p.id] || 'notattempted';
+                    const statusClass = `final-status ${status}`;
+                    const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
                     return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
                 }).join('');
             });
@@ -479,13 +482,13 @@
         
         // --- Timer ---
         function startTimer() {
+            if (timerInterval) return;
             const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             let endTime = localStorage.getItem(storageKey);
             if (!endTime) {
                 endTime = Date.now() + assignment.duration * 1000;
                 localStorage.setItem(storageKey, endTime);
             }
-            clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const remaining = endTime - Date.now();
                 if (remaining <= 0) {
@@ -531,16 +534,21 @@
                 completedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 submissionReason: reason
             };
-            await db.collection('codeAssignmentScores').add(finalScoreData);
+            
+            // Check if a final score already exists before adding a new one
+            const finalScoreQuery = await db.collection('codeAssignmentScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
+            if (finalScoreQuery.empty) {
+                await db.collection('codeAssignmentScores').add(finalScoreData);
+            }
             
             const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             localStorage.removeItem(storageKey);
 
             DOMElements.finalScoreMessage.textContent = `Final Score: ${totalScoreObtained} / ${totalScorePossible}`;
             DOMElements.finalResultsList.innerHTML = problems.map(p => {
-                const status = problemStatus[p.id];
-                const statusClass = `final-status ${status.replace(/-/g, '')}`;
-                const statusText = status.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                const status = problemStatus[p.id] || 'notattempted';
+                const statusClass = `final-status ${status}`;
+                const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
                 return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
             }).join('');
             DOMElements.resultsOverlay.querySelector('h2').textContent = title;
@@ -573,10 +581,15 @@
         }
 
         function isProblemUnlocked(problemId) {
+            // All problems are unlocked by default in this configuration.
+            // To enable sequential unlocking, uncomment the following lines:
+            /*
             const problemIndex = problems.findIndex(p => p.id === problemId);
             if (problemIndex === 0) return true;
             const prevProblemId = problems[problemIndex - 1].id;
             return problemStatus[prevProblemId] === 'solved' || problemStatus[prevProblemId] === 'attempted';
+            */
+            return true;
         }
 
         function renderProblemList() {
@@ -595,19 +608,24 @@
         }
         
         function updateAttemptedStatus() {
-            const currentCode = editor ? editor.getValue() : userCodeState[currentProblemId];
+            if (isTestEnded || !editor || !currentProblemId) return;
+            const currentCode = editor.getValue();
             const problem = problems.find(p => p.id === currentProblemId);
             if (!problem) return;
-            const starterCode = problem.starterCode;
-            if (currentCode && currentCode.trim() !== starterCode.trim() && problemStatus[currentProblemId] === 'not-attempted') { problemStatus[currentProblemId] = 'attempted'; }
-            if(editor) userCodeState[currentProblemId] = currentCode;
+            if (currentCode.trim() !== problem.starterCode.trim() && problemStatus[currentProblemId] === 'not-attempted') {
+                problemStatus[currentProblemId] = 'attempted';
+                renderProblemList();
+            }
+            userCodeState[currentProblemId] = currentCode;
         }
 
         function loadProblem(problemId) {
+            if (!problemId) return;
             updateAttemptedStatus();
             currentProblemId = problemId;
             const problem = problems.find(p => p.id === problemId);
             if (!problem) return;
+            
             const status = problemStatus[problemId];
             const isSolved = status === 'solved';
 
@@ -626,10 +644,17 @@
             DOMElements.consoleOutput.textContent = 'No console output.';
             
             renderProblemList();
-            setMobileView('problem');
+            if (!IS_DESKTOP) setMobileView('problem');
         }
         
-        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
+        function handleProblemSelect(e) { 
+            const target = e.target.closest('.problem-item'); 
+            if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { 
+                loadProblem(target.dataset.id); 
+                DOMElements.sidebar.classList.remove('active'); 
+                DOMElements.overlay.classList.remove('active'); 
+            } 
+        }
         
         function setMobileView(view) {
             if (IS_DESKTOP) return;
@@ -643,33 +668,35 @@
         async function handleExecution(isSubmission) {
             setLoadingState(true, isSubmission);
             DOMElements.resultsContent.innerHTML = '';
-            DOMElements.consoleOutput.textContent = 'No console output.';
+            DOMElements.consoleOutput.textContent = '';
             const problem = problems.find(p => p.id === currentProblemId);
             const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
             const results = [];
             for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
+            if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
             renderResults(results, isSubmission);
             
             if (isSubmission) {
                 const allPassed = results.every(r => r.status === 'pass');
+                const previousStatus = problemStatus[currentProblemId];
                 problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
-                await saveScore(problem, allPassed);
+                if (previousStatus !== 'solved') { // Only save score if not already solved
+                    await saveScore(problem, allPassed);
+                }
                 renderProblemList();
                 
-                const currentProblemIndex = problems.findIndex(p => p.id === currentProblemId);
-                if (allPassed && currentProblemIndex < problems.length - 1) {
-                    const nextProblemId = problems[currentProblemIndex + 1].id;
-                    setTimeout(() => loadProblem(nextProblemId), 1000); 
-                } else if (allPassed && currentProblemIndex === problems.length - 1) {
-                    setTimeout(() => endExam("Test Finished", "All problems solved"), 1000);
+                const allProblemsSolved = problems.every(p => problemStatus[p.id] === 'solved');
+                if (allProblemsSolved) {
+                    setTimeout(() => endExam("Congratulations! All Problems Solved!", "All problems solved"), 1500);
                 }
             } else if (problemStatus[currentProblemId] !== 'solved') {
                 problemStatus[currentProblemId] = 'attempted';
+                renderProblemList();
             }
 
             setLoadingState(false, isSubmission);
             document.querySelector('.tab[data-tab="results"]').click();
-            setMobileView('results');
+            if (!IS_DESKTOP) setMobileView('results');
         }
         
         async function executeTestCase(code, testCase, functionName) {
@@ -678,14 +705,14 @@
             const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
             const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
             try {
-                const capturedOutput = { lines: [] }, consoleElement = DOMElements.consoleOutput;
-                pyodide.setStdout({ batched: (msg) => { capturedOutput.lines.push(msg); } });
-                pyodide.setStderr({ batched: (msg) => { capturedOutput.lines.push(msg); } });
+                const capturedOutput = { lines: [] };
+                pyodide.setStdout({ batched: (msg) => capturedOutput.lines.push(msg) });
+                pyodide.setStderr({ batched: (msg) => capturedOutput.lines.push(msg) });
                 await pyodide.runPythonAsync(fullScript);
                 const outputStr = capturedOutput.lines.join('\n');
                 const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
                 const userLogs = outputStr.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
-                if (userLogs) { if (consoleElement.textContent === 'No console output.') consoleElement.textContent = ''; consoleElement.textContent += `${userLogs}\n`; }
+                if (userLogs) DOMElements.consoleOutput.textContent += `${userLogs}\n`;
                 if (resultMatch && resultMatch[1]) {
                     const outputJs = JSON.parse(resultMatch[1]);
                     result.output = outputJs;
@@ -699,9 +726,11 @@
         async function saveScore(problem, wasCorrect) {
             const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
             const scoreSnap = await scoreRef.get();
-            if (!scoreSnap.empty) return; // Already submitted
-            const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
-            try { await db.collection('codeScores').add(scoreData); } catch (e) { console.error("Error saving score:", e); }
+            // Only add a new score if one doesn't exist. We don't update scores.
+            if (scoreSnap.empty) {
+                const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
+                try { await db.collection('codeScores').add(scoreData); } catch (e) { console.error("Error saving score:", e); showAdvancedAlert('error', 'Save Failed', 'Could not save your score. Please check your connection.'); }
+            }
         }
 
         function renderResults(results, isSubmission) {
@@ -724,16 +753,15 @@
             
             btns.forEach(btn => {
                 const btnText = btn.querySelector('.btn-text');
-                const currentProblem = problems.find(p => p.id === currentProblemId);
-                const isSolved = currentProblem && problemStatus[currentProblem.id] === 'solved';
-
+                const isSolved = problemStatus[currentProblemId] === 'solved';
                 if (isLoading) { 
+                    btn.querySelector('svg').style.display = 'none';
+                    const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); 
                     btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; 
-                    const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); btn.querySelector('svg').style.display = 'none'; 
                 } else { 
                     btn.querySelector('.loader')?.remove(); 
-                    btnText.textContent = isSubmission ? 'Submit' : 'Run'; 
-                    btn.querySelector('svg').style.display = 'inline-block'; 
+                    btn.querySelector('svg').style.display = 'block'; 
+                    btnText.textContent = isSubmission ? 'Submit' : 'Run';
                     btn.disabled = isSolved || isTestEnded;
                 }
             });
@@ -745,10 +773,10 @@
             if (!IS_DESKTOP) return;
             const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
             const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
-            const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flex = `0 1 ${Math.max(25, Math.min(75, percentage))}%`; bottomPanel.style.flex = `0 1 ${100 - parseFloat(topPanel.style.flexBasis)}%`; };
+            const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
             const onMouseUpH = () => document.removeEventListener('mousemove', onMouseMoveH);
             resizerH.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveH); document.addEventListener('mouseup', onMouseUpH, { once: true }); });
-            const onMouseMoveV = (e) => { const containerWidth = problemDetails.parentElement.clientWidth, newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; const percentage = newLeftWidth / containerWidth * 100; problemDetails.style.flex = `0 1 ${Math.max(25, Math.min(75, percentage))}%`; editorContainer.style.flex = `0 1 ${100 - parseFloat(problemDetails.style.flexBasis)}%`; };
+            const onMouseMoveV = (e) => { const containerWidth = problemDetails.parentElement.clientWidth, newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; const percentage = newLeftWidth / containerWidth * 100; problemDetails.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
             const onMouseUpV = () => document.removeEventListener('mousemove', onMouseMoveV);
             resizerV.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', onMouseUpV, { once: true }); });
         }
