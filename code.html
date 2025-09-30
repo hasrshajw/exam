@@ -53,7 +53,7 @@
         .problem-item:not(.locked):not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
         .problem-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
         .problem-item.active::before { transform: translateX(0); }
-        .problem-item.locked { cursor: not-allowed; opacity: 0.5; }
+        .problem-item.locked { cursor: not-allowed; opacity: 0.6; background-color: transparent !important; }
         .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
         .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
         .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
@@ -100,13 +100,11 @@
         .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
         .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
         
-        #results-overlay, #fullscreen-overlay, .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        #results-overlay.show, #fullscreen-overlay.show, .custom-modal-overlay.show { display: flex; opacity: 1; }
-        .results-card, .fullscreen-card, .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; animation: fadeIn 0.3s ease-out; }
-        .results-card h2, .fullscreen-card h2, .custom-modal-card h2 { font-size: 2rem; margin-bottom: 8px; }
-        .results-card p, .fullscreen-card p, .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
-        .custom-modal-card h2 { font-size: 1.75rem; }
-        .custom-modal-card p { font-size: 1.1rem; line-height: 1.6; }
+        .custom-modal-overlay, #results-overlay, #fullscreen-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        .custom-modal-overlay.show, #results-overlay.show, #fullscreen-overlay.show { display: flex; opacity: 1; }
+        .custom-modal-card, .results-card, .fullscreen-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; animation: fadeIn 0.3s ease-out; }
+        .custom-modal-card h2, .results-card h2, .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; }
+        .custom-modal-card p, .results-card p, .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
         .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
         .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
         .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
@@ -156,7 +154,7 @@
             .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
             .mobile-footer.active { display: flex; }
             .mobile-footer .btn { flex: 1; }
-            .results-card, .fullscreen-card, .custom-modal-card { padding: 24px; } .results-card h2, .fullscreen-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .fullscreen-card p, .custom-modal-card p { font-size: 1rem; }
+            .custom-modal-card, .results-card, .fullscreen-card { padding: 24px; } .custom-modal-card h2, .results-card h2, .fullscreen-card h2 { font-size: 1.5rem; } .custom-modal-card p, .results-card p, .fullscreen-card p { font-size: 1rem; }
         }
     </style>
 </head>
@@ -335,8 +333,8 @@
             fullscreenTitle: document.getElementById('fullscreen-title'),
             fullscreenMessage: document.getElementById('fullscreen-message'),
             enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
-            alertContainer: document.getElementById('alert-container'),
-            finalProblemOverlay: document.getElementById('final-problem-overlay')
+            finalProblemOverlay: document.getElementById('final-problem-overlay'),
+            alertContainer: document.getElementById('alert-container')
         };
         
         let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0;
@@ -377,9 +375,7 @@
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
             scoresSnap.forEach(doc => {
                 const score = doc.data();
-                if (problemStatus[score.problemId]) { // Check if problem exists
-                    problemStatus[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
-                }
+                problemStatus[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
             });
             
             const firstUnsolvedIndex = problems.findIndex(p => problemStatus[p.id] !== 'solved' && problemStatus[p.id] !== 'attempted');
@@ -394,17 +390,14 @@
         function showFinalResultsPage(scoreData) {
             DOMElements.loadingOverlay.style.display = 'none';
             DOMElements.ideDashboard.style.display = 'none';
-            
             DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
             DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
-            
             db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
                 const problemScores = {};
                 scoresSnap.forEach(doc => {
                     const score = doc.data();
                     problemScores[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
                 });
-            
                 DOMElements.finalResultsList.innerHTML = problems.map(p => {
                     const status = problemScores[p.id] || 'notattempted';
                     const statusClass = `final-status ${status}`;
@@ -412,16 +405,14 @@
                     return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
                 }).join('');
             });
-            
             DOMElements.resultsOverlay.classList.add('show');
         }
 
         async function initPyodide() {
-            if (!problems.length) { DOMElements.loadingOverlay.innerHTML = '<p>No problems found for this assignment.</p>'; return; }
+            if (!problems.length) { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; return; }
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
             try { pyodide = await loadPyodide(); } 
             catch (error) { DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>'; return; }
-            
             DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
             initEditor();
         }
@@ -431,10 +422,8 @@
             require(['vs/editor/editor.main'], () => {
                 monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [{ background: '0D1117' }], colors: { 'editor.background': '#0D1117' } });
                 editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
-                
                 DOMElements.loadingOverlay.style.opacity = '0';
                 setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.ideDashboard.style.display = 'flex'; }, 300);
-                
                 init();
             });
         }
@@ -443,7 +432,7 @@
             renderProblemList();
             loadProblem(currentProblemId);
             initEventListeners();
-            checkFullscreen(); // Enforce fullscreen for all devices now
+            checkFullscreen();
         }
         
         function handleViolation(type) {
@@ -485,10 +474,14 @@
                 }
             }
         }
-        function checkFullscreen() { if (!document.fullscreenElement) DOMElements.fullscreenOverlay.classList.add('show'); }
+        
+        function checkFullscreen() { 
+            DOMElements.fullscreenTitle.textContent = 'Fullscreen Required';
+            DOMElements.fullscreenMessage.textContent = 'Please enter fullscreen mode to begin the test.';
+            if (!document.fullscreenElement) DOMElements.fullscreenOverlay.classList.add('show'); 
+        }
         
         function startTimer() {
-            if (timerInterval) return;
             const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             let endTime = localStorage.getItem(storageKey);
             if (!endTime) {
@@ -525,7 +518,7 @@
             pauseTimer();
             if(editor) editor.updateOptions({ readOnly: true });
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
-            updateAttemptedStatus();
+            saveCurrentCodeState();
 
             let totalScoreObtained = 0;
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
@@ -561,7 +554,16 @@
         function initEventListeners() {
             [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
             [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
-            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => { if(confirm("Are you sure you want to end the test and submit your answers?")) { endExam(); } }));
+            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => endExam()));
+            
+            document.getElementById('final-problem-confirm-btn').addEventListener('click', () => {
+                DOMElements.finalProblemOverlay.classList.remove('show');
+                endExam("Test Finished", "User submitted final problem");
+            });
+            document.getElementById('final-problem-cancel-btn').addEventListener('click', () => {
+                DOMElements.finalProblemOverlay.classList.remove('show');
+            });
+
             DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
             DOMElements.problemList.addEventListener('click', handleProblemSelect);
             [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
@@ -569,9 +571,6 @@
             DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
             DOMElements.overlay.addEventListener('click', closeMobileMenu);
             DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
-            
-            document.getElementById('final-problem-confirm-btn').addEventListener('click', () => { DOMElements.finalProblemOverlay.classList.remove('show'); endExam("Test Finished", "User submitted final problem"); });
-            document.getElementById('final-problem-cancel-btn').addEventListener('click', () => { DOMElements.finalProblemOverlay.classList.remove('show'); });
             
             const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
             document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
@@ -587,10 +586,10 @@
 
         function isProblemUnlocked(problemId) {
             const problemIndex = problems.findIndex(p => p.id === problemId);
-            if (problemIndex === 0) return true;
+            if (problemIndex <= 0) return true;
             const prevProblemId = problems[problemIndex - 1].id;
-            const prevStatus = problemStatus[prevProblemId];
-            return prevStatus === 'solved' || prevStatus === 'attempted';
+            const prevProblemStatus = problemStatus[prevProblemId];
+            return prevProblemStatus === 'solved' || prevProblemStatus === 'attempted';
         }
 
         function renderProblemList() {
@@ -608,24 +607,19 @@
             }).join('');
         }
         
-        function updateAttemptedStatus() {
-            if (isTestEnded || !editor || !currentProblemId) return;
-            const currentCode = editor.getValue();
-            const problem = problems.find(p => p.id === currentProblemId);
-            if (!problem) return;
-            if (currentCode.trim() !== problem.starterCode.trim() && problemStatus[currentProblemId] === 'not-attempted') {
-                problemStatus[currentProblemId] = 'attempted';
+        function saveCurrentCodeState() {
+            if (editor && currentProblemId) {
+                userCodeState[currentProblemId] = editor.getValue();
             }
-            userCodeState[currentProblemId] = currentCode;
         }
 
         function loadProblem(problemId) {
-            updateAttemptedStatus();
+            saveCurrentCodeState();
             currentProblemId = problemId;
             const problem = problems.find(p => p.id === problemId);
             if (!problem) return;
             const status = problemStatus[problemId];
-            const isSolved = status === 'solved';
+            const isSubmitted = status === 'solved' || status === 'attempted';
 
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
@@ -633,8 +627,8 @@
             DOMElements.problemDetailsContent.offsetHeight; 
             DOMElements.problemDetailsContent.style.animation = null; 
 
-            if (editor) { editor.setValue(userCodeState[problemId] || problem.starterCode); editor.updateOptions({ readOnly: isSolved }); }
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSolved);
+            if (editor) { editor.setValue(userCodeState[problemId] || problem.starterCode); editor.updateOptions({ readOnly: isSubmitted }); }
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSubmitted);
             
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
             
@@ -645,18 +639,11 @@
             setMobileView('problem');
         }
         
-        function handleProblemSelect(e) { 
-            const target = e.target.closest('.problem-item'); 
-            if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { 
-                loadProblem(target.dataset.id); 
-                DOMElements.sidebar.classList.remove('active'); 
-                DOMElements.overlay.classList.remove('active'); 
-            } 
-        }
+        function handleProblemSelect(e) { const target = e.target.closest('.problem-item'); if (target && !target.classList.contains('locked') && target.dataset.id !== currentProblemId) { loadProblem(target.dataset.id); DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); } }
         
         function setMobileView(view) {
-            const IS_MOBILE = window.innerWidth <= 900;
-            if (!IS_MOBILE) return;
+            const isDesktop = window.innerWidth > 900;
+            if (isDesktop) return;
             DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
             const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
             Object.values(views).forEach(panel => panel.classList.remove('mobile-view-active'));
@@ -693,10 +680,10 @@
                 }
             } else {
                 renderResults(results, false);
-                if (problemStatus[currentProblemId] !== 'solved') {
+                if (problemStatus[currentProblemId] === 'not-attempted') {
                     problemStatus[currentProblemId] = 'attempted';
-                    renderProblemList();
                 }
+                renderProblemList();
                 document.querySelector('.tab[data-tab="results"]').click();
                 setMobileView('results');
             }
@@ -757,7 +744,7 @@
             
             btns.forEach(btn => {
                 const btnText = btn.querySelector('.btn-text');
-                const isSolved = problemStatus[currentProblemId] === 'solved';
+                const isSubmitted = problemStatus[currentProblemId] === 'solved' || problemStatus[currentProblemId] === 'attempted';
 
                 if (isLoading) { 
                     btn.querySelector('svg').style.display = 'none';
@@ -767,7 +754,7 @@
                     btn.querySelector('.loader')?.remove(); 
                     btn.querySelector('svg').style.display = 'block'; 
                     btnText.textContent = isSubmission ? 'Submit' : 'Run';
-                    btn.disabled = isSolved || isTestEnded;
+                    btn.disabled = isSubmitted || isTestEnded;
                 }
             });
         }
@@ -775,8 +762,8 @@
         function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
         
         function initResizers() {
-            const IS_MOBILE = window.innerWidth <= 900;
-            if (IS_MOBILE) return;
+            const isDesktop = window.innerWidth > 900;
+            if (!isDesktop) return;
             const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
             const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
             const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
