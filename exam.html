@@ -3,525 +3,774 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCoder Exam Environment</title>
+    <title>ProCoder IDE - Coding Environment</title>
     <style>
         :root {
             --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
-            --bg-dark: #0d1117;
-            --surface-dark-rgb: 22, 27, 34;
-            --surface-light-rgb: 33, 38, 45;
-            --border-color-rgb: 48, 54, 61;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --accent-glow-rgb: 88, 80, 236;
-            --accent-start: #5850EC;
-            --accent-end: #8A2BE2;
-            --success-rgb: 35, 134, 54;
-            --danger-rgb: 218, 54, 51;
-            --warning-rgb: 227, 179, 65;
+            --bg-dark: #0a192f;
+            --surface-dark-rgb: 23, 42, 69;
+            --surface-light-rgb: 42, 61, 88;
+            --border-color-rgb: 72, 94, 122;
+            --text-primary: #ccd6f6;
+            --text-secondary: #8892b0;
+            --accent-glow-rgb: 100, 255, 218;
+            --accent-start: #64FFDA;
+            --accent-end: #36D1DC;
+            --success-rgb: 100, 255, 218;
+            --danger-rgb: 255, 107, 107;
+            --warning-rgb: 253, 186, 116;
             --border-radius: 8px;
             --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            --shadow-lg: 0 10px 30px rgba(0,0,0,0.3);
         }
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         html, body { height: 100%; overflow: hidden; }
         body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; }
         .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
-        .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; }
+        .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.1; }
         .aurora-bg::before { background: radial-gradient(circle, var(--accent-start), transparent 70%); top: -20%; left: -10%; animation: moveAurora1 20s infinite alternate; }
         .aurora-bg::after { background: radial-gradient(circle, var(--accent-end), transparent 70%); bottom: -20%; right: -10%; animation: moveAurora2 25s infinite alternate; }
         @keyframes moveAurora1 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(100px, 50px) rotate(30deg); } }
         @keyframes moveAurora2 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-100px, -50px) rotate(-30deg); } }
         button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-        .view-container { display: none; width: 100%; height: 100%; }
-        .view-container.active { display: flex; }
+        svg { display: block; width: 100%; height: 100%; }
         #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); transition: opacity 0.3s; }
         .loading-spinner { border: 4px solid rgba(var(--surface-light-rgb), 0.5); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .ide-dashboard { display: flex; height: 100%; position: relative; }
-        .sidebar { width: 300px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-right: 1px solid rgba(var(--border-color-rgb), 0.5); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar { width: 320px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-right: 1px solid rgba(var(--border-color-rgb), 0.5); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform var(--transition-smooth), width var(--transition-smooth); }
         .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
         .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .sidebar nav { flex-grow: 1; overflow-y: auto; }
-        .question-nav { list-style: none; }
-        .question-item { position: relative; display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; overflow: hidden; }
-        .question-item::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: linear-gradient(var(--accent-start), var(--accent-end)); transform: translateX(-100%); transition: transform var(--transition-fast); }
-        .question-item:not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
-        .question-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
-        .question-item.active::before { transform: translateX(0); }
-        .q-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
-        .active .q-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
-        .q-details { font-size: 0.95rem; font-weight: 500; } .q-status-icon { margin-left: auto; width: 20px; height: 20px; opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
-        .question-item.answered .q-status-icon { opacity: 1; transform: scale(1); }
-        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; }
+        .problem-nav { list-style: none; }
+        .problem-item { position: relative; display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; overflow: hidden; }
+        .problem-item::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: var(--accent-start); transform: translateX(-100%); transition: transform var(--transition-fast); }
+        .problem-item:not(.locked):not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
+        .problem-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
+        .problem-item.active::before { transform: translateX(0); }
+        .problem-item.locked { cursor: not-allowed; opacity: 0.6; }
+        .problem-item.locked:hover { background-color: transparent; }
+        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
+        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: var(--bg-dark); font-weight: bold; }
+        .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
+        .p-status-icon { width: 20px; height: 20px; margin-left: 8px; opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
+        .problem-item.solved .p-status-icon, .problem-item.attempted .p-status-icon { opacity: 1; transform: scale(1); }
+        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
         .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); padding: 12px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); }
-        .header-title { font-size: 1.5rem; font-weight: 600; }
-        .timer { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
-        .timer.warning { color: rgb(var(--warning-rgb)); } .timer.danger { color: rgb(var(--danger-rgb)); animation: pulse-danger 1.5s infinite; }
-        @keyframes pulse-danger { 0% { box-shadow: 0 0 0 0 rgba(218, 54, 51, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(218, 54, 51, 0); } 100% { box-shadow: 0 0 0 0 rgba(218, 54, 51, 0); } }
-        .timer svg { width: 18px; height: 18px; }
-        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(var(--border-color-rgb), 0.7); }
-        .btn.primary { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; }
-        .btn.primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
-        .btn.secondary { background-color: rgba(var(--surface-light-rgb), 0.8); } .btn.secondary:hover:not(:disabled) { background-color: rgba(var(--border-color-rgb), 0.7); }
-        .btn:disabled { background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
-        #end-exam-btn { color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); } #end-exam-btn:hover:not(:disabled) { background-color: rgba(var(--danger-rgb), 0.1); }
-        .question-area { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
+        .header-title-group { display: flex; align-items: center; gap: 16px; }
+        .header-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
+        .timer-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
+        .timer-container svg { width: 18px; height: 18px; }
+        .controls { display: flex; gap: 12px; }
+        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid var(--accent-start); color: var(--accent-start); }
+        .btn svg { width: 18px; height: 18px; }
+        .btn.run-btn:hover:not(:disabled) { background-color: rgba(var(--accent-glow-rgb), 0.1); }
+        .btn.submit-btn { background-color: var(--accent-start); border-color: var(--accent-start); color: var(--bg-dark); } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); background-color: var(--accent-start); }
+        #end-test-btn { color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); } #end-test-btn:hover:not(:disabled) { background-color: rgba(var(--danger-rgb), 0.1); }
+        .btn:disabled { background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; border-color: rgba(var(--border-color-rgb), 0.7); }
+        .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
+        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 90px); }
+        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
         .ide-panel { background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); overflow: hidden; display: flex; flex-direction: column; }
-        #mcq-container { padding: 2.5rem; } .options-container { display: flex; flex-direction: column; gap: 1rem; }
-        .option { display: flex; align-items: center; padding: 1rem; border: 1px solid rgba(var(--border-color-rgb), 0.8); border-radius: var(--border-radius); cursor: pointer; transition: all 0.2s; }
-        .option:hover { background-color: rgba(var(--surface-light-rgb), 0.3); } .option.selected { border-color: var(--accent-start); background-color: rgba(var(--accent-glow-rgb), 0.1); }
-        .option-letter { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(var(--border-color-rgb), 0.8); display: grid; place-items: center; flex-shrink: 0; margin-right: 1rem; }
-        .selected .option-letter { border-color: var(--accent-start); background-color: var(--accent-start); color: white; }
-        #coding-container { display: flex; flex-direction: column; flex-grow: 1; min-height: 0; gap: 1rem; }
-        .top-panel { flex: 1; display: flex; gap: 1rem; min-height: 200px; }
         #problem-details { flex: 1; padding: 24px; overflow-y: auto; }
-        #problem-details-content code, .test-case code { background-color: var(--bg-dark); border: 1px solid rgba(var(--border-color-rgb), 0.8); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
-        #editor-container { flex: 1.5; }
-        .bottom-panel { height: 250px; }
+        #problem-details-content { animation: fadeIn 0.5s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; color: var(--text-primary); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); }
+        #problem-statement { line-height: 1.7; color: var(--text-secondary); }
+        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid rgba(var(--border-color-rgb), 0.8); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
+        .test-case { background-color: rgba(var(--surface-light-rgb), 0.4); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
+        #editor-container { flex: 1; }
+        .resizer { background: transparent; display: flex; align-items: center; justify-content: center; }
+        #resizer-h { height: 16px; cursor: row-resize; } #resizer-h::before { content: '•••'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        #resizer-v { width: 16px; cursor: col-resize; } #resizer-v::before { content: '⋮'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
+        .bottom-panel { flex-shrink: 0; display: flex; flex-direction: column; }
         .tabs { display: flex; padding: 0 12px; background-color: var(--bg-dark); }
-        .tab { position: relative; padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all var(--transition-fast); }
-        .tab.active { color: var(--text-primary); } .tab.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); transform: scaleX(1); transition: transform var(--transition-fast); }
-        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; height: 100%; overflow-y: auto; } .tab-content.active { display: block; }
-        #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
-        .question-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; }
-        #review-view, #results-view { flex-direction: column; align-items: center; justify-content: center; padding: 40px 24px; width: 100%; height: 100%; overflow-y: auto; }
-        .card { background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(20px); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 800px; box-shadow: var(--shadow-lg); }
-        .card-header { text-align: center; margin-bottom: 24px; }
-        .card-header h2 { font-size: 2rem; } .card-header p { color: var(--text-secondary); margin-top: 8px; font-size: 1.1rem; }
-        .review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 12px; margin: 24px 0; }
-        .review-item-btn { width: 50px; height: 50px; border-radius: 50%; font-weight: bold; font-size: 1rem; border: 2px solid rgba(var(--border-color-rgb), 0.8); background: rgba(var(--surface-light-rgb), 0.5); }
-        .review-item-btn.answered { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; border: none; }
+        .tab { position: relative; padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all var(--transition-fast); } .tab::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background: var(--accent-start); transform: scaleX(0); transition: transform var(--transition-fast); } .tab.active { color: var(--accent-start); } .tab.active::after { transform: scaleX(1); }
+        .tab-content-area { flex-grow: 1; overflow-y: auto; }
+        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
+        #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
+        #results-summary.success { background-color: rgba(var(--success-rgb), 0.1); color: rgb(var(--success-rgb)); border-left: 4px solid rgb(var(--success-rgb)); } #results-summary.failure { background-color: rgba(var(--danger-rgb), 0.1); color: rgb(var(--danger-rgb)); border-left: 4px solid rgb(var(--danger-rgb)); }
+        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: rgba(var(--surface-light-rgb), 0.3); border-radius: var(--border-radius); margin-bottom: 8px; }
+        .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
+        .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
+        #results-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 25, 47, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        #results-overlay.show { display: flex; opacity: 1; }
+        .results-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
+        .results-card h2 { font-size: 2rem; margin-bottom: 8px; color: var(--accent-start); } .results-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        #redirect-message { font-size: 1rem; margin-top: -16px; }
+        .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
+        .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
+        .final-status.solved { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); }
+        .final-status.attempted { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
+        .final-status.notattempted { color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 1); }
+        #alert-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
+        .advanced-alert { display: flex; align-items: flex-start; width: 350px; max-width: 90vw; background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(10px); border-radius: var(--border-radius); padding: 16px; border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; position: relative; overflow: hidden; }
+        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        .advanced-alert.fade-out { animation: slideOutRight 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) both; }
+        @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
+        .alert-icon { flex-shrink: 0; width: 24px; height: 24px; margin-right: 12px; }
+        .alert-content { flex-grow: 1; }
+        .alert-title { font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+        .alert-message { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
+        .alert-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background-color: rgba(255,255,255,0.2); }
+        .alert-progress::after { content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: currentColor; animation: progressShrink 5s linear forwards; }
+        @keyframes progressShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        .advanced-alert.alert-error { border-color: rgb(var(--danger-rgb)); color: rgb(var(--danger-rgb)); }
+        .advanced-alert.alert-info { border-color: var(--accent-start); color: var(--accent-start); }
+        .mobile-header, .mobile-nav, .mobile-footer { display: none; }
+        .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(10, 25, 47, 0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
+        .custom-modal-overlay.show { display: flex; opacity: 1; }
+        .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 500px; text-align: center; animation: fadeIn 0.3s ease-out; }
+        .custom-modal-card h2 { font-size: 1.75rem; margin-bottom: 8px; color: var(--accent-start); }
+        .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem; line-height: 1.6; }
+        .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
+        @media (max-width: 900px) {
+            .main-content { padding: 0; height: 100%; }
+            .main-header { display: none; }
+            .ide-layout { height: 100%; }
+            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
+            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
+            .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
+            .mobile-nav-btn.active { color: var(--accent-start); }
+            .ide-layout { display: flex; flex-direction: column; }
+            .top-panel { display: flex; flex-grow: 1; min-height: 0; background: transparent; backdrop-filter: none; border: none; }
+            .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; border: none; background: transparent; backdrop-filter: none; }
+            .bottom-panel { margin: 0 16px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); }
+            #problem-details, #editor-container { padding: 0 16px 16px; }
+            .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
+            #resizer-h, #resizer-v { display: none; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); } .sidebar.active { transform: translateX(0); }
+            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(var(--surface-light-rgb), 0.8); border-radius: 50%; color: white; cursor: pointer; z-index: 1001; } .close-menu-btn svg { width: 18px; height: 18px; }
+            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity var(--transition-smooth); } .overlay.active { opacity: 1; pointer-events: auto; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
+            .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
+            .mobile-footer.active { display: flex; }
+            .mobile-footer .btn { flex: 1; }
+            .results-card, .custom-modal-card { padding: 24px; } .results-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .custom-modal-card p { font-size: 1rem; }
+        }
     </style>
 </head>
 <body>
     <div class="aurora-bg"></div>
-    <div id="loading-overlay"><div class="loading-spinner"></div><p>Initializing Exam Environment...</p></div>
-
-    <div class="view-container" id="exam-view">
-        <div class="ide-dashboard">
-            <aside class="sidebar">
-                <div class="sidebar-header"><h1 class="test-title" id="exam-title-sidebar"></h1></div>
-                <nav><ul class="question-nav" id="question-nav"></ul></nav>
-            </aside>
-            <main class="main-content">
-                <header class="main-header">
-                    <h2 class="header-title" id="question-title"></h2>
-                    <div class="timer" id="timer"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span id="timer-display"></span></div>
-                    <button class="btn" id="end-exam-btn">End Exam</button>
-                </header>
-                <div class="question-area">
-                    <div id="mcq-container" class="ide-panel" style="display: none;"><div class="options-container" id="options-container"></div></div>
-                    <div id="coding-container" style="display: none;">
-                        <div class="top-panel">
-                            <div id="problem-details" class="ide-panel"><div id="problem-details-content"></div></div>
-                            <div id="editor-container" class="ide-panel"></div>
-                        </div>
-                        <div class="bottom-panel ide-panel">
-                            <div class="tabs"><div class="tab active" data-tab="console">Console</div></div>
-                            <div id="console" class="tab-content active"><pre id="console-output"></pre></div>
-                        </div>
-                    </div>
-                    <footer class="question-footer">
-                        <button class="btn secondary" id="prev-btn">&larr; Previous</button>
-                        <div style="display: flex; gap: 1rem;">
-                            <button id="run-code-btn" class="btn secondary" style="display:none;">Run Code</button>
-                            <button class="btn primary" id="next-btn">Save & Next &rarr;</button>
-                            <button class="btn primary" id="submit-btn" style="display: none;">Review & Submit</button>
-                        </div>
-                    </footer>
+    <div id="loading-overlay">
+        <div class="loading-spinner"></div>
+        <p>Initializing Environment...</p>
+    </div>
+    <div id="alert-container"></div>
+    <div style="display: none;">
+        <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
+            <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
+            <symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol>
+            <symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol>
+            <symbol id="icon-solved-check" viewBox="0 0 24 24" fill="none"><path d="M7 13L10 16L17 9" stroke="rgb(var(--success-rgb))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="rgb(var(--success-rgb))" stroke-width="2"></circle></symbol>
+            <symbol id="icon-attempted-x" viewBox="0 0 24 24" fill="none"><path d="M15 9L9 15M9 9L15 15" stroke="rgb(var(--danger-rgb))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="rgb(var(--danger-rgb))" stroke-width="2"></circle></symbol>
+            <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
+            <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
+            <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" /></symbol>
+            <symbol id="icon-info-circle" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" clip-rule="evenodd" /></symbol>
+        </svg>
+    </div>
+    <main class="ide-dashboard" style="display: none;">
+        <aside class="sidebar" id="sidebar">
+            <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
+            <div class="sidebar-header"><h1 class="test-title" id="assignment-title"></h1></div>
+            <nav><ul class="problem-nav" id="problem-list"></ul></nav>
+        </aside>
+        <div class="main-content">
+            <header class="main-header">
+                <div class="header-title-group">
+                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                    <h1 class="header-title" id="main-header-title"></h1>
                 </div>
-            </main>
+                <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">00:00:00</span></div>
+                <div class="controls">
+                    <button id="end-test-btn" class="btn">End Test</button>
+                    <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                    <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
+                </div>
+            </header>
+            <header class="mobile-header">
+                <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
+                 <div class="timer-container"><svg><use href="#mobile-timer">00:00:00</use></svg><span id="mobile-timer"></span></div>
+                <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
+            </header>
+            <div class="mobile-nav">
+                <button class="mobile-nav-btn active" data-view="problem">Problem</button>
+                <button class="mobile-nav-btn" data-view="code">Code</button>
+                <button class="mobile-nav-btn" data-view="results">Results</button>
+            </div>
+            <div class="ide-layout">
+                <div class="top-panel">
+                    <div id="problem-details" class="ide-panel mobile-view-active">
+                         <div id="problem-details-content">
+                             <div id="problem-statement"></div>
+                             <h2 style="margin-top: 24px;">Public Test Cases</h2>
+                             <div id="public-test-cases"></div>
+                         </div>
+                    </div>
+                    <div id="resizer-v" class="resizer"></div>
+                    <div id="editor-container" class="ide-panel"></div>
+                </div>
+                <div id="resizer-h" class="resizer"></div>
+                <div class="bottom-panel ide-panel">
+                    <div class="tabs">
+                        <div class="tab active" data-tab="results">Test Results</div>
+                        <div class="tab" data-tab="console">Console</div>
+                    </div>
+                    <div class="tab-content-area">
+                        <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run your code against public test cases to see results.</p></div>
+                        <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
+                    </div>
+                </div>
+            </div>
+             <footer class="mobile-footer">
+                <button id="mobile-run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
+                <button id="mobile-submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
+            </footer>
+        </div>
+        <div class="overlay" id="overlay"></div>
+    </main>
+    <div id="results-overlay">
+        <div class="results-card">
+            <h2>Test Finished</h2>
+            <p id="final-score-message">Here is a summary of your session.</p>
+            <ul class="final-results-list" id="final-results-list"></ul>
+            <p id="redirect-message"></p>
         </div>
     </div>
-
-    <div class="view-container" id="review-view">
-        <div class="card">
-            <div class="card-header"><h2>Review Your Answers</h2><p>Click a number to jump to that question. Submit when ready.</p></div>
-            <div class="review-grid" id="review-grid"></div>
-            <div style="text-align: center; margin-top: 2rem;"><button class="btn primary" id="final-submit-btn">Confirm & Submit Test</button></div>
+    <div id="final-problem-overlay" class="custom-modal-overlay">
+        <div class="custom-modal-card">
+            <h2>Final Problem Submitted</h2>
+            <p>You have submitted the final problem. Do you want to end the exam now and see your final score?</p>
+            <div class="custom-modal-actions">
+                <button id="final-problem-cancel-btn" class="btn">Return to Problem</button>
+                <button id="final-problem-confirm-btn" class="btn submit-btn">End Exam & See Score</button>
+            </div>
         </div>
     </div>
-
-    <div class="view-container" id="results-view"></div>
-
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
-    
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e799",
-                storageBucket: "exam-2e799.firebasestorage.app",
-                messagingSenderId: "472506328501",
-                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-                measurementId: "G-NX21HT3JKT"
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+            authDomain: "exam-2e799.firebaseapp.com",
+            projectId: "exam-2e799",
+            storageBucket: "exam-2e799.firebasestorage.app",
+            messagingSenderId: "472506328501",
+            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+            measurementId: "G-NX21HT3JKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        
+        const DOMElements = { 
+            loadingOverlay: document.getElementById('loading-overlay'), 
+            ideDashboard: document.querySelector('.ide-dashboard'),
+            editorContainer: document.getElementById('editor-container'), 
+            runBtn: document.getElementById('run-btn'), mobileRunBtn: document.getElementById('mobile-run-btn'),
+            submitBtn: document.getElementById('submit-btn'), mobileSubmitBtn: document.getElementById('mobile-submit-btn'),
+            endTestBtn: document.getElementById('end-test-btn'), mobileEndTestBtn: document.getElementById('mobile-end-test-btn'),
+            timer: document.getElementById('timer'), mobileTimer: document.getElementById('mobile-timer'),
+            problemList: document.getElementById('problem-list'), 
+            assignmentTitle: document.getElementById('assignment-title'),
+            mainHeaderTitle: document.getElementById('main-header-title'), 
+            problemDetails: document.getElementById('problem-details'),
+            problemDetailsContent: document.getElementById('problem-details-content'),
+            problemStatement: document.getElementById('problem-statement'), 
+            publicTestCases: document.getElementById('public-test-cases'), 
+            bottomPanel: document.querySelector('.bottom-panel'), 
+            resultsContent: document.getElementById('results'), 
+            consoleOutput: document.getElementById('console-output'), 
+            tabs: document.querySelectorAll('.tab'), 
+            menuToggle: document.getElementById('menu-toggle'), mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
+            closeMenuBtn: document.getElementById('close-menu-btn'), 
+            sidebar: document.getElementById('sidebar'), 
+            overlay: document.getElementById('overlay'), 
+            mobileNav: document.querySelector('.mobile-nav'), 
+            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), 
+            mobileFooter: document.querySelector('.mobile-footer'),
+            resultsOverlay: document.getElementById('results-overlay'), 
+            finalResultsList: document.getElementById('final-results-list'), 
+            finalScoreMessage: document.getElementById('final-score-message'), 
+            alertContainer: document.getElementById('alert-container'),
+            finalProblemOverlay: document.getElementById('final-problem-overlay')
+        };
+        
+        let currentUser, assignmentId, assignment, problems = [], currentProblem, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isExecuting = false;
+        
+        function seededRandom(seed) {
+            let state = seed % 2147483647;
+            if (state <= 0) state += 2147483646;
+            return () => {
+                state = (state * 16807) % 2147483647;
+                return (state - 1) / 2147483646;
             };
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+        }
 
-            let examState = {}, currentUser, editor, pyodide;
+        function shuffleArray(array, seedString) {
+            const seed = seedString.split('').reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0) | 0, 0);
+            const random = seededRandom(seed);
+            let currentIndex = array.length, randomIndex;
+            while (currentIndex !== 0) {
+                randomIndex = Math.floor(random() * currentIndex);
+                currentIndex--;
+                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+            }
+            return array;
+        }
 
-            const dom = {
-                loadingOverlay: document.getElementById('loading-overlay'),
-                views: document.querySelectorAll('.view-container'),
-                examTitleSidebar: document.getElementById('exam-title-sidebar'),
-                questionNav: document.getElementById('question-nav'),
-                timer: document.getElementById('timer'),
-                timerDisplay: document.getElementById('timer-display'),
-                endExamBtn: document.getElementById('end-exam-btn'),
-                questionTitle: document.getElementById('question-title'),
-                mcqContainer: document.getElementById('mcq-container'),
-                optionsContainer: document.getElementById('options-container'),
-                codingContainer: document.getElementById('coding-container'),
-                problemDetailsContent: document.getElementById('problem-details-content'),
-                editorContainer: document.getElementById('editor-container'),
-                consoleOutput: document.getElementById('console-output'),
-                runCodeBtn: document.getElementById('run-code-btn'),
-                prevBtn: document.getElementById('prev-btn'),
-                nextBtn: document.getElementById('next-btn'),
-                submitBtn: document.getElementById('submit-btn'),
-                reviewGrid: document.getElementById('review-grid'),
-                finalSubmitBtn: document.getElementById('final-submit-btn'),
-                resultsView: document.getElementById('results-view')
-            };
+        async function main() {
+            const urlParams = new URLSearchParams(window.location.search);
+            assignmentId = urlParams.get('id');
+            if (!assignmentId) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment ID not found.</p>'; return; }
+            auth.onAuthStateChanged(async user => {
+                if (user) {
+                    currentUser = user;
+                    const completedScoreData = await checkIfAssignmentCompleted();
+                    if (completedScoreData) {
+                        await fetchProblemListForResults();
+                        showFinalResultsPage(completedScoreData);
+                    } else {
+                        await fetchInitialData();
+                        await initPyodide();
+                    }
+                } else { window.location.href = 'index.html'; }
+            });
+        }
 
-            const showView = (viewId) => {
-                dom.views.forEach(v => v.classList.remove('active'));
-                document.getElementById(viewId).classList.add('active');
-            };
+        async function fetchInitialData() {
+            const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
+            if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
+            assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
+            DOMElements.assignmentTitle.textContent = assignment.name;
 
-            const initEnvironment = async () => {
-                try {
-                    pyodide = await loadPyodide();
-                    dom.loadingOverlay.querySelector('p').textContent = 'Initializing Editor...';
-                    await new Promise((resolve, reject) => {
-                        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-                        require(['vs/editor/editor.main'], resolve, reject);
-                    });
-                    monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [], colors: { 'editor.background': '#0D1117' } });
-                    editor = monaco.editor.create(dom.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false } });
-                    auth.onAuthStateChanged(user => user ? (currentUser = user, initializeExam()) : window.location.href = 'index.html');
-                } catch (error) {
-                    console.error("Initialization failed:", error);
-                    dom.loadingOverlay.textContent = 'Failed to load environment. Please refresh.';
-                }
-            };
+            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
+            let problemMetas = problemsSnap.docs.map(doc => ({ id: doc.id, title: doc.data().title, starterCode: doc.data().starterCode }));
+            problems = shuffleArray(problemMetas, currentUser.uid);
 
-            const initializeExam = async () => {
-                const examId = new URLSearchParams(window.location.search).get('id');
-                if (!examId) { dom.loadingOverlay.textContent = 'Invalid exam ID.'; return; }
+            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
+            scoresSnap.forEach(doc => {
+                const score = doc.data();
+                problemStatus[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
+            });
+            
+            problems.forEach(p => {
+                userCodeState[p.id] = p.starterCode;
+                if (!problemStatus[p.id]) problemStatus[p.id] = 'not-attempted';
+            });
+            
+            const firstUnsolved = problems.find(p => problemStatus[p.id] !== 'solved') || problems[problems.length-1];
+            currentProblem = firstUnsolved;
+        }
 
-                // --- SECURITY: Check if exam is already completed from a secure source ---
-                const scoreRef = db.collection('examScores').doc(`${examId}_${currentUser.uid}`);
-                const prevScoreDoc = await scoreRef.get();
-                if (prevScoreDoc.exists) {
-                    renderResultsPage(prevScoreDoc.data());
+        async function fetchProblemListForResults() {
+            if (problems.length > 0) return;
+            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
+            let problemMetas = problemsSnap.docs.map(doc => ({ id: doc.id, title: doc.data().title }));
+            problems = shuffleArray(problemMetas, currentUser.uid);
+        }
+
+        async function checkIfAssignmentCompleted() {
+            const scoreQuery = await db.collection('codeAssignmentScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
+            return scoreQuery.empty ? false : scoreQuery.docs[0].data();
+        }
+
+        function showFinalResultsPage(scoreData) {
+            DOMElements.loadingOverlay.style.display = 'none';
+            DOMElements.ideDashboard.style.display = 'none';
+            DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
+            DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
+            
+            const scoresRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId);
+            scoresRef.get().then(scoresSnap => {
+                const problemScores = {};
+                scoresSnap.forEach(doc => {
+                    const score = doc.data();
+                    problemScores[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
+                });
+
+                DOMElements.finalResultsList.innerHTML = problems.map(p => {
+                    const status = problemScores[p.id] || 'notattempted';
+                    const statusClass = `final-status ${status}`;
+                    const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
+                    return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
+                }).join('');
+                DOMElements.resultsOverlay.classList.add('show');
+            });
+        }
+
+        async function initPyodide() {
+            if (!problems.length) { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; return; }
+            DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
+            try { pyodide = await loadPyodide(); } 
+            catch (error) { DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>'; return; }
+            DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
+            initEditor();
+        }
+        
+        function initEditor() {
+            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
+            require(['vs/editor/editor.main'], () => {
+                monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [], colors: { 'editor.background': '#0A192F' } });
+                editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
+                DOMElements.loadingOverlay.style.opacity = '0';
+                setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.ideDashboard.style.display = 'flex'; }, 300);
+                init();
+            });
+        }
+        
+        async function init() {
+            initEventListeners();
+            await loadProblem(currentProblem.id);
+            setMobileView('problem');
+            startTimer();
+        }
+        
+        function showAdvancedAlert(type, title, message) {
+            const alertId = `alert-${Date.now()}`;
+            const alertEl = document.createElement('div');
+            alertEl.id = alertId;
+            alertEl.className = `advanced-alert alert-${type}`;
+            const iconId = '#icon-info-circle';
+            alertEl.innerHTML = `<div class="alert-icon"><svg><use href="${iconId}"></use></svg></div><div class="alert-content"><div class="alert-title">${title}</div><div class="alert-message">${message}</div></div><div class="alert-progress"></div>`;
+            DOMElements.alertContainer.appendChild(alertEl);
+            setTimeout(() => { const el = document.getElementById(alertId); if (el) { el.classList.add('fade-out'); el.addEventListener('animationend', () => el.remove()); } }, 5000);
+        }
+
+        async function startTimer() {
+            const userStateRef = db.collection('examStates').doc(`${currentUser.uid}_${assignmentId}`);
+            const userStateDoc = await userStateRef.get();
+            let endTime;
+            if (userStateDoc.exists && userStateDoc.data().endTime) {
+                endTime = userStateDoc.data().endTime.toMillis();
+            } else {
+                endTime = Date.now() + assignment.duration * 1000;
+                await userStateRef.set({ endTime: new Date(endTime) }, { merge: true });
+            }
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                const remaining = endTime - Date.now();
+                if (remaining <= 0) {
+                    endExam("Time's up!", "Time limit reached");
                     return;
                 }
-                
-                // --- SECURITY: Start session on the backend (simulated), get server-authoritative end time ---
-                const sessionRef = db.collection('examSessions').doc(`${examId}_${currentUser.uid}`);
-                let sessionDoc = await sessionRef.get();
-                if (!sessionDoc.exists) {
-                    const examDoc = await db.collection('exams').doc(examId).get();
-                    if (!examDoc.exists) { dom.loadingOverlay.textContent = 'Exam not found.'; return; }
-                    const examData = examDoc.data();
-                    const endTime = firebase.firestore.Timestamp.fromMillis(Date.now() + examData.duration * 1000);
-                    // Shuffle question order on the server-side to prevent cheating
-                    const shuffledQuestions = examData.questions.sort(() => Math.random() - 0.5);
+                updateTimerDisplay(remaining);
+            }, 1000);
+        }
 
-                    await sessionRef.set({
-                        userId: currentUser.uid, examId: examId,
-                        endTime: endTime,
-                        questions: shuffledQuestions, // Storing full questions in session for this simulation.
-                        // REAL-WORLD: Session should only store question IDs. Questions would be fetched one-by-one.
-                        startedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    sessionDoc = await sessionRef.get();
-                }
-                
-                const sessionData = sessionDoc.data();
-                examState = {
-                    examId: examId,
-                    currentQuestionIndex: 0,
-                    endTime: sessionData.endTime.toMillis(),
-                    // --- SECURITY: Questions list doesn't contain answers or hidden tests. ---
-                    // This simulation stores them in sessionData, but client-side logic should only access safe fields.
-                    questions: sessionData.questions.map(q => ({
-                        title: q.title,
-                        type: q.type,
-                        points: q.points,
-                        // Client only gets what's safe to display
-                        statement: q.statement || null,
-                        options: q.options || null,
-                        starterCode: q.starterCode || '',
-                        publicTestCases: (q.testCases || []).filter(tc => !tc.hidden),
-                        functionName: q.functionName || '',
-                        userAnswer: null,
-                        isAnswered: false
-                    })),
-                    timerInterval: null
-                };
+        function updateTimerDisplay(remainingMs) { 
+            const totalSeconds = Math.floor(remainingMs / 1000);
+            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
+            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+            const timeString = `${hours}:${minutes}:${seconds}`; 
+            DOMElements.timer.textContent = timeString; 
+            DOMElements.mobileTimer.textContent = timeString; 
+        }
+        
+        async function endExam(title = "Test Finished", reason = "User ended exam") {
+            if(isTestEnded || isExecuting) return;
+            isExecuting = true;
+            isTestEnded = true;
+            clearInterval(timerInterval);
+            if(editor) editor.updateOptions({ readOnly: true });
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
+            let totalScoreObtained = 0;
+            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
+            scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
+            const solvedCount = Object.values(problemStatus).filter(s => s === 'solved').length;
 
-                const examDocForName = await db.collection('exams').doc(examId).get();
-                dom.examTitleSidebar.textContent = examDocForName.data().name;
+            const totalScorePossible = (await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get()).docs.reduce((sum, doc) => sum + doc.data().points, 0);
 
-                renderSidebar();
-                await renderQuestion();
-                startTimer();
-                showView('exam-view');
-                dom.loadingOverlay.style.display = 'none';
+            const finalScoreData = {
+                userId: currentUser.uid, assignmentId: assignmentId,
+                assignmentName: assignment.name, subjectId: assignment.subjectId,
+                totalScoreObtained, totalScorePossible,
+                problemsSolved: solvedCount, totalProblems: problems.length,
+                completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                submissionReason: reason
             };
+            await db.collection('codeAssignmentScores').add(finalScoreData);
             
-            // UI Rendering Functions (Safe)
-            const renderSidebar = () => {
-                dom.questionNav.innerHTML = examState.questions.map((q, index) => `
-                    <li class="question-item ${index === examState.currentQuestionIndex ? 'active' : ''} ${q.isAnswered ? 'answered' : ''}" data-index="${index}">
-                        <div class="q-number">${index + 1}</div>
-                        <div class="q-details">${q.type} Question</div>
-                        <div class="q-status-icon"><svg viewBox="0 0 24 24" fill="rgb(var(--success-rgb))"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg></div>
-                    </li>`).join('');
-                dom.questionNav.querySelectorAll('.question-item').forEach(item => {
-                    item.addEventListener('click', () => navigateToQuestion(parseInt(item.dataset.index)));
-                });
-            };
+            await db.collection('examStates').doc(`${currentUser.uid}_${assignmentId}`).delete();
 
-            const renderQuestion = async () => {
-                const question = examState.questions[examState.currentQuestionIndex];
-                dom.questionTitle.textContent = `${examState.currentQuestionIndex + 1}. ${question.title}`;
-                
-                const isCoding = question.type === 'Coding';
-                dom.mcqContainer.style.display = isCoding ? 'none' : 'block';
-                dom.codingContainer.style.display = isCoding ? 'flex' : 'none';
-                dom.runCodeBtn.style.display = isCoding ? 'inline-flex' : 'none';
-
-                if (isCoding) {
-                    dom.problemDetailsContent.innerHTML = `<h3>Problem Statement</h3>${question.statement}`;
-                    // Add public test cases display
-                    const publicCasesHtml = (question.publicTestCases || []).map((tc, i) => 
-                        `<div class="test-case" style="margin-top:1rem; padding:1rem; background:rgba(var(--surface-light-rgb),0.3); border-radius:4px;">
-                           <strong>Public Test Case ${i + 1}</strong>
-                           <p>Input: <code>${JSON.stringify(tc.input)}</code></p>
-                           <p>Expected Output: <code>${JSON.stringify(tc.expected)}</code></p>
-                         </div>`
-                    ).join('');
-                    dom.problemDetailsContent.innerHTML += publicCasesHtml;
-                    
-                    editor.setValue(question.userAnswer || question.starterCode);
-                    dom.consoleOutput.textContent = 'Run code to see results against public test cases.';
-                } else {
-                    dom.optionsContainer.innerHTML = question.options.map((opt, index) => `
-                        <div class="option ${question.userAnswer === index ? 'selected' : ''}" data-index="${index}">
-                            <span class="option-letter">${String.fromCharCode(65 + index)}</span>
-                            <span>${opt}</span>
-                        </div>`).join('');
-                    dom.optionsContainer.querySelectorAll('.option').forEach(opt => {
-                        opt.addEventListener('click', () => selectOption(parseInt(opt.dataset.index)));
-                    });
+            DOMElements.finalScoreMessage.textContent = `Final Score: ${totalScoreObtained} / ${totalScorePossible}`;
+            DOMElements.finalResultsList.innerHTML = problems.map(p => {
+                const status = problemStatus[p.id] || 'notattempted';
+                const statusClass = `final-status ${status}`;
+                const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
+                return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
+            }).join('');
+            DOMElements.resultsOverlay.querySelector('h2').textContent = title;
+            DOMElements.resultsOverlay.classList.add('show');
+            let countdown = 30;
+            const redirectMessageEl = document.getElementById('redirect-message');
+            const countdownInterval = setInterval(() => {
+                redirectMessageEl.textContent = `Redirecting in ${countdown} seconds...`;
+                countdown--;
+                if (countdown < 0) {
+                    clearInterval(countdownInterval);
+                    window.location.href = '/course.html';
                 }
-                updateNavButtons();
-            };
+            }, 1000);
+            isExecuting = false;
+        }
+
+        function initEventListeners() {
+            [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleRun()));
+            [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleSubmit()));
+            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
+                if(confirm("Are you sure you want to end the test and submit your answers?")) {
+                    endExam();
+                }
+            }));
+            document.getElementById('final-problem-confirm-btn').addEventListener('click', () => {
+                DOMElements.finalProblemOverlay.classList.remove('show');
+                endExam("Test Finished", "User submitted final problem");
+            });
+            document.getElementById('final-problem-cancel-btn').addEventListener('click', () => {
+                DOMElements.finalProblemOverlay.classList.remove('show');
+            });
+            DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
+            DOMElements.problemList.addEventListener('click', handleProblemSelect);
+            [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
+            const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
+            DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
+            DOMElements.overlay.addEventListener('click', closeMobileMenu);
+            DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
+            initResizers();
+        }
+
+        function isProblemUnlocked(problemId) {
+            const problemIndex = problems.findIndex(p => p.id === problemId);
+            if (problemIndex <= 0) return true;
+            const prevProblemId = problems[problemIndex - 1].id;
+            return problemStatus[prevProblemId] === 'solved' || problemStatus[prevProblemId] === 'attempted';
+        }
+
+        function renderProblemList() {
+            DOMElements.problemList.innerHTML = problems.map((p, i) => {
+                const status = problemStatus[p.id];
+                const isUnlocked = isProblemUnlocked(p.id);
+                const isActive = p.id === currentProblem.id;
+                const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
+                const statusIconHTML = (status === 'solved' || status === 'attempted') ? `<div class="p-status-icon"><svg><use href="${icon}"></use></svg></div>` : '';
+                return `<li class="problem-item ${status} ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}" data-id="${p.id}">
+                            <div class="p-number">${i + 1}</div>
+                            <div class="p-title">${p.title}</div>
+                            ${statusIconHTML}
+                        </li>`;
+            }).join('');
+        }
+        
+        async function loadProblem(problemId) {
+            const problemDoc = await db.collection('codeProblems').doc(problemId).get();
+            if (!problemDoc.exists) {
+                showAdvancedAlert('error', 'Error', 'Could not load problem details.');
+                return;
+            }
             
-            const startTimer = () => {
-                if (examState.timerInterval) clearInterval(examState.timerInterval);
-                examState.timerInterval = setInterval(() => {
-                    const remainingMs = examState.endTime - Date.now();
-                    if (remainingMs <= 0) {
-                        clearInterval(examState.timerInterval);
-                        handleSubmit(true); // Auto-submit when time is up
-                        return;
+            const fullProblemData = { id: problemDoc.id, ...problemDoc.data() };
+            currentProblem = fullProblemData;
+            
+            const status = problemStatus[problemId];
+            const isSubmitted = status === 'solved' || status === 'attempted';
+            
+            DOMElements.mainHeaderTitle.textContent = currentProblem.title;
+            DOMElements.problemStatement.innerHTML = currentProblem.statement;
+            DOMElements.problemDetailsContent.style.animation = 'none';
+            DOMElements.problemDetailsContent.offsetHeight; 
+            DOMElements.problemDetailsContent.style.animation = null; 
+            
+            if (editor) { 
+                editor.setValue(userCodeState[problemId] || currentProblem.starterCode);
+                editor.updateOptions({ readOnly: isSubmitted });
+            }
+            
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSubmitted);
+            
+            const publicTestCases = currentProblem.testCases.filter(tc => !tc.hidden);
+            DOMElements.publicTestCases.innerHTML = publicTestCases.map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
+            
+            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run code to see results against public cases.</p>';
+            DOMElements.consoleOutput.textContent = 'No console output.';
+            renderProblemList();
+            setMobileView('problem');
+        }
+        
+        async function handleProblemSelect(e) { 
+            const target = e.target.closest('.problem-item');
+            if (!target) return;
+            if (target.classList.contains('locked')) {
+                showAdvancedAlert('info', 'Problem Locked', 'You must attempt or solve the current problem to proceed.');
+                return;
+            }
+            if (target.dataset.id !== currentProblem.id) { 
+                await loadProblem(target.dataset.id); 
+                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); 
+            }
+        }
+        
+        function setMobileView(view) {
+            const IS_DESKTOP = window.innerWidth > 900;
+            if (IS_DESKTOP) return;
+            DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
+            const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
+            Object.values(views).forEach(panel => panel.classList.remove('mobile-view-active'));
+            if (views[view]) views[view].classList.add('mobile-view-active');
+            DOMElements.mobileFooter.classList.toggle('active', view === 'code');
+        }
+
+        async function handleRun() {
+            setLoadingState(true, false);
+            DOMElements.resultsContent.innerHTML = '';
+            DOMElements.consoleOutput.textContent = '';
+            
+            const testsToRun = currentProblem.testCases.filter(tc => !tc.hidden);
+            const results = [];
+            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, currentProblem.functionName)); }
+            
+            if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
+            
+            renderResults(results, false);
+            document.querySelector('.tab[data-tab="results"]').click();
+            if (window.innerWidth <= 900) setMobileView('results');
+
+            userCodeState[currentProblem.id] = editor.getValue();
+            setLoadingState(false, false);
+        }
+
+        async function handleSubmit() {
+            setLoadingState(true, true);
+            const userCode = editor.getValue();
+            userCodeState[currentProblem.id] = userCode;
+
+            const response = await mockBackendSubmission(userCode, currentProblem.id);
+            
+            problemStatus[currentProblem.id] = response.allPassed ? 'solved' : 'attempted';
+            await saveScore(currentProblem, response.allPassed);
+
+            renderResults(response.results, true);
+            showAdvancedAlert('info', 'Submission Received', response.allPassed ? 'All test cases passed!' : 'Some test cases failed.');
+            renderProblemList();
+            
+            const currentProblemIndex = problems.findIndex(p => p.id === currentProblem.id);
+            const isLastProblem = currentProblemIndex === problems.length - 1;
+
+            if (isLastProblem) {
+                DOMElements.finalProblemOverlay.classList.add('show');
+            } else {
+                const nextProblemId = problems[currentProblemIndex + 1].id;
+                setTimeout(() => loadProblem(nextProblemId), 2000);
+            }
+
+            setLoadingState(false, true);
+        }
+        
+        async function mockBackendSubmission(code, problemId) {
+            return new Promise(resolve => {
+                setTimeout(async () => {
+                    const problemDoc = await db.collection('codeProblems').doc(problemId).get();
+                    const problemData = problemDoc.data();
+                    const results = [];
+                    for (const testCase of problemData.testCases) {
+                        const execResult = await executeTestCase(code, testCase, problemData.functionName);
+                        results.push(execResult);
                     }
-                    const totalSeconds = Math.floor(remainingMs / 1000);
-                    const mins = Math.floor(totalSeconds / 60);
-                    const secs = totalSeconds % 60;
-                    dom.timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                    dom.timer.classList.toggle('warning', totalSeconds <= 300 && totalSeconds > 60);
-                    dom.timer.classList.toggle('danger', totalSeconds <= 60);
-                }, 1000);
-            };
+                    const allPassed = results.every(r => r.status === 'pass');
+                    resolve({ allPassed, results });
+                }, 1500);
+            });
+        }
+        
+        async function executeTestCase(code, testCase, functionName) {
+            let result = { status: 'fail', error: null, output: null };
+            const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
+            const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
+            const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
+            try {
+                const capturedOutput = { lines: [] };
+                pyodide.setStdout({ batched: (msg) => capturedOutput.lines.push(msg) });
+                pyodide.setStderr({ batched: (msg) => capturedOutput.lines.push(msg) });
+                await pyodide.runPythonAsync(fullScript);
+                const outputStr = capturedOutput.lines.join('\n');
+                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
+                const userLogs = outputStr.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
+                if (userLogs) DOMElements.consoleOutput.textContent += `${userLogs}\n`;
+                if (resultMatch && resultMatch[1]) {
+                    const outputJs = JSON.parse(resultMatch[1]);
+                    result.output = outputJs;
+                    if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
+                } else { result.error = "Execution failed to produce a valid result."; }
+            } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent += `\n--- ERROR ---\n${e.toString()}`; } 
+            finally { pyodide.setStdout(); pyodide.setStderr(); }
+            return { ...testCase, ...result };
+        }
 
-            const renderResultsPage = (scoreData) => {
-                const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-                dom.resultsView.innerHTML = `
-                    <div class="card">
-                        <div class="card-header">
-                            <h2>Test Submitted!</h2>
-                            <p>Your score is</p>
-                            <h1 style="font-size: 4rem; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 1rem 0;">${percentage}%</h1>
-                            <h3>${scoreData.pointsReceived} / ${scoreData.totalPoints} Points</h3>
-                        </div>
-                        <a href="dashboard.html" class="btn primary" style="margin: 1.5rem auto 0; display:block; width: fit-content;">Back to Dashboard</a>
-                    </div>`;
-                showView('results-view');
-                dom.loadingOverlay.style.display = 'none';
-            };
+        async function saveScore(problem, wasCorrect) {
+            const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
+            const scoreSnap = await scoreRef.get();
+            if (scoreSnap.empty) {
+                const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
+                await db.collection('codeScores').add(scoreData);
+            }
+        }
 
-            // Event Handlers & State Management (Client-Side Logic)
-            const selectOption = (index) => {
-                const q = examState.questions[examState.currentQuestionIndex];
-                q.userAnswer = index;
-                q.isAnswered = true;
-                renderSidebar();
-                renderQuestion();
-            };
+        function renderResults(results, isSubmission) {
+            const passedCount = results.filter(r => r.status === 'pass').length, totalCount = results.length;
+            const success = passedCount === totalCount;
+            let summaryHTML;
+            if (isSubmission) { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; } 
+            else { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`; }
+            const resultsHTML = results.map((r, i) => {
+                const caseTitle = r.hidden ? `Hidden Test Case ${i + 1}` : `Public Test Case ${i + 1}`;
+                const statusIcon = r.status === 'pass' ? '#icon-check' : '#icon-close';
+                return `<div class="result-item"><span>${caseTitle}</span><div class="status status-${r.status}"><svg><use href="${statusIcon}"></use></svg>${r.status.toUpperCase() === 'PASS' ? 'PASSED' : 'FAILED'}</div></div>`;
+            }).join('');
+            DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
+        }
 
-            const navigateToQuestion = (index) => {
-                saveCurrentAnswer();
-                examState.currentQuestionIndex = index;
-                renderQuestion();
-                renderSidebar();
-            };
-            
-            const saveCurrentAnswer = () => {
-                const q = examState.questions[examState.currentQuestionIndex];
-                if (q.type === 'Coding' && editor) {
-                    const code = editor.getValue();
-                    q.userAnswer = code;
-                    q.isAnswered = code.trim() !== (q.starterCode || '').trim() && code.trim() !== '';
+        function setLoadingState(isLoading, isSubmission) {
+            isExecuting = isLoading;
+            const btns = isSubmission ? [DOMElements.submitBtn, DOMElements.mobileSubmitBtn] : [DOMElements.runBtn, DOMElements.mobileRunBtn];
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading || isTestEnded);
+            btns.forEach(btn => {
+                const btnText = btn.querySelector('.btn-text');
+                const isSubmitted = problemStatus[currentProblem.id] === 'solved' || problemStatus[currentProblem.id] === 'attempted';
+                if (isLoading) { 
+                    btn.querySelector('svg').style.display = 'none';
+                    const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); 
+                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; 
+                } else { 
+                    btn.querySelector('.loader')?.remove(); 
+                    btn.querySelector('svg').style.display = 'block'; 
+                    btnText.textContent = isSubmission ? 'Submit' : 'Run';
+                    btn.disabled = isSubmitted || isTestEnded;
                 }
-            };
-
-            const updateNavButtons = () => {
-                dom.prevBtn.disabled = examState.currentQuestionIndex === 0;
-                const isLast = examState.currentQuestionIndex === examState.questions.length - 1;
-                dom.nextBtn.style.display = isLast ? 'none' : 'inline-flex';
-                dom.submitBtn.style.display = isLast ? 'inline-flex' : 'none';
-            };
-
-            const runCode = async () => {
-                const question = examState.questions[examState.currentQuestionIndex];
-                const code = editor.getValue();
-                dom.consoleOutput.textContent = 'Executing...';
-                
-                try {
-                    let resultsHTML = '';
-                    if (question.publicTestCases.length === 0) {
-                        dom.consoleOutput.textContent = "No public test cases to run against."; return;
-                    }
-                    for (const tc of question.publicTestCases) {
-                        const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
-                        const fullCode = `${code}\nprint(${question.functionName}(${inputArgs}))`;
-                        const output = await pyodide.runPythonAsync(fullCode);
-                        
-                        if (JSON.stringify(output) === JSON.stringify(tc.expected)) {
-                             resultsHTML += `<p style="color: rgb(var(--success-rgb));">Test Case Passed</p>`;
-                        } else {
-                            resultsHTML += `<p style="color: rgb(var(--danger-rgb));">Test Case Failed. Expected: ${JSON.stringify(tc.expected)}, Got: ${JSON.stringify(output)}</p>`;
-                        }
-                    }
-                    dom.consoleOutput.innerHTML = resultsHTML || "Execution finished with no output.";
-                } catch(e) {
-                    dom.consoleOutput.textContent = `Error: ${e.message}`;
-                }
-            };
-            
-            // --- SERVER-SIDE LOGIC SIMULATION ---
-            // In a real application, this entire function would be a secure Google Cloud Function.
-            // The client would ONLY send `examState.examId` and `userAnswers`.
-            // The Cloud Function would then perform all the logic below.
-            const gradeExamOnBackend = async (userAnswers) => {
-                console.log("--- SIMULATING SECURE BACKEND GRADING ---");
-                // 1. Backend fetches the authoritative session data (contains answers).
-                const sessionRef = db.collection('examSessions').doc(`${examState.examId}_${currentUser.uid}`);
-                const sessionDoc = await sessionRef.get();
-                if (!sessionDoc.exists) throw new Error("Session expired or invalid.");
-                const authoritativeData = sessionDoc.data();
-
-                // 2. Backend validates the submission time.
-                if (Date.now() > authoritativeData.endTime.toMillis()) {
-                    console.warn("Submission is late. Grading as 0.");
-                    // Or handle late submissions based on rules. For now, we'll just score 0.
-                    return { pointsReceived: 0, totalPoints: 0 };
-                }
-
-                let pointsReceived = 0;
-                let totalPoints = 0;
-                const fullQuestions = authoritativeData.questions; // These have all answers/hidden tests.
-
-                for(let i = 0; i < fullQuestions.length; i++) {
-                    const q = fullQuestions[i];
-                    const userAnswer = userAnswers[i];
-                    totalPoints += q.points;
-
-                    if (q.type === 'Mcq' && userAnswer === q.correctAnswer) {
-                        pointsReceived += q.points;
-                    } else if (q.type === 'Coding' && userAnswer) {
-                        let allPassed = true;
-                        if (!q.testCases || q.testCases.length === 0) allPassed = false;
-                        
-                        for (const tc of q.testCases) { // Backend checks ALL test cases
-                            try {
-                                const inputArgs = Object.values(tc.input).map(val => JSON.stringify(val)).join(', ');
-                                const fullCode = `${userAnswer}\nprint(${q.functionName}(${inputArgs}))`;
-                                const output = await pyodide.runPythonAsync(fullCode);
-                                if (JSON.stringify(output) !== JSON.stringify(tc.expected)) { allPassed = false; break; }
-                            } catch(e) { allPassed = false; break; }
-                        }
-                        if(allPassed) pointsReceived += q.points;
-                    }
-                }
-                return { pointsReceived, totalPoints };
-            };
-
-            const handleSubmit = async (isAutoSubmit = false) => {
-                if (!isAutoSubmit && !confirm("Are you sure you want to submit your test? This action cannot be undone.")) return;
-                clearInterval(examState.timerInterval);
-                dom.loadingOverlay.querySelector('p').textContent = 'Submitting & Calculating Score...';
-                dom.loadingOverlay.style.display = 'flex';
-                saveCurrentAnswer();
-
-                const userAnswers = examState.questions.map(q => q.userAnswer);
-
-                try {
-                    // --- SECURITY: Call the (simulated) backend to get the authoritative score ---
-                    const { pointsReceived, totalPoints } = await gradeExamOnBackend(userAnswers);
-
-                    const scoreData = {
-                        userId: currentUser.uid, examId: examState.examId,
-                        pointsReceived, totalPoints,
-                        submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    };
-
-                    // Backend (or client with strict rules) writes the final score.
-                    const scoreRef = db.collection('examScores').doc(`${examState.examId}_${currentUser.uid}`);
-                    await scoreRef.set(scoreData);
-
-                    renderResultsPage(scoreData);
-                } catch (error) {
-                    console.error("Submission failed:", error);
-                    dom.loadingOverlay.textContent = "Error during submission. Please contact support.";
-                }
-            };
-            
-            // Event Listeners
-            dom.prevBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex - 1));
-            dom.nextBtn.addEventListener('click', () => navigateToQuestion(examState.currentQuestionIndex + 1));
-            const reviewAndSubmit = () => {
-                saveCurrentAnswer();
-                dom.reviewGrid.innerHTML = examState.questions.map((q, index) => 
-                    `<button class="review-item-btn ${q.isAnswered ? 'answered' : ''}" data-index="${index}">${index + 1}</button>`
-                ).join('');
-                dom.reviewGrid.querySelectorAll('.review-item-btn').forEach(btn => {
-                    btn.onclick = () => { navigateToQuestion(parseInt(btn.dataset.index)); showView('exam-view'); };
-                });
-                showView('review-view');
-            };
-            dom.submitBtn.addEventListener('click', reviewAndSubmit);
-            dom.endExamBtn.addEventListener('click', reviewAndSubmit);
-            dom.finalSubmitBtn.addEventListener('click', () => handleSubmit(false));
-            dom.runCodeBtn.addEventListener('click', runCode);
-
-            initEnvironment();
-        });
+            });
+        }
+        
+        function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
+        
+        function initResizers() {
+            if (window.innerWidth <= 900) return;
+            const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling;
+            const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling;
+            const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
+            const onMouseUpH = () => document.removeEventListener('mousemove', onMouseMoveH);
+            resizerH.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveH); document.addEventListener('mouseup', onMouseUpH, { once: true }); });
+            const onMouseMoveV = (e) => { const containerWidth = problemDetails.parentElement.clientWidth, newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; const percentage = newLeftWidth / containerWidth * 100; problemDetails.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
+            const onMouseUpV = () => document.removeEventListener('mousemove', onMouseMoveV);
+            resizerV.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', onMouseUpV, { once: true }); });
+        }
+        
+        main();
     </script>
 </body>
 </html>
