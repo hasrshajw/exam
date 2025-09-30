@@ -525,7 +525,6 @@
             }).join('');
             DOMElements.resultsOverlay.querySelector('h2').textContent = title;
             DOMElements.resultsOverlay.classList.add('show');
-            
             let countdown = 30;
             const redirectMessageEl = document.getElementById('redirect-message');
             const countdownInterval = setInterval(() => {
@@ -536,7 +535,6 @@
                     window.location.href = '/course.html';
                 }
             }, 1000);
-
             isSubmitting = false;
         }
 
@@ -631,7 +629,7 @@
             const target = e.target.closest('.problem-item');
             if (!target) return;
             if (target.classList.contains('locked')) {
-                showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
+                showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before proceeding.');
                 return;
             }
             if (target.dataset.id !== currentProblemId) { 
