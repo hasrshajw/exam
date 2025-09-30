@@ -49,7 +49,8 @@
         .problem-item:not(.locked):not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
         .problem-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
         .problem-item.active::before { transform: translateX(0); }
-        .problem-item.locked { cursor: not-allowed; opacity: 0.5; }
+        .problem-item.locked { cursor: not-allowed; opacity: 0.6; }
+        .problem-item.locked:hover { background-color: transparent; }
         .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
         .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
         .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
@@ -97,6 +98,7 @@
         #results-overlay.show, #fullscreen-overlay.show { display: flex; opacity: 1; }
         .results-card, .fullscreen-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
         .results-card h2, .fullscreen-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p, .fullscreen-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
+        #redirect-message { font-size: 1rem; margin-top: -16px; }
         .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
         .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
         .final-status.solved { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); }
@@ -126,7 +128,6 @@
         .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem; line-height: 1.6; }
         .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
         .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
-        #redirect-message { margin-top: 24px; font-size: 0.9rem; color: var(--text-secondary); }
         @media (max-width: 900px) {
             .main-content { padding: 0; height: 100%; }
             .main-header { display: none; }
@@ -253,7 +254,7 @@
             <h2>Test Finished</h2>
             <p id="final-score-message">Here is a summary of your session.</p>
             <ul class="final-results-list" id="final-results-list"></ul>
-            <p id="redirect-message" style="margin-top: 24px; font-size: 0.9rem;"></p>
+            <p id="redirect-message"></p>
         </div>
     </div>
     <div id="final-problem-overlay" class="custom-modal-overlay">
@@ -351,7 +352,7 @@
             if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
             assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
             DOMElements.assignmentTitle.textContent = assignment.name;
-            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).orderBy('order', 'asc').get();
+            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
             problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             problems.forEach(p => {
                 userCodeState[p.id] = p.starterCode;
@@ -362,8 +363,7 @@
                 const score = doc.data();
                 problemStatus[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
             });
-            const firstUnsubmittedIndex = problems.findIndex(p => problemStatus[p.id] === 'not-attempted');
-            currentProblemId = firstUnsubmittedIndex === -1 ? (problems.length > 0 ? problems[0].id : null) : problems[firstUnsubmittedIndex].id;
+            currentProblemId = problems.length > 0 ? problems[0].id : null;
         }
 
         async function checkIfAssignmentCompleted() {
@@ -416,6 +416,7 @@
             renderProblemList();
             loadProblem(currentProblemId);
             initEventListeners();
+            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = false);
             setMobileView('problem');
             checkFullscreen();
         }
@@ -459,7 +460,6 @@
                 }
             }
         }
-
         function checkFullscreen() { if (!document.fullscreenElement) DOMElements.fullscreenOverlay.classList.add('show'); }
         
         function startTimer() {
@@ -525,18 +525,19 @@
             }).join('');
             DOMElements.resultsOverlay.querySelector('h2').textContent = title;
             DOMElements.resultsOverlay.classList.add('show');
-            isSubmitting = false;
-
+            
             let countdown = 30;
             const redirectMessageEl = document.getElementById('redirect-message');
-            const redirectInterval = setInterval(() => {
-                redirectMessageEl.textContent = `You will be redirected in ${countdown} seconds.`;
+            const countdownInterval = setInterval(() => {
+                redirectMessageEl.textContent = `Redirecting in ${countdown} seconds...`;
                 countdown--;
                 if (countdown < 0) {
-                    clearInterval(redirectInterval);
+                    clearInterval(countdownInterval);
                     window.location.href = '/course.html';
                 }
             }, 1000);
+
+            isSubmitting = false;
         }
 
         function initEventListeners() {
@@ -574,10 +575,9 @@
 
         function isProblemUnlocked(problemId) {
             const problemIndex = problems.findIndex(p => p.id === problemId);
-            if (problemIndex <= 0) return true;
+            if (problemIndex === 0) return true;
             const prevProblemId = problems[problemIndex - 1].id;
-            const prevProblemStatus = problemStatus[prevProblemId];
-            return prevProblemStatus === 'attempted' || prevProblemStatus === 'solved';
+            return problemStatus[prevProblemId] === 'solved' || problemStatus[prevProblemId] === 'attempted';
         }
 
         function renderProblemList() {
@@ -612,7 +612,7 @@
             const problem = problems.find(p => p.id === problemId);
             if (!problem) return;
             const status = problemStatus[problemId];
-            const isSubmitted = status === 'attempted' || status === 'solved';
+            const isSubmitted = status === 'solved' || status === 'attempted';
             DOMElements.mainHeaderTitle.textContent = problem.title;
             DOMElements.problemStatement.innerHTML = problem.statement;
             DOMElements.problemDetailsContent.style.animation = 'none';
@@ -628,17 +628,16 @@
         }
         
         function handleProblemSelect(e) { 
-            const target = e.target.closest('.problem-item'); 
+            const target = e.target.closest('.problem-item');
             if (!target) return;
             if (target.classList.contains('locked')) {
-                showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before moving to the next one.');
+                showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
                 return;
             }
             if (target.dataset.id !== currentProblemId) { 
                 loadProblem(target.dataset.id); 
-                DOMElements.sidebar.classList.remove('active'); 
-                DOMElements.overlay.classList.remove('active'); 
-            } 
+                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); 
+            }
         }
         
         function setMobileView(view) {
@@ -661,11 +660,10 @@
             if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
             
             if (isSubmission) {
-                renderResults(results, true);
                 const allPassed = results.every(r => r.status === 'pass');
                 const previousStatus = problemStatus[currentProblemId];
                 problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
-                if (previousStatus === 'not-attempted') { await saveScore(problem, allPassed); }
+                if (previousStatus !== 'solved') { await saveScore(problem, allPassed); }
                 renderProblemList();
                 
                 const currentProblemIndex = problems.findIndex(p => p.id === currentProblemId);
@@ -687,6 +685,7 @@
                 document.querySelector('.tab[data-tab="results"]').click();
                 if (!IS_DESKTOP) setMobileView('results');
             }
+
             setLoadingState(false, isSubmission);
         }
         
@@ -742,7 +741,7 @@
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading || isTestEnded);
             btns.forEach(btn => {
                 const btnText = btn.querySelector('.btn-text');
-                const isSubmitted = problemStatus[currentProblemId] === 'attempted' || problemStatus[currentProblemId] === 'solved';
+                const isSubmitted = problemStatus[currentProblemId] === 'solved' || problemStatus[currentProblemId] === 'attempted';
                 if (isLoading) { 
                     btn.querySelector('svg').style.display = 'none';
                     const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); 
