@@ -499,7 +499,6 @@
             pauseTimer();
             if(editor) editor.updateOptions({ readOnly: true });
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
-            updateAttemptedStatus();
             let totalScoreObtained = 0;
             const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
             scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
@@ -593,19 +592,7 @@
             }).join('');
         }
         
-        function updateAttemptedStatus() {
-            if (isTestEnded || !editor || !currentProblemId) return;
-            const currentCode = editor.getValue();
-            const problem = problems.find(p => p.id === currentProblemId);
-            if (!problem) return;
-            if (currentCode.trim() !== problem.starterCode.trim() && problemStatus[currentProblemId] === 'not-attempted') {
-                problemStatus[currentProblemId] = 'attempted';
-            }
-            userCodeState[currentProblemId] = currentCode;
-        }
-
         function loadProblem(problemId) {
-            updateAttemptedStatus();
             currentProblemId = problemId;
             const problem = problems.find(p => p.id === problemId);
             if (!problem) return;
@@ -616,7 +603,10 @@
             DOMElements.problemDetailsContent.style.animation = 'none';
             DOMElements.problemDetailsContent.offsetHeight; 
             DOMElements.problemDetailsContent.style.animation = null; 
-            if (editor) { editor.setValue(userCodeState[problemId] || problem.starterCode); editor.updateOptions({ readOnly: isSubmitted }); }
+            if (editor) { 
+                editor.setValue(userCodeState[problemId] || problem.starterCode);
+                editor.updateOptions({ readOnly: isSubmitted });
+            }
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSubmitted);
             DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
             DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
@@ -629,7 +619,7 @@
             const target = e.target.closest('.problem-item');
             if (!target) return;
             if (target.classList.contains('locked')) {
-                showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before proceeding.');
+                showAdvancedAlert('error', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
                 return;
             }
             if (target.dataset.id !== currentProblemId) { 
@@ -683,7 +673,7 @@
                 document.querySelector('.tab[data-tab="results"]').click();
                 if (!IS_DESKTOP) setMobileView('results');
             }
-
+            userCodeState[currentProblemId] = editor.getValue();
             setLoadingState(false, isSubmission);
         }
         
