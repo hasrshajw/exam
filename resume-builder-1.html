@@ -10,15 +10,16 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB;
+            --body-bg: #f8f9fa;
             --widget-bg: #FFFFFF;
-            --border-color: #E5E7EB;
-            --text-primary: #111827;
-            --text-secondary: #6B7280;
-            --brand-green: #10B981;
-            --hover-bg: #F3F4F6;
+            --border-color: #dee2e6;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --primary-color: #002726;
+            --accent-color: #33c375;
+            --accent-color-hover: #2da765;
             --danger-color: #EF4444;
-            --primary-color: #4F46E5;
+            --hover-bg: #F3F4F6;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
@@ -37,7 +38,7 @@
         .main-nav { flex-grow: 1; } .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
         .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
-        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
+        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--accent-color); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background-color: var(--hover-bg); }
         .profile-details { flex-grow: 1; min-width: 0; }
@@ -58,39 +59,42 @@
         
         .app-container { display: flex; width: 100%; height: 100%; }
         .editor-pane { flex: 1; background-color: var(--widget-bg); padding: 30px; overflow-y: auto; border-right: 1px solid var(--border-color); }
-        .editor-pane h2 { font-size: 24px; color: var(--text-primary); margin: 0 0 30px 0; }
-        .form-section { margin-bottom: 25px; }
-        .form-section legend { font-size: 1rem; font-weight: 600; color: var(--text-primary); padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .form-section-body { display: flex; flex-direction: column; gap: 1rem; }
+        .editor-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .editor-header h2 { font-size: 24px; color: var(--text-primary); margin: 0; }
+        .form-section { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 25px; box-shadow: var(--shadow-sm); }
+        .form-section legend { font-size: 1rem; font-weight: 600; color: var(--text-primary); padding: 1rem 1.5rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .form-section legend i { color: var(--primary-color); }
+        .form-section-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
         .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; }
         .input-wrapper { position: relative; }
         .input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 1.2rem; }
         .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; box-sizing: border-box; transition: all 0.2s ease; }
         .input-wrapper input { padding-left: 40px; }
         .form-group textarea { min-height: 80px; resize: vertical; }
-        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); outline: none; }
+        .form-group input:hover, .form-group textarea:hover { border-color: var(--accent-color); }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(51, 195, 117, 0.2); outline: none; }
 
         .dynamic-entry { position: relative; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; background-color: var(--body-bg); }
         .remove-btn { position: absolute; top: 10px; right: 10px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; line-height: 1; font-size: 18px; transition: background-color 0.2s; }
         .remove-btn:hover { background-color: #FEE2E2; }
-        .add-btn { background: #F3F4F6; color: var(--text-secondary); border: 1px dashed var(--border-color); padding: 10px 15px; font-size: 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; width: 100%; }
+        .add-btn { background: var(--hover-bg); color: var(--text-secondary); border: 1px dashed var(--border-color); padding: 10px 15px; font-size: 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; width: 100%; }
         .add-btn:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
 
         .preview-pane { flex: 1.2; display: flex; justify-content: center; align-items: flex-start; padding: 30px; overflow-y: auto; background-color: #E9ECEF; }
         .resume-container { width: 210mm; min-height: 297mm; background: #ffffff; padding: 40px 50px; box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1); box-sizing: border-box; transform: scale(0.8); transform-origin: top center; }
         
-        .header { text-align: center; border-bottom: 1px solid #e9ecef; padding-bottom: 18px; }
-        .header h1 { font-size: 38px; font-weight: 700; margin: 0; letter-spacing: -1px; }
-        .header .contact-info { margin-top: 10px; font-size: 13px; color: var(--secondary-text-color); }
-        .header .contact-info a { color: var(--primary-color); text-decoration: none; margin: 0 8px; font-weight: 500; }
-        .header .contact-info span { margin: 0 2px; }
+        .header { text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; }
+        .header h1 { font-size: 38px; font-weight: 700; margin: 0; letter-spacing: -1px; color: var(--primary-color); }
+        .header .contact-info { margin-top: 10px; font-size: 13px; color: var(--text-secondary); }
+        .header .contact-info a { color: var(--primary-color); text-decoration: none; margin: 0 4px; font-weight: 500; }
+        .header .contact-info span { margin: 0 0px; }
         .section { margin-top: 22px; }
         .header + .section { margin-top: 18px; }
         .section-title { font-size: 18px; font-weight: 700; color: var(--primary-color); padding-bottom: 6px; border-bottom: 2px solid var(--primary-color); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
         .entry { margin-bottom: 14px; }
         .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
-        .entry h3 { margin: 0; font-size: 16px; font-weight: 700; }
-        .entry .date { font-size: 13px; font-weight: 500; color: var(--secondary-text-color); }
+        .entry h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary); }
+        .entry .date { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
         .entry p.subtitle { margin: 0; font-style: italic; font-size: 14px; color: #6c757d; }
         .entry ul { margin: 8px 0 0 0; padding-left: 20px; list-style-type: disc; }
         .entry li { margin-bottom: 4px; font-size: 14px; line-height: 1.6; }
@@ -98,15 +102,17 @@
         p.profile-summary { font-size: 14px; line-height: 1.6; margin: 0; }
         .skills-grid { display: grid; grid-template-columns: 140px 1fr; row-gap: 8px; font-size: 14px; }
         .skills-grid strong { font-weight: 700; color: var(--text-primary); }
-        .skills-grid span { color: var(--secondary-text-color); }
+        .skills-grid span { color: var(--text-secondary); }
         .achievements-list li { position: relative; padding-left: 25px; list-style: none; }
         .achievements-list li::before { content: '★'; position: absolute; left: 0; color: var(--primary-color); font-size: 16px; line-height: 1.5; }
-        .print-button { width: 100%; background-color: var(--brand-green); color: white; border: none; border-radius: 8px; padding: 15px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .print-button:hover { background-color: #059669; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .print-button { background-color: var(--primary-color); color: white; border: none; border-radius: 8px; padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .print-button:hover { background-color: #001a18; transform: translateY(-2px); box-shadow: var(--shadow-md); }
         
         .mobile-toggle-nav { display: none; }
         
         @media screen and (max-width: 1024px) {
+            body { overflow-y: auto; }
+            .main-area, .content-body, .app-container { height: auto; overflow: visible; }
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
             .sidebar.active { transform: translateX(0); }
@@ -116,24 +122,26 @@
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .main-area { height: auto; }
-            .app-container { flex-direction: column; height: calc(100vh - 73px); }
-            .mobile-toggle-nav { display: flex; position: sticky; top: 0; background-color: var(--widget-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 50; }
-            .mobile-toggle-nav button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-secondary); }
-            .mobile-toggle-nav button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+            .app-container { flex-direction: column; }
+            .mobile-toggle-nav { display: flex; position: sticky; top: 0; background-color: var(--widget-bg); z-index: 50; padding: 1rem; border-bottom: 1px solid var(--border-color); gap: 0.75rem; }
+            .mobile-toggle-nav .btn { flex: 1; padding: 0.75rem; font-size: 0.9rem; border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+            .mobile-toggle-nav .btn.primary { background-color: var(--primary-color); color: white; border: 1px solid var(--primary-color); }
+            .mobile-toggle-nav .btn.secondary { background-color: var(--widget-bg); color: var(--text-primary); border: 1px solid var(--border-color); }
+            
             body:not(.view-preview) .preview-pane { display: none; }
             body.view-preview .editor-pane { display: none; }
-            .editor-pane { flex: none; border-right: none; padding: 1.5rem; }
-            .preview-pane { flex: none; padding: 0; background-color: var(--background-color); }
-            .resume-container { transform: none; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; padding: 20px 15px; }
-            .header h1 { font-size: 28px; }
-            .header .contact-info { font-size: 12px; }
-            .section-title { font-size: 16px; }
-            .entry h3 { font-size: 15px; }
-            .entry .date { font-size: 12px; }
-            .entry p.subtitle, .entry li, p.profile-summary, .skills-grid { font-size: 14px; line-height: 1.5; }
-            .tech-stack { font-size: 12px; }
+            .editor-pane, .preview-pane { flex: none; border-right: none; overflow: visible; padding: 1.5rem; }
+            .preview-pane { background-color: var(--background-color); }
+            .resume-container { transform: none; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; padding: 0; }
+            .header h1 { font-size: 22px; }
+            .header .contact-info { font-size: 6px; }
+            .section-title { font-size: 10px; }
+            .entry h3 { font-size: 9px; }
+            .entry .date { font-size: 6px; }
+            .entry p.subtitle, .entry li, p.profile-summary, .skills-grid { font-size: 8px; line-height: 1.5; }
+            .tech-stack { font-size: 6px; }
             .skills-grid { display: block; }
+            .print-button { display: none; }
         }
         
         @media print {
@@ -186,11 +194,20 @@
             <section class="content-body">
                 <div class="app-container">
                     <div class="mobile-toggle-nav">
-                        <button id="show-editor-btn" class="active">Editor</button>
-                        <button id="show-preview-btn">Preview</button>
+                        <div id="editor-view-buttons" style="display: flex; gap: 0.75rem; width: 100%;">
+                            <button id="show-preview-btn" class="btn primary"><i class='bx bx-show'></i>Preview</button>
+                            <button id="mobile-print-btn" class="btn secondary"><i class='bx bxs-printer'></i>Print</button>
+                        </div>
+                         <div id="preview-view-buttons" style="display: none; gap: 0.75rem; width: 100%;">
+                            <button id="show-editor-btn" class="btn secondary"><i class='bx bx-edit'></i>Edit</button>
+                            <button id="mobile-print-btn-2" class="btn primary"><i class='bx bxs-printer'></i>Print</button>
+                        </div>
                     </div>
                     <div class="editor-pane" id="editor-pane">
-                        <h2>Resume Editor</h2>
+                        <div class="editor-header">
+                            <h2>Resume Editor</h2>
+                            <button id="printBtn" class="print-button"><i class='bx bxs-printer'></i> Print / Save as PDF</button>
+                        </div>
                         
                         <div class="form-section">
                             <legend><i class='bx bxs-user-circle'></i> Header</legend>
@@ -249,7 +266,6 @@
                                 <button class="add-btn" data-section="achievement"><i class='bx bx-plus'></i> Add Achievement</button>
                             </div>
                         </div>
-                        <button id="printBtn" class="print-button"><i class='bx bxs-printer'></i> Print / Save as PDF</button>
                     </div>
                     <div class="preview-pane">
                         <div class="resume-container" id="resume"></div>
@@ -313,6 +329,8 @@
         const editorPane = document.getElementById('editor-pane');
         const showEditorBtn = document.getElementById('show-editor-btn');
         const showPreviewBtn = document.getElementById('show-preview-btn');
+        const editorViewButtons = document.getElementById('editor-view-buttons');
+        const previewViewButtons = document.getElementById('preview-view-buttons');
         const body = document.getElementById('page-body');
 
         const markdownToHtml = (text) => text ? text.replace(/\*(.*?)\*/g, '<strong>$1</strong>') : '';
@@ -417,16 +435,18 @@
 
         showEditorBtn.addEventListener('click', () => {
             body.classList.remove('view-preview');
-            showEditorBtn.classList.add('active');
-            showPreviewBtn.classList.remove('active');
+            editorViewButtons.style.display = 'flex';
+            previewViewButtons.style.display = 'none';
         });
         showPreviewBtn.addEventListener('click', () => {
             body.classList.add('view-preview');
-            showPreviewBtn.classList.add('active');
-            showEditorBtn.classList.remove('active');
+            editorViewButtons.style.display = 'none';
+            previewViewButtons.style.display = 'flex';
         });
 
         document.getElementById('printBtn').addEventListener('click', () => window.print());
+        document.getElementById('mobile-print-btn').addEventListener('click', () => window.print());
+        document.getElementById('mobile-print-btn-2').addEventListener('click', () => window.print());
 
         syncFullResume();
     });
