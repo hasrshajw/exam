@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Resume Builder</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+        :root {
+            --primary-color: #0056b3; --text-color: #212529; --secondary-text-color: #495057;
+            --background-color: #f4f7f9; --editor-bg: #ffffff; --border-color: #dee2e6; --danger-color: #dc3545;
+        }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--background-color); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        .app-container { display: flex; width: 100%; height: 100%; }
+        .editor-pane { flex: 1; background-color: var(--editor-bg); padding: 30px; overflow-y: auto; border-right: 1px solid var(--border-color); }
+        .editor-pane h2 { font-size: 24px; color: var(--primary-color); margin-top: 0; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        .form-section { margin-bottom: 25px; }
+        .form-section legend { font-size: 18px; font-weight: 700; color: var(--text-color); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 5px; font-size: 14px; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 14px; box-sizing: border-box; }
+        .form-group textarea { min-height: 80px; resize: vertical; }
+        .dynamic-entry { position: relative; border: 1px solid #f0f0f0; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .remove-btn { position: absolute; top: 10px; right: 10px; background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; line-height: 1; font-size: 16px; }
+        .add-btn { background: var(--primary-color); color: white; border: none; padding: 8px 15px; font-size: 14px; border-radius: 4px; cursor: pointer; }
+
+        .preview-pane { flex: 1.2; display: flex; justify-content: center; align-items: flex-start; padding: 30px; overflow-y: auto; }
+        .resume-container { width: 210mm; min-height: 297mm; background: #ffffff; padding: 40px 50px; box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1); box-sizing: border-box; transform: scale(0.8); transform-origin: top center; }
+        
+        .header { text-align: center; border-bottom: 1px solid #e9ecef; padding-bottom: 18px; }
+        .header h1 { font-size: 38px; font-weight: 700; margin: 0; letter-spacing: -1px; }
+        .header .contact-info { margin-top: 10px; font-size: 13px; color: var(--secondary-text-color); }
+        .header .contact-info a { color: var(--primary-color); text-decoration: none; margin: 0 8px; font-weight: 500; }
+        .header .contact-info span { margin: 0 8px; }
+        .section { margin-top: 22px; }
+        header + .section { margin-top: 18px; }
+        .section-title { font-size: 18px; font-weight: 700; color: var(--primary-color); padding-bottom: 6px; border-bottom: 2px solid var(--primary-color); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        .entry { margin-bottom: 14px; }
+        .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+        .entry h3 { margin: 0; font-size: 16px; font-weight: 700; }
+        .entry .date { font-size: 13px; font-weight: 500; color: var(--secondary-text-color); }
+        .entry p.subtitle { margin: 0; font-style: italic; font-size: 14px; color: #6c757d; }
+        .entry ul { margin: 8px 0 0 0; padding-left: 20px; list-style-type: disc; }
+        .entry li { margin-bottom: 4px; font-size: 14px; line-height: 1.6; }
+        .tech-stack { font-size: 13px; font-weight: 500; margin-top: 8px; color: var(--primary-color); }
+        p.profile-summary { font-size: 14px; line-height: 1.6; margin: 0; }
+        .skills-grid { display: grid; grid-template-columns: 140px 1fr; row-gap: 8px; font-size: 14px; }
+        .skills-grid strong { font-weight: 700; color: var(--text-color); }
+        .skills-grid span { color: var(--secondary-text-color); }
+        .achievements-list li { position: relative; padding-left: 25px; list-style: none; }
+        .achievements-list li::before { content: '★'; position: absolute; left: 0; color: var(--primary-color); font-size: 16px; line-height: 1.5; }
+        .print-button { width: calc(100% - 60px); background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 15px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 20px; }
+        
+        .mobile-nav { display: none; }
+
+        @media screen and (max-width: 992px) {
+            body { overflow: auto; display: block; padding-top: 50px; background-color: #fff; }
+            .app-container { flex-direction: column; height: auto; }
+            .mobile-nav { display: flex; position: fixed; top: 0; left: 0; right: 0; background-color: var(--editor-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
+            .mobile-nav button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; color: var(--secondary-text-color); }
+            .mobile-nav button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+            body:not(.view-preview) .preview-pane { display: none; }
+            body.view-preview .editor-pane { display: none; }
+            .editor-pane { flex: none; border-right: none; }
+            .preview-pane { flex: none; padding: 0; }
+            .resume-container { transform: none; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; padding: 20px 15px; }
+            .header { padding-bottom: 10px; }
+            .header h1 { font-size: 20px; }
+            .header .contact-info { font-size: 8px; flex-wrap: wrap; justify-content: center; line-height: 1.5; gap: 4px 0; }
+            .header .contact-info span, .header .contact-info a { margin: 0 0px; }
+            .section { margin-top: 15px; }
+            .section-title { font-size: 11px; margin-bottom: 10px; }
+            .entry h3 { font-size: 9px; }
+            .entry .date { font-size: 8px; }
+            .entry p.subtitle, .entry li, p.profile-summary { font-size: 10px; line-height: 1.5; }
+            .tech-stack { font-size: 8px; }
+            .skills-grid { display: block; font-size: 10px; }
+            .skills-grid strong { display: block; margin-bottom: 2px; }
+        }
+
+        @media print {
+            @page { size: A4; margin: 0; }
+            body { margin: 0; padding: 0; background-color: #fff; transform: none; height: auto; }
+            .editor-pane, .print-button, .mobile-nav { display: none; }
+            .preview-pane { width: 100%; flex: none; padding: 0; overflow: visible; display: block !important; }
+            .resume-container { box-shadow: none; margin: 0; transform: scale(1); padding: 10mm; }
+        }
+    </style>
+</head>
+<body>
+
+    <template id="education-template">
+        <div class="dynamic-entry">
+            <button class="remove-btn">&times;</button>
+            <div class="form-group"><label>Institution</label><input type="text" data-field="school" value="New Institution"></div>
+            <div class="form-group"><label>Dates</label><input type="text" data-field="date" value="Year - Year"></div>
+            <div class="form-group"><label>Details (Use *text* for bold)</label><input type="text" data-field="details" value="Degree Name — Score: *Result*"></div>
+        </div>
+    </template>
+    <template id="project-template">
+        <div class="dynamic-entry">
+            <button class="remove-btn">&times;</button>
+            <div class="form-group"><label>Project Title</label><input type="text" data-field="title" value="New Project"></div>
+            <div class="form-group"><label>Description (One bullet per line, use *text* for bold)</label><textarea data-field="desc">Description of the project.</textarea></div>
+            <div class="form-group"><label>Tech Stack</label><input type="text" data-field="tech" value="Tech 1, Tech 2"></div>
+        </div>
+    </template>
+    <template id="skill-template">
+        <div class="dynamic-entry">
+            <button class="remove-btn">&times;</button>
+            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
+                <input type="text" data-field="label" value="Category" style="flex: 1;">
+                <input type="text" data-field="value" value="Skill 1, Skill 2, Skill 3" style="flex: 2;">
+            </div>
+        </div>
+    </template>
+    <template id="achievement-template">
+        <div class="dynamic-entry">
+            <button class="remove-btn">&times;</button>
+            <div class="form-group"><label>Achievement (Use *text* for bold)</label><input type="text" data-field="value" value="New achievement details."></div>
+        </div>
+    </template>
+
+    <div class="mobile-nav">
+        <button id="show-editor-btn" class="active">Editor</button>
+        <button id="show-preview-btn">Preview</button>
+    </div>
+
+    <div class="app-container">
+        <div class="editor-pane" id="editor-pane">
+            <h2>Resume Editor</h2>
+            
+            <fieldset class="form-section">
+                <legend>Header</legend>
+                <div class="form-group"><label>Full Name</label><input type="text" data-field="name" value="PRIYA SINGH"></div>
+                <div class="form-group"><label>Email</label><input type="email" data-field="email" value="priya.singh.dev@email.com"></div>
+                <div class="form-group"><label>Phone</label><input type="tel" data-field="phone" value="+91 91234 56789"></div>
+                <div class="form-group"><label>Location</label><input type="text" data-field="location" value="Mumbai, India"></div>
+                <div class="form-group"><label>LinkedIn URL</label><input type="url" data-field="linkedin" value="https://linkedin.com/in/priyasinghdev"></div>
+                <div class="form-group"><label>GitHub URL</label><input type="url" data-field="github" value="https://github.com/priyacodes"></div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend>Professional Profile</legend>
+                <div class="form-group"><label>Summary (Use *text* for bold)</label><textarea data-field="profile">Final-year B.Tech Computer Science student specializing in scalable distributed systems and cloud-native applications. Demonstrated expertise in full-stack development with a strong focus on backend architecture, containerization, and microservices. A proven problem-solver, validated by top-tier competitive programming achievements, with a passion for efficient system design.</textarea></div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend>Education <button class="add-btn" data-section="education">+</button></legend>
+                <div id="education-editor">
+                    <div class="dynamic-entry">
+                        <button class="remove-btn">&times;</button>
+                        <div class="form-group"><label>Institution</label><input type="text" data-field="school" value="Indian Institute of Technology Bombay (IITB)"></div>
+                        <div class="form-group"><label>Dates</label><input type="text" data-field="date" value="Aug 2020 – May 2024"></div>
+                        <div class="form-group"><label>Details (Use *text* for bold)</label><input type="text" data-field="details" value="Bachelor of Technology (B.Tech), Computer Science & Engineering — CGPA: *9.4 / 10.0*"></div>
+                    </div>
+                </div>
+            </fieldset>
+            
+            <fieldset class="form-section">
+                <legend>Projects <button class="add-btn" data-section="project">+</button></legend>
+                <div id="project-editor"></div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend>Technical Skills <button class="add-btn" data-section="skill">+</button></legend>
+                <div id="skill-editor"></div>
+            </fieldset>
+
+            <fieldset class="form-section">
+                <legend>Key Achievements <button class="add-btn" data-section="achievement">+</button></legend>
+                <div id="achievement-editor"></div>
+            </fieldset>
+            <button id="printBtn" class="print-button">Print / Save as PDF</button>
+        </div>
+        <div class="preview-pane">
+            <div class="resume-container" id="resume"></div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const editorPane = document.getElementById('editor-pane');
+        const showEditorBtn = document.getElementById('show-editor-btn');
+        const showPreviewBtn = document.getElementById('show-preview-btn');
+        const body = document.body;
+
+        const markdownToHtml = (text) => text ? text.replace(/\*(.*?)\*/g, '<strong>$1</strong>') : '';
+
+        const syncHeader = () => {
+            const name = document.querySelector('[data-field="name"]').value;
+            const email = document.querySelector('[data-field="email"]').value;
+            const phone = document.querySelector('[data-field="phone"]').value;
+            const location = document.querySelector('[data-field="location"]').value;
+            const linkedin = document.querySelector('[data-field="linkedin"]').value;
+            const github = document.querySelector('[data-field="github"]').value;
+            const contactParts = [];
+            if (email) contactParts.push(`<a href="mailto:${email}">${email}</a>`);
+            if (phone) contactParts.push(`<span>${phone}</span>`);
+            if (location) contactParts.push(`<span>${location}</span>`);
+            if (linkedin) contactParts.push(`<a href="${linkedin}" target="_blank">LinkedIn</a>`);
+            if (github) contactParts.push(`<a href="${github}" target="_blank">GitHub</a>`);
+            return `<header class="header"><h1>${name}</h1><div class="contact-info">${contactParts.join('<span>&nbsp;|&nbsp;</span>')}</div></header>`;
+        };
+
+        const syncProfile = () => {
+            const profileText = document.querySelector('[data-field="profile"]').value.trim();
+            if (!profileText) return '';
+            return `<section class="section"><h2 class="section-title">Professional Profile</h2><p class="profile-summary">${markdownToHtml(profileText)}</p></section>`;
+        };
+        
+        const syncEducation = () => {
+            const entries = document.querySelectorAll('#education-editor .dynamic-entry');
+            if (entries.length === 0) return '';
+            let html = '<section class="section"><h2 class="section-title">Education</h2>';
+            entries.forEach(entry => {
+                const school = entry.querySelector('[data-field="school"]').value;
+                const date = entry.querySelector('[data-field="date"]').value;
+                const details = entry.querySelector('[data-field="details"]').value;
+                html += `<div class="entry"><div class="entry-header"><h3>${school}</h3><span class="date">${date}</span></div><p class="subtitle">${markdownToHtml(details)}</p></div>`;
+            });
+            return html + '</section>';
+        };
+
+        const syncProjects = () => {
+            const entries = document.querySelectorAll('#project-editor .dynamic-entry');
+            if (entries.length === 0) return '';
+            let html = '<section class="section"><h2 class="section-title">Projects</h2>';
+            entries.forEach(entry => {
+                const title = entry.querySelector('[data-field="title"]').value;
+                const desc = entry.querySelector('[data-field="desc"]').value.trim();
+                const tech = entry.querySelector('[data-field="tech"]').value.trim();
+                const descList = desc.split('\n').filter(Boolean).map(item => `<li>${markdownToHtml(item)}</li>`).join('');
+                const techStackHtml = tech ? `<p class="tech-stack"><strong>Tech Stack:</strong> ${tech}</p>` : '';
+                if(title) html += `<div class="entry"><h3>${title}</h3><ul>${descList}</ul>${techStackHtml}</div>`;
+            });
+            return html + '</section>';
+        };
+
+        const syncSkills = () => {
+            const entries = document.querySelectorAll('#skill-editor .dynamic-entry');
+            if (entries.length === 0) return '';
+            let html = '<section class="section"><h2 class="section-title">Technical Skills</h2><div class="skills-grid">';
+            entries.forEach(entry => {
+                const label = entry.querySelector('[data-field="label"]').value;
+                const value = entry.querySelector('[data-field="value"]').value;
+                if(label && value) html += `<strong>${label}:</strong><span>${value}</span>`;
+            });
+            return html + '</div></section>';
+        };
+
+        const syncAchievements = () => {
+            const entries = document.querySelectorAll('#achievement-editor .dynamic-entry');
+            if (entries.length === 0) return '';
+            let html = '<section class="section"><h2 class="section-title">Key Achievements</h2><ul class="entry achievements-list">';
+            entries.forEach(entry => {
+                const value = entry.querySelector('[data-field="value"]').value.trim();
+                if (value) html += `<li>${markdownToHtml(value)}</li>`;
+            });
+            return html + '</ul></section>';
+        };
+        
+        const syncFullResume = () => {
+            const resumePreview = document.getElementById('resume');
+            const sections = [syncHeader(), syncProfile(), syncEducation(), syncProjects(), syncSkills(), syncAchievements()].filter(Boolean).join('');
+            resumePreview.innerHTML = sections;
+        };
+        
+        editorPane.addEventListener('input', syncFullResume);
+        
+        editorPane.addEventListener('click', (e) => {
+            if (e.target.matches('.add-btn')) {
+                const section = e.target.dataset.section;
+                const template = document.getElementById(`${section}-template`);
+                const editorContainer = document.getElementById(`${section}-editor`);
+                if (template && editorContainer) {
+                    editorContainer.appendChild(template.content.cloneNode(true));
+                }
+                syncFullResume();
+            }
+            if (e.target.matches('.remove-btn')) {
+                e.target.closest('.dynamic-entry').remove();
+                syncFullResume();
+            }
+        });
+
+        showEditorBtn.addEventListener('click', () => {
+            body.classList.remove('view-preview');
+            showEditorBtn.classList.add('active');
+            showPreviewBtn.classList.remove('active');
+        });
+        showPreviewBtn.addEventListener('click', () => {
+            body.classList.add('view-preview');
+            showPreviewBtn.classList.add('active');
+            showEditorBtn.classList.remove('active');
+        });
+
+        document.getElementById('printBtn').addEventListener('click', () => window.print());
+
+        syncFullResume();
+    });
+    </script>
+</body>
+</html>
