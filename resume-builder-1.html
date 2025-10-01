@@ -17,11 +17,9 @@
             --text-secondary: #6c757d;
             --primary-color: #002726;
             --accent-color: #33c375;
-            --accent-color-hover: #2da765;
             --danger-color: #EF4444;
             --hover-bg: #F3F4F6;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
@@ -53,6 +51,13 @@
         .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
         .popup-list a:hover { background-color: var(--hover-bg); } .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
+        .profile-skeleton { display: flex; align-items: center; gap: 0.75rem; width: 100%; }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+        .skeleton-line { height: 14px; border-radius: 4px; }
+        .profile-content-wrapper { display: none; align-items: center; gap: 0.75rem; width: 100%; }
 
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .menu-toggle, .sidebar-close-btn { display: none; }
@@ -66,14 +71,10 @@
         .form-section legend i { color: var(--primary-color); }
         .form-section-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
         .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; }
-        .input-wrapper { position: relative; }
-        .input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 1.2rem; }
         .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; box-sizing: border-box; transition: all 0.2s ease; }
-        .input-wrapper input { padding-left: 40px; }
         .form-group textarea { min-height: 80px; resize: vertical; }
         .form-group input:hover, .form-group textarea:hover { border-color: var(--accent-color); }
         .form-group input:focus, .form-group textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px rgba(51, 195, 117, 0.2); outline: none; }
-
         .dynamic-entry { position: relative; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; background-color: var(--body-bg); }
         .remove-btn { position: absolute; top: 10px; right: 10px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; line-height: 1; font-size: 18px; transition: background-color 0.2s; }
         .remove-btn:hover { background-color: #FEE2E2; }
@@ -86,7 +87,7 @@
         .header { text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 18px; }
         .header h1 { font-size: 38px; font-weight: 700; margin: 0; letter-spacing: -1px; color: var(--primary-color); }
         .header .contact-info { margin-top: 10px; font-size: 13px; color: var(--text-secondary); }
-        .header .contact-info a { color: var(--primary-color); text-decoration: none; margin: 0 4px; font-weight: 500; }
+        .header .contact-info a { color: var(--primary-color); text-decoration: none; margin: 0 0px; font-weight: 500; }
         .header .contact-info span { margin: 0 0px; }
         .section { margin-top: 22px; }
         .header + .section { margin-top: 18px; }
@@ -106,7 +107,7 @@
         .achievements-list li { position: relative; padding-left: 25px; list-style: none; }
         .achievements-list li::before { content: '★'; position: absolute; left: 0; color: var(--primary-color); font-size: 16px; line-height: 1.5; }
         .print-button { background-color: var(--primary-color); color: white; border: none; border-radius: 8px; padding: 12px 20px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .print-button:hover { background-color: #001a18; transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .print-button:hover { background-color: #001a18; transform: translateY(-2px); }
         
         .mobile-toggle-nav { display: none; }
         
@@ -118,29 +119,26 @@
             .sidebar.active { transform: translateX(0); }
             .main-header { padding: 1.25rem 1.5rem; }
             .content-body { padding: 0; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px; background-color:#ffffff; }
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
             .app-container { flex-direction: column; }
             .mobile-toggle-nav { display: flex; position: sticky; top: 0; background-color: var(--widget-bg); z-index: 50; padding: 1rem; border-bottom: 1px solid var(--border-color); gap: 0.75rem; }
-            .mobile-toggle-nav .btn { flex: 1; padding: 0.75rem; font-size: 0.9rem; border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+            .btn { flex: 1; padding: 0.75rem; font-size: 0.9rem; border-radius: 8px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem; cursor: pointer; transition: all 0.2s; }
             .mobile-toggle-nav .btn.primary { background-color: var(--primary-color); color: white; border: 1px solid var(--primary-color); }
             .mobile-toggle-nav .btn.secondary { background-color: var(--widget-bg); color: var(--text-primary); border: 1px solid var(--border-color); }
-            
             body:not(.view-preview) .preview-pane { display: none; }
             body.view-preview .editor-pane { display: none; }
-            .editor-pane, .preview-pane { flex: none; border-right: none; overflow: visible; padding: 1.5rem; }
-            .preview-pane { background-color: var(--background-color); }
-            .resume-container { transform: none; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; padding: 0; }
-            .header h1 { font-size: 22px; }
-            .header .contact-info { font-size: 6px; }
-            .section-title { font-size: 10px; }
-            .entry h3 { font-size: 9px; }
-            .entry .date { font-size: 6px; }
-            .entry p.subtitle, .entry li, p.profile-summary, .skills-grid { font-size: 8px; line-height: 1.5; }
-            .tech-stack { font-size: 6px; }
-            .skills-grid { display: block; }
+            .editor-pane, .preview-pane { flex: none; border-right: none; overflow: visible; padding: 8px; }
+            .preview-pane { background-color: var(--body-bg); }
+            .resume-container { transform: none; box-shadow: var(--shadow-sm); border-radius: 12px; border: 1px solid var(--border-color); width: 100%; min-height: auto; padding: 20px 15px; }
+            .header h1 { font-size: 16px; }
+            .header .contact-info { font-size: 7px; }
+            .section-title { font-size: 8px; }
+            .entry h3 { font-size: 7px; }
+            .entry .date { font-size: 4px; }
+            .entry p.subtitle, .entry li, p.profile-summary, .skills-grid { font-size: 6px; line-height: 1.5; }
             .print-button { display: none; }
         }
         
@@ -148,7 +146,7 @@
             body, .dashboard-container, .main-area, .content-body, .app-container { display: block; height: auto; overflow: visible; }
             .sidebar, .main-header, .editor-pane, .print-button, .mobile-toggle-nav { display: none !important; }
             .preview-pane { width: 100%; flex: none; padding: 0; overflow: visible; display: block !important; }
-            .resume-container { box-shadow: none; margin: 0; transform: scale(1); padding: 10mm; width: 210mm; height: 297mm; }
+            .resume-container { box-shadow: none; margin: 0; transform: scale(1); padding: 10mm; width: 210mm; min-height: 297mm; }
         }
     </style>
 </head>
@@ -170,14 +168,23 @@
                 </ul>
             </nav>
             <div class="profile-section" id="profile-section">
-                <img src="" alt="Profile Picture" class="profile-avatar">
-                <div class="profile-details"><span class="profile-name">Student Name</span><span class="profile-email">student@example.com</span></div>
-                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                <div class="profile-skeleton">
+                    <div class="skeleton skeleton-avatar"></div>
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
+                    </div>
+                </div>
+                <div class="profile-content-wrapper">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                    <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                </div>
             </div>
             <div class="profile-popup" id="profile-popup">
                 <div class="popup-header">
                     <img src="" alt="Profile Picture" class="profile-avatar">
-                    <div class="profile-details"><span class="profile-name">Student Name</span><span class="profile-email">student@example.com</span></div>
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
                 </div>
                 <ul class="popup-list">
                     <li><a href="profile.html"><i class='bx bx-user'></i> Profile</a></li>
@@ -189,7 +196,7 @@
         <main class="main-area">
             <header class="main-header">
                 <button class="menu-toggle" id="menu-toggle"><i class='bx bx-menu'></i></button>
-                <h1>Resume Builder v1.o1</h1>
+                <h1>Resume Builder v1.01</h1>
             </header>
             <section class="content-body">
                 <div class="app-container">
@@ -307,14 +314,54 @@
         </div>
     </template>
 
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const firebaseConfig = {
+            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+            authDomain: "exam-2e799.firebaseapp.com",
+            projectId: "exam-2e799",
+            storageBucket: "exam-2e799.firebasestorage.app",
+            messagingSenderId: "472506328501",
+            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+            measurementId: "G-NX21HT3JKT"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
+
+        const updateProfileUI = (userProfile) => {
+            if (userProfile) {
+                document.querySelectorAll('.profile-avatar').forEach(el => {
+                    el.src = userProfile.photoURL || DEFAULT_AVATAR;
+                    el.onerror = () => { el.src = DEFAULT_AVATAR; };
+                });
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
+                document.querySelector('.profile-skeleton').style.display = 'none';
+                document.querySelector('.profile-content-wrapper').style.display = 'flex';
+            }
+        };
+        
+        auth.onAuthStateChanged(async (user) => {
+            if (user) {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                const currentUserProfile = userDoc.data();
+                updateProfileUI(currentUserProfile);
+            } else { window.location.href = 'index.html'; }
+        });
+        
         const initSharedUI = () => {
+            document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
             const profileSection = document.getElementById('profile-section');
             const profilePopup = document.getElementById('profile-popup');
             profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
             document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
-            
             const sidebar = document.getElementById('sidebar');
             const menuToggle = document.getElementById('menu-toggle');
             const closeBtn = document.getElementById('sidebar-close-btn');
