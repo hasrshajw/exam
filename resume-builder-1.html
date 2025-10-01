@@ -3,41 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Resume Builder</title>
-    
+    <title>Resume Builder - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-
         :root {
-            --primary-color: #0056b3; --text-color: #212529; --secondary-text-color: #495057;
-            --background-color: #f4f7f9; --editor-bg: #ffffff; --border-color: #dee2e6; --danger-color: #dc3545;
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-green: #10B981;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --primary-color: #4F46E5;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        a { text-decoration: none; color: inherit; }
+        ul, ol { list-style: none; }
 
-        body { font-family: 'Inter', sans-serif; background-color: var(--background-color); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .main-area { display: flex; flex-direction: column; height: 100vh; }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; flex-shrink: 0; }
+        .content-body { flex-grow: 1; overflow: hidden; }
+        
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; } .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background-color: var(--hover-bg); }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { list-style: none; padding-top: 0.5rem; }
+        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); } .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
+
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .menu-toggle, .sidebar-close-btn { display: none; }
         
         .app-container { display: flex; width: 100%; height: 100%; }
-        .editor-pane { flex: 1; background-color: var(--editor-bg); padding: 30px; overflow-y: auto; border-right: 1px solid var(--border-color); }
-        .editor-pane h2 { font-size: 24px; color: var(--primary-color); margin-top: 0; border-bottom: 2px solid var(--primary-color); padding-bottom: 10px; }
+        .editor-pane { flex: 1; background-color: var(--widget-bg); padding: 30px; overflow-y: auto; border-right: 1px solid var(--border-color); }
+        .editor-pane h2 { font-size: 24px; color: var(--text-primary); margin: 0 0 30px 0; }
         .form-section { margin-bottom: 25px; }
-        .form-section legend { font-size: 18px; font-weight: 700; color: var(--text-color); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; font-weight: 500; margin-bottom: 5px; font-size: 14px; }
-        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; font-family: 'Inter', sans-serif; font-size: 14px; box-sizing: border-box; }
+        .form-section legend { font-size: 1rem; font-weight: 600; color: var(--text-primary); padding-bottom: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .form-section-body { display: flex; flex-direction: column; gap: 1rem; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .input-wrapper { position: relative; }
+        .input-wrapper i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 1.2rem; }
+        .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; font-family: 'IBM Plex Sans', sans-serif; font-size: 14px; box-sizing: border-box; transition: all 0.2s ease; }
+        .input-wrapper input { padding-left: 40px; }
         .form-group textarea { min-height: 80px; resize: vertical; }
-        .dynamic-entry { position: relative; border: 1px solid #f0f0f0; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
-        .remove-btn { position: absolute; top: 10px; right: 10px; background: var(--danger-color); color: white; border: none; border-radius: 50%; width: 24px; height: 24px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; line-height: 1; font-size: 16px; }
-        .add-btn { background: var(--primary-color); color: white; border: none; padding: 8px 15px; font-size: 14px; border-radius: 4px; cursor: pointer; }
+        .form-group input:focus, .form-group textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1); outline: none; }
 
-        .preview-pane { flex: 1.2; display: flex; justify-content: center; align-items: flex-start; padding: 30px; overflow-y: auto; }
+        .dynamic-entry { position: relative; border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; background-color: var(--body-bg); }
+        .remove-btn { position: absolute; top: 10px; right: 10px; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; line-height: 1; font-size: 18px; transition: background-color 0.2s; }
+        .remove-btn:hover { background-color: #FEE2E2; }
+        .add-btn { background: #F3F4F6; color: var(--text-secondary); border: 1px dashed var(--border-color); padding: 10px 15px; font-size: 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; width: 100%; }
+        .add-btn:hover { background: var(--primary-color); color: white; border-color: var(--primary-color); }
+
+        .preview-pane { flex: 1.2; display: flex; justify-content: center; align-items: flex-start; padding: 30px; overflow-y: auto; background-color: #E9ECEF; }
         .resume-container { width: 210mm; min-height: 297mm; background: #ffffff; padding: 40px 50px; box-shadow: 0 6px 30px rgba(0, 0, 0, 0.1); box-sizing: border-box; transform: scale(0.8); transform-origin: top center; }
         
         .header { text-align: center; border-bottom: 1px solid #e9ecef; padding-bottom: 18px; }
         .header h1 { font-size: 38px; font-weight: 700; margin: 0; letter-spacing: -1px; }
         .header .contact-info { margin-top: 10px; font-size: 13px; color: var(--secondary-text-color); }
         .header .contact-info a { color: var(--primary-color); text-decoration: none; margin: 0 8px; font-weight: 500; }
-        .header .contact-info span { margin: 0 8px; }
+        .header .contact-info span { margin: 0 2px; }
         .section { margin-top: 22px; }
-        header + .section { margin-top: 18px; }
+        .header + .section { margin-top: 18px; }
         .section-title { font-size: 18px; font-weight: 700; color: var(--primary-color); padding-bottom: 6px; border-bottom: 2px solid var(--primary-color); margin-bottom: 14px; text-transform: uppercase; letter-spacing: 1px; }
         .entry { margin-bottom: 14px; }
         .entry-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
@@ -49,49 +97,167 @@
         .tech-stack { font-size: 13px; font-weight: 500; margin-top: 8px; color: var(--primary-color); }
         p.profile-summary { font-size: 14px; line-height: 1.6; margin: 0; }
         .skills-grid { display: grid; grid-template-columns: 140px 1fr; row-gap: 8px; font-size: 14px; }
-        .skills-grid strong { font-weight: 700; color: var(--text-color); }
+        .skills-grid strong { font-weight: 700; color: var(--text-primary); }
         .skills-grid span { color: var(--secondary-text-color); }
         .achievements-list li { position: relative; padding-left: 25px; list-style: none; }
         .achievements-list li::before { content: '★'; position: absolute; left: 0; color: var(--primary-color); font-size: 16px; line-height: 1.5; }
-        .print-button { width: calc(100% - 60px); background-color: #28a745; color: white; border: none; border-radius: 5px; padding: 15px; font-size: 16px; font-weight: 500; cursor: pointer; margin-top: 20px; }
+        .print-button { width: 100%; background-color: var(--brand-green); color: white; border: none; border-radius: 8px; padding: 15px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 20px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .print-button:hover { background-color: #059669; transform: translateY(-2px); box-shadow: var(--shadow-md); }
         
-        .mobile-nav { display: none; }
-
-        @media screen and (max-width: 992px) {
-            body { overflow: auto; display: block; padding-top: 50px; background-color: #fff; }
-            .app-container { flex-direction: column; height: auto; }
-            .mobile-nav { display: flex; position: fixed; top: 0; left: 0; right: 0; background-color: var(--editor-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; }
-            .mobile-nav button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; color: var(--secondary-text-color); }
-            .mobile-nav button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .mobile-toggle-nav { display: none; }
+        
+        @media screen and (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 1.25rem 1.5rem; }
+            .content-body { padding: 0; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: 1px solid var(--border-color); border-radius: 8px; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+            .main-area { height: auto; }
+            .app-container { flex-direction: column; height: calc(100vh - 73px); }
+            .mobile-toggle-nav { display: flex; position: sticky; top: 0; background-color: var(--widget-bg); box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 50; }
+            .mobile-toggle-nav button { flex: 1; padding: 12px; font-size: 15px; font-weight: bold; border: none; background: transparent; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-secondary); }
+            .mobile-toggle-nav button.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
             body:not(.view-preview) .preview-pane { display: none; }
             body.view-preview .editor-pane { display: none; }
-            .editor-pane { flex: none; border-right: none; }
-            .preview-pane { flex: none; padding: 0; }
+            .editor-pane { flex: none; border-right: none; padding: 1.5rem; }
+            .preview-pane { flex: none; padding: 0; background-color: var(--background-color); }
             .resume-container { transform: none; box-shadow: none; border-radius: 0; width: 100%; min-height: auto; padding: 20px 15px; }
-            .header { padding-bottom: 10px; }
-            .header h1 { font-size: 20px; }
-            .header .contact-info { font-size: 8px; flex-wrap: wrap; justify-content: center; line-height: 1.5; gap: 4px 0; }
-            .header .contact-info span, .header .contact-info a { margin: 0 0px; }
-            .section { margin-top: 15px; }
-            .section-title { font-size: 11px; margin-bottom: 10px; }
-            .entry h3 { font-size: 9px; }
-            .entry .date { font-size: 8px; }
-            .entry p.subtitle, .entry li, p.profile-summary { font-size: 10px; line-height: 1.5; }
-            .tech-stack { font-size: 8px; }
-            .skills-grid { display: block; font-size: 10px; }
-            .skills-grid strong { display: block; margin-bottom: 2px; }
+            .header h1 { font-size: 28px; }
+            .header .contact-info { font-size: 12px; }
+            .section-title { font-size: 16px; }
+            .entry h3 { font-size: 15px; }
+            .entry .date { font-size: 12px; }
+            .entry p.subtitle, .entry li, p.profile-summary, .skills-grid { font-size: 14px; line-height: 1.5; }
+            .tech-stack { font-size: 12px; }
+            .skills-grid { display: block; }
         }
-
+        
         @media print {
-            @page { size: A4; margin: 0; }
-            body { margin: 0; padding: 0; background-color: #fff; transform: none; height: auto; }
-            .editor-pane, .print-button, .mobile-nav { display: none; }
+            body, .dashboard-container, .main-area, .content-body, .app-container { display: block; height: auto; overflow: visible; }
+            .sidebar, .main-header, .editor-pane, .print-button, .mobile-toggle-nav { display: none !important; }
             .preview-pane { width: 100%; flex: none; padding: 0; overflow: visible; display: block !important; }
-            .resume-container { box-shadow: none; margin: 0; transform: scale(1); padding: 10mm; }
+            .resume-container { box-shadow: none; margin: 0; transform: scale(1); padding: 10mm; width: 210mm; height: 297mm; }
         }
     </style>
 </head>
-<body>
+<body id="page-body">
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
+                    <li><a href="course.html"><i class='bx bx-book-open'></i> Course & Content</a></li>
+                    <li><a href="leaderboard.html"><i class='bx bx-bar-chart-alt-2'></i> Leaderboard</a></li>
+                    <li><a href="programs.html"><i class='bx bx-briefcase-alt-2'></i> Explore Programs</a></li>
+                    <li><a href="community.html"><i class='bx bx-group'></i> Community</a></li>
+                    <li><a href="tools.html" class="active"><i class='bx bxs-wrench'></i> Tools</a></li>
+                    <li><a href="help.html"><i class='bx bx-help-circle'></i> Help & Support</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details"><span class="profile-name">Student Name</span><span class="profile-email">student@example.com</span></div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+            </div>
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-header">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name">Student Name</span><span class="profile-email">student@example.com</span></div>
+                </div>
+                <ul class="popup-list">
+                    <li><a href="profile.html"><i class='bx bx-user'></i> Profile</a></li>
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <main class="main-area">
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle"><i class='bx bx-menu'></i></button>
+                <h1>Resume Builder</h1>
+            </header>
+            <section class="content-body">
+                <div class="app-container">
+                    <div class="mobile-toggle-nav">
+                        <button id="show-editor-btn" class="active">Editor</button>
+                        <button id="show-preview-btn">Preview</button>
+                    </div>
+                    <div class="editor-pane" id="editor-pane">
+                        <h2>Resume Editor</h2>
+                        
+                        <div class="form-section">
+                            <legend><i class='bx bxs-user-circle'></i> Header</legend>
+                            <div class="form-section-body">
+                                <div class="form-group"><label>Full Name</label><input type="text" data-field="name" value="PRIYA SINGH"></div>
+                                <div class="form-group"><label>Email</label><input type="email" data-field="email" value="priya.singh.dev@email.com"></div>
+                                <div class="form-group"><label>Phone</label><input type="tel" data-field="phone" value="+91 91234 56789"></div>
+                                <div class="form-group"><label>Location</label><input type="text" data-field="location" value="Mumbai, India"></div>
+                                <div class="form-group"><label>LinkedIn URL</label><input type="url" data-field="linkedin" value="https://linkedin.com/in/priyasinghdev"></div>
+                                <div class="form-group"><label>GitHub URL</label><input type="url" data-field="github" value="https://github.com/priyacodes"></div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <legend><i class='bx bxs-briefcase-alt-2'></i> Professional Profile</legend>
+                             <div class="form-section-body">
+                                <div class="form-group"><label>Summary (Use *text* for bold)</label><textarea data-field="profile">Final-year B.Tech Computer Science student specializing in scalable distributed systems and cloud-native applications. Demonstrated expertise in full-stack development with a strong focus on backend architecture, containerization, and microservices. A proven problem-solver, validated by top-tier competitive programming achievements, with a passion for efficient system design.</textarea></div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <legend><i class='bx bxs-graduation'></i> Education</legend>
+                             <div class="form-section-body">
+                                <div id="education-editor">
+                                    <div class="dynamic-entry">
+                                        <button class="remove-btn">&times;</button>
+                                        <div class="form-group"><label>Institution</label><input type="text" data-field="school" value="Indian Institute of Technology Bombay (IITB)"></div>
+                                        <div class="form-group"><label>Dates</label><input type="text" data-field="date" value="Aug 2020 – May 2024"></div>
+                                        <div class="form-group"><label>Details (Use *text* for bold)</label><input type="text" data-field="details" value="Bachelor of Technology (B.Tech), Computer Science & Engineering — CGPA: *9.4 / 10.0*"></div>
+                                    </div>
+                                </div>
+                                <button class="add-btn" data-section="education"><i class='bx bx-plus'></i> Add Education</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-section">
+                            <legend><i class='bx bxs-flask'></i> Projects</legend>
+                            <div class="form-section-body">
+                                <div id="project-editor"></div>
+                                <button class="add-btn" data-section="project"><i class='bx bx-plus'></i> Add Project</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <legend><i class='bx bxs-cog'></i> Technical Skills</legend>
+                             <div class="form-section-body">
+                                <div id="skill-editor"></div>
+                                <button class="add-btn" data-section="skill"><i class='bx bx-plus'></i> Add Skill Category</button>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <legend><i class='bx bxs-trophy'></i> Key Achievements</legend>
+                            <div class="form-section-body">
+                                <div id="achievement-editor"></div>
+                                <button class="add-btn" data-section="achievement"><i class='bx bx-plus'></i> Add Achievement</button>
+                            </div>
+                        </div>
+                        <button id="printBtn" class="print-button"><i class='bx bxs-printer'></i> Print / Save as PDF</button>
+                    </div>
+                    <div class="preview-pane">
+                        <div class="resume-container" id="resume"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <template id="education-template">
         <div class="dynamic-entry">
@@ -112,9 +278,9 @@
     <template id="skill-template">
         <div class="dynamic-entry">
             <button class="remove-btn">&times;</button>
-            <div class="form-group" style="display: flex; gap: 10px; align-items: center;">
-                <input type="text" data-field="label" value="Category" style="flex: 1;">
-                <input type="text" data-field="value" value="Skill 1, Skill 2, Skill 3" style="flex: 2;">
+            <div class="form-group" style="display: grid; grid-template-columns: 1fr 2fr; gap: 10px; align-items: center;">
+                <input type="text" data-field="label" value="Category">
+                <input type="text" data-field="value" value="Skill 1, Skill 2, Skill 3">
             </div>
         </div>
     </template>
@@ -125,69 +291,29 @@
         </div>
     </template>
 
-    <div class="mobile-nav">
-        <button id="show-editor-btn" class="active">Editor</button>
-        <button id="show-preview-btn">Preview</button>
-    </div>
-
-    <div class="app-container">
-        <div class="editor-pane" id="editor-pane">
-            <h2>Resume Editor</h2>
-            
-            <fieldset class="form-section">
-                <legend>Header</legend>
-                <div class="form-group"><label>Full Name</label><input type="text" data-field="name" value="PRIYA SINGH"></div>
-                <div class="form-group"><label>Email</label><input type="email" data-field="email" value="priya.singh.dev@email.com"></div>
-                <div class="form-group"><label>Phone</label><input type="tel" data-field="phone" value="+91 91234 56789"></div>
-                <div class="form-group"><label>Location</label><input type="text" data-field="location" value="Mumbai, India"></div>
-                <div class="form-group"><label>LinkedIn URL</label><input type="url" data-field="linkedin" value="https://linkedin.com/in/priyasinghdev"></div>
-                <div class="form-group"><label>GitHub URL</label><input type="url" data-field="github" value="https://github.com/priyacodes"></div>
-            </fieldset>
-
-            <fieldset class="form-section">
-                <legend>Professional Profile</legend>
-                <div class="form-group"><label>Summary (Use *text* for bold)</label><textarea data-field="profile">Final-year B.Tech Computer Science student specializing in scalable distributed systems and cloud-native applications. Demonstrated expertise in full-stack development with a strong focus on backend architecture, containerization, and microservices. A proven problem-solver, validated by top-tier competitive programming achievements, with a passion for efficient system design.</textarea></div>
-            </fieldset>
-
-            <fieldset class="form-section">
-                <legend>Education <button class="add-btn" data-section="education">+</button></legend>
-                <div id="education-editor">
-                    <div class="dynamic-entry">
-                        <button class="remove-btn">&times;</button>
-                        <div class="form-group"><label>Institution</label><input type="text" data-field="school" value="Indian Institute of Technology Bombay (IITB)"></div>
-                        <div class="form-group"><label>Dates</label><input type="text" data-field="date" value="Aug 2020 – May 2024"></div>
-                        <div class="form-group"><label>Details (Use *text* for bold)</label><input type="text" data-field="details" value="Bachelor of Technology (B.Tech), Computer Science & Engineering — CGPA: *9.4 / 10.0*"></div>
-                    </div>
-                </div>
-            </fieldset>
-            
-            <fieldset class="form-section">
-                <legend>Projects <button class="add-btn" data-section="project">+</button></legend>
-                <div id="project-editor"></div>
-            </fieldset>
-
-            <fieldset class="form-section">
-                <legend>Technical Skills <button class="add-btn" data-section="skill">+</button></legend>
-                <div id="skill-editor"></div>
-            </fieldset>
-
-            <fieldset class="form-section">
-                <legend>Key Achievements <button class="add-btn" data-section="achievement">+</button></legend>
-                <div id="achievement-editor"></div>
-            </fieldset>
-            <button id="printBtn" class="print-button">Print / Save as PDF</button>
-        </div>
-        <div class="preview-pane">
-            <div class="resume-container" id="resume"></div>
-        </div>
-    </div>
-
     <script>
     document.addEventListener('DOMContentLoaded', () => {
+        const initSharedUI = () => {
+            const profileSection = document.getElementById('profile-section');
+            const profilePopup = document.getElementById('profile-popup');
+            profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+            document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+            
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeBtn = document.getElementById('sidebar-close-btn');
+            const overlay = document.getElementById('overlay');
+            const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+            menuToggle.addEventListener('click', toggleMenu);
+            closeBtn.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+        };
+        initSharedUI();
+
         const editorPane = document.getElementById('editor-pane');
         const showEditorBtn = document.getElementById('show-editor-btn');
         const showPreviewBtn = document.getElementById('show-preview-btn');
-        const body = document.body;
+        const body = document.getElementById('page-body');
 
         const markdownToHtml = (text) => text ? text.replace(/\*(.*?)\*/g, '<strong>$1</strong>') : '';
 
@@ -273,8 +399,9 @@
         editorPane.addEventListener('input', syncFullResume);
         
         editorPane.addEventListener('click', (e) => {
-            if (e.target.matches('.add-btn')) {
-                const section = e.target.dataset.section;
+            if (e.target.matches('.add-btn, .add-btn *')) {
+                const button = e.target.closest('.add-btn');
+                const section = button.dataset.section;
                 const template = document.getElementById(`${section}-template`);
                 const editorContainer = document.getElementById(`${section}-editor`);
                 if (template && editorContainer) {
