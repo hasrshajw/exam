@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java - Course & Content</title>
+    <title>Course & Content</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -82,6 +82,13 @@
         .stat-item { text-align: center; } .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
         .stat-label { font-size: 0.875rem; color: var(--text-secondary); }
         .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
+        .modal-overlay.show { display: flex; opacity: 1; }
+        .custom-modal-card { background-color: rgba(22, 27, 34, 0.8); padding: 40px; border-radius: 12px; border: 1px solid rgba(48, 54, 61, 0.5); width: 90%; max-width: 500px; text-align: center; color: #c9d1d9; }
+        .custom-modal-card h2 { font-size: 1.75rem; margin-bottom: 8px; }
+        .custom-modal-card p { color: var(--text-secondary); margin-bottom: 1.5rem; font-size: 1.1rem; line-height: 1.6; }
+        .custom-modal-actions { display: flex; gap: 1rem; justify-content: center; }
+        .custom-modal-actions .btn { background-color: rgba(33, 38, 45, 0.8); border: 1px solid rgba(48, 54, 61, 0.7); color: #c9d1d9; padding: 10px 24px; border-radius: 8px; font-weight: 600; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -169,6 +176,17 @@
                 </aside>
             </div>
         </main>
+    </div>
+
+    <div class="modal-overlay" id="results-modal">
+        <div class="custom-modal-card">
+            <h2>Assessment Results</h2>
+            <p id="modal-exam-name"></p>
+            <div id="modal-score-display" style="font-size: 4rem; font-weight: bold; margin: 2rem 0; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></div>
+            <div class="custom-modal-actions">
+                <button id="modal-close-btn" class="btn">Close</button>
+            </div>
+        </div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -321,44 +339,52 @@
                 const listContainer = assessmentGroup.querySelector('.content-list');
 
                 assessments.forEach(item => {
-                    const card = document.createElement('a');
-                    card.className = 'card';
                     const score = userScoresMap.get(item.id);
                     const isCompleted = !!score;
-                    let meta = '', buttonText = '', isLocked = item.data.isLocked;
+                    const isLocked = item.data.isLocked;
 
-                    if (item.data.type === 'mcq') {
-                        card.href = `exam.html?id=${item.id}`;
-                        if (isCompleted) {
-                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                            meta = `MCQ Exam • Score: ${percentage}%`;
-                            buttonText = 'View Results';
-                        } else {
-                            meta = `MCQ Exam • ${(item.data.questions || []).length} Questions • ${item.data.duration / 60} min`;
-                            buttonText = isLocked ? 'Locked' : 'Start Exam';
-                        }
-                    } else if (item.data.type === 'code') {
-                        card.href = `code.html?id=${item.id}`;
-                        if (isCompleted) {
-                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                            meta = `Code Assignment • Score: ${percentage}%`;
-                            buttonText = 'View Submission';
-                        } else {
-                            meta = `Code Assignment • ${(item.data.problems || []).length} Problems • ${item.data.duration / 60} min`;
-                            buttonText = isLocked ? 'Locked' : 'Start Challenge';
-                        }
-                    }
-                    
-                    if(isLocked && !isCompleted) card.style.pointerEvents = 'none';
+                    let meta, buttonText;
+                    let cardHtml = '';
                     const iconClass = item.data.type === 'mcq' ? 'bxs-file-doc' : 'bxs-code-alt';
-                    card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${isLocked && !isCompleted ? 'card-button--locked' : ''}">${buttonText}</button>`;
                     
                     if (isCompleted) {
-                        card.dataset.status = 'completed';
-                        card.querySelector('.card-prefix').classList.replace('card-prefix--default', 'card-prefix--completed');
-                        card.querySelector('.card-info').insertAdjacentHTML('afterend', `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`);
+                        const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                        meta = `${item.data.type === 'mcq' ? 'MCQ Exam' : 'Code Assignment'} • Score: ${percentage}%`;
+                        buttonText = 'View Results';
+
+                        cardHtml = `
+                            <div class="card" data-status="completed">
+                                <div class="card-prefix card-prefix--completed"><i class='bx ${iconClass}'></i></div>
+                                <div class="card-info">
+                                    <p class="card-title">${item.data.name}</p>
+                                    <p class="card-meta">${meta}</p>
+                                </div>
+                                <div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>
+                                <button class="card-button view-results-btn" 
+                                        data-score-received="${score.pointsReceived}" 
+                                        data-total-points="${score.totalPoints}"
+                                        data-exam-name="${item.data.name}">
+                                    ${buttonText}
+                                </button>
+                            </div>`;
+                    } else {
+                        const item_count = item.data.type === 'mcq' ? (item.data.questions || []).length : (item.data.problems || []).length;
+                        const item_label = item.data.type === 'mcq' ? 'Questions' : 'Problems';
+                        meta = `${item.data.type === 'mcq' ? 'MCQ Exam' : 'Code Assignment'} • ${item_count} ${item_label} • ${item.data.duration / 60} min`;
+                        buttonText = item.data.type === 'mcq' ? 'Start Exam' : 'Start Challenge';
+                        if(isLocked) buttonText = 'Locked';
+
+                        cardHtml = `
+                            <a href="${item.data.type === 'mcq' ? 'exam.html' : 'code.html'}?id=${item.id}" class="card" ${isLocked ? 'style="pointer-events: none;"' : ''}>
+                                <div class="card-prefix card-prefix--default"><i class='bx ${iconClass}'></i></div>
+                                <div class="card-info">
+                                    <p class="card-title">${item.data.name}</p>
+                                    <p class="card-meta">${meta}</p>
+                                </div>
+                                <button class="card-button ${isLocked ? 'card-button--locked' : ''}">${buttonText}</button>
+                            </a>`;
                     }
-                    listContainer.appendChild(card);
+                    listContainer.insertAdjacentHTML('beforeend', cardHtml);
                 });
                 container.appendChild(assessmentGroup);
             };
@@ -367,14 +393,15 @@
                 const totalLessons = lessonsSnapshot.size;
                 const totalAssessments = examsSnapshot.size;
                 const completedLessons = userProgress.size;
-
                 const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
                 
                 let totalScore = 0;
                 let scoreCount = 0;
                 userScoresMap.forEach(score => {
-                    totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
-                    scoreCount++;
+                    if (score.examType !== 'attendance') {
+                        totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
+                        scoreCount++;
+                    }
                 });
                 
                 const avgScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : '-';
@@ -384,6 +411,25 @@
                 document.getElementById('stat-completed').textContent = `${progressPercent}%`;
                 document.getElementById('stat-avg-score').textContent = avgScore === '-' ? '-' : `${avgScore}%`;
             };
+
+            document.addEventListener('click', e => {
+                const button = e.target.closest('.view-results-btn');
+                if (button) {
+                    const scoreReceived = button.dataset.scoreReceived;
+                    const totalPoints = button.dataset.totalPoints;
+                    const examName = button.dataset.examName;
+                    const percentage = totalPoints > 0 ? Math.round((scoreReceived / totalPoints) * 100) : 0;
+
+                    document.getElementById('modal-exam-name').textContent = examName;
+                    document.getElementById('modal-score-display').innerHTML = `${percentage}% <br><span style="font-size: 1.5rem; color: var(--text-secondary);">${scoreReceived} / ${totalPoints} Points</span>`;
+                    
+                    document.getElementById('results-modal').classList.add('show');
+                }
+
+                if (e.target.id === 'modal-close-btn' || e.target.id === 'results-modal') {
+                    document.getElementById('results-modal').classList.remove('show');
+                }
+            });
         });
     </script>
 </body>
