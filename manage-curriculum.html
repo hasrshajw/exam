@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Curriculum - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
+            --text-primary: #111827; --text-secondary: #6B7280; --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --danger-color: #EF4444;
+            --danger-hover: #DC2626; --danger-bg-light: #FEE2E2; --danger-text-dark: #B91C1C;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
+        .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; }
+        .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); }
+        .main-nav a:hover { background-color: var(--hover-bg); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
+        .main-nav a.active i { color: var(--brand-purple); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h1 { font-size: 1.875rem; font-weight: 700; }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .primary-btn { background-color: var(--brand-purple); color: white; }
+        .primary-btn:hover { background-color: var(--brand-purple-hover); box-shadow: var(--shadow-md); }
+        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .secondary-btn:hover { background-color: var(--hover-bg); }
+        .back-btn { margin-bottom: 1.5rem; font-weight: 600; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; }
+        .curriculum-list { list-style: none; }
+        .curriculum-item { display: flex; align-items: center; background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; margin-bottom: 0.75rem; box-shadow: var(--shadow-sm); }
+        .curriculum-item.is-chapter { background-color: transparent; border: none; box-shadow: none; margin-top: 2rem; margin-bottom: 1rem; }
+        .drag-handle { cursor: grab; padding: 1.5rem; color: var(--text-secondary); }
+        .item-content { flex-grow: 1; padding: 1rem 0; display: flex; align-items: center; gap: 1rem; }
+        .item-icon { font-size: 1.5rem; color: var(--text-secondary); }
+        .item-title { font-weight: 600; }
+        .item-meta { font-size: 0.875rem; color: var(--text-secondary); }
+        .chapter-title { font-size: 1.25rem; font-weight: 700; flex-grow: 1; }
+        .item-actions { padding: 1.5rem; display: flex; gap: 0.5rem; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; font-size: 1.25rem; color: var(--text-secondary); transition: background-color 0.2s, color 0.2s; }
+        .action-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
+        .action-btn.delete:hover { background-color: var(--danger-bg-light); color: var(--danger-color); }
+        .sortable-ghost { opacity: 0.4; background: #c8ebfb; }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
+        .close-btn { background: none; border: none; cursor: pointer; font-size: 1.75rem; color: var(--text-secondary); }
+        .modal-body { padding: 1.5rem 2rem; }
+        .form-field { margin-bottom: 1.25rem; }
+        .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; }
+        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; }
+        .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        .add-content-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+        .add-content-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.75rem; padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); background-color: var(--widget-bg); cursor: pointer; transition: all 0.2s ease; }
+        .add-content-btn:hover { background-color: var(--hover-bg); border-color: var(--brand-purple); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .add-content-btn i { font-size: 2rem; color: var(--brand-purple); }
+        .add-content-btn span { font-weight: 600; }
+        .unassigned-list { max-height: 40vh; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; margin-top: 1rem; }
+        .unassigned-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); cursor: pointer; }
+        .unassigned-item:last-child { border-bottom: none; }
+        .unassigned-item:hover { background-color: var(--hover-bg); }
+        .unassigned-item.selected { background-color: #F5F3FF; color: var(--brand-purple); }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container" style="display: none;">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                    <li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
+                    <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+            </div>
+        </aside>
+        <main class="main-area">
+            <header class="main-header"><h1>Manage Curriculum</h1></header>
+            <section class="content-body">
+                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
+                <div class="admin-content-header">
+                    <h1 id="page-title"></h1>
+                    <button class="primary-btn" id="add-content-btn"><i class='bx bx-plus'></i> Add Content</button>
+                </div>
+                <div id="curriculum-list"></div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="chapter-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="chapter-modal-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-field"><label for="chapter-title-input">Chapter Title</label><input type="text" id="chapter-title-input" required></div>
+            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-chapter-btn">Save</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="add-content-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Add New Content</h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <div class="add-content-grid">
+                    <button class="add-content-btn" data-type="chapter"><i class='bx bx-heading'></i><span>Chapter</span></button>
+                    <button class="add-content-btn" data-type="lesson"><i class='bx bxs-videos'></i><span>Lesson</span></button>
+                    <button class="add-content-btn" data-type="exam"><i class='bx bxs-graduation'></i><span>Assessment</span></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="select-content-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="select-content-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <p>Select an existing item to add to the curriculum, or create a new one.</p>
+                <div class="unassigned-list" id="unassigned-list"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="create-new-content-btn">Create New</button>
+                <button class="primary-btn" id="add-selected-content-btn" disabled>Add Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
+
+            let currentSubject = null;
+            let localCurriculum = [];
+            let contentCache = new Map();
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user && user.email === ADMIN_EMAIL) {
+                    initSharedUI({ displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+                    await initPage();
+                } else { window.location.href = 'index.html'; }
+            });
+
+            const initSharedUI = (adminProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
+                document.getElementById('logout-btn')?.addEventListener('click', () => auth.signOut());
+                const sidebar = document.getElementById('sidebar');
+                if(!sidebar) return;
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
+                const overlay = document.getElementById('overlay');
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                if (menuToggle) menuToggle.addEventListener('click', toggleMenu);
+                if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+                if (overlay) overlay.addEventListener('click', toggleMenu);
+            };
+
+            const initPage = async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const subjectId = urlParams.get('subjectId');
+                if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
+
+                db.collection('subjects').doc(subjectId).onSnapshot(async doc => {
+                    if (!doc.exists) { window.location.href = 'manage-subjects.html'; return; }
+                    currentSubject = { id: doc.id, ...doc.data() };
+                    localCurriculum = currentSubject.curriculum || [];
+                    document.getElementById('page-title').textContent = currentSubject.name;
+                    await renderCurriculum();
+                }, error => console.error("Error fetching subject:", error));
+
+                document.querySelector('.dashboard-container').style.display = 'grid';
+                document.getElementById('loading-overlay').style.display = 'none';
+            };
+
+            const fetchContentDetails = async (refPath) => {
+                if (contentCache.has(refPath)) return contentCache.get(refPath);
+                try {
+                    const doc = await db.doc(refPath).get();
+                    if(doc.exists) {
+                        const data = doc.data();
+                        contentCache.set(refPath, data);
+                        return data;
+                    }
+                } catch (error) { console.warn(`Could not fetch ${refPath}`, error); }
+                return null;
+            };
+
+            const renderCurriculum = async () => {
+                const container = document.getElementById('curriculum-list');
+                container.innerHTML = '';
+                
+                for (let i = 0; i < localCurriculum.length; i++) {
+                    const item = localCurriculum[i];
+                    const li = document.createElement('li');
+                    li.className = 'curriculum-item';
+                    li.dataset.index = i;
+                    li.dataset.type = item.type;
+                    if(item.ref) li.dataset.ref = item.ref;
+                    if(item.title) li.dataset.title = item.title;
+
+                    let contentHtml = '';
+                    if (item.type === 'chapter') {
+                        li.classList.add('is-chapter');
+                        contentHtml = `<span class="chapter-title">${item.title}</span>`;
+                    } else if (item.type === 'lesson' || item.type === 'exam') {
+                        const content = await fetchContentDetails(item.ref);
+                        const icon = item.type === 'lesson' ? 'bxs-videos' : 'bxs-graduation';
+                        const meta = item.type === 'lesson' ? content?.duration : `${content?.type.toUpperCase()} | ${ (content?.questions || content?.problems || []).length} items`;
+                        contentHtml = `
+                            <i class='bx ${icon} item-icon'></i>
+                            <div>
+                                <div class="item-title">${content?.name || 'Content not found'}</div>
+                                <div class="item-meta">${meta || ''}</div>
+                            </div>`;
+                    }
+                    
+                    li.innerHTML = `
+                        <i class='bx bx-grid-vertical drag-handle'></i>
+                        <div class="item-content">${contentHtml}</div>
+                        <div class="item-actions">
+                            <button class="action-btn edit-item-btn"><i class='bx bxs-edit-alt'></i></button>
+                            <button class="action-btn delete delete-item-btn"><i class='bx bxs-trash-alt'></i></button>
+                        </div>`;
+                    container.appendChild(li);
+                }
+                
+                new Sortable(container, {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    ghostClass: 'sortable-ghost',
+                    onEnd: (evt) => {
+                        const movedItem = localCurriculum.splice(evt.oldIndex, 1)[0];
+                        localCurriculum.splice(evt.newIndex, 0, movedItem);
+                        saveCurriculum();
+                    }
+                });
+            };
+
+            const saveCurriculum = () => {
+                db.collection('subjects').doc(currentSubject.id).update({ curriculum: localCurriculum })
+                    .catch(error => alert(`Error saving curriculum: ${error.message}`));
+            };
+
+            const openModal = (id) => document.getElementById(id).classList.add('show');
+            const closeModal = (id) => document.getElementById(id).classList.remove('show');
+
+            document.getElementById('add-content-btn').addEventListener('click', () => openModal('add-content-modal'));
+            
+            document.querySelectorAll('.add-content-btn').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    const type = btn.dataset.type;
+                    closeModal('add-content-modal');
+                    if (type === 'chapter') {
+                        document.getElementById('chapter-modal-title').textContent = 'Create New Chapter';
+                        document.getElementById('chapter-title-input').value = '';
+                        document.getElementById('chapter-modal').dataset.index = -1;
+                        openModal('chapter-modal');
+                    } else {
+                        const collectionName = type === 'lesson' ? 'lessons' : 'exams';
+                        document.getElementById('select-content-title').textContent = `Select ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+                        document.getElementById('select-content-modal').dataset.type = type;
+
+                        const [contentSnapshot, subjectDoc] = await Promise.all([
+                            db.collection(collectionName).where('subjectId', '==', currentSubject.id).get(),
+                            db.collection('subjects').doc(currentSubject.id).get()
+                        ]);
+                        
+                        const curriculumRefs = new Set((subjectDoc.data().curriculum || []).map(item => item.ref));
+                        const unassignedList = document.getElementById('unassigned-list');
+                        unassignedList.innerHTML = '';
+                        let hasUnassigned = false;
+                        contentSnapshot.forEach(doc => {
+                            const refPath = `${collectionName}/${doc.id}`;
+                            if (!curriculumRefs.has(refPath)) {
+                                hasUnassigned = true;
+                                const itemEl = document.createElement('div');
+                                itemEl.className = 'unassigned-item';
+                                itemEl.dataset.ref = refPath;
+                                itemEl.textContent = doc.data().name;
+                                unassignedList.appendChild(itemEl);
+                            }
+                        });
+                        if (!hasUnassigned) unassignedList.innerHTML = '<p style="padding: 1rem; text-align: center;">No unassigned items found.</p>';
+                        openModal('select-content-modal');
+                    }
+                });
+            });
+
+            document.getElementById('unassigned-list').addEventListener('click', e => {
+                if (e.target.classList.contains('unassigned-item')) {
+                    document.querySelectorAll('.unassigned-item.selected').forEach(el => el.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                    document.getElementById('add-selected-content-btn').disabled = false;
+                }
+            });
+
+            document.getElementById('add-selected-content-btn').addEventListener('click', () => {
+                const selected = document.querySelector('.unassigned-item.selected');
+                const type = document.getElementById('select-content-modal').dataset.type;
+                if (selected) {
+                    localCurriculum.push({ type: type, ref: selected.dataset.ref });
+                    saveCurriculum();
+                    closeModal('select-content-modal');
+                }
+            });
+
+            document.getElementById('create-new-content-btn').addEventListener('click', () => {
+                const type = document.getElementById('select-content-modal').dataset.type;
+                const url = type === 'lesson' ? 'manage-lessons.html' : 'manage-assessments.html';
+                window.open(`${url}?subjectId=${currentSubject.id}`, '_blank');
+            });
+            
+            document.getElementById('save-chapter-btn').addEventListener('click', () => {
+                const title = document.getElementById('chapter-title-input').value.trim();
+                const index = parseInt(document.getElementById('chapter-modal').dataset.index, 10);
+                if (!title) return;
+                if (index > -1) {
+                    localCurriculum[index].title = title;
+                } else {
+                    localCurriculum.push({ type: 'chapter', title });
+                }
+                saveCurriculum();
+                closeModal('chapter-modal');
+            });
+
+            document.getElementById('curriculum-list').addEventListener('click', e => {
+                const btn = e.target.closest('button');
+                if (!btn) return;
+                const itemEl = btn.closest('.curriculum-item');
+                const index = parseInt(itemEl.dataset.index, 10);
+                const item = localCurriculum[index];
+                
+                if (btn.classList.contains('edit-item-btn')) {
+                    if (item.type === 'chapter') {
+                        document.getElementById('chapter-modal-title').textContent = 'Edit Chapter';
+                        document.getElementById('chapter-title-input').value = item.title;
+                        document.getElementById('chapter-modal').dataset.index = index;
+                        openModal('chapter-modal');
+                    } else if (item.type === 'lesson' || item.type === 'exam') {
+                        const [collection, id] = item.ref.split('/');
+                        const url = collection === 'lessons' ? `manage-lessons.html?subjectId=${currentSubject.id}#${id}` : `manage-assessments.html?subjectId=${currentSubject.id}#${id}`;
+                        window.open(url, '_blank');
+                    }
+                }
+                if (btn.classList.contains('delete-item-btn')) {
+                    if (confirm('Are you sure you want to remove this item from the curriculum?')) {
+                        if ((item.type === 'lesson' || item.type === 'exam') && confirm('Do you also want to permanently delete the content itself? This cannot be undone.')) {
+                            db.doc(item.ref).delete().catch(e => console.error("Error deleting document:", e));
+                        }
+                        localCurriculum.splice(index, 1);
+                        saveCurriculum();
+                    }
+                }
+            });
+            
+            document.querySelectorAll('.modal-overlay .close-btn, .modal-footer .secondary-btn').forEach(btn => {
+                btn.addEventListener('click', () => btn.closest('.modal-overlay').classList.remove('show'));
+            });
+
+        });
+    </script>
+</body>
+</html>
