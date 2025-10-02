@@ -744,28 +744,25 @@
         }
 
         async function saveScore(problem, wasCorrect) {
-            const scoreQuery = await db.collection('Scores')
-                .where('userId', '==', currentUser.uid)
-                .where('problemId', '==', problem.id)
-                .limit(1).get();
-
-            if (scoreQuery.empty) {
-                const scoreData = {
-                    userId: currentUser.uid,
+            const scoreRef = db.collection('Scores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
+            const scoreSnap = await scoreRef.get();
+            if (scoreSnap.empty) {
+                const scoreData = { 
+                    userId: currentUser.uid, 
                     courseId: assignment.subjectId,
-                    assignmentId: assignmentId,
-                    problemId: problem.id,
+                    assignmentId: assignmentId, 
+                    problemId: problem.id, 
                     itemType: 'code',
-                    score: wasCorrect ? problem.points : 0,
+                    score: wasCorrect ? problem.points : 0, 
                     maxScore: problem.points,
                     attempts: submissionAttempts[problem.id],
-                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    submittedAt: firebase.firestore.FieldValue.serverTimestamp() 
                 };
-                try {
-                    await db.collection('Scores').add(scoreData);
-                } catch (e) {
-                    console.error("Error saving score:", e);
-                    showAdvancedAlert('error', 'Save Failed', 'Could not save your score.');
+                try { 
+                    await db.collection('Scores').add(scoreData); 
+                } catch (e) { 
+                    console.error("Error saving score:", e); 
+                    showAdvancedAlert('error', 'Save Failed', 'Could not save your score.'); 
                 }
             }
         }
