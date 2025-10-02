@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enroll in a Course</title>
+    <title>Enroll in a Subject</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -33,8 +33,8 @@
 </head>
 <body>
     <div class="enrollment-container">
-        <h1>Enroll in a Course</h1>
-        <p>Select a course below to begin your learning journey.</p>
+        <h1>Enroll in a Subject</h1>
+        <p>Select a subject below to begin your learning journey.</p>
         
         <div id="auth-section">
             <button class="btn btn-google" id="login-btn"><i class='bx bxl-google'></i> Sign In with Google</button>
@@ -44,8 +44,8 @@
             <p class="user-info">Welcome, <span id="user-name"></span>!</p>
             <form id="enrollment-form">
                 <div class="form-field">
-                    <label for="course-select">Choose a Course</label>
-                    <select id="course-select" required></select>
+                    <label for="subject-select">Choose a Subject</label>
+                    <select id="subject-select" required></select>
                 </div>
                 <button type="submit" class="btn btn-primary" id="confirm-btn">Confirm Enrollment</button>
             </form>
@@ -78,7 +78,7 @@
                 formSection: document.getElementById('form-section'),
                 loginBtn: document.getElementById('login-btn'),
                 userName: document.getElementById('user-name'),
-                courseSelect: document.getElementById('course-select'),
+                subjectSelect: document.getElementById('subject-select'),
                 confirmBtn: document.getElementById('confirm-btn'),
                 statusMessage: document.getElementById('status-message')
             };
@@ -88,45 +88,39 @@
                     dom.authSection.style.display = 'none';
                     dom.userName.textContent = user.displayName;
                     dom.formSection.style.display = 'block';
-                    await fetchAndPopulateCourses(user.uid);
+                    await fetchAndPopulateSubjects(user.uid);
                 } else {
                     dom.authSection.style.display = 'block';
                     dom.formSection.style.display = 'none';
                 }
             });
 
-            const fetchAndPopulateCourses = async (userId) => {
-                dom.courseSelect.innerHTML = '<option value="">Loading courses...</option>';
-                dom.courseSelect.disabled = true;
+            const fetchAndPopulateSubjects = async (userId) => {
+                dom.subjectSelect.innerHTML = '<option value="">Loading subjects...</option>';
+                dom.subjectSelect.disabled = true;
 
-                const [coursesSnap, enrollmentsSnap, subjectsSnap] = await Promise.all([
-                    db.collection('courses').get(),
-                    db.collection('enrollments').where('userId', '==', userId).get(),
-                    db.collection('subjects').get()
+                const [subjectsSnap, enrollmentsSnap] = await Promise.all([
+                    db.collection('subjects').get(),
+                    db.collection('enrollments').where('userId', '==', userId).get()
                 ]);
 
-                const enrolledCourseIds = new Set(enrollmentsSnap.docs.map(doc => doc.data().courseId));
-                const subjects = new Map(subjectsSnap.docs.map(doc => [doc.id, doc.data()]));
+                const enrolledSubjectIds = new Set(enrollmentsSnap.docs.map(doc => doc.data().subjectId));
 
-                dom.courseSelect.innerHTML = '<option value="">-- Select a course --</option>';
-                coursesSnap.forEach(doc => {
-                    const course = doc.data();
-                    const subject = subjects.get(course.subjectId);
-                    if (subject) {
-                        const option = document.createElement('option');
-                        option.value = doc.id;
-                        option.textContent = course.name;
-                        option.dataset.subjectId = course.subjectId;
-                        option.dataset.subjectPage = subject.page;
-                        
-                        if (enrolledCourseIds.has(doc.id)) {
-                            option.textContent += ' (Enrolled)';
-                            option.disabled = true;
-                        }
-                        dom.courseSelect.appendChild(option);
+                dom.subjectSelect.innerHTML = '<option value="">-- Select a subject --</option>';
+                subjectsSnap.forEach(doc => {
+                    const subject = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = subject.name;
+                    option.dataset.subjectPage = subject.page;
+                    
+                    if (enrolledSubjectIds.has(doc.id)) {
+                        option.textContent += ' (Enrolled)';
+                        option.disabled = true;
                     }
+                    dom.subjectSelect.appendChild(option);
                 });
-                dom.courseSelect.disabled = false;
+                dom.subjectSelect.disabled = false;
             };
 
             const signIn = () => {
@@ -145,14 +139,13 @@
                     return;
                 }
 
-                const selectedOption = dom.courseSelect.options[dom.courseSelect.selectedIndex];
-                const courseId = selectedOption.value;
-                const courseName = selectedOption.textContent;
-                const subjectId = selectedOption.dataset.subjectId;
+                const selectedOption = dom.subjectSelect.options[dom.subjectSelect.selectedIndex];
+                const subjectId = selectedOption.value;
+                const subjectName = selectedOption.textContent;
                 const subjectPage = selectedOption.dataset.subjectPage;
 
-                if (!courseId) {
-                    dom.statusMessage.textContent = 'Please select a valid course.';
+                if (!subjectId) {
+                    dom.statusMessage.textContent = 'Please select a valid subject.';
                     dom.statusMessage.className = 'status-message error';
                     return;
                 }
@@ -163,9 +156,8 @@
                 try {
                     await db.collection('enrollments').add({
                         userId: user.uid,
-                        courseId: courseId,
-                        courseName: courseName,
                         subjectId: subjectId,
+                        subjectName: subjectName.replace(' (Enrolled)', ''),
                         subjectPage: subjectPage,
                         enrolledAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
