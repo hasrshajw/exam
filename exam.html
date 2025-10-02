@@ -310,7 +310,7 @@
         }
 
         async function checkIfExamCompleted() {
-            const scoreQuery = await db.collection('users').doc(currentUser.uid).collection('scores').where('examId', '==', examId).limit(1).get();
+            const scoreQuery = await db.collection('users').doc(currentUser.uid).collection('scores').doc('mcq').where('examId', '==', examId).limit(1).get();
             return scoreQuery.empty ? false : scoreQuery.docs[0].data();
         }
 
