@@ -310,7 +310,7 @@
         }
 
         async function checkIfExamCompleted() {
-            const scoreQuery = await db.collection('users').doc(currentUser.uid).collection('mcq_scores').where('examId', '==', examId).limit(1).get();
+            const scoreQuery = await db.collection('users').doc(currentUser.uid).collection('scores').where('examId', '==', examId).limit(1).get();
             return scoreQuery.empty ? false : scoreQuery.docs[0].data();
         }
 
@@ -528,7 +528,7 @@
             };
 
             try {
-                await db.collection('users').doc(currentUser.uid).collection('mcq_scores').add(scoreData);
+                await db.collection('users').doc(currentUser.uid).collection('scores').add(scoreData);
             } catch (error) {
                 console.error("Error saving score: ", error);
             }
