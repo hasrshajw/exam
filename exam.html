@@ -270,7 +270,7 @@
             reviewConfirmBtn: document.getElementById('review-confirm-btn')
         };
 
-        let currentUser, examId, examData, questions = [], userAnswers = {}, visitedQuestions = new Set(), currentQuestionIndex = 0, timerInterval, isExamEnded = false, pauseStartTime = null, examStartTime = 0;
+        let currentUser, examId, examData, questions = [], userAnswers = {}, visitedQuestions = new Set(), currentQuestionIndex = 0, timerInterval, isExamEnded = false, pauseStartTime = null;
         let leaveAttempts = 0;
         const MAX_LEAVE_ATTEMPTS = 3;
 
@@ -308,7 +308,7 @@
         }
 
         async function checkIfExamCompleted() {
-            const scoreQuery = await db.collection('ExamSummaries').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
+            const scoreQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
             return scoreQuery.empty ? false : scoreQuery.docs[0].data();
         }
 
@@ -453,16 +453,8 @@
 
         function startTimer() {
             const storageKey = `examEndTime_${currentUser.uid}_${examId}`;
-            const startTimeStorageKey = `examStartTime_${currentUser.uid}_${examId}`;
             let endTime = localStorage.getItem(storageKey);
-            if (!endTime) {
-                examStartTime = Date.now();
-                localStorage.setItem(startTimeStorageKey, examStartTime);
-                endTime = examStartTime + examData.duration * 1000;
-                localStorage.setItem(storageKey, endTime);
-            } else {
-                examStartTime = parseInt(localStorage.getItem(startTimeStorageKey));
-            }
+            if (!endTime) { endTime = Date.now() + examData.duration * 1000; localStorage.setItem(storageKey, endTime); }
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const remaining = endTime - Date.now();
@@ -512,28 +504,15 @@
             let pointsReceived = 0;
             const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
             questions.forEach((q, index) => { if (q.type === 'Mcq' && userAnswers[index] === q.correctAnswer) { pointsReceived += q.points; } });
-            
-            const timeTakenInSeconds = examStartTime > 0 ? Math.round((Date.now() - examStartTime) / 1000) : 0;
 
-            const summaryData = {
-                userId: currentUser.uid, 
-                examId: examId, 
-                examName: examData.name, 
-                subjectId: examData.subjectId, 
-                pointsReceived: pointsReceived, 
-                totalPoints: totalPoints, 
-                reason: reason, 
-                violations: leaveAttempts, 
-                timeTakenInSeconds: timeTakenInSeconds,
-                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+            const scoreData = {
+                userId: currentUser.uid, examId, examName: examData.name, subjectId: examData.subjectId, 
+                pointsReceived, totalPoints, reason, leaveAttempts, submittedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            await db.collection('ExamSummaries').add(summaryData);
-
+            await db.collection('scores').add(scoreData);
             localStorage.removeItem(`examEndTime_${currentUser.uid}_${examId}`);
-            localStorage.removeItem(`examStartTime_${currentUser.uid}_${examId}`);
-            
-            showFinalResultsPage(summaryData, false, title);
+            showFinalResultsPage(scoreData, false, title);
         }
 
         function showFinalResultsPage(scoreData, isAlreadyCompleted, title = "Test Finished!") {
