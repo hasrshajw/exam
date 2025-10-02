@@ -327,7 +327,7 @@
             finalProblemOverlay: document.getElementById('final-problem-overlay')
         };
         
-        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0, submissionAttempts = {}, examStartTime = 0;
+        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0;
 
         async function main() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -357,13 +357,12 @@
             problems.forEach(p => {
                 userCodeState[p.id] = p.starterCode;
                 problemStatus[p.id] = 'not-attempted';
-                submissionAttempts[p.id] = 0;
             });
             currentProblemId = problems.length > 0 ? problems[0].id : null;
         }
 
         async function checkIfAssignmentCompleted() {
-            const scoreQuery = await db.collection('AssignmentSummaries').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
+            const scoreQuery = await db.collection('codeAssignmentScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
             return scoreQuery.empty ? false : scoreQuery.docs[0].data();
         }
 
@@ -372,11 +371,11 @@
             DOMElements.ideDashboard.style.display = 'none';
             DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
             DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
-            db.collection('Scores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
+            db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
                 const problemScores = {};
                 scoresSnap.forEach(doc => {
                     const score = doc.data();
-                    problemScores[score.problemId] = score.score > 0 ? 'solved' : 'attempted';
+                    problemScores[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
                 });
                 DOMElements.finalResultsList.innerHTML = problems.map(p => {
                     const status = problemScores[p.id] || 'notattempted';
@@ -486,12 +485,8 @@
             const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             let endTime = localStorage.getItem(storageKey);
             if (!endTime) {
-                examStartTime = Date.now();
-                localStorage.setItem(`examStartTime_${currentUser.uid}_${assignmentId}`, examStartTime);
-                endTime = examStartTime + assignment.duration * 1000;
+                endTime = Date.now() + assignment.duration * 1000;
                 localStorage.setItem(storageKey, endTime);
-            } else {
-                examStartTime = parseInt(localStorage.getItem(`examStartTime_${currentUser.uid}_${assignmentId}`));
             }
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
@@ -523,34 +518,22 @@
             pauseTimer();
             if(editor) editor.updateOptions({ readOnly: true });
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
-            
             let totalScoreObtained = 0;
-            const scoresSnap = await db.collection('Scores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
-            scoresSnap.forEach(doc => { totalScoreObtained += doc.data().score; });
-            
+            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
+            scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
             const solvedCount = Object.values(problemStatus).filter(s => s === 'solved').length;
             const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
-            const timeTakenInSeconds = examStartTime > 0 ? Math.round((Date.now() - examStartTime) / 1000) : 0;
-
-            const finalSummaryData = {
-                userId: currentUser.uid,
-                assignmentId: assignmentId,
-                courseId: assignment.subjectId,
-                assignmentName: assignment.name,
-                totalScoreObtained,
-                totalScorePossible,
-                problemsSolved: solvedCount,
-                totalProblems: problems.length,
-                timeTakenInSeconds: timeTakenInSeconds,
-                violations: violationCount,
+            const finalScoreData = {
+                userId: currentUser.uid, assignmentId: assignmentId,
+                assignmentName: assignment.name, subjectId: assignment.subjectId,
+                totalScoreObtained, totalScorePossible,
+                problemsSolved: solvedCount, totalProblems: problems.length,
                 completedAt: firebase.firestore.FieldValue.serverTimestamp(),
                 submissionReason: reason
             };
-
-            await db.collection('AssignmentSummaries').add(finalSummaryData);
+            await db.collection('codeAssignmentScores').add(finalScoreData);
             
             localStorage.removeItem(`examEndTime_${currentUser.uid}_${assignmentId}`);
-            localStorage.removeItem(`examStartTime_${currentUser.uid}_${assignmentId}`);
             localStorage.removeItem(`fullscreenAttempts_${assignmentId}`);
             localStorage.removeItem(`visibilityAttempts_${assignmentId}`);
 
@@ -563,7 +546,6 @@
             }).join('');
             DOMElements.resultsOverlay.querySelector('h2').textContent = title;
             DOMElements.resultsOverlay.classList.add('show');
-            
             let countdown = 30;
             const redirectMessageEl = document.getElementById('redirect-message');
             const countdownInterval = setInterval(() => {
@@ -578,12 +560,14 @@
         }
 
         function initEventListeners() {
+            // This is the SINGLE, correct block for disabling actions.
             const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
             document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
             document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
             document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
             document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
 
+            // All other event listeners
             [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
             [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
             [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
@@ -689,7 +673,6 @@
             if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
             
             if (isSubmission) {
-                submissionAttempts[currentProblemId]++;
                 const allPassed = results.every(r => r.status === 'pass');
                 const previousStatus = problemStatus[currentProblemId];
                 problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
@@ -744,26 +727,11 @@
         }
 
         async function saveScore(problem, wasCorrect) {
-            const scoreRef = db.collection('Scores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
+            const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
             const scoreSnap = await scoreRef.get();
             if (scoreSnap.empty) {
-                const scoreData = { 
-                    userId: currentUser.uid, 
-                    courseId: assignment.subjectId,
-                    assignmentId: assignmentId, 
-                    problemId: problem.id, 
-                    itemType: 'code',
-                    score: wasCorrect ? problem.points : 0, 
-                    maxScore: problem.points,
-                    attempts: submissionAttempts[problem.id],
-                    submittedAt: firebase.firestore.FieldValue.serverTimestamp() 
-                };
-                try { 
-                    await db.collection('Scores').add(scoreData); 
-                } catch (e) { 
-                    console.error("Error saving score:", e); 
-                    showAdvancedAlert('error', 'Save Failed', 'Could not save your score.'); 
-                }
+                const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
+                try { await db.collection('codeScores').add(scoreData); } catch (e) { console.error("Error saving score:", e); showAdvancedAlert('error', 'Save Failed', 'Could not save your score.'); }
             }
         }
 
