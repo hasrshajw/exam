@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Java - Course & Content</title>
+    <title>Course & Content - Exam Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,6 +29,7 @@
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-content-wrapper { display: flex; align-items: center; gap: 0.75rem; width: 100%; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .profile-details { flex-grow: 1; min-width: 0; }
         .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
@@ -46,42 +47,33 @@
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .hero-section { background-color: var(--text-primary); color: #FFFFFF; padding: 4rem 3rem; }
         .breadcrumbs { font-weight: 500; color: var(--brand-green); margin-bottom: 1rem; }
-        .breadcrumbs a { color: rgba(255, 255, 255, 0.7); text-decoration: none; } .breadcrumbs a:hover { text-decoration: underline; }
         .hero-title { font-size: 3rem; font-weight: 700; letter-spacing: -0.02em; }
         .content-body { padding: 2rem 3rem 3rem 3rem; display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: flex-start; }
         .main-content { min-width: 0; }
         .content-sidebar { position: sticky; top: calc(2rem + 73px); }
-        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; }
+        .pill-nav-container { display: flex; justify-content: flex-start; margin-bottom: 2rem; }
+        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; }
         .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 2; transition: color 0.3s ease; }
-        .nav-tab.active { color: var(--text-primary); }
-        #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; border-radius: 99px; background-color: var(--widget-bg); box-shadow: var(--shadow); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
-        .content-section { display: none; } .content-section.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         .chapter-group { margin-bottom: var(--space-xl); }
         .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color); }
         .content-list { display: flex; flex-direction: column; gap: 0.75rem; }
-        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; text-decoration: none; }
-        .card:not([data-status='locked']):hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; font-weight: 600; }
-        .card-info { flex-grow: 1; } .card-title { font-weight: 600; font-size: 1rem; color: var(--text-primary); }
-        .card-meta { font-size: 0.85rem; color: var(--text-secondary); }
-        .card-button { background-color: var(--c-primary); color: #FFFFFF; border: none; border-radius: 0.75rem; padding: 0.6rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; }
-        .card-button:hover { background-color: var(--c-primary-dark); }
-        .card-status-icon { font-size: 1.5rem; color: var(--c-accent); margin-left: 1rem; }
-        .card[data-status="completed"] { background-color: #F8F8F8; }
-        .card[data-status="completed"] .card-title { color: var(--text-secondary); }
-        .card-prefix--completed { background-color: var(--c-accent-light); color: var(--c-accent); }
-        .card[data-status="next"] { border-color: var(--c-primary); }
-        .card-prefix--default { background-color: #e0e0e0; color: var(--c-primary); }
-        .card[data-status="locked"] { opacity: 0.7; background-color: var(--hover-bg); pointer-events: none; }
-        .card-prefix--locked { background-color: #E5E7EB; color: var(--text-secondary); }
-        .card-button--locked { background-color: var(--border-color); color: var(--text-secondary); cursor: not-allowed; }
+        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; cursor: pointer; }
         .sidebar-card { background-color: var(--widget-bg); border-radius: 1rem; padding: 1.5rem; border: 2px solid var(--border-color); }
         .sidebar-card h4 { font-size: 1.25rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary); }
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .stat-item { text-align: center; } .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
         .stat-label { font-size: 0.875rem; color: var(--text-secondary); }
         .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
+        
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        .skeleton-line { height: 14px; border-radius: 4px; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+        .skeleton-pill-nav { display: inline-flex; background-color: #e2e8f0; border-radius: 99px; padding: 0.25rem; position: relative;}
+        .skeleton-pill { width: 110px; height: 32px; border-radius: 99px; margin: 2px; }
+        .skeleton-pill-nav::before { content:''; position: absolute; top: 0.25rem; bottom: 0.25rem; left: 0.25rem; width: 114px; background-color: var(--widget-bg); border-radius: 99px; z-index: 1;}
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -96,19 +88,17 @@
             .sidebar-close-btn:hover { color: #b91c1c; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+            .pill-nav-container { justify-content: center; }
             .chapter-title { font-size: 1.25rem; }
-            .card-title { font-size: 0.95rem; }
-            .card-meta { font-size: 0.8rem; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
     <div class="overlay" id="overlay"></div>
-    <div class="dashboard-container" style="display: none;">
+    <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
@@ -120,14 +110,29 @@
                 </ul>
             </nav>
             <div class="profile-section" id="profile-section">
-                <img src="" alt="Profile Picture" class="profile-avatar">
-                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                <div class="profile-skeleton" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                    <div class="skeleton skeleton-avatar"></div>
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
+                    </div>
+                </div>
+                <div class="profile-content-wrapper" style="display: none;">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details">
+                        <span class="profile-name"></span>
+                        <span class="profile-email"></span>
+                    </div>
+                    <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                </div>
             </div>
             <div class="profile-popup" id="profile-popup">
                 <div class="popup-header">
                     <img src="" alt="Profile Picture" class="profile-avatar">
-                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                    <div class="profile-details">
+                        <span class="profile-name"></span>
+                        <span class="profile-email"></span>
+                    </div>
                 </div>
                 <ul class="popup-list">
                     <li><a href="profile.html"><i class='bx bx-user'></i> Profile</a></li>
@@ -142,248 +147,136 @@
             </header>
             <section class="hero-section">
                 <div class="container">
-                    <p class="breadcrumbs"><a href="dashboard.html">Dashboard</a> &gt; <span id="subject-breadcrumb"></span></p>
-                    <h1 class="hero-title" id="subject-title"></h1>
+                    <p class="breadcrumbs"><span class="skeleton skeleton-line" style="width: 200px; height: 16px; display: inline-block; background-color: rgba(255,255,255,0.1);"></span></p>
+                    <h1 class="hero-title"><span class="skeleton" style="width: 350px; height: 48px; display: inline-block; border-radius: 8px; background-color: rgba(255,255,255,0.1);"></span></h1>
                 </div>
             </section>
-            <div class="content-body">
+            <div class="content-body" id="skeleton-loader">
                 <div class="main-content">
-                    <div class="pill-nav">
-                        <div id="pill-slider"></div>
-                        <button id="courseTab" class="nav-tab active">Curriculum</button>
-                        <button id="assessmentsTab" class="nav-tab">Assessments</button>
+                    <div class="pill-nav-container">
+                        <div class="skeleton-pill-nav">
+                            <div class="skeleton-pill"></div>
+                            <div class="skeleton-pill"></div>
+                        </div>
                     </div>
-                    <div id="courseContent" class="content-section active"></div>
-                    <div id="assessmentsContent" class="content-section"></div>
+                    <div class="chapter-group" style="margin-bottom: 2.5rem;">
+                        <div class="skeleton skeleton-line" style="width: 250px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
+                        <div class="content-list">
+                            <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 80%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 40%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
+                            <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 75%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 35%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
+                        </div>
+                    </div>
+                     <div class="chapter-group">
+                        <div class="skeleton skeleton-line" style="width: 300px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
+                        <div class="content-list">
+                            <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 70%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 30%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
+                        </div>
+                    </div>
                 </div>
                 <aside class="content-sidebar">
-                    <div id="sidebarCard" class="sidebar-card">
-                        <h4>Subject Progress</h4>
+                    <div class="sidebar-card" style="border: none; box-shadow: var(--shadow);">
+                        <h4 class="skeleton skeleton-line" style="height: 20px; width: 150px; margin-bottom: 1.5rem; border-radius: 8px;"></h4>
                         <div class="stat-grid">
-                            <div class="stat-item"><div class="stat-value" id="stat-lessons">0</div><div class="stat-label">Lessons</div></div>
-                            <div class="stat-item"><div class="stat-value" id="stat-assessments">0</div><div class="stat-label">Assessments</div></div>
-                            <div class="stat-item"><div class="stat-value" id="stat-completed">0%</div><div class="stat-label">Completed</div></div>
-                            <div class="stat-item"><div class="stat-value" id="stat-avg-score">-</div><div class="stat-label">Avg. Score</div></div>
+                            <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                            <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                            <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                            <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
                         </div>
                     </div>
                 </aside>
             </div>
+            <div id="real-content" style="display: none;"></div>
         </main>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const firebaseConfig = {
-                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-                authDomain: "exam-2e799.firebaseapp.com",
-                projectId: "exam-2e799",
-                storageBucket: "exam-2e799.firebasestorage.app",
-                messagingSenderId: "472506328501",
-                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-                measurementId: "G-NX21HT3JKT"
-            };
-            firebase.initializeApp(firebaseConfig);
-            const auth = firebase.auth();
-            const db = firebase.firestore();
+            const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
 
-            const CURRENT_PAGE_FILENAME = "new.html";
-
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                    const userProfile = userDoc.data();
-                    initSharedUI(userProfile);
-                    await loadAndRenderContent(user.uid);
-                    document.querySelector('.dashboard-container').style.display = 'grid';
-                    document.getElementById('loading-overlay').style.display = 'none';
-                } else { window.location.href = 'index.html'; }
-            });
-
-            const initSharedUI = (userProfile) => {
-                document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
-                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
-                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
-                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+            const setupEventListeners = () => {
+                document.getElementById('logout-btn')?.addEventListener('click', () => auth.signOut());
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                profileSection?.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (profileSection && !profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
                 const overlay = document.getElementById('overlay');
-                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
-                menuToggle.addEventListener('click', toggleMenu);
-                closeBtn.addEventListener('click', toggleMenu);
-                overlay.addEventListener('click', toggleMenu);
+                const toggleMenu = () => { sidebar?.classList.toggle('active'); overlay?.classList.toggle('active'); };
+                menuToggle?.addEventListener('click', toggleMenu);
+                closeBtn?.addEventListener('click', toggleMenu);
+                overlay?.addEventListener('click', toggleMenu);
+            };
+
+            const updateProfileUI = (userProfile) => {
+                const logoUrl = localStorage.getItem('dashboardLogoUrl');
+                if (logoUrl) document.querySelector('.logo-image').src = logoUrl;
+
+                const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
                 
-                const tabs = document.querySelectorAll('.nav-tab');
-                const slider = document.getElementById('pill-slider');
-                const activeTab = document.querySelector('.nav-tab.active');
-                function moveSlider(tab) { if(tab) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
-                moveSlider(activeTab);
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        tabs.forEach(t => t.classList.remove('active'));
-                        e.currentTarget.classList.add('active');
-                        moveSlider(e.currentTarget);
-                        const isCourseTab = e.currentTarget.id === 'courseTab';
-                        document.getElementById('courseContent').classList.toggle('active', isCourseTab);
-                        document.getElementById('assessmentsContent').classList.toggle('active', !isCourseTab);
+                if (profileToUse) {
+                    document.querySelectorAll('.profile-avatar').forEach(el => {
+                        el.src = profileToUse.photoURL || DEFAULT_AVATAR;
+                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
                     });
-                });
+                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
+                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
+                    document.querySelector('.profile-skeleton').style.display = 'none';
+                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
+                }
             };
 
-            const loadAndRenderContent = async (userId) => {
-                const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
-                if (subjectQuery.empty) { document.querySelector('.main-area').innerHTML = '<h1>Subject not found.</h1>'; return; }
-                const subjectDoc = subjectQuery.docs[0];
-                const subject = { id: subjectDoc.id, ...subjectDoc.data() };
-                document.getElementById('subject-title').textContent = subject.name;
-                document.getElementById('subject-breadcrumb').textContent = subject.name;
+            setupEventListeners();
+            updateProfileUI();
 
-                const [lessonsSnapshot, examsSnapshot, progressSnapshot, userScoresSnapshot] = await Promise.all([
-                    db.collection('lessons').where('subjectId', '==', subject.id).get(),
-                    db.collection('exams').where('subjectId', '==', subject.id).get(),
-                    db.collection('users').doc(userId).collection('progress').where('subjectId', '==', subject.id).get(),
-                    db.collection('users').doc(userId).collection('scores').where('subjectId', '==', subject.id).get()
-                ]);
+            (async function() {
+                const firebaseConfig = {
+                    apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                    authDomain: "exam-2e799.firebaseapp.com",
+                    projectId: "exam-2e799",
+                    storageBucket: "exam-2e799.firebasestorage.app",
+                    messagingSenderId: "472506328501",
+                    appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                    measurementId: "G-NX21HT3JKT"
+                };
+                firebase.initializeApp(firebaseConfig);
+                const auth = firebase.auth();
+                const db = firebase.firestore();
 
-                const userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
-                const userScoresMap = new Map(userScoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
+                try {
+                    const user = await new Promise((resolve, reject) => {
+                        const unsubscribe = auth.onAuthStateChanged(user => {
+                            unsubscribe();
+                            resolve(user);
+                        }, reject);
+                    });
 
-                renderCourses(subject, lessonsSnapshot, userProgress);
-                renderAssessments(examsSnapshot, userScoresMap);
-                updateSidebarStats(lessonsSnapshot, examsSnapshot, userProgress, userScoresMap);
-            };
+                    if (user) {
+                        updateProfileUI(user);
+                        const enrollmentsQuery = await db.collection('enrollments')
+                            .where('userId', '==', user.uid)
+                            .orderBy('enrolledAt', 'desc')
+                            .limit(1)
+                            .get();
 
-            const renderCourses = (subject, lessonsSnapshot, userProgress) => {
-                const container = document.getElementById('courseContent');
-                container.innerHTML = '';
-                if (!subject.chapters || subject.chapters.length === 0) { container.innerHTML = '<p>No curriculum defined for this subject yet.</p>'; return; }
-                
-                const allLessons = lessonsSnapshot.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
-                const firstUncompletedLesson = allLessons.find(l => !userProgress.has(l.id));
-
-                subject.chapters.forEach((chapterName, chapterIndex) => {
-                    const lessonsInChapter = allLessons.filter(l => l.chapterIndex === chapterIndex);
-                    const chapterGroup = document.createElement('div');
-                    chapterGroup.className = 'chapter-group';
-                    chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="content-list"></div>`;
-                    const lessonsContainer = chapterGroup.querySelector('.content-list');
-
-                    if (lessonsInChapter.length > 0) {
-                        lessonsInChapter.forEach(lesson => {
-                            const card = document.createElement('a');
-                            card.href = `lesson-view.html?id=${lesson.id}`;
-                            card.className = 'card';
-                            const isCompleted = userProgress.has(lesson.id);
-                            const isNext = firstUncompletedLesson && lesson.id === firstUncompletedLesson.id;
-                            let status, prefixClass, buttonHtml = '', statusIcon = '';
-
-                            if (isCompleted) {
-                                status = 'completed'; prefixClass = 'card-prefix--completed'; statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
-                            } else if (isNext) {
-                                status = 'next'; prefixClass = 'card-prefix--default'; buttonHtml = '<button class="card-button">Start Lesson</button>';
-                            } else {
-                                status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
-                            }
-
-                            if (status === 'locked') card.style.pointerEvents = 'none';
-                            card.dataset.status = status;
-                            card.innerHTML = `<div class="card-prefix ${prefixClass}">${lesson.chapterIndex + 1}.${lesson.order + 1}</div><div class="card-info"><p class="card-title">${lesson.title}</p><p class="card-meta">${lesson.duration}</p></div>${statusIcon}${buttonHtml}`;
-                            lessonsContainer.appendChild(card);
-                        });
+                        if (!enrollmentsQuery.empty) {
+                            window.location.replace(enrollmentsQuery.docs[0].data().subjectPage);
+                        } else {
+                            window.location.replace('course-enroll.html');
+                        }
                     } else {
-                        lessonsContainer.innerHTML = `<p style="color: var(--text-secondary); padding: 0.5rem;">No lessons in this chapter yet.</p>`;
+                        window.location.replace('index.html');
                     }
-                    container.appendChild(chapterGroup);
-                });
-            };
-
-            const renderAssessments = (examsSnapshot, userScoresMap) => {
-                const container = document.getElementById('assessmentsContent');
-                container.innerHTML = '';
-                
-                const assessments = examsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-                assessments.sort((a, b) => (a.data.createdAt?.seconds || 0) - (b.data.createdAt?.seconds || 0));
-
-                if (assessments.length === 0) { container.innerHTML = '<p>No assessments available in this subject yet.</p>'; return; }
-
-                const assessmentGroup = document.createElement('div');
-                assessmentGroup.className = 'chapter-group';
-                assessmentGroup.innerHTML = `<div class="content-list"></div>`;
-                const listContainer = assessmentGroup.querySelector('.content-list');
-
-                assessments.forEach(item => {
-                    const card = document.createElement('a');
-                    card.className = 'card';
-                    const score = userScoresMap.get(item.id);
-                    const isCompleted = !!score;
-                    let meta = '', buttonText = '', isLocked = item.data.isLocked;
-
-                    if (item.data.type === 'mcq') {
-                        card.href = `exam.html?id=${item.id}`;
-                        if (isCompleted) {
-                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                            meta = `MCQ Exam • Score: ${percentage}%`;
-                            buttonText = 'View Results';
-                        } else {
-                            meta = `MCQ Exam • ${(item.data.questions || []).length} Questions • ${item.data.duration / 60} min`;
-                            buttonText = isLocked ? 'Locked' : 'Start Exam';
-                        }
-                    } else if (item.data.type === 'code') {
-                        card.href = `code.html?id=${item.id}`;
-                        if (isCompleted) {
-                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                            meta = `Code Assignment • Score: ${percentage}%`;
-                            buttonText = 'View Submission';
-                        } else {
-                            meta = `Code Assignment • ${(item.data.problems || []).length} Problems • ${item.data.duration / 60} min`;
-                            buttonText = isLocked ? 'Locked' : 'Start Challenge';
-                        }
-                    }
-                    
-                    if(isLocked && !isCompleted) card.style.pointerEvents = 'none';
-                    const iconClass = item.data.type === 'mcq' ? 'bxs-file-doc' : 'bxs-code-alt';
-                    card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${isLocked && !isCompleted ? 'card-button--locked' : ''}">${buttonText}</button>`;
-                    
-                    if (isCompleted) {
-                        card.dataset.status = 'completed';
-                        card.querySelector('.card-prefix').classList.replace('card-prefix--default', 'card-prefix--completed');
-                        card.querySelector('.card-info').insertAdjacentHTML('afterend', `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`);
-                    }
-                    listContainer.appendChild(card);
-                });
-                container.appendChild(assessmentGroup);
-            };
-            
-            const updateSidebarStats = (lessonsSnapshot, examsSnapshot, userProgress, userScoresMap) => {
-                const totalLessons = lessonsSnapshot.size;
-                const totalAssessments = examsSnapshot.size;
-                const completedLessons = userProgress.size;
-
-                const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
-                
-                let totalScore = 0;
-                let scoreCount = 0;
-                userScoresMap.forEach(score => {
-                    totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
-                    scoreCount++;
-                });
-                
-                const avgScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : '-';
-
-                document.getElementById('stat-lessons').textContent = totalLessons;
-                document.getElementById('stat-assessments').textContent = totalAssessments;
-                document.getElementById('stat-completed').textContent = `${progressPercent}%`;
-                document.getElementById('stat-avg-score').textContent = avgScore === '-' ? '-' : `${avgScore}%`;
-            };
+                } catch (error) {
+                    console.error("Redirect failed:", error);
+                    window.location.replace('index.html');
+                }
+            })();
         });
     </script>
 </body>
