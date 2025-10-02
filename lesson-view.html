@@ -75,6 +75,8 @@
         .nav-btn.complete-btn:hover { background-color: var(--color-primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .nav-btn.prev-btn { color: var(--color-text-secondary); } .nav-btn.prev-btn:hover { background-color: var(--color-border); } 
         .nav-btn:disabled { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
+        .spinner { border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 900px) {
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); width: 320px;} .sidebar.active { transform: translateX(0); } .sidebar-header { padding-right: 30px; }
@@ -230,6 +232,17 @@
                 dom.courseContainer.style.display = 'flex';
                 dom.loadingOverlay.style.display = 'none';
             };
+            
+            const changeLesson = (newLessonId) => {
+                const newLesson = allLessons.find(l => l.id === newLessonId);
+                if (!newLesson) return;
+
+                currentLesson = newLesson;
+                renderAll();
+                const newUrl = `lesson-view.html?id=${newLesson.id}`;
+                history.pushState({ lessonId: newLesson.id }, '', newUrl);
+                document.title = `${newLesson.title} - ${subjectData.name}`;
+            };
 
             const renderAll = () => {
                 renderSidebar();
@@ -272,6 +285,7 @@
                         const isLocked = !userProgress.has(lesson.id) && firstUncompleted && lesson.id !== firstUncompleted.id;
                         const item = document.createElement('li');
                         item.className = `lesson-item ${lesson.id === currentLesson.id ? 'active' : ''} ${userProgress.has(lesson.id) ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
+                        item.dataset.id = lesson.id;
                         item.innerHTML = `
                             <div class="lesson-number">${lesson.chapterIndex + 1}.${lesson.order + 1}</div>
                             <div class="lesson-details">
@@ -281,7 +295,10 @@
                             <div class="lesson-status-circle">${ICONS.CHECK}</div>`;
                         if (!isLocked) {
                             item.addEventListener('click', () => {
-                                window.location.href = `lesson-view.html?id=${lesson.id}`;
+                                if (lesson.id !== currentLesson.id) {
+                                    changeLesson(lesson.id);
+                                }
+                                closeMobileMenu();
                             });
                         }
                         lessonList.appendChild(item);
@@ -331,27 +348,31 @@
             const handlePrev = () => {
                 const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
                 if (currentIndex > 0) {
-                    const prevLessonId = allLessons[currentIndex - 1].id;
-                    window.location.href = `lesson-view.html?id=${prevLessonId}`;
+                    changeLesson(allLessons[currentIndex - 1].id);
                 }
             };
 
             const handleCompleteAndNext = async () => {
+                if (dom.completeBtn.disabled) return;
+                
                 const isCompleted = userProgress.has(currentLesson.id);
+                const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
+                
                 if (!isCompleted) {
+                    dom.completeBtn.disabled = true;
+                    dom.completeBtn.innerHTML = `<div class="spinner"></div> Saving...`;
                     await db.collection('users').doc(currentUser.uid).collection('progress').add({
                         subjectId: currentLesson.subjectId,
                         lessonId: currentLesson.id,
                         completedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
+                    userProgress.add(currentLesson.id);
                 }
-                
-                const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
+
                 if (currentIndex < allLessons.length - 1) {
-                    const nextLessonId = allLessons[currentIndex + 1].id;
-                    window.location.href = `lesson-view.html?id=${nextLessonId}`;
+                    changeLesson(allLessons[currentIndex + 1].id);
                 } else {
-                    renderAll();
+                    renderAll(); 
                 }
             };
             
