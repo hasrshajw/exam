@@ -251,7 +251,7 @@
     </main>
     <div id="results-overlay">
         <div class="results-card">
-            <h2 id="results-title">Test Finished</h2>
+            <h2>Test Finished</h2>
             <p id="final-score-message">Here is a summary of your session.</p>
             <ul class="final-results-list" id="final-results-list"></ul>
             <p id="redirect-message"></p>
@@ -324,8 +324,7 @@
             fullscreenMessage: document.getElementById('fullscreen-message'),
             enterFullscreenBtn: document.getElementById('enter-fullscreen-btn'), 
             alertContainer: document.getElementById('alert-container'),
-            finalProblemOverlay: document.getElementById('final-problem-overlay'),
-            resultsTitle: document.getElementById('results-title')
+            finalProblemOverlay: document.getElementById('final-problem-overlay')
         };
         
         let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0, examStartTime;
@@ -339,20 +338,25 @@
                     currentUser = user;
                     const completedScoreData = await checkIfAssignmentCompleted();
                     if (completedScoreData) {
-                        showFinalResultsPage(completedScoreData, true);
+                        showFinalResultsPage(completedScoreData);
                     } else {
                         await fetchData();
-                        await initPyodide();
+                        if(assignment) await initPyodide();
                     }
                 } else { window.location.href = 'index.html'; }
             });
         }
 
         async function fetchData() {
-            const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
-            if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
+            const assignmentDoc = await db.collection('exams').doc(assignmentId).get();
+            if (!assignmentDoc.exists || assignmentDoc.data().type !== 'code') {
+                DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>';
+                assignment = null;
+                return;
+            }
             assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
             DOMElements.assignmentTitle.textContent = assignment.name;
+            
             problems = assignment.problems || [];
             problems.forEach(p => {
                 userCodeState[p.id] = p.starterCode;
@@ -366,14 +370,12 @@
             return scoreQuery.empty ? null : scoreQuery.docs[0].data();
         }
 
-        function showFinalResultsPage(scoreData, isAlreadyCompleted = false) {
+        function showFinalResultsPage(scoreData) {
             DOMElements.loadingOverlay.style.display = 'none';
             DOMElements.ideDashboard.style.display = 'none';
-            if(isAlreadyCompleted) {
-                DOMElements.resultsTitle.textContent = "Assignment Already Completed";
-                DOMElements.finalResultsList.style.display = 'none';
-            }
             DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.pointsReceived} / ${scoreData.totalPoints}`;
+            DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
+            DOMElements.finalResultsList.style.display = 'none';
             DOMElements.resultsOverlay.classList.add('show');
         }
 
@@ -392,6 +394,7 @@
                 { id: 'editor.action.clipboardCutAction', key: monaco.KeyCode.KeyX, label: 'Cut' },
                 { id: 'editor.action.clipboardPasteAction', key: monaco.KeyCode.KeyV, label: 'Paste' }
             ];
+
             actionsToDisable.forEach(action => {
                 editorInstance.addAction({
                     id: action.id,
@@ -399,7 +402,10 @@
                     keybindings: [ monaco.KeyMod.CtrlCmd | action.key ],
                     contextMenuGroupId: '9_cutcopypaste',
                     contextMenuOrder: 1.5,
-                    run: (ed) => { showAdvancedAlert('error', 'Action Disabled', `${action.label} has been disabled during the exam.`); return; }
+                    run: (ed) => {
+                        showAdvancedAlert('error', 'Action Disabled', `${action.label} has been disabled during the exam.`);
+                        return;
+                    }
                 });
             });
         }
@@ -508,12 +514,13 @@
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
 
             let pointsReceived = 0;
+            const totalPoints = problems.reduce((sum, p) => sum + (p.points || 0), 0);
             problems.forEach(p => {
                 if (problemStatus[p.id] === 'solved') {
-                    pointsReceived += p.points || 0;
+                    pointsReceived += p.points;
                 }
             });
-            const totalPoints = problems.reduce((sum, p) => sum + (p.points || 0), 0);
+            
             const timeTakenInSeconds = Math.round((Date.now() - examStartTime) / 1000);
 
             const scoreData = {
@@ -540,7 +547,7 @@
                 return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
             }).join('');
             
-            DOMElements.resultsTitle.textContent = title;
+            DOMElements.resultsOverlay.querySelector('h2').textContent = title;
             DOMElements.resultsOverlay.classList.add('show');
             
             let countdown = 30;
