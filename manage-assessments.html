@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Assessments - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
+            --text-primary: #111827; --text-secondary: #6B7280; --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --danger-color: #EF4444;
+            --danger-hover: #DC2626; --danger-bg-light: #FEE2E2; --danger-text-dark: #B91C1C;
+            --success-color: #10B981; --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        a { text-decoration: none; }
+        ul { list-style: none; }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
+        .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; }
+        .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
+        .main-nav a.active i { color: var(--brand-purple); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { padding-top: 0.5rem; }
+        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); }
+        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); }
+        .popup-list a.logout { color: var(--danger-color); }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .back-btn { margin-bottom: 1.5rem; font-weight: 600; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; }
+        .back-btn:hover { color: var(--brand-purple-hover); }
+        .back-btn i { font-size: 1.25rem; }
+        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .primary-btn { background-color: var(--brand-purple); color: white; }
+        .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .secondary-btn:hover { background-color: var(--hover-bg); }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+        .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
+        .admin-table td { color: var(--text-primary); font-weight: 500; }
+        .admin-table tr:last-child td { border-bottom: none; }
+        .lock-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .lock-switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--danger-color); transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--success-color); }
+        input:checked + .slider:before { transform: translateX(20px); }
+        .actions-cell { text-align: right !important; width: 1%; white-space: nowrap; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 8px; display: inline-flex; align-items: center; font-weight: 600; transition: background-color 0.2s ease, color 0.2s ease; gap: 0.5rem; }
+        .action-btn.edit-btn { color: var(--brand-purple); }
+        .action-btn.edit-btn:hover { background-color: #F5F3FF; }
+        .action-btn.delete-btn { color: var(--danger-color); }
+        .action-btn.delete-btn:hover { background-color: var(--danger-bg-light); }
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 900px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
+        .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
+        .close-btn:hover { background-color: var(--hover-bg); }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem 2rem; }
+        .form-field { margin-bottom: 1.25rem; }
+        .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; background-color: white; }
+        .form-field input:focus, .form-field textarea:focus, .form-field select:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+        .full-width { grid-column: 1 / -1; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
+        .section-header h4 { font-size: 1.125rem; font-weight: 700; }
+        .accordion-item { border: 1px solid var(--border-color); border-radius: 12px; margin-top: 1rem; overflow: hidden; }
+        .accordion-button { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; padding: 1rem 1.5rem; background-color: #F9FAFB; border: none; cursor: pointer; font-weight: 600; font-size: 1rem; }
+        .accordion-button span { flex-grow: 1; }
+        .accordion-button i { transition: transform 0.3s ease; font-size: 1.5rem; }
+        .accordion-button.active i { transform: rotate(180deg); }
+        .accordion-content-inner { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: var(--widget-bg); }
+        .item-card { padding: 1.5rem; position: relative; }
+        .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .remove-item-btn:hover { background-color: var(--danger-hover); color: white; }
+        .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
+        .modal-footer .secondary-btn { margin-right: 0.75rem; }
+        .type-specific-fields { display: none; }
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 1.25rem 1.5rem; }
+            .content-body { padding: 1.5rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+        }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container" style="display: none;">
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                    <li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
+                    <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+            </div>
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-header">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                </div>
+                <ul class="popup-list">
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
+        </aside>
+        <main class="main-area">
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
+                <h1>Manage Assessments</h1>
+            </header>
+            <section class="content-body">
+                <a id="back-to-curriculum-btn" href="#" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Curriculum</a>
+                <div class="admin-content-header">
+                    <h2 id="page-title"></h2>
+                    <button class="primary-btn" id="create-assessment-btn"><i class='bx bx-plus'></i> Create New Assessment</button>
+                </div>
+                <table class="admin-table">
+                    <thead><tr><th>Name</th><th>Type</th><th>Duration</th><th>Items</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="assessments-tbody"></tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+    <div class="modal-overlay" id="assessment-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="assessment-modal-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <form id="assessment-form">
+                    <input type="hidden" id="assessment-id">
+                    <div class="form-grid">
+                        <div class="form-field"><label for="assessment-name">Assessment Name</label><input type="text" id="assessment-name" required></div>
+                        <div class="form-field"><label for="assessment-type">Type</label><select id="assessment-type" required><option value="" disabled selected>Select a type...</option><option value="mcq">MCQ Exam</option><option value="code">Code Assignment</option></select></div>
+                        <div class="form-field"><label for="assessment-duration">Duration (minutes)</label><input type="number" id="assessment-duration" required></div>
+                        <div class="form-field"><label for="assessment-deadline">Deadline (optional)</label><input type="date" id="assessment-deadline"></div>
+                    </div>
+                    <div id="mcq-fields" class="type-specific-fields">
+                        <div class="section-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn"><i class='bx bx-plus'></i> Add Question</button></div>
+                        <div id="questions-container"></div>
+                    </div>
+                    <div id="code-fields" class="type-specific-fields">
+                        <div class="section-header"><h4>Problems</h4><button type="button" class="primary-btn" id="add-problem-btn"><i class='bx bx-plus'></i> Add Problem</button></div>
+                        <div id="problems-container"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assessment-btn">Save Assessment</button></div>
+        </div>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
+
+            let currentSubject = null;
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user && user.email === ADMIN_EMAIL) {
+                    initSharedUI({ displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+                    initPage();
+                } else { window.location.href = 'index.html'; }
+            });
+            const initSharedUI = (adminProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
+                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                const profileSection = document.getElementById('profile-section');
+                const profilePopup = document.getElementById('profile-popup');
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
+                const overlay = document.getElementById('overlay');
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                menuToggle.addEventListener('click', toggleMenu);
+                closeBtn.addEventListener('click', toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
+            };
+            const initPage = async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const subjectId = urlParams.get('subjectId');
+                if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
+                const subjectDoc = await db.collection('subjects').doc(subjectId).get();
+                if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
+                currentSubject = { id: subjectId, ...subjectDoc.data() };
+                document.getElementById('page-title').textContent = `Assessments in ${currentSubject.name}`;
+                document.getElementById('back-to-curriculum-btn').href = `manage-curriculum.html?subjectId=${subjectId}`;
+                loadAssessments();
+                document.querySelector('.dashboard-container').style.display = 'grid';
+                document.getElementById('loading-overlay').style.display = 'none';
+            };
+            const formatDate = (timestamp) => {
+                if (!timestamp) return "No Deadline";
+                return new Date(timestamp.seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            };
+            const loadAssessments = () => {
+                const tbody = document.getElementById('assessments-tbody');
+                db.collection('exams').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
+                    tbody.innerHTML = '';
+                    snapshot.docs.sort((a, b) => a.data().name.localeCompare(b.data().name)).forEach(doc => {
+                        const exam = doc.data();
+                        const itemCount = exam.type === 'mcq' ? (exam.questions || []).length : (exam.problems || []).length;
+                        const itemLabel = exam.type === 'mcq' ? 'Questions' : 'Problems';
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${exam.name}</td>
+                            <td>${exam.type.toUpperCase()}</td>
+                            <td>${exam.duration / 60} min</td>
+                            <td>${itemCount} ${itemLabel}</td>
+                            <td>${formatDate(exam.deadline)}</td>
+                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
+                            <td class="actions-cell">
+                                <button class="action-btn edit-btn" data-id="${doc.id}"><i class='bx bxs-edit-alt'></i> Edit</button>
+                                <button class="action-btn delete-btn" data-id="${doc.id}"><i class='bx bxs-trash-alt'></i> Delete</button>
+                            </td>`;
+                        tbody.appendChild(row);
+                    });
+                });
+            };
+            const openAssessmentModal = (exam = null) => {
+                const modal = document.getElementById('assessment-modal');
+                modal.querySelector('#assessment-modal-title').textContent = exam ? 'Edit Assessment' : 'Create New Assessment';
+                modal.querySelector('#assessment-form').reset();
+                modal.querySelector('#assessment-id').value = exam ? exam.id : '';
+                modal.querySelector('#assessment-name').value = exam ? exam.name : '';
+                modal.querySelector('#assessment-duration').value = exam ? exam.duration / 60 : '';
+                modal.querySelector('#assessment-deadline').value = exam && exam.deadline ? new Date(exam.deadline.seconds * 1000).toISOString().split('T')[0] : '';
+                const typeSelect = modal.querySelector('#assessment-type');
+                typeSelect.value = exam ? exam.type : '';
+                typeSelect.disabled = !!exam;
+                document.getElementById('questions-container').innerHTML = '';
+                document.getElementById('problems-container').innerHTML = '';
+                if (exam) {
+                    if (exam.type === 'mcq') (exam.questions || []).forEach(q => document.getElementById('questions-container').appendChild(createQuestionForm(q)));
+                    if (exam.type === 'code') (exam.problems || []).forEach(p => document.getElementById('problems-container').appendChild(createProblemForm(p)));
+                }
+                toggleTypeFields(exam ? exam.type : '');
+                modal.classList.add('show');
+            };
+            const toggleTypeFields = (type) => {
+                document.getElementById('mcq-fields').style.display = type === 'mcq' ? 'block' : 'none';
+                document.getElementById('code-fields').style.display = type === 'code' ? 'block' : 'none';
+            };
+            const createQuestionForm = (question = {}) => {
+                const container = document.createElement('div');
+                container.className = 'accordion-item';
+                const index = `q_${Date.now()}_${Math.random()}`;
+                container.innerHTML = `
+                    <button type="button" class="accordion-button"><span>${question.title || 'New Question'}</span><i class='bx bx-chevron-down'></i></button>
+                    <div class="accordion-content-inner">
+                        <div class="item-card">
+                            <button type="button" class="remove-item-btn" aria-label="Remove Question">&times;</button>
+                            <div class="form-field full-width"><label>Question Title</label><textarea rows="2" class="question-title" required>${question.title || ''}</textarea></div>
+                            <div class="form-grid">
+                                ${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
+                                <div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
+                                <div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || ''}" required></div>
+                            </div>
+                        </div>
+                    </div>`;
+                container.querySelector('.question-title').addEventListener('input', e => {
+                    container.querySelector('.accordion-button span').textContent = e.target.value || 'New Question';
+                });
+                return container;
+            };
+            const createProblemForm = (problem = {}) => {
+                const container = document.createElement('div');
+                container.className = 'accordion-item';
+                container.innerHTML = `
+                    <button type="button" class="accordion-button"><span>${problem.title || 'New Problem'}</span><i class='bx bx-chevron-down'></i></button>
+                    <div class="accordion-content-inner">
+                        <div class="item-card">
+                            <button type="button" class="remove-item-btn">&times;</button>
+                            <div class="form-grid"><div class="form-field"><label>Problem Title</label><input type="text" class="problem-title" value="${problem.title || ''}" required></div><div class="form-field"><label>Points</label><input type="number" class="problem-points" value="${problem.points || ''}" required></div></div>
+                            <div class="form-field"><label>Problem Statement (HTML)</label><textarea rows="4" class="problem-statement" required>${problem.statement || ''}</textarea></div>
+                            <div class="form-field"><label>Function Name</label><input type="text" class="problem-function-name" value="${problem.functionName || ''}" required></div>
+                            <div class="form-field"><label>Starter Code</label><textarea rows="4" class="problem-starter-code">${problem.starterCode || ''}</textarea></div>
+                            <div class="section-header"><h5>Test Cases</h5><button type="button" class="secondary-btn add-testcase-btn">+ Add</button></div>
+                            <div class="testcases-container"></div>
+                        </div>
+                    </div>`;
+                (problem.testCases || []).forEach(tc => container.querySelector('.testcases-container').appendChild(createTestCaseForm(tc)));
+                 container.querySelector('.problem-title').addEventListener('input', e => {
+                    container.querySelector('.accordion-button span').textContent = e.target.value || 'New Problem';
+                });
+                return container;
+            };
+            const createTestCaseForm = (testCase = {}) => {
+                const card = document.createElement('div');
+                card.className = 'item-card'
+                card.style.border = '1px solid var(--border-color)';
+                card.style.borderRadius = '12px';
+                card.style.marginTop = '1rem';
+                card.innerHTML = `
+                    <button type="button" class="remove-item-btn">&times;</button>
+                    <div class="form-field"><label>Input (JSON)</label><textarea rows="2" class="testcase-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div>
+                    <div class="form-field"><label>Expected Output (JSON)</label><textarea rows="2" class="testcase-expected" required>${testCase.expected !== undefined ? JSON.stringify(testCase.expected, null, 2) : ''}</textarea></div>
+                    <div class="form-field" style="display:flex; flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" class="testcase-hidden" ${testCase.hidden ? 'checked' : ''} style="width:auto;"><label>Hidden</label></div>`;
+                return card;
+            };
+            const deleteAssessment = async (examId) => {
+                if (!confirm('Are you sure? This will delete the assessment, its curriculum entry, and all user scores permanently.')) return;
+                try {
+                    const batch = db.batch();
+                    const examRef = db.collection('exams').doc(examId);
+                    batch.delete(examRef);
+                    const subjectRef = db.collection('subjects').doc(currentSubject.id);
+                    const subjectDoc = await subjectRef.get();
+                    if (subjectDoc.exists) {
+                        const curriculum = subjectDoc.data().curriculum || [];
+                        const newCurriculum = curriculum.filter(item => !item.ref || item.ref !== `exams/${examId}`);
+                        batch.update(subjectRef, { curriculum: newCurriculum });
+                    }
+                    const usersSnapshot = await db.collection('users').get();
+                    for (const userDoc of usersSnapshot.docs) {
+                        const scoresSnapshot = await userDoc.ref.collection('scores').where('examId', '==', examId).get();
+                        scoresSnapshot.forEach(scoreDoc => batch.delete(scoreDoc.ref));
+                    }
+                    await batch.commit();
+                } catch (error) { console.error("Deletion failed:", error); alert("Error deleting assessment."); }
+            };
+            document.addEventListener('click', async e => {
+                const button = e.target.closest('button');
+                if (!button) return;
+                if (button.id === 'create-assessment-btn') openAssessmentModal();
+                if (button.matches('.edit-btn')) {
+                    const doc = await db.collection('exams').doc(button.dataset.id).get();
+                    openAssessmentModal({ id: doc.id, ...doc.data() });
+                }
+                if (button.matches('.delete-btn')) deleteAssessment(button.dataset.id);
+                if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
+                if (button.id === 'add-question-btn') document.getElementById('questions-container').appendChild(createQuestionForm());
+                if (button.id === 'add-problem-btn') document.getElementById('problems-container').appendChild(createProblemForm());
+                if (button.matches('.add-testcase-btn')) button.nextElementSibling.appendChild(createTestCaseForm());
+                if (button.matches('.remove-item-btn')) button.parentElement.remove();
+                if (button.matches('.accordion-button')) {
+                    button.classList.toggle('active');
+                    const content = button.nextElementSibling;
+                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                }
+            });
+            document.getElementById('assessment-type').addEventListener('change', e => toggleTypeFields(e.target.value));
+            document.getElementById('assessments-tbody').addEventListener('change', async e => {
+                 if (e.target.classList.contains('lock-toggle')) await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+            });
+            document.getElementById('save-assessment-btn').addEventListener('click', async () => {
+                const form = document.getElementById('assessment-form');
+                if (!form.checkValidity()) { form.reportValidity(); return; }
+                const id = document.getElementById('assessment-id').value;
+                const type = document.getElementById('assessment-type').value;
+                const date = document.getElementById('assessment-deadline').value;
+                const deadline = date ? firebase.firestore.Timestamp.fromDate(new Date(`${date}T23:59:59`)) : null;
+                const data = { 
+                    name: document.getElementById('assessment-name').value.trim(), 
+                    type: type,
+                    duration: parseInt(document.getElementById('assessment-duration').value, 10) * 60, 
+                    subjectId: currentSubject.id,
+                    deadline: deadline 
+                };
+                if (type === 'mcq') {
+                    data.questions = [];
+                    document.querySelectorAll('#questions-container .item-card').forEach(card => {
+                        data.questions.push({
+                            title: card.querySelector('.question-title').value.trim(), 
+                            options: [...card.querySelectorAll('.question-option')].map(opt => opt.value.trim()),
+                            correctAnswer: parseInt(card.querySelector('.question-correct').value, 10), 
+                            points: parseInt(card.querySelector('.question-points').value, 10),
+                            type: 'Mcq'
+                        });
+                    });
+                } else if (type === 'code') {
+                    data.problems = [];
+                    document.querySelectorAll('#problems-container .item-card').forEach(card => {
+                        const testCases = [];
+                        card.querySelectorAll('.testcases-container .item-card').forEach(tcCard => {
+                            try {
+                                testCases.push({
+                                    input: JSON.parse(tcCard.querySelector('.testcase-input').value),
+                                    expected: JSON.parse(tcCard.querySelector('.testcase-expected').value),
+                                    hidden: tcCard.querySelector('.testcase-hidden').checked
+                                });
+                            } catch (e) { alert('Invalid JSON in a test case.'); throw e; }
+                        });
+                        data.problems.push({
+                            id: `problem_${Date.now()}_${Math.random()}`,
+                            title: card.querySelector('.problem-title').value.trim(),
+                            points: parseInt(card.querySelector('.problem-points').value, 10),
+                            statement: card.querySelector('.problem-statement').value,
+                            functionName: card.querySelector('.problem-function-name').value.trim(),
+                            starterCode: card.querySelector('.problem-starter-code').value,
+                            testCases
+                        });
+                    });
+                }
+                if (id) {
+                    await db.collection('exams').doc(id).update(data);
+                } else {
+                    data.isLocked = true;
+                    data.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+                    const newExamRef = await db.collection('exams').add(data);
+                    await db.collection('subjects').doc(currentSubject.id).update({
+                        curriculum: firebase.firestore.FieldValue.arrayUnion({ type: 'exam', ref: `exams/${newExamRef.id}` })
+                    });
+                }
+                document.getElementById('assessment-modal').classList.remove('show');
+            });
+        });
+    </script>
+</body>
+</html>
