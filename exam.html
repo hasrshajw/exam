@@ -287,7 +287,9 @@
                         showFinalResultsPage(completedScoreData, true);
                     } else {
                         await fetchData();
-                        DOMElements.startExamBtn.addEventListener('click', startExam);
+                        if (examData) {
+                            DOMElements.startExamBtn.addEventListener('click', startExam);
+                        }
                     }
                 } else { window.location.href = 'index.html'; }
             });
@@ -300,7 +302,7 @@
 
         async function fetchData() {
             const examDoc = await db.collection('exams').doc(examId).get();
-            if (!examDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Exam not found.</p>'; throw new Error("Exam not found"); }
+            if (!examDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Exam not found.</p>'; examData = null; return; }
             examData = { id: examDoc.id, ...examDoc.data() };
             questions = examData.questions ? shuffleArray(examData.questions) : [];
             questions.forEach((q, index) => { userAnswers[index] = null; });
@@ -415,7 +417,7 @@
             if (!question) return;
 
             DOMElements.questionTitle.textContent = `${index + 1}. ${question.title}`;
-            DOMElements.optionsContainer.innerHTML = question.options.map((opt, optIndex) => `
+            DOMElements.optionsContainer.innerHTML = (question.options || []).map((opt, optIndex) => `
                 <div class="option ${userAnswers[index] === optIndex ? 'selected' : ''}" data-opt-index="${optIndex}">
                     <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span><span class="option-text">${opt}</span>
                 </div>`).join('');
@@ -516,6 +518,7 @@
                 examId: examId,
                 examName: examData.name,
                 examType: examData.type || 'mcq',
+                subjectId: examData.subjectId,
                 pointsReceived: pointsReceived,
                 totalPoints: totalPoints,
                 timeTakenInSeconds: timeTakenInSeconds,
