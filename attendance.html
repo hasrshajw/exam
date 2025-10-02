@@ -179,12 +179,12 @@
                 }
 
                 const userIds = enrollmentsSnap.docs.map(doc => doc.data().userId);
-                const usersSnap = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', userIds).get();
-                const usersMap = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
                 
-                const attendanceExamId = `attendance_${subjectId}_${date}`;
-                const scoresSnap = await db.collectionGroup('scores').where('examId', '==', attendanceExamId).get();
-                const presentUserIds = new Set(scoresSnap.docs.map(doc => doc.ref.parent.parent.id));
+                const userDocs = await Promise.all(userIds.map(id => db.collection('users').doc(id).get()));
+                const attendanceDocs = await Promise.all(userIds.map(id => db.collection('users').doc(id).collection('scores').doc('attendance').get()));
+                
+                const usersMap = new Map(userDocs.map(doc => [doc.id, doc.data()]));
+                const attendanceMap = new Map(attendanceDocs.map((doc, i) => [userIds[i], doc.data()]));
 
                 dom.studentListContent.innerHTML = '';
                 let hasStudentsToMark = false;
@@ -193,7 +193,9 @@
                     const user = usersMap.get(userId);
                     if (!user) return;
 
-                    const isPresent = presentUserIds.has(userId);
+                    const userAttendance = attendanceMap.get(userId);
+                    const isPresent = userAttendance && userAttendance[date];
+
                     if (!isPresent) hasStudentsToMark = true;
 
                     const item = document.createElement('label');
@@ -202,7 +204,7 @@
                     
                     item.innerHTML = `
                         <input type="checkbox" class="student-checkbox" data-user-id="${userId}" ${isPresent ? 'checked disabled' : ''}>
-                        <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="Avatar" class="student-avatar">
+                        <img src="${user.photoURL || 'https://source.boringavatars.com/beam/40/' + user.email}" alt="Avatar" class="student-avatar">
                         <div class="student-details">
                             <div class="student-name">${user.displayName}</div>
                             <div class="student-email">${user.email}</div>
@@ -224,40 +226,30 @@
 
             const handleSubmitAttendance = async () => {
                 const subjectId = dom.subjectSelect.value;
-                const subjectName = dom.subjectSelect.options[dom.subjectSelect.selectedIndex].text;
                 const date = dom.attendanceDate.value;
 
-                if (!subjectId || !date) {
-                    alert('Please select a subject and date.');
-                    return;
-                }
+                if (!subjectId || !date) { alert('Please select a subject and date.'); return; }
                 
                 const selectedCheckboxes = [...document.querySelectorAll('.student-checkbox:checked:not(:disabled)')];
-                if (selectedCheckboxes.length === 0) {
-                    alert('Please select at least one student to mark present.');
-                    return;
-                }
+                if (selectedCheckboxes.length === 0) { alert('Please select at least one student.'); return; }
                 
                 dom.submitBtn.disabled = true;
                 dom.submitBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Submitting...";
                 dom.statusMessage.textContent = '';
 
-                const attendanceExamId = `attendance_${subjectId}_${date}`;
                 const batch = db.batch();
                 
                 selectedCheckboxes.forEach(checkbox => {
                     const userId = checkbox.dataset.userId;
-                    const scoreRef = db.collection('users').doc(userId).collection('scores').doc(attendanceExamId);
+                    const attendanceRef = db.collection('users').doc(userId).collection('scores').doc('attendance');
                     
-                    batch.set(scoreRef, {
-                        examId: attendanceExamId,
-                        examName: `Attendance for ${subjectName} - ${new Date(date + 'T00:00:00').toLocaleDateString()}`,
-                        examType: "attendance",
-                        pointsReceived: 10,
-                        totalPoints: 10,
+                    const updateData = {
+                        [`${date}`]: 10,
                         subjectId: subjectId,
-                        submittedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                        examType: "attendance"
+                    };
+                    
+                    batch.set(attendanceRef, updateData, { merge: true });
                 });
 
                 try {
