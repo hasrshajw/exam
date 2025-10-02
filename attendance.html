@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Attendance - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        :root {
+            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
+            --text-primary: #111827; --text-secondary: #6B7280; --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --success-color: #10B981;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; } .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: all 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-purple); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .primary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: var(--brand-purple); color: white; }
+        .primary-btn:hover:not(:disabled) { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .primary-btn:disabled { background-color: #D1D5DB; cursor: not-allowed; }
+        .controls-bar { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end; margin-bottom: 2rem; }
+        .form-field { flex-grow: 1; }
+        .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-field select, .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; font-family: 'IBM Plex Sans', sans-serif; transition: all 0.2s ease; }
+        .form-field select:focus, .form-field input:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.2); }
+        .student-list-container { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .student-list-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .student-list-header h3 { font-size: 1.25rem; font-weight: 600; }
+        .select-all-label { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; }
+        .student-list { max-height: 50vh; overflow-y: auto; }
+        .student-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s ease; }
+        .student-item:last-child { border-bottom: none; }
+        .student-item:hover { background-color: var(--hover-bg); }
+        .student-item.is-present { background-color: #F0FDF4; }
+        .student-checkbox { width: 20px; height: 20px; accent-color: var(--brand-purple); }
+        .student-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .student-details { flex-grow: 1; }
+        .student-name { font-weight: 600; }
+        .student-email { font-size: 0.875rem; color: var(--text-secondary); }
+        .status-message { margin-top: 1rem; font-weight: 500; text-align: center; }
+        .status-message.success { color: var(--success-color); }
+        .status-message.error { color: var(--danger-color); }
+        .placeholder { padding: 3rem; text-align: center; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
+    <div class="dashboard-container" style="display: none;">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                    <li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
+                    <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="main-area">
+            <header class="main-header"><h1>Manage Attendance</h1></header>
+            <section class="content-body">
+                <div class="controls-bar">
+                    <div class="form-field">
+                        <label for="subject-select">Select Subject</label>
+                        <select id="subject-select"></select>
+                    </div>
+                    <div class="form-field">
+                        <label for="attendance-date">Select Date</label>
+                        <input type="date" id="attendance-date">
+                    </div>
+                    <button class="primary-btn" id="submit-attendance-btn" disabled><i class='bx bx-check-double'></i> Submit Attendance</button>
+                </div>
+                <div class="student-list-container">
+                    <div class="student-list-header">
+                        <h3>Enrolled Students</h3>
+                        <label class="select-all-label"><input type="checkbox" id="select-all-checkbox"> Select All</label>
+                    </div>
+                    <div class="student-list" id="student-list-content">
+                        <div class="placeholder">Select a subject to view enrolled students.</div>
+                    </div>
+                </div>
+                <div id="status-message" class="status-message"></div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
+            };
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user && user.email === ADMIN_EMAIL) {
+                    initPage();
+                } else {
+                    window.location.href = 'index.html';
+                }
+            });
+
+            const dom = {
+                subjectSelect: document.getElementById('subject-select'),
+                attendanceDate: document.getElementById('attendance-date'),
+                studentListContent: document.getElementById('student-list-content'),
+                submitBtn: document.getElementById('submit-attendance-btn'),
+                selectAllCheckbox: document.getElementById('select-all-checkbox'),
+                statusMessage: document.getElementById('status-message')
+            };
+
+            const initPage = async () => {
+                dom.attendanceDate.value = new Date().toISOString().slice(0, 10);
+                await loadSubjects();
+                dom.subjectSelect.addEventListener('change', loadEnrolledStudents);
+                dom.attendanceDate.addEventListener('change', loadEnrolledStudents);
+                dom.selectAllCheckbox.addEventListener('change', handleSelectAll);
+                dom.submitBtn.addEventListener('click', handleSubmitAttendance);
+                document.querySelector('.dashboard-container').style.display = 'grid';
+                document.getElementById('loading-overlay').style.display = 'none';
+            };
+
+            const loadSubjects = async () => {
+                const subjectsSnap = await db.collection('subjects').orderBy('name').get();
+                dom.subjectSelect.innerHTML = '<option value="">-- Select a subject --</option>';
+                subjectsSnap.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = doc.data().name;
+                    dom.subjectSelect.appendChild(option);
+                });
+            };
+
+            const loadEnrolledStudents = async () => {
+                const subjectId = dom.subjectSelect.value;
+                const date = dom.attendanceDate.value;
+                dom.studentListContent.innerHTML = '<div class="placeholder">Loading students...</div>';
+                dom.submitBtn.disabled = true;
+
+                if (!subjectId || !date) {
+                    dom.studentListContent.innerHTML = '<div class="placeholder">Select a subject and date to view students.</div>';
+                    return;
+                }
+
+                const enrollmentsSnap = await db.collection('enrollments').where('subjectId', '==', subjectId).get();
+                if (enrollmentsSnap.empty) {
+                    dom.studentListContent.innerHTML = '<div class="placeholder">No students are enrolled in this subject.</div>';
+                    return;
+                }
+
+                const userIds = enrollmentsSnap.docs.map(doc => doc.data().userId);
+                const usersSnap = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', userIds).get();
+                const usersMap = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
+                
+                const attendanceExamId = `attendance_${subjectId}_${date}`;
+                const scoresSnap = await db.collectionGroup('scores').where('examId', '==', attendanceExamId).get();
+                const presentUserIds = new Set(scoresSnap.docs.map(doc => doc.ref.parent.parent.id));
+
+                dom.studentListContent.innerHTML = '';
+                let hasStudentsToMark = false;
+
+                userIds.forEach(userId => {
+                    const user = usersMap.get(userId);
+                    if (!user) return;
+
+                    const isPresent = presentUserIds.has(userId);
+                    if (!isPresent) hasStudentsToMark = true;
+
+                    const item = document.createElement('label');
+                    item.className = 'student-item';
+                    if (isPresent) item.classList.add('is-present');
+                    
+                    item.innerHTML = `
+                        <input type="checkbox" class="student-checkbox" data-user-id="${userId}" ${isPresent ? 'checked disabled' : ''}>
+                        <img src="${user.photoURL || 'https://via.placeholder.com/40'}" alt="Avatar" class="student-avatar">
+                        <div class="student-details">
+                            <div class="student-name">${user.displayName}</div>
+                            <div class="student-email">${user.email}</div>
+                        </div>
+                    `;
+                    dom.studentListContent.appendChild(item);
+                });
+
+                dom.submitBtn.disabled = !hasStudentsToMark;
+                dom.selectAllCheckbox.checked = false;
+            };
+            
+            const handleSelectAll = (e) => {
+                const isChecked = e.target.checked;
+                document.querySelectorAll('.student-checkbox:not(:disabled)').forEach(checkbox => {
+                    checkbox.checked = isChecked;
+                });
+            };
+
+            const handleSubmitAttendance = async () => {
+                const subjectId = dom.subjectSelect.value;
+                const subjectName = dom.subjectSelect.options[dom.subjectSelect.selectedIndex].text;
+                const date = dom.attendanceDate.value;
+
+                if (!subjectId || !date) {
+                    alert('Please select a subject and date.');
+                    return;
+                }
+                
+                const selectedCheckboxes = [...document.querySelectorAll('.student-checkbox:checked:not(:disabled)')];
+                if (selectedCheckboxes.length === 0) {
+                    alert('Please select at least one student to mark present.');
+                    return;
+                }
+                
+                dom.submitBtn.disabled = true;
+                dom.submitBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Submitting...";
+                dom.statusMessage.textContent = '';
+
+                const attendanceExamId = `attendance_${subjectId}_${date}`;
+                const batch = db.batch();
+                
+                selectedCheckboxes.forEach(checkbox => {
+                    const userId = checkbox.dataset.userId;
+                    const scoreRef = db.collection('users').doc(userId).collection('scores').doc(attendanceExamId);
+                    
+                    batch.set(scoreRef, {
+                        examId: attendanceExamId,
+                        examName: `Attendance for ${subjectName} - ${new Date(date + 'T00:00:00').toLocaleDateString()}`,
+                        examType: "attendance",
+                        pointsReceived: 10,
+                        totalPoints: 10,
+                        subjectId: subjectId,
+                        submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+
+                try {
+                    await batch.commit();
+                    dom.statusMessage.textContent = `${selectedCheckboxes.length} student(s) marked present successfully!`;
+                    dom.statusMessage.className = 'status-message success';
+                    await loadEnrolledStudents();
+                } catch (error) {
+                    console.error("Error submitting attendance: ", error);
+                    dom.statusMessage.textContent = 'An error occurred. Please try again.';
+                    dom.statusMessage.className = 'status-message error';
+                } finally {
+                    dom.submitBtn.disabled = false;
+                    dom.submitBtn.innerHTML = "<i class='bx bx-check-double'></i> Submit Attendance";
+                }
+            };
+        });
+    </script>
+</body>
+</html>
