@@ -185,7 +185,6 @@
                     <input type="hidden" id="subject-id">
                     <div class="form-field"><label for="subject-name">Subject Name</label><input type="text" id="subject-name" required></div>
                     <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
-                    <div class="form-field"><label for="subject-chapters">Chapters (one per line)</label><textarea id="subject-chapters" rows="6"></textarea></div>
                 </form>
             </div>
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-subject-btn">Save Subject</button></div>
@@ -297,7 +296,6 @@
                 modal.querySelector('#subject-id').value = subject ? subject.id : '';
                 modal.querySelector('#subject-name').value = subject ? subject.name : '';
                 modal.querySelector('#subject-page').value = subject ? subject.page : '';
-                modal.querySelector('#subject-chapters').value = subject && subject.chapters ? subject.chapters.join('\n') : '';
                 modal.classList.add('show');
             };
             
@@ -314,7 +312,7 @@
             };
 
             const deleteSubject = async (subjectId) => {
-                openConfirmationModal('Delete Subject?', 'This will delete the subject and ALL of its lessons and exams permanently. This action cannot be undone.', async () => {
+                openConfirmationModal('Delete Subject?', 'This will delete the subject and ALL of its lessons, assessments, and enrollments permanently. This action cannot be undone.', async () => {
                     const actionOverlay = document.getElementById('action-overlay');
                     actionOverlay.classList.add('show');
                     try {
@@ -322,9 +320,12 @@
                         
                         const lessonsQuery = await db.collection('lessons').where('subjectId', '==', subjectId).get();
                         lessonsQuery.forEach(doc => batch.delete(doc.ref));
-
+                        
                         const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
                         examsQuery.forEach(doc => batch.delete(doc.ref));
+
+                        const enrollmentsQuery = await db.collection('enrollments').where('subjectId', '==', subjectId).get();
+                        enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
                         
                         batch.delete(db.collection('subjects').doc(subjectId));
                         
@@ -372,15 +373,18 @@
                 const id = document.getElementById('subject-id').value;
                 const subjectName = document.getElementById('subject-name').value.trim();
                 const subjectPage = document.getElementById('subject-page').value.trim();
-                const chapters = document.getElementById('subject-chapters').value.split('\n').map(line => line.trim()).filter(Boolean);
 
                 if (!subjectName || !subjectPage) { alert('Name and Page are required.'); return; }
                 
-                const subjectData = { name: subjectName, page: subjectPage, chapters };
+                const subjectData = { 
+                    name: subjectName, 
+                    page: subjectPage,
+                };
                 
                 if (id) {
                     await db.collection('subjects').doc(id).update(subjectData);
                 } else {
+                    subjectData.chapters = [];
                     await db.collection('subjects').add(subjectData);
                 }
                 closeModal('subject-modal');
