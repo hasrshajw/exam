@@ -51,8 +51,8 @@
         .lesson-item:not(.active):not(.locked):hover { background-color: var(--color-sidebar-hover); transform: translateX(4px); }
         .lesson-item.active { background-color: var(--color-primary); color: white; font-weight: 600; } 
         .lesson-item.locked { opacity: 0.5; cursor: not-allowed; }
-        .lesson-type-icon { font-size: 1.25rem; margin-right: 12px; color: var(--color-sidebar-text-muted); }
-        .lesson-item.active .lesson-type-icon { color: white; }
+        .item-type-icon { font-size: 1.25rem; margin-right: 12px; }
+        .active .item-type-icon { color: white; }
         .lesson-details { display: flex; flex-direction: column; } .lesson-title-nav { font-size: 0.9rem; } .lesson-duration { font-size: 0.75rem; color: var(--color-sidebar-text-muted); } .active .lesson-duration { color: #e0e4f1; }
         .lesson-status-circle { width: 24px; height: 24px; margin-left: auto; color: var(--color-success); opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); } 
         .lesson-item.completed:not(.active) .lesson-status-circle { opacity: 1; transform: scale(1); }
@@ -71,30 +71,22 @@
         .lesson-body code { background-color: #eef2f9; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; }
         .lesson-body .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: var(--border-radius-lg); margin: 32px 0; box-shadow: var(--shadow-md); }
         .lesson-body .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #quiz-container { display: none; }
-        .quiz-question { margin-bottom: 2rem; }
-        .quiz-question h4 { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
-        .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
-        .quiz-option { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); cursor: pointer; transition: all var(--transition-fast); }
-        .quiz-option:hover { background-color: var(--color-primary-light); border-color: var(--color-primary); }
-        .quiz-option.selected { background-color: var(--color-primary-light); border-color: var(--color-primary); }
-        .quiz-option.correct { background-color: #d1fae5; border-color: var(--color-success); }
-        .quiz-option.incorrect { background-color: #fee2e2; border-color: var(--color-danger); }
-        .quiz-option input { margin-right: 0.5rem; }
-        .quiz-feedback { margin-left: 2rem; font-weight: 600; font-size: 0.9rem; }
-        .quiz-feedback.correct { color: var(--color-success); }
-        .quiz-feedback.incorrect { color: var(--color-danger); }
-        #quiz-submit-btn { margin-top: 2rem; width: 100%; }
-        #quiz-results { margin-top: 2rem; padding: 1.5rem; border-radius: var(--border-radius-lg); text-align: center; }
-        #quiz-results.success { background-color: #d1fae5; } #quiz-results.fail { background-color: #fee2e2; }
-        #quiz-results h4 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        #quiz-results p { color: var(--color-text-primary); }
         .lesson-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 48px; border-top: 1px solid var(--color-border); padding-top: 24px; } 
         .nav-btn { padding: 12px 28px; border-radius: var(--border-radius-md); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; gap: 8px; }
         .nav-btn.complete-btn { background-color: var(--color-primary); color: white; } 
         .nav-btn.complete-btn:hover { background-color: var(--color-primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .nav-btn.prev-btn { color: var(--color-text-secondary); } .nav-btn.prev-btn:hover { background-color: var(--color-border); } 
         .nav-btn:disabled { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
+        #quiz-view, #quiz-results-view { display: none; }
+        .quiz-question { margin-bottom: 2.5rem; }
+        .quiz-question p { font-size: 1.1rem; font-weight: 500; color: var(--color-text-primary); margin-bottom: 1rem; }
+        .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
+        .quiz-option { display: flex; align-items: center; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); cursor: pointer; }
+        .quiz-option:hover { background-color: var(--hover-bg); }
+        .quiz-option input { margin-right: 1rem; }
+        .quiz-results { text-align: center; padding: 2rem; border: 1px dashed var(--color-border); border-radius: var(--border-radius-lg); }
+        .quiz-results h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .quiz-results p { font-size: 2.5rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.5rem; }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 900px) {
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); width: 320px;} .sidebar.active { transform: translateX(0); } .sidebar-header { padding-right: 30px; }
@@ -107,7 +99,7 @@
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Lesson...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Content...</div>
     <div class="course-container" id="course-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
             <button class="close-menu-btn" id="close-menu-btn" aria-label="Close menu"><span class="icon"></span></button>
@@ -135,13 +127,12 @@
                         <p class="lesson-meta" id="lesson-meta"></p>
                         <h2 class="lesson-title-main" id="lesson-title"></h2>
                     </header>
-                    <div id="lesson-body-container">
-                        <div class="lesson-body" id="lesson-content"></div>
-                        <div id="quiz-container"></div>
-                    </div>
+                    <div id="lesson-content-view" class="lesson-body"></div>
+                    <div id="quiz-view" class="lesson-body"></div>
+                    <div id="quiz-results-view" class="lesson-body"></div>
                     <footer class="lesson-footer">
                         <button class="nav-btn prev-btn" id="prev-btn">&larr; Previous</button>
-                        <button class="nav-btn complete-btn" id="complete-btn">Mark as Complete & Continue &rarr;</button>
+                        <button class="nav-btn complete-btn" id="footer-action-btn">Mark as Complete & Continue &rarr;</button>
                     </footer>
                 </section>
             </div>
@@ -169,9 +160,10 @@
             const db = firebase.firestore();
 
             let subjectData = null;
-            let allItems = [];
+            let allContent = [];
             let userProgress = new Set();
-            let currentItem = null;
+            let userScores = new Map();
+            let currentContentItem = null;
             let currentUser = null;
             
             const ICONS = {
@@ -187,42 +179,48 @@
                 backToSubjectLink: document.getElementById('back-to-subject-link'), courseNav: document.getElementById('course-nav'), 
                 progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), 
                 lessonMeta: document.getElementById('lesson-meta'), lessonTitle: document.getElementById('lesson-title'), 
-                lessonContent: document.getElementById('lesson-content'), quizContainer: document.getElementById('quiz-container'),
-                prevBtn: document.getElementById('prev-btn'), completeBtn: document.getElementById('complete-btn'), 
-                sidebar: document.getElementById('sidebar'), menuToggle: document.getElementById('menu-toggle'), 
-                overlay: document.getElementById('overlay'), closeMenuBtn: document.getElementById('close-menu-btn'), 
+                lessonContentView: document.getElementById('lesson-content-view'), quizView: document.getElementById('quiz-view'),
+                quizResultsView: document.getElementById('quiz-results-view'), prevBtn: document.getElementById('prev-btn'), 
+                footerActionBtn: document.getElementById('footer-action-btn'), sidebar: document.getElementById('sidebar'), 
+                menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), 
+                closeMenuBtn: document.getElementById('close-menu-btn'), 
             };
 
             auth.onAuthStateChanged(user => {
-                if (user) { currentUser = user; initializeApp(); } 
-                else { window.location.href = 'index.html'; }
+                if (user) {
+                    currentUser = user;
+                    initializeApp();
+                } else {
+                    window.location.href = 'index.html';
+                }
             });
 
             const initializeApp = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                const itemId = urlParams.get('id');
-                if (!itemId) { alert('Content ID is missing.'); window.location.href = 'dashboard.html'; return; }
+                const contentId = urlParams.get('id');
+                if (!contentId) { window.location.href = 'dashboard.html'; return; }
 
-                const itemDoc = await db.collection('lessons').doc(itemId).get();
-                if (!itemDoc.exists) { alert('Content not found.'); window.location.href = 'dashboard.html'; return; }
+                const contentDoc = await db.collection('lessons').doc(contentId).get();
+                if (!contentDoc.exists) { window.location.href = 'dashboard.html'; return; }
                 
-                currentItem = { id: itemDoc.id, ...itemDoc.data() };
-                const subjectId = currentItem.subjectId;
+                currentContentItem = { id: contentDoc.id, ...contentDoc.data() };
+                const subjectId = currentContentItem.subjectId;
 
-                const [subjectDoc, lessonsSnapshot, progressSnapshot] = await Promise.all([
+                const [subjectDoc, lessonsSnapshot, progressSnapshot, scoresSnapshot] = await Promise.all([
                     db.collection('subjects').doc(subjectId).get(),
                     db.collection('lessons').where('subjectId', '==', subjectId).get(),
-                    db.collection('users').doc(currentUser.uid).collection('progress').where('subjectId', '==', subjectId).get()
+                    db.collection('users').doc(currentUser.uid).collection('progress').where('subjectId', '==', subjectId).get(),
+                    db.collection('users').doc(currentUser.uid).collection('scores').where('subjectId', '==', subjectId).get()
                 ]);
 
-                if (!subjectDoc.exists) { alert('Parent subject not found.'); window.location.href = 'dashboard.html'; return; }
+                if (!subjectDoc.exists) { window.location.href = 'dashboard.html'; return; }
 
                 subjectData = { id: subjectDoc.id, ...subjectDoc.data() };
-                allItems = lessonsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
+                allContent = lessonsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
                 userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
+                userScores = new Map(scoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
 
-                if (allItems.length > 0) { renderAll(); } 
-                else { dom.courseContainer.innerHTML = '<h1>This subject has no content yet.</h1>'; }
+                if (allContent.length > 0) { renderAll(); }
                 
                 injectIcons();
                 dom.courseContainer.style.display = 'flex';
@@ -240,15 +238,16 @@
                 dom.sidebarCategory.textContent = 'Curriculum';
                 dom.backToSubjectLink.href = subjectData.page;
                 dom.courseNav.innerHTML = '';
-                const firstUncompleted = allItems.find(item => !userProgress.has(item.id));
+
+                const firstUncompleted = allContent.find(item => !isItemCompleted(item));
 
                 (subjectData.chapters || []).forEach((chapterTitle, chapIdx) => {
-                    const itemsInChapter = allItems.filter(l => l.chapterIndex === chapIdx);
+                    const itemsInChapter = allContent.filter(l => l.chapterIndex === chapIdx);
                     if(itemsInChapter.length === 0) return;
 
-                    const itemsCompleted = itemsInChapter.filter(l => userProgress.has(l.id)).length;
+                    const itemsCompleted = itemsInChapter.filter(l => isItemCompleted(l)).length;
                     const isChapterComplete = itemsCompleted === itemsInChapter.length;
-                    const isCollapsed = chapIdx !== currentItem.chapterIndex;
+                    const isCollapsed = chapIdx !== currentContentItem.chapterIndex;
 
                     const chapterItem = document.createElement('li');
                     chapterItem.className = 'chapter-item';
@@ -265,23 +264,24 @@
                         <div class="lesson-list-container"><ul class="lesson-list"></ul></div>`;
                     
                     const lessonList = chapterItem.querySelector('.lesson-list');
-                    itemsInChapter.forEach((itemData) => {
-                        const isLocked = !userProgress.has(itemData.id) && firstUncompleted && itemData.id !== firstUncompleted.id;
-                        const item = document.createElement('li');
-                        item.className = `lesson-item ${itemData.id === currentItem.id ? 'active' : ''} ${userProgress.has(itemData.id) ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
-                        item.dataset.itemId = itemData.id;
-                        const icon = itemData.type === 'quiz' ? 'bxs-help-circle' : 'bxs-file-blank';
-                        item.innerHTML = `
-                            <i class='bx ${icon} lesson-type-icon'></i>
+                    itemsInChapter.forEach((item) => {
+                        const isLocked = !isItemCompleted(item) && firstUncompleted && item.id !== firstUncompleted.id;
+                        const isCompleted = isItemCompleted(item);
+                        const li = document.createElement('li');
+                        const iconClass = item.type === 'quiz' ? 'bxs-help-circle' : 'bxs-file-blank';
+                        li.className = `lesson-item ${item.id === currentContentItem.id ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
+                        li.dataset.lessonId = item.id;
+                        li.innerHTML = `
+                            <i class='item-type-icon bx ${iconClass}'></i>
                             <div class="lesson-details">
-                                <span class="lesson-title-nav">${itemData.title}</span>
-                                ${itemData.type === 'lesson' ? `<span class="lesson-duration">${itemData.duration}</span>` : ''}
+                                <span class="lesson-title-nav">${item.title}</span>
+                                ${item.type === 'lesson' ? `<span class="lesson-duration">${item.duration}</span>` : ''}
                             </div>
                             <div class="lesson-status-circle">${ICONS.CHECK}</div>`;
                         if (!isLocked) {
-                            item.addEventListener('click', (e) => { e.preventDefault(); navigateToItem(itemData.id); });
+                            li.addEventListener('click', (e) => { e.preventDefault(); navigateToItem(item.id); });
                         }
-                        lessonList.appendChild(item);
+                        lessonList.appendChild(li);
                     });
                     
                     chapterItem.querySelector('.chapter-header').addEventListener('click', (e) => e.currentTarget.classList.toggle('collapsed'));
@@ -290,9 +290,9 @@
             };
             
             const navigateToItem = (itemId) => {
-                const item = allItems.find(l => l.id === itemId);
+                const item = allContent.find(l => l.id === itemId);
                 if (item) {
-                    currentItem = item;
+                    currentContentItem = item;
                     renderAll();
                     updateURL(itemId);
                     closeMobileMenu();
@@ -300,159 +300,176 @@
             };
 
             const renderContent = () => {
-                if (!currentItem) return;
-                dom.lessonMeta.textContent = `Chapter ${currentItem.chapterIndex + 1}`;
-                dom.lessonTitle.textContent = currentItem.title;
+                if (!currentContentItem) return;
 
-                if (currentItem.type === 'quiz') {
-                    dom.lessonContent.style.display = 'none';
-                    dom.quizContainer.style.display = 'block';
-                    renderQuiz();
+                dom.lessonMeta.textContent = `Chapter ${currentContentItem.chapterIndex + 1} • Item ${currentContentItem.order + 1}`;
+                dom.lessonTitle.textContent = currentContentItem.title;
+
+                dom.lessonContentView.style.display = 'none';
+                dom.quizView.style.display = 'none';
+                dom.quizResultsView.style.display = 'none';
+
+                if (currentContentItem.type === 'quiz') {
+                    const userScore = userScores.get(currentContentItem.id);
+                    if (userScore) {
+                        renderQuizResult(userScore);
+                    } else {
+                        renderQuizForm();
+                    }
                 } else {
-                    dom.quizContainer.style.display = 'none';
-                    dom.lessonContent.style.display = 'block';
-                    dom.lessonContent.innerHTML = currentItem.content;
+                    renderLessonView();
                 }
                 updateNavButtons();
             };
 
-            const renderQuiz = () => {
-                dom.quizContainer.innerHTML = '';
-                (currentItem.questions || []).forEach((q, index) => {
-                    const questionEl = document.createElement('div');
-                    questionEl.className = 'quiz-question';
-                    questionEl.innerHTML = `
-                        <h4>${index + 1}. ${q.title}</h4>
-                        <div class="quiz-options">
-                            ${q.options.map((opt, i) => `
-                                <label class="quiz-option">
-                                    <input type="radio" name="question-${index}" value="${i}">
-                                    <span>${opt}</span>
-                                </label>
-                            `).join('')}
-                        </div>`;
-                    dom.quizContainer.appendChild(questionEl);
-                });
-                const submitBtn = document.createElement('button');
-                submitBtn.id = 'quiz-submit-btn';
-                submitBtn.className = 'nav-btn complete-btn';
-                submitBtn.textContent = 'Submit Quiz';
-                submitBtn.addEventListener('click', handleSubmitQuiz);
-                dom.quizContainer.appendChild(submitBtn);
+            const renderLessonView = () => {
+                dom.lessonContentView.innerHTML = currentContentItem.content;
+                dom.lessonContentView.style.display = 'block';
             };
 
-            const handleSubmitQuiz = () => {
-                let correctAnswers = 0;
-                const questions = currentItem.questions || [];
-                questions.forEach((q, index) => {
-                    const options = document.querySelectorAll(`input[name="question-${index}"]`);
-                    const selected = [...options].find(opt => opt.checked);
-                    options.forEach(opt => opt.disabled = true);
-                    
-                    if (selected) {
-                        const selectedLabel = selected.parentElement;
-                        const isCorrect = parseInt(selected.value, 10) === q.correctAnswer;
-                        selectedLabel.classList.add(isCorrect ? 'correct' : 'incorrect');
-                        if (isCorrect) correctAnswers++;
-                    }
-                    
-                    const correctLabel = options[q.correctAnswer].parentElement;
-                    if (!correctLabel.classList.contains('correct')) {
-                        correctLabel.classList.add('correct');
-                    }
+            const renderQuizForm = () => {
+                let formHTML = '';
+                (currentContentItem.questions || []).forEach((q, index) => {
+                    formHTML += `
+                        <div class="quiz-question">
+                            <p>${index + 1}. ${q.title}</p>
+                            <div class="quiz-options">
+                                ${q.options.map((opt, i) => `
+                                    <label class="quiz-option">
+                                        <input type="radio" name="q${index}" value="${i}" required>
+                                        <span>${opt}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>`;
                 });
+                dom.quizView.innerHTML = `<form id="quiz-form">${formHTML}</form>`;
+                dom.quizView.style.display = 'block';
+            };
 
-                document.getElementById('quiz-submit-btn').style.display = 'none';
-                
-                const resultsEl = document.createElement('div');
-                resultsEl.id = 'quiz-results';
-                const allCorrect = correctAnswers === questions.length;
-                resultsEl.className = allCorrect ? 'success' : 'fail';
-                resultsEl.innerHTML = `
-                    <h4>${allCorrect ? 'Great job!' : 'Review your answers'}</h4>
-                    <p>You answered ${correctAnswers} out of ${questions.length} questions correctly.</p>
+            const renderQuizResult = (score) => {
+                const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                dom.quizResultsView.innerHTML = `
+                    <div class="quiz-results">
+                        <h3>Quiz Completed!</h3>
+                        <p>${percentage}%</p>
+                        <h4>${score.pointsReceived} / ${score.totalPoints} Points</h4>
+                    </div>
                 `;
-                dom.quizContainer.appendChild(resultsEl);
-                
-                handleCompleteAndNext();
+                dom.quizResultsView.style.display = 'block';
             };
 
             const updateProgress = () => {
-                const totalItems = allItems.length;
-                const completedItems = userProgress.size;
+                const totalItems = allContent.length;
+                const completedItems = allContent.filter(item => isItemCompleted(item)).length;
                 const percentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
                 dom.progressText.textContent = `${percentage}% Completed (${completedItems}/${totalItems})`;
                 dom.progressBarInner.style.width = `${percentage}%`;
             };
 
             const updateNavButtons = () => {
-                const currentIndex = allItems.findIndex(l => l.id === currentItem.id);
+                const currentIndex = allContent.findIndex(l => l.id === currentContentItem.id);
                 dom.prevBtn.disabled = currentIndex === 0;
-                const isLastItem = currentIndex === allItems.length - 1;
-                const isCompleted = userProgress.has(currentItem.id);
 
-                dom.completeBtn.style.display = 'block';
+                const isLastItem = currentIndex === allContent.length - 1;
+                const isCompleted = isItemCompleted(currentContentItem);
 
-                if (currentItem.type === 'quiz') {
-                    dom.completeBtn.style.display = 'none';
-                    if (isCompleted) {
-                        const nextBtn = document.createElement('button');
-                        nextBtn.className = 'nav-btn complete-btn';
-                        nextBtn.textContent = isLastItem ? 'Course Complete!' : 'Next Lesson →';
-                        if (isLastItem) nextBtn.disabled = true;
-                        nextBtn.addEventListener('click', handleCompleteAndNext);
-                        dom.lessonFooter.appendChild(nextBtn);
-                        if(dom.lessonFooter.querySelector('#complete-btn')) dom.completeBtn.remove();
-                    }
-                } else {
-                    if (dom.lessonFooter.querySelector('#quiz-next-btn')) dom.lessonFooter.querySelector('#quiz-next-btn').remove();
-                }
-
-                if (isLastItem && isCompleted) {
-                     dom.completeBtn.textContent = 'Course Complete!';
-                     dom.completeBtn.disabled = true;
+                if (currentContentItem.type === 'quiz' && !isCompleted) {
+                    dom.footerActionBtn.textContent = 'Submit Quiz';
+                    dom.footerActionBtn.disabled = false;
+                } else if (isLastItem && isCompleted) {
+                     dom.footerActionBtn.textContent = 'Subject Complete!';
+                     dom.footerActionBtn.disabled = true;
                 } else if (isCompleted) {
-                    dom.completeBtn.textContent = 'Next →';
+                    dom.footerActionBtn.textContent = 'Next →';
+                    dom.footerActionBtn.disabled = isLastItem;
                 } else {
-                    dom.completeBtn.innerHTML = 'Mark as Complete & Continue &rarr;';
-                }
-                if (currentItem.type !== 'quiz') dom.completeBtn.disabled = false;
-            };
-            
-            const handlePrev = () => {
-                const currentIndex = allItems.findIndex(l => l.id === currentItem.id);
-                if (currentIndex > 0) {
-                    const prevItemId = allItems[currentIndex - 1].id;
-                    navigateToItem(prevItemId);
+                    dom.footerActionBtn.innerHTML = 'Mark as Complete & Continue &rarr;';
+                    dom.footerActionBtn.disabled = false;
                 }
             };
 
-            const handleCompleteAndNext = async () => {
-                dom.completeBtn.disabled = true;
-                const isAlreadyCompleted = userProgress.has(currentItem.id);
-                
-                if (!isAlreadyCompleted) {
-                    try {
-                        await db.collection('users').doc(currentUser.uid).collection('progress').add({
-                            subjectId: currentItem.subjectId,
-                            lessonId: currentItem.id,
-                            completedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                        userProgress.add(currentItem.id);
-                    } catch (error) {
-                        console.error("Error saving progress:", error);
-                        dom.completeBtn.disabled = false; 
-                        return;
-                    }
+            const handleFooterAction = async () => {
+                dom.footerActionBtn.disabled = true;
+
+                if (currentContentItem.type === 'quiz' && !isItemCompleted(currentContentItem)) {
+                    await handleSubmitQuiz();
+                } else if (currentContentItem.type === 'lesson' && !isItemCompleted(currentContentItem)) {
+                    await handleCompleteLesson();
                 }
                 
-                const currentIndex = allItems.findIndex(l => l.id === currentItem.id);
-                if (currentIndex < allItems.length - 1) {
-                    const nextItemId = allItems[currentIndex + 1].id;
+                const currentIndex = allContent.findIndex(l => l.id === currentContentItem.id);
+                if (currentIndex < allContent.length - 1) {
+                    const nextItemId = allContent[currentIndex + 1].id;
                     navigateToItem(nextItemId);
                 } else {
                     renderAll();
                 }
+            };
+            
+            const handlePrev = () => {
+                const currentIndex = allContent.findIndex(l => l.id === currentContentItem.id);
+                if (currentIndex > 0) {
+                    const prevItemId = allContent[currentIndex - 1].id;
+                    navigateToItem(prevItemId);
+                }
+            };
+
+            const handleCompleteLesson = async () => {
+                try {
+                    await db.collection('users').doc(currentUser.uid).collection('progress').add({
+                        subjectId: currentContentItem.subjectId,
+                        lessonId: currentContentItem.id,
+                        completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    userProgress.add(currentContentItem.id);
+                } catch (error) {
+                    console.error("Error saving progress:", error);
+                }
+            };
+
+            const handleSubmitQuiz = async () => {
+                const form = document.getElementById('quiz-form');
+                if (!form || !form.checkValidity()) {
+                    form.reportValidity();
+                    dom.footerActionBtn.disabled = false;
+                    return;
+                }
+                
+                let pointsReceived = 0;
+                const totalPoints = (currentContentItem.questions || []).reduce((sum, q) => sum + (q.points || 0), 0);
+                
+                (currentContentItem.questions || []).forEach((q, index) => {
+                    const selected = form.querySelector(`input[name="q${index}"]:checked`);
+                    if (selected && parseInt(selected.value, 10) === q.correctAnswer) {
+                        pointsReceived += (q.points || 0);
+                    }
+                });
+
+                const scoreData = {
+                    examId: currentContentItem.id,
+                    examName: currentContentItem.title,
+                    examType: 'quiz',
+                    subjectId: currentContentItem.subjectId,
+                    pointsReceived,
+                    totalPoints,
+                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                try {
+                    await db.collection('users').doc(currentUser.uid).collection('scores').doc(currentContentItem.id).set(scoreData);
+                    userScores.set(currentContentItem.id, scoreData);
+                    renderQuizResult(scoreData);
+                    updateProgress();
+                    updateNavButtons();
+                } catch(err) {
+                    console.error("Error saving quiz score:", err);
+                    dom.footerActionBtn.disabled = false;
+                }
+            };
+
+            const isItemCompleted = (item) => {
+                return item.type === 'quiz' ? userScores.has(item.id) : userProgress.has(item.id);
             };
             
             const updateURL = (itemId) => {
@@ -471,7 +488,7 @@
             const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
 
             dom.prevBtn.addEventListener('click', handlePrev);
-            dom.completeBtn.addEventListener('click', handleCompleteAndNext);
+            dom.footerActionBtn.addEventListener('click', handleFooterAction);
             dom.menuToggle.addEventListener('click', openMobileMenu);
             dom.overlay.addEventListener('click', closeMobileMenu);
             dom.closeMenuBtn.addEventListener('click', closeMobileMenu);
