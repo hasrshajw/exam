@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lesson Player - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
             --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -75,8 +79,6 @@
         .nav-btn.complete-btn:hover { background-color: var(--color-primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .nav-btn.prev-btn { color: var(--color-text-secondary); } .nav-btn.prev-btn:hover { background-color: var(--color-border); } 
         .nav-btn:disabled { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
-        .spinner { border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; width: 16px; height: 16px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 900px) {
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); width: 320px;} .sidebar.active { transform: translateX(0); } .sidebar-header { padding-right: 30px; }
@@ -204,6 +206,7 @@
                     window.location.href = 'dashboard.html';
                     return;
                 }
+                
                 currentLesson = { id: lessonDoc.id, ...lessonDoc.data() };
                 const subjectId = currentLesson.subjectId;
 
@@ -218,6 +221,7 @@
                     window.location.href = 'dashboard.html';
                     return;
                 }
+
                 subjectData = { id: subjectDoc.id, ...subjectDoc.data() };
                 allLessons = lessonsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
                 userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
@@ -231,17 +235,6 @@
                 injectIcons();
                 dom.courseContainer.style.display = 'flex';
                 dom.loadingOverlay.style.display = 'none';
-            };
-            
-            const changeLesson = (newLessonId) => {
-                const newLesson = allLessons.find(l => l.id === newLessonId);
-                if (!newLesson) return;
-
-                currentLesson = newLesson;
-                renderAll();
-                const newUrl = `lesson-view.html?id=${newLesson.id}`;
-                history.pushState({ lessonId: newLesson.id }, '', newUrl);
-                document.title = `${newLesson.title} - ${subjectData.name}`;
             };
 
             const renderAll = () => {
@@ -285,7 +278,7 @@
                         const isLocked = !userProgress.has(lesson.id) && firstUncompleted && lesson.id !== firstUncompleted.id;
                         const item = document.createElement('li');
                         item.className = `lesson-item ${lesson.id === currentLesson.id ? 'active' : ''} ${userProgress.has(lesson.id) ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
-                        item.dataset.id = lesson.id;
+                        item.dataset.lessonId = lesson.id;
                         item.innerHTML = `
                             <div class="lesson-number">${lesson.chapterIndex + 1}.${lesson.order + 1}</div>
                             <div class="lesson-details">
@@ -294,11 +287,9 @@
                             </div>
                             <div class="lesson-status-circle">${ICONS.CHECK}</div>`;
                         if (!isLocked) {
-                            item.addEventListener('click', () => {
-                                if (lesson.id !== currentLesson.id) {
-                                    changeLesson(lesson.id);
-                                }
-                                closeMobileMenu();
+                            item.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                navigateToLesson(lesson.id);
                             });
                         }
                         lessonList.appendChild(item);
@@ -307,6 +298,16 @@
                     chapterItem.querySelector('.chapter-header').addEventListener('click', (e) => e.currentTarget.classList.toggle('collapsed'));
                     dom.courseNav.appendChild(chapterItem);
                 });
+            };
+            
+            const navigateToLesson = (lessonId) => {
+                const lesson = allLessons.find(l => l.id === lessonId);
+                if (lesson) {
+                    currentLesson = lesson;
+                    renderAll();
+                    updateURL(lessonId);
+                    closeMobileMenu();
+                }
             };
 
             const renderLesson = () => {
@@ -328,7 +329,6 @@
             const updateNavButtons = () => {
                 const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
                 dom.prevBtn.disabled = currentIndex === 0;
-
                 const isLastLesson = currentIndex === allLessons.length - 1;
                 const isCompleted = userProgress.has(currentLesson.id);
 
@@ -338,8 +338,7 @@
                 } else if (isCompleted) {
                     dom.completeBtn.textContent = 'Next Lesson →';
                     dom.completeBtn.disabled = isLastLesson;
-                }
-                else {
+                } else {
                     dom.completeBtn.innerHTML = 'Mark as Complete & Continue &rarr;';
                     dom.completeBtn.disabled = false;
                 }
@@ -348,33 +347,49 @@
             const handlePrev = () => {
                 const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
                 if (currentIndex > 0) {
-                    changeLesson(allLessons[currentIndex - 1].id);
+                    const prevLessonId = allLessons[currentIndex - 1].id;
+                    navigateToLesson(prevLessonId);
                 }
             };
 
             const handleCompleteAndNext = async () => {
-                if (dom.completeBtn.disabled) return;
+                dom.completeBtn.disabled = true;
+                const isAlreadyCompleted = userProgress.has(currentLesson.id);
                 
-                const isCompleted = userProgress.has(currentLesson.id);
-                const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
-                
-                if (!isCompleted) {
-                    dom.completeBtn.disabled = true;
-                    dom.completeBtn.innerHTML = `<div class="spinner"></div> Saving...`;
-                    await db.collection('users').doc(currentUser.uid).collection('progress').add({
-                        subjectId: currentLesson.subjectId,
-                        lessonId: currentLesson.id,
-                        completedAt: firebase.firestore.FieldValue.serverTimestamp()
-                    });
-                    userProgress.add(currentLesson.id);
+                if (!isAlreadyCompleted) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('progress').add({
+                            subjectId: currentLesson.subjectId,
+                            lessonId: currentLesson.id,
+                            completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        userProgress.add(currentLesson.id);
+                    } catch (error) {
+                        console.error("Error saving progress:", error);
+                        dom.completeBtn.disabled = false; 
+                        return;
+                    }
                 }
-
+                
+                const currentIndex = allLessons.findIndex(l => l.id === currentLesson.id);
                 if (currentIndex < allLessons.length - 1) {
-                    changeLesson(allLessons[currentIndex + 1].id);
+                    const nextLessonId = allLessons[currentIndex + 1].id;
+                    navigateToLesson(nextLessonId);
                 } else {
-                    renderAll(); 
+                    renderAll();
                 }
             };
+            
+            const updateURL = (lessonId) => {
+                const newUrl = `lesson-view.html?id=${lessonId}`;
+                history.pushState({ lessonId }, '', newUrl);
+            };
+
+            window.addEventListener('popstate', (event) => {
+                if (event.state && event.state.lessonId) {
+                    navigateToLesson(event.state.lessonId);
+                }
+            });
             
             const injectIcons = () => { dom.menuToggle.innerHTML = ICONS.MENU; dom.closeMenuBtn.innerHTML = ICONS.CLOSE; };
             const openMobileMenu = () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); };
