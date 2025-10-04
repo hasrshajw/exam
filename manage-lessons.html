@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Lessons - Admin</title>
+    <title>Manage Lessons & Quizzes - Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -53,14 +53,16 @@
         .action-icon-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; font-size: 1.25rem; color: var(--text-secondary); }
         .action-icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
         .lessons-list { min-height: 50px; }
-        .lesson-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); cursor: grab; }
+        .lesson-item { display: grid; grid-template-columns: auto 40px 1fr auto; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); cursor: grab; }
         .lesson-item:last-child { border-bottom: none; }
         .lesson-item.dragging { opacity: 0.5; background: var(--hover-bg); }
         .drag-handle { color: var(--text-secondary); font-size: 1.5rem; }
+        .item-type-icon { font-size: 1.5rem; color: var(--text-secondary); }
         .lesson-title { font-weight: 600; }
         .lesson-duration { font-size: 0.875rem; color: var(--text-secondary); }
         .lesson-actions { display: flex; gap: 0.5rem; }
-        .chapter-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; }
+        .chapter-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; display: flex; gap: 0.75rem; justify-content: center; }
+        .chapter-footer .secondary-btn { width: 100%; justify-content: center; }
         .add-chapter-container { margin-top: 2rem; }
         .add-chapter-btn { width: 100%; justify-content: center; background-color: var(--widget-bg); border: 1px dashed var(--border-color); color: var(--text-secondary); font-weight: 600; padding: 1.25rem; transition: all 0.2s ease; }
         .add-chapter-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); border-style: solid; }
@@ -81,6 +83,17 @@
         .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; font-family: 'IBM Plex Sans', sans-serif; }
         .form-field input:focus, .form-field textarea:focus, .form-field select:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
+        .questions-header h4 { font-size: 1.125rem; font-weight: 700; }
+        .accordion-item { border: 1px solid var(--border-color); border-radius: 12px; margin-top: 1rem; overflow: hidden; }
+        .accordion-button { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; padding: 1rem 1.5rem; background-color: #F9FAFB; border: none; cursor: pointer; font-weight: 600; font-size: 1rem; }
+        .accordion-button span { flex-grow: 1; }
+        .accordion-button i { transition: transform 0.3s ease; font-size: 1.5rem; }
+        .accordion-button.active i { transform: rotate(180deg); }
+        .accordion-content-inner { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: var(--widget-bg); }
+        .question-card { padding: 1.5rem; position: relative; }
+        .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .remove-item-btn:hover { background-color: var(--danger-hover); color: white; }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
         .modal-footer .secondary-btn { margin-right: 0.75rem; }
         .action-overlay { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
@@ -105,7 +118,7 @@
             </nav>
         </aside>
         <main class="main-area">
-            <header class="main-header"><h1>Manage Lessons</h1></header>
+            <header class="main-header"><h1>Manage Content</h1></header>
             <section class="content-body">
                 <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
                 <div class="admin-content-header"><h2 id="page-title"></h2></div>
@@ -124,14 +137,10 @@
 
     <div class="modal-overlay" id="lesson-modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="lesson-modal-title"></h3>
-                <button class="close-btn">&times;</button>
-            </div>
+            <div class="modal-header"><h3 id="lesson-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
                 <form id="lesson-form">
-                    <input type="hidden" id="lesson-id">
-                    <input type="hidden" id="chapter-index">
+                    <input type="hidden" id="lesson-id"><input type="hidden" id="chapter-index">
                     <div class="form-field"><label for="lesson-title">Lesson Title</label><input type="text" id="lesson-title" required></div>
                     <div class="form-grid">
                         <div class="form-field"><label for="lesson-order">Order in Chapter</label><input type="number" id="lesson-order" required min="0"></div>
@@ -140,10 +149,25 @@
                     <div class="form-field"><label for="lesson-content">Content (HTML)</label><textarea id="lesson-content" rows="10" required></textarea></div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button class="secondary-btn">Cancel</button>
-                <button class="primary-btn" id="save-lesson-btn">Save Lesson</button>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-lesson-btn">Save Lesson</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="quiz-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="quiz-modal-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <form id="quiz-form">
+                    <input type="hidden" id="quiz-id"><input type="hidden" id="quiz-chapter-index">
+                    <div class="form-grid">
+                        <div class="form-field"><label for="quiz-title">Quiz Title</label><input type="text" id="quiz-title" required></div>
+                        <div class="form-field"><label for="quiz-order">Order in Chapter</label><input type="number" id="quiz-order" required min="0"></div>
+                    </div>
+                    <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn"><i class='bx bx-plus'></i> Add Question</button></div>
+                    <div id="questions-container"></div>
+                </form>
             </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-quiz-btn">Save Quiz</button></div>
         </div>
     </div>
 
@@ -193,7 +217,7 @@
                 if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
                 
                 currentSubject = { id: subjectId, ...subjectDoc.data() };
-                document.getElementById('page-title').textContent = `Lessons in ${currentSubject.name}`;
+                document.getElementById('page-title').textContent = `Content in ${currentSubject.name}`;
                 
                 db.collection('lessons').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
                     lessonsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -208,13 +232,13 @@
                 const container = document.getElementById('chapters-container');
                 container.innerHTML = '';
                 (currentSubject.chapters || []).forEach((chapterName, index) => {
-                    const lessonsInChapter = lessonsData.filter(l => l.chapterIndex === index).sort((a, b) => a.order - b.order);
-                    container.insertAdjacentHTML('beforeend', createChapterHTML(chapterName, index, lessonsInChapter));
+                    const itemsInChapter = lessonsData.filter(l => l.chapterIndex === index).sort((a, b) => a.order - b.order);
+                    container.insertAdjacentHTML('beforeend', createChapterHTML(chapterName, index, itemsInChapter));
                 });
                 setupDragAndDrop();
             };
             
-            const createChapterHTML = (chapterName, index, lessons) => {
+            const createChapterHTML = (chapterName, index, items) => {
                 return `
                     <div class="chapter-group" data-index="${index}">
                         <div class="chapter-header">
@@ -224,52 +248,94 @@
                                 <button class="action-icon-btn delete-chapter-btn"><i class='bx bxs-trash'></i></button>
                             </div>
                         </div>
-                        <div class="lessons-list">${lessons.map(createLessonHTML).join('') || '<p style="padding: 1rem 1.5rem; color: var(--text-secondary);">No lessons in this chapter yet.</p>'}</div>
-                        <div class="chapter-footer"><button class="secondary-btn add-lesson-btn" style="width: 100%; justify-content: center;"><i class="bx bx-plus"></i> Add Lesson</button></div>
+                        <div class="lessons-list">${items.map(createItemHTML).join('') || '<p style="padding: 1rem 1.5rem; color: var(--text-secondary);">No content in this chapter yet.</p>'}</div>
+                        <div class="chapter-footer">
+                            <button class="secondary-btn add-lesson-btn"><i class="bx bx-file"></i> Add Lesson</button>
+                            <button class="secondary-btn add-quiz-btn"><i class="bx bx-task"></i> Add Quiz</button>
+                        </div>
                     </div>`;
             };
 
-            const createLessonHTML = (lesson) => {
+            const createItemHTML = (item) => {
+                const icon = item.type === 'quiz' ? 'bxs-help-circle' : 'bxs-file-blank';
                 return `
-                    <div class="lesson-item" draggable="true" data-id="${lesson.id}">
+                    <div class="lesson-item" draggable="true" data-id="${item.id}" data-type="${item.type}">
                         <i class='bx bx-grid-vertical drag-handle'></i>
+                        <i class='item-type-icon ${icon}'></i>
                         <div>
-                            <div class="lesson-title">${lesson.title}</div>
-                            <div class="lesson-duration">${lesson.duration}</div>
+                            <div class="lesson-title">${item.title}</div>
+                            ${item.type === 'lesson' ? `<div class="lesson-duration">${item.duration}</div>` : ''}
                         </div>
                         <div class="lesson-actions">
-                            <button class="action-icon-btn edit-lesson-btn"><i class='bx bxs-edit'></i></button>
-                            <button class="action-icon-btn delete-lesson-btn"><i class='bx bxs-trash'></i></button>
+                            <button class="action-icon-btn edit-item-btn"><i class='bx bxs-edit'></i></button>
+                            <button class="action-icon-btn delete-item-btn"><i class='bx bxs-trash'></i></button>
                         </div>
                     </div>`;
             };
 
             const openLessonModal = (lesson = null, chapterIndex) => {
                 const modal = document.getElementById('lesson-modal');
-                const form = document.getElementById('lesson-form');
-                form.reset();
-
+                modal.querySelector('#lesson-form').reset();
                 modal.querySelector('#lesson-modal-title').textContent = lesson ? 'Edit Lesson' : 'Create New Lesson';
                 modal.querySelector('#lesson-id').value = lesson ? lesson.id : '';
                 modal.querySelector('#chapter-index').value = chapterIndex;
-                
                 if (lesson) {
                     modal.querySelector('#lesson-title').value = lesson.title;
                     modal.querySelector('#lesson-order').value = lesson.order;
                     modal.querySelector('#lesson-duration').value = lesson.duration;
                     modal.querySelector('#lesson-content').value = lesson.content;
                 } else {
-                    const lessonsInChapter = lessonsData.filter(l => l.chapterIndex === chapterIndex);
-                    modal.querySelector('#lesson-order').value = lessonsInChapter.length;
+                    const itemsInChapter = lessonsData.filter(l => l.chapterIndex === chapterIndex);
+                    modal.querySelector('#lesson-order').value = itemsInChapter.length;
                 }
-
                 modal.classList.add('show');
+            };
+
+            const openQuizModal = (quiz = null, chapterIndex) => {
+                const modal = document.getElementById('quiz-modal');
+                modal.querySelector('#quiz-form').reset();
+                modal.querySelector('#quiz-modal-title').textContent = quiz ? 'Edit Quiz' : 'Create New Quiz';
+                modal.querySelector('#quiz-id').value = quiz ? quiz.id : '';
+                modal.querySelector('#quiz-chapter-index').value = chapterIndex;
+                const questionsContainer = modal.querySelector('#questions-container');
+                questionsContainer.innerHTML = '';
+                if (quiz) {
+                    modal.querySelector('#quiz-title').value = quiz.title;
+                    modal.querySelector('#quiz-order').value = quiz.order;
+                    (quiz.questions || []).forEach(q => questionsContainer.appendChild(createQuestionForm(q)));
+                } else {
+                    const itemsInChapter = lessonsData.filter(l => l.chapterIndex === chapterIndex);
+                    modal.querySelector('#quiz-order').value = itemsInChapter.length;
+                }
+                modal.classList.add('show');
+            };
+
+            const createQuestionForm = (question = {}) => {
+                const container = document.createElement('div');
+                container.className = 'accordion-item';
+                const index = document.querySelectorAll('#questions-container .accordion-item').length;
+                container.innerHTML = `
+                    <button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Question'}</span><i class='bx bx-chevron-down'></i></button>
+                    <div class="accordion-content-inner">
+                        <div class="question-card">
+                            <button type="button" class="remove-item-btn">&times;</button>
+                            <div class="form-field"><label>Question Title</label><textarea rows="2" class="question-title">${question.title || ''}</textarea></div>
+                            <div class="form-grid">
+                                ${[0, 1, 2, 3].map(i => `<div class="form-field"><label>Option ${String.fromCharCode(65 + i)}</label><input type="text" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
+                                <div class="form-field"><label>Correct Answer (0-3)</label><input type="number" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
+                                <div class="form-field"><label>Points</label><input type="number" class="question-points" value="${question.points || 10}" required></div>
+                            </div>
+                        </div>
+                    </div>`;
+                container.querySelector('.question-title').addEventListener('input', e => {
+                    container.querySelector('.accordion-button span').textContent = `${index + 1}. ${e.target.value || 'New Question'}`;
+                });
+                return container;
             };
 
             const setupDragAndDrop = () => {
                 const lists = document.querySelectorAll('.lessons-list');
                 let draggedItem = null;
-
                 lists.forEach(list => {
                     list.addEventListener('dragstart', e => {
                         draggedItem = e.target.closest('.lesson-item');
@@ -285,11 +351,8 @@
                     list.addEventListener('dragover', e => {
                         e.preventDefault();
                         const afterElement = getDragAfterElement(list, e.clientY);
-                        if (afterElement == null) {
-                            list.appendChild(draggedItem);
-                        } else {
-                            list.insertBefore(draggedItem, afterElement);
-                        }
+                        if (afterElement == null) { list.appendChild(draggedItem); } 
+                        else { list.insertBefore(draggedItem, afterElement); }
                     });
                 });
             };
@@ -299,24 +362,16 @@
                 return draggableElements.reduce((closest, child) => {
                     const box = child.getBoundingClientRect();
                     const offset = y - box.top - box.height / 2;
-                    if (offset < 0 && offset > closest.offset) {
-                        return { offset: offset, element: child };
-                    } else {
-                        return closest;
-                    }
+                    if (offset < 0 && offset > closest.offset) { return { offset: offset, element: child }; } 
+                    else { return closest; }
                 }, { offset: Number.NEGATIVE_INFINITY }).element;
             };
 
             const updateLessonOrder = async (list) => {
-                const lessonItems = list.querySelectorAll('.lesson-item');
-                if (lessonItems.length === 0) return;
-                
                 showActionOverlay('Reordering...');
                 const batch = db.batch();
-                lessonItems.forEach((item, index) => {
-                    const lessonId = item.dataset.id;
-                    const lessonRef = db.collection('lessons').doc(lessonId);
-                    batch.update(lessonRef, { order: index });
+                list.querySelectorAll('.lesson-item').forEach((item, index) => {
+                    batch.update(db.collection('lessons').doc(item.dataset.id), { order: index });
                 });
                 await batch.commit();
                 hideActionOverlay();
@@ -356,12 +411,12 @@
                 }
                 if (button.matches('.delete-chapter-btn')) {
                     const chapterIndex = parseInt(button.closest('.chapter-group').dataset.index, 10);
-                    if (confirm(`Are you sure you want to delete "${currentSubject.chapters[chapterIndex]}" and all its lessons?`)) {
+                    if (confirm(`Are you sure you want to delete "${currentSubject.chapters[chapterIndex]}" and all its content?`)) {
                         showActionOverlay('Deleting chapter...');
                         const updatedChapters = currentSubject.chapters.filter((_, i) => i !== chapterIndex);
-                        const lessonsToDelete = lessonsData.filter(l => l.chapterIndex === chapterIndex);
+                        const itemsToDelete = lessonsData.filter(l => l.chapterIndex === chapterIndex);
                         const batch = db.batch();
-                        lessonsToDelete.forEach(l => batch.delete(db.collection('lessons').doc(l.id)));
+                        itemsToDelete.forEach(l => batch.delete(db.collection('lessons').doc(l.id)));
                         batch.update(db.collection('subjects').doc(currentSubject.id), { chapters: updatedChapters });
                         await batch.commit();
                         hideActionOverlay();
@@ -371,19 +426,37 @@
                     const chapterIndex = parseInt(button.closest('.chapter-group').dataset.index, 10);
                     openLessonModal(null, chapterIndex);
                 }
-                if (button.matches('.edit-lesson-btn')) {
-                    const lessonId = button.closest('.lesson-item').dataset.id;
-                    const lesson = lessonsData.find(l => l.id === lessonId);
-                    if (lesson) openLessonModal(lesson, lesson.chapterIndex);
+                if (button.matches('.add-quiz-btn')) {
+                    const chapterIndex = parseInt(button.closest('.chapter-group').dataset.index, 10);
+                    openQuizModal(null, chapterIndex);
                 }
-                if (button.matches('.delete-lesson-btn')) {
-                    const lessonId = button.closest('.lesson-item').dataset.id;
-                    if (confirm('Are you sure you want to delete this lesson?')) {
-                        await db.collection('lessons').doc(lessonId).delete();
+                if (button.matches('.edit-item-btn')) {
+                    const itemEl = button.closest('.lesson-item');
+                    const itemId = itemEl.dataset.id;
+                    const itemType = itemEl.dataset.type;
+                    const item = lessonsData.find(l => l.id === itemId);
+                    if (itemType === 'quiz') openQuizModal(item, item.chapterIndex);
+                    else openLessonModal(item, item.chapterIndex);
+                }
+                if (button.matches('.delete-item-btn')) {
+                    const itemId = button.closest('.lesson-item').dataset.id;
+                    if (confirm('Are you sure you want to delete this item?')) {
+                        await db.collection('lessons').doc(itemId).delete();
                     }
                 }
                 if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) {
                     button.closest('.modal-overlay').classList.remove('show');
+                }
+                if(button.id === 'add-question-btn') {
+                    document.getElementById('questions-container').appendChild(createQuestionForm());
+                }
+                if(button.matches('.remove-item-btn')) {
+                    button.closest('.accordion-item').remove();
+                }
+                if (button.matches('.accordion-button')) {
+                    button.classList.toggle('active');
+                    const content = button.nextElementSibling;
+                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
                 }
             });
 
@@ -395,21 +468,44 @@
                     chapterIndex: parseInt(document.getElementById('chapter-index').value, 10),
                     order: parseInt(document.getElementById('lesson-order').value, 10),
                     duration: document.getElementById('lesson-duration').value.trim(),
-                    content: document.getElementById('lesson-content').value
+                    content: document.getElementById('lesson-content').value,
+                    type: 'lesson'
                 };
-
-                if (!data.title || isNaN(data.order)) {
-                    alert('Title and a valid Order number are required.');
-                    return;
-                }
+                if (!data.title || isNaN(data.order)) { alert('Title and a valid Order number are required.'); return; }
                 showActionOverlay('Saving lesson...');
-                if (id) {
-                    await db.collection('lessons').doc(id).update(data);
-                } else {
-                    await db.collection('lessons').add(data);
-                }
+                if (id) { await db.collection('lessons').doc(id).update(data); } 
+                else { await db.collection('lessons').add(data); }
                 hideActionOverlay();
                 document.getElementById('lesson-modal').classList.remove('show');
+            });
+
+            document.getElementById('save-quiz-btn').addEventListener('click', async () => {
+                const form = document.getElementById('quiz-form');
+                if(!form.checkValidity()) { form.reportValidity(); return; }
+                const id = document.getElementById('quiz-id').value;
+                const questions = [];
+                document.querySelectorAll('#questions-container .question-card').forEach(card => {
+                    questions.push({
+                        title: card.querySelector('.question-title').value.trim(),
+                        options: [...card.querySelectorAll('.question-option')].map(opt => opt.value.trim()),
+                        correctAnswer: parseInt(card.querySelector('.question-correct').value, 10),
+                        points: parseInt(card.querySelector('.question-points').value, 10)
+                    });
+                });
+                const data = {
+                    title: document.getElementById('quiz-title').value.trim(),
+                    subjectId: currentSubject.id,
+                    chapterIndex: parseInt(document.getElementById('quiz-chapter-index').value, 10),
+                    order: parseInt(document.getElementById('quiz-order').value, 10),
+                    questions: questions,
+                    type: 'quiz'
+                };
+                if (!data.title || isNaN(data.order)) { alert('Title and a valid Order number are required.'); return; }
+                showActionOverlay('Saving quiz...');
+                if (id) { await db.collection('lessons').doc(id).update(data); }
+                else { await db.collection('lessons').add(data); }
+                hideActionOverlay();
+                document.getElementById('quiz-modal').classList.remove('show');
             });
 
             document.getElementById('chapters-container').addEventListener('focusout', async (e) => {
