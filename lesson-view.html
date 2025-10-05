@@ -51,9 +51,9 @@
         .lesson-item:not(.active):not(.locked):hover { background-color: var(--color-sidebar-hover); transform: translateX(4px); }
         .lesson-item.active { background-color: var(--color-primary); color: white; font-weight: 600; } 
         .lesson-item.locked { opacity: 0.5; cursor: not-allowed; }
-        .item-type-icon { font-size: 1.25rem; margin-right: 12px; }
-        .active .item-type-icon { color: white; }
-        .lesson-details { display: flex; flex-direction: column; } .lesson-title-nav { font-size: 0.9rem; } .lesson-duration { font-size: 0.75rem; color: var(--color-sidebar-text-muted); } .active .lesson-duration { color: #e0e4f1; }
+        .lesson-item-icon { font-size: 1.25rem; margin-right: 16px; color: var(--color-sidebar-text-muted); transition: color var(--transition-fast); }
+        .lesson-item.active .lesson-item-icon { color: white; }
+        .lesson-details { display: flex; flex-direction: column; flex-grow: 1; } .lesson-title-nav { font-size: 0.9rem; } .lesson-duration { font-size: 0.75rem; color: var(--color-sidebar-text-muted); } .active .lesson-duration { color: #e0e4f1; }
         .lesson-status-circle { width: 24px; height: 24px; margin-left: auto; color: var(--color-success); opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); } 
         .lesson-item.completed:not(.active) .lesson-status-circle { opacity: 1; transform: scale(1); }
         .main-content { flex-grow: 1; padding: 24px 64px; display: flex; flex-direction: column; overflow-y: auto; }
@@ -65,10 +65,6 @@
         .lesson-header-main .lesson-title-main { font-size: 2.25rem; font-weight: 700; line-height: 1.3; }
         .lesson-body { line-height: 1.8; color: var(--color-text-secondary); }
         .lesson-body h3 { font-size: 1.5rem; font-weight: 600; color: var(--color-text-primary); margin: 40px 0 16px 0; }
-        .lesson-body p { margin-bottom: 20px; }
-        .lesson-body ul { list-style-position: outside; padding-left: 20px; margin-bottom: 20px; }
-        .lesson-body li { margin-bottom: 12px; }
-        .lesson-body code { background-color: #eef2f9; color: #4338ca; padding: 3px 6px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em; }
         .lesson-body .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: var(--border-radius-lg); margin: 32px 0; box-shadow: var(--shadow-md); }
         .lesson-body .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
         .lesson-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 48px; border-top: 1px solid var(--color-border); padding-top: 24px; } 
@@ -77,16 +73,17 @@
         .nav-btn.complete-btn:hover { background-color: var(--color-primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); }
         .nav-btn.prev-btn { color: var(--color-text-secondary); } .nav-btn.prev-btn:hover { background-color: var(--color-border); } 
         .nav-btn:disabled { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
-        #quiz-view, #quiz-results-view { display: none; }
-        .quiz-question { margin-bottom: 2.5rem; }
-        .quiz-question p { font-size: 1.1rem; font-weight: 500; color: var(--color-text-primary); margin-bottom: 1rem; }
-        .quiz-options { display: flex; flex-direction: column; gap: 0.75rem; }
-        .quiz-option { display: flex; align-items: center; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); cursor: pointer; }
-        .quiz-option:hover { background-color: var(--hover-bg); }
-        .quiz-option input { margin-right: 1rem; }
-        .quiz-results { text-align: center; padding: 2rem; border: 1px dashed var(--color-border); border-radius: var(--border-radius-lg); }
-        .quiz-results h3 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-        .quiz-results p { font-size: 2.5rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.5rem; }
+        .quiz-option { display: block; width: 100%; text-align: left; padding: 1rem; border: 2px solid var(--color-border); border-radius: var(--border-radius-md); font-size: 1rem; cursor: pointer; transition: all var(--transition-fast); margin-bottom: 1rem; }
+        .quiz-option:hover { border-color: var(--color-primary); background-color: var(--color-primary-light); }
+        .quiz-option.selected { border-color: var(--color-primary); background-color: var(--color-primary-light); font-weight: 600; }
+        .quiz-option.correct { border-color: var(--color-success); background-color: #f0fdf4; }
+        .quiz-option.incorrect { border-color: var(--color-danger); background-color: #fef2f2; }
+        .quiz-result { padding: 1.5rem; border-radius: var(--border-radius-lg); text-align: center; margin-top: 2rem; }
+        .quiz-result.success { background-color: #f0fdf4; border: 2px solid var(--color-success); }
+        .quiz-result.failure { background-color: #fef2f2; border: 2px solid var(--color-danger); }
+        .quiz-result h4 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .quiz-result.success h4 { color: #065f46; }
+        .quiz-result.failure h4 { color: #991b1b; }
         .menu-toggle, .overlay, .close-menu-btn { display: none; }
         @media (max-width: 900px) {
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); width: 320px;} .sidebar.active { transform: translateX(0); } .sidebar-header { padding-right: 30px; }
@@ -127,12 +124,10 @@
                         <p class="lesson-meta" id="lesson-meta"></p>
                         <h2 class="lesson-title-main" id="lesson-title"></h2>
                     </header>
-                    <div id="lesson-content-view" class="lesson-body"></div>
-                    <div id="quiz-view" class="lesson-body"></div>
-                    <div id="quiz-results-view" class="lesson-body"></div>
+                    <div class="lesson-body" id="lesson-content"></div>
                     <footer class="lesson-footer">
                         <button class="nav-btn prev-btn" id="prev-btn">&larr; Previous</button>
-                        <button class="nav-btn complete-btn" id="footer-action-btn">Mark as Complete & Continue &rarr;</button>
+                        <button class="nav-btn complete-btn" id="complete-btn">Continue &rarr;</button>
                     </footer>
                 </section>
             </div>
@@ -163,7 +158,7 @@
             let allContent = [];
             let userProgress = new Set();
             let userScores = new Map();
-            let currentContentItem = null;
+            let currentContent = null;
             let currentUser = null;
             
             const ICONS = {
@@ -174,15 +169,22 @@
             };
             
             const dom = { 
-                loadingOverlay: document.getElementById('loading-overlay'), courseContainer: document.getElementById('course-container'),
-                sidebarCategory: document.getElementById('sidebar-category'), sidebarTitle: document.getElementById('sidebar-title'),
-                backToSubjectLink: document.getElementById('back-to-subject-link'), courseNav: document.getElementById('course-nav'), 
-                progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), 
-                lessonMeta: document.getElementById('lesson-meta'), lessonTitle: document.getElementById('lesson-title'), 
-                lessonContentView: document.getElementById('lesson-content-view'), quizView: document.getElementById('quiz-view'),
-                quizResultsView: document.getElementById('quiz-results-view'), prevBtn: document.getElementById('prev-btn'), 
-                footerActionBtn: document.getElementById('footer-action-btn'), sidebar: document.getElementById('sidebar'), 
-                menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), 
+                loadingOverlay: document.getElementById('loading-overlay'),
+                courseContainer: document.getElementById('course-container'),
+                sidebarCategory: document.getElementById('sidebar-category'),
+                sidebarTitle: document.getElementById('sidebar-title'),
+                backToSubjectLink: document.getElementById('back-to-subject-link'),
+                courseNav: document.getElementById('course-nav'), 
+                progressText: document.getElementById('progress-text'), 
+                progressBarInner: document.getElementById('progress-bar-inner'), 
+                lessonMeta: document.getElementById('lesson-meta'), 
+                lessonTitle: document.getElementById('lesson-title'), 
+                lessonContent: document.getElementById('lesson-content'), 
+                prevBtn: document.getElementById('prev-btn'), 
+                completeBtn: document.getElementById('complete-btn'), 
+                sidebar: document.getElementById('sidebar'), 
+                menuToggle: document.getElementById('menu-toggle'), 
+                overlay: document.getElementById('overlay'), 
                 closeMenuBtn: document.getElementById('close-menu-btn'), 
             };
 
@@ -198,13 +200,21 @@
             const initializeApp = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const contentId = urlParams.get('id');
-                if (!contentId) { window.location.href = 'dashboard.html'; return; }
+                if (!contentId) {
+                    alert('Content ID is missing.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
 
                 const contentDoc = await db.collection('lessons').doc(contentId).get();
-                if (!contentDoc.exists) { window.location.href = 'dashboard.html'; return; }
+                if (!contentDoc.exists) {
+                    alert('Content not found.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
                 
-                currentContentItem = { id: contentDoc.id, ...contentDoc.data() };
-                const subjectId = currentContentItem.subjectId;
+                currentContent = { id: contentDoc.id, ...contentDoc.data() };
+                const subjectId = currentContent.subjectId;
 
                 const [subjectDoc, lessonsSnapshot, progressSnapshot, scoresSnapshot] = await Promise.all([
                     db.collection('subjects').doc(subjectId).get(),
@@ -213,14 +223,22 @@
                     db.collection('users').doc(currentUser.uid).collection('scores').where('subjectId', '==', subjectId).get()
                 ]);
 
-                if (!subjectDoc.exists) { window.location.href = 'dashboard.html'; return; }
+                if (!subjectDoc.exists) {
+                    alert('Parent subject not found.');
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
 
                 subjectData = { id: subjectDoc.id, ...subjectDoc.data() };
                 allContent = lessonsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
                 userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
                 userScores = new Map(scoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
 
-                if (allContent.length > 0) { renderAll(); }
+                if (allContent.length > 0) {
+                    renderAll();
+                } else {
+                    dom.courseContainer.innerHTML = '<h1>This subject has no content yet.</h1>';
+                }
                 
                 injectIcons();
                 dom.courseContainer.style.display = 'flex';
@@ -229,7 +247,7 @@
 
             const renderAll = () => {
                 renderSidebar();
-                renderContent();
+                renderMainContent();
                 updateProgress();
             };
 
@@ -239,15 +257,15 @@
                 dom.backToSubjectLink.href = subjectData.page;
                 dom.courseNav.innerHTML = '';
 
-                const firstUncompleted = allContent.find(item => !isItemCompleted(item));
+                const firstUncompleted = allContent.find(item => !isItemCompleted(item.id));
 
                 (subjectData.chapters || []).forEach((chapterTitle, chapIdx) => {
                     const itemsInChapter = allContent.filter(l => l.chapterIndex === chapIdx);
                     if(itemsInChapter.length === 0) return;
 
-                    const itemsCompleted = itemsInChapter.filter(l => isItemCompleted(l)).length;
+                    const itemsCompleted = itemsInChapter.filter(item => isItemCompleted(item.id)).length;
                     const isChapterComplete = itemsCompleted === itemsInChapter.length;
-                    const isCollapsed = chapIdx !== currentContentItem.chapterIndex;
+                    const isCollapsed = chapIdx !== currentContent.chapterIndex;
 
                     const chapterItem = document.createElement('li');
                     chapterItem.className = 'chapter-item';
@@ -265,21 +283,24 @@
                     
                     const lessonList = chapterItem.querySelector('.lesson-list');
                     itemsInChapter.forEach((item) => {
-                        const isLocked = !isItemCompleted(item) && firstUncompleted && item.id !== firstUncompleted.id;
-                        const isCompleted = isItemCompleted(item);
+                        const isLocked = !isItemCompleted(item.id) && firstUncompleted && item.id !== firstUncompleted.id;
                         const li = document.createElement('li');
+                        li.className = `lesson-item ${item.id === currentContent.id ? 'active' : ''} ${isItemCompleted(item.id) ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
+                        li.dataset.contentId = item.id;
+                        
                         const iconClass = item.type === 'quiz' ? 'bxs-help-circle' : 'bxs-file-blank';
-                        li.className = `lesson-item ${item.id === currentContentItem.id ? 'active' : ''} ${isCompleted ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
-                        li.dataset.lessonId = item.id;
                         li.innerHTML = `
-                            <i class='item-type-icon bx ${iconClass}'></i>
+                            <i class='bx ${iconClass} lesson-item-icon'></i>
                             <div class="lesson-details">
                                 <span class="lesson-title-nav">${item.title}</span>
                                 ${item.type === 'lesson' ? `<span class="lesson-duration">${item.duration}</span>` : ''}
                             </div>
                             <div class="lesson-status-circle">${ICONS.CHECK}</div>`;
                         if (!isLocked) {
-                            li.addEventListener('click', (e) => { e.preventDefault(); navigateToItem(item.id); });
+                            li.addEventListener('click', (e) => {
+                                e.preventDefault();
+                                navigateToContent(item.id);
+                            });
                         }
                         lessonList.appendChild(li);
                     });
@@ -288,198 +309,172 @@
                     dom.courseNav.appendChild(chapterItem);
                 });
             };
+
+            const isItemCompleted = (itemId) => userProgress.has(itemId) || userScores.has(itemId);
             
-            const navigateToItem = (itemId) => {
-                const item = allContent.find(l => l.id === itemId);
-                if (item) {
-                    currentContentItem = item;
+            const navigateToContent = (contentId) => {
+                const content = allContent.find(l => l.id === contentId);
+                if (content) {
+                    currentContent = content;
                     renderAll();
-                    updateURL(itemId);
+                    updateURL(contentId);
                     closeMobileMenu();
                 }
             };
+            
+            const renderMainContent = () => {
+                if (!currentContent) return;
 
-            const renderContent = () => {
-                if (!currentContentItem) return;
+                dom.lessonMeta.textContent = `Chapter ${currentContent.chapterIndex + 1}`;
+                dom.lessonTitle.textContent = currentContent.title;
 
-                dom.lessonMeta.textContent = `Chapter ${currentContentItem.chapterIndex + 1} • Item ${currentContentItem.order + 1}`;
-                dom.lessonTitle.textContent = currentContentItem.title;
-
-                dom.lessonContentView.style.display = 'none';
-                dom.quizView.style.display = 'none';
-                dom.quizResultsView.style.display = 'none';
-
-                if (currentContentItem.type === 'quiz') {
-                    const userScore = userScores.get(currentContentItem.id);
-                    if (userScore) {
-                        renderQuizResult(userScore);
-                    } else {
-                        renderQuizForm();
-                    }
+                if(currentContent.type === 'quiz') {
+                    renderQuiz();
                 } else {
-                    renderLessonView();
+                    renderLesson();
                 }
                 updateNavButtons();
+            }
+
+            const renderLesson = () => {
+                dom.lessonMeta.textContent += ` • Lesson ${currentContent.chapterIndex + 1}.${currentContent.order + 1}`;
+                dom.lessonContent.innerHTML = currentContent.content;
             };
 
-            const renderLessonView = () => {
-                dom.lessonContentView.innerHTML = currentContentItem.content;
-                dom.lessonContentView.style.display = 'block';
-            };
+            const renderQuiz = () => {
+                dom.lessonMeta.textContent += ` • Quiz`;
+                const isCompleted = isItemCompleted(currentContent.id);
+                let html = '';
 
-            const renderQuizForm = () => {
-                let formHTML = '';
-                (currentContentItem.questions || []).forEach((q, index) => {
-                    formHTML += `
-                        <div class="quiz-question">
-                            <p>${index + 1}. ${q.title}</p>
-                            <div class="quiz-options">
-                                ${q.options.map((opt, i) => `
-                                    <label class="quiz-option">
-                                        <input type="radio" name="q${index}" value="${i}" required>
-                                        <span>${opt}</span>
-                                    </label>
-                                `).join('')}
-                            </div>
-                        </div>`;
-                });
-                dom.quizView.innerHTML = `<form id="quiz-form">${formHTML}</form>`;
-                dom.quizView.style.display = 'block';
-            };
-
-            const renderQuizResult = (score) => {
-                const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                dom.quizResultsView.innerHTML = `
-                    <div class="quiz-results">
-                        <h3>Quiz Completed!</h3>
-                        <p>${percentage}%</p>
-                        <h4>${score.pointsReceived} / ${score.totalPoints} Points</h4>
-                    </div>
-                `;
-                dom.quizResultsView.style.display = 'block';
+                if (isCompleted) {
+                    const score = userScores.get(currentContent.id);
+                    const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                    const resultClass = percentage >= 50 ? 'success' : 'failure';
+                    html = `<div class="quiz-result ${resultClass}">
+                                <h4>Quiz Completed!</h4>
+                                <p>Your score was ${score.pointsReceived} / ${score.totalPoints} (${percentage}%)</p>
+                            </div>`;
+                } else {
+                    currentContent.questions.forEach((q, index) => {
+                        html += `
+                            <h3>Question ${index + 1}</h3>
+                            <p>${q.title}</p>
+                            <div class="options-container" data-question-index="${index}">
+                                ${q.options.map((opt, optIndex) => `<button class="quiz-option" data-option-index="${optIndex}">${opt}</button>`).join('')}
+                            </div>`;
+                    });
+                }
+                dom.lessonContent.innerHTML = html;
             };
 
             const updateProgress = () => {
                 const totalItems = allContent.length;
-                const completedItems = allContent.filter(item => isItemCompleted(item)).length;
+                const completedItems = allContent.filter(item => isItemCompleted(item.id)).length;
                 const percentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
                 dom.progressText.textContent = `${percentage}% Completed (${completedItems}/${totalItems})`;
                 dom.progressBarInner.style.width = `${percentage}%`;
             };
 
             const updateNavButtons = () => {
-                const currentIndex = allContent.findIndex(l => l.id === currentContentItem.id);
+                const currentIndex = allContent.findIndex(l => l.id === currentContent.id);
                 dom.prevBtn.disabled = currentIndex === 0;
-
                 const isLastItem = currentIndex === allContent.length - 1;
-                const isCompleted = isItemCompleted(currentContentItem);
+                const isCompleted = isItemCompleted(currentContent.id);
 
-                if (currentContentItem.type === 'quiz' && !isCompleted) {
-                    dom.footerActionBtn.textContent = 'Submit Quiz';
-                    dom.footerActionBtn.disabled = false;
-                } else if (isLastItem && isCompleted) {
-                     dom.footerActionBtn.textContent = 'Subject Complete!';
-                     dom.footerActionBtn.disabled = true;
-                } else if (isCompleted) {
-                    dom.footerActionBtn.textContent = 'Next →';
-                    dom.footerActionBtn.disabled = isLastItem;
+                if (currentContent.type === 'quiz') {
+                    dom.completeBtn.textContent = 'Submit Quiz & Continue →';
+                    dom.completeBtn.disabled = isCompleted;
                 } else {
-                    dom.footerActionBtn.innerHTML = 'Mark as Complete & Continue &rarr;';
-                    dom.footerActionBtn.disabled = false;
+                    if (isLastItem && isCompleted) {
+                        dom.completeBtn.textContent = 'Course Complete!';
+                        dom.completeBtn.disabled = true;
+                    } else if (isCompleted) {
+                        dom.completeBtn.textContent = 'Next →';
+                        dom.completeBtn.disabled = isLastItem;
+                    } else {
+                        dom.completeBtn.innerHTML = 'Mark as Complete & Continue &rarr;';
+                        dom.completeBtn.disabled = false;
+                    }
+                }
+            };
+            
+            const handlePrev = () => {
+                const currentIndex = allContent.findIndex(l => l.id === currentContent.id);
+                if (currentIndex > 0) {
+                    navigateToContent(allContent[currentIndex - 1].id);
                 }
             };
 
-            const handleFooterAction = async () => {
-                dom.footerActionBtn.disabled = true;
+            const handleCompleteAndNext = async () => {
+                dom.completeBtn.disabled = true;
 
-                if (currentContentItem.type === 'quiz' && !isItemCompleted(currentContentItem)) {
-                    await handleSubmitQuiz();
-                } else if (currentContentItem.type === 'lesson' && !isItemCompleted(currentContentItem)) {
-                    await handleCompleteLesson();
+                if(currentContent.type === 'lesson') {
+                    await handleLessonCompletion();
+                } else if (currentContent.type === 'quiz') {
+                    await handleQuizSubmission();
                 }
                 
-                const currentIndex = allContent.findIndex(l => l.id === currentContentItem.id);
+                const currentIndex = allContent.findIndex(l => l.id === currentContent.id);
                 if (currentIndex < allContent.length - 1) {
-                    const nextItemId = allContent[currentIndex + 1].id;
-                    navigateToItem(nextItemId);
+                    navigateToContent(allContent[currentIndex + 1].id);
                 } else {
                     renderAll();
                 }
             };
             
-            const handlePrev = () => {
-                const currentIndex = allContent.findIndex(l => l.id === currentContentItem.id);
-                if (currentIndex > 0) {
-                    const prevItemId = allContent[currentIndex - 1].id;
-                    navigateToItem(prevItemId);
-                }
-            };
-
-            const handleCompleteLesson = async () => {
-                try {
+            const handleLessonCompletion = async () => {
+                if (!userProgress.has(currentContent.id)) {
                     await db.collection('users').doc(currentUser.uid).collection('progress').add({
-                        subjectId: currentContentItem.subjectId,
-                        lessonId: currentContentItem.id,
+                        subjectId: currentContent.subjectId,
+                        lessonId: currentContent.id,
                         completedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
-                    userProgress.add(currentContentItem.id);
-                } catch (error) {
-                    console.error("Error saving progress:", error);
+                    userProgress.add(currentContent.id);
                 }
             };
 
-            const handleSubmitQuiz = async () => {
-                const form = document.getElementById('quiz-form');
-                if (!form || !form.checkValidity()) {
-                    form.reportValidity();
-                    dom.footerActionBtn.disabled = false;
-                    return;
-                }
-                
+            const handleQuizSubmission = async () => {
                 let pointsReceived = 0;
-                const totalPoints = (currentContentItem.questions || []).reduce((sum, q) => sum + (q.points || 0), 0);
+                let totalPoints = 0;
                 
-                (currentContentItem.questions || []).forEach((q, index) => {
-                    const selected = form.querySelector(`input[name="q${index}"]:checked`);
-                    if (selected && parseInt(selected.value, 10) === q.correctAnswer) {
-                        pointsReceived += (q.points || 0);
+                currentContent.questions.forEach((q, index) => {
+                    const selectedOption = document.querySelector(`.options-container[data-question-index="${index}"] .quiz-option.selected`);
+                    totalPoints += q.points;
+                    if (selectedOption && parseInt(selectedOption.dataset.optionIndex, 10) === q.correctAnswer) {
+                        pointsReceived += q.points;
                     }
                 });
-
+                
                 const scoreData = {
-                    examId: currentContentItem.id,
-                    examName: currentContentItem.title,
+                    examId: currentContent.id,
+                    examName: currentContent.title,
                     examType: 'quiz',
-                    subjectId: currentContentItem.subjectId,
+                    subjectId: currentContent.subjectId,
                     pointsReceived,
                     totalPoints,
                     submittedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
+                
+                await db.collection('users').doc(currentUser.uid).collection('scores').doc(currentContent.id).set(scoreData);
+                userScores.set(currentContent.id, scoreData);
+            };
 
-                try {
-                    await db.collection('users').doc(currentUser.uid).collection('scores').doc(currentContentItem.id).set(scoreData);
-                    userScores.set(currentContentItem.id, scoreData);
-                    renderQuizResult(scoreData);
-                    updateProgress();
-                    updateNavButtons();
-                } catch(err) {
-                    console.error("Error saving quiz score:", err);
-                    dom.footerActionBtn.disabled = false;
+            dom.lessonContent.addEventListener('click', e => {
+                if (e.target.matches('.quiz-option')) {
+                    const container = e.target.parentElement;
+                    container.querySelectorAll('.quiz-option').forEach(btn => btn.classList.remove('selected'));
+                    e.target.classList.add('selected');
                 }
-            };
-
-            const isItemCompleted = (item) => {
-                return item.type === 'quiz' ? userScores.has(item.id) : userProgress.has(item.id);
-            };
+            });
             
-            const updateURL = (itemId) => {
-                const newUrl = `lesson-view.html?id=${itemId}`;
-                history.pushState({ itemId }, '', newUrl);
+            const updateURL = (contentId) => {
+                const newUrl = `lesson-view.html?id=${contentId}`;
+                history.pushState({ contentId }, '', newUrl);
             };
 
             window.addEventListener('popstate', (event) => {
-                if (event.state && event.state.itemId) {
-                    navigateToItem(event.state.itemId);
+                if (event.state && event.state.contentId) {
+                    navigateToContent(event.state.contentId);
                 }
             });
             
@@ -488,7 +483,7 @@
             const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
 
             dom.prevBtn.addEventListener('click', handlePrev);
-            dom.footerActionBtn.addEventListener('click', handleFooterAction);
+            dom.completeBtn.addEventListener('click', handleCompleteAndNext);
             dom.menuToggle.addEventListener('click', openMobileMenu);
             dom.overlay.addEventListener('click', closeMobileMenu);
             dom.closeMenuBtn.addEventListener('click', closeMobileMenu);
