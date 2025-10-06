@@ -280,7 +280,7 @@
                                 <div class="progress-center-text"><strong id="overall-progress-percent">0%</strong><span>Completed</span></div>
                             </div>
                             <div class="progress-stats">
-                                <div class="stat"><p>Lessons Completed</p><strong id="lessons-completed-stat">0 / 0</strong></div>
+                                <div class="stat"><p>Chapters Completed</p><strong id="chapters-completed-stat">0 / 0</strong></div>
                                 <div class="stat"><p>Assessments</p><strong id="assessments-completed-stat">0 / 0</strong></div>
                             </div>
                         </div>
@@ -404,16 +404,16 @@
                         db.collection('subjects').get(), db.collection('notifications').orderBy('createdAt', 'desc').get(),
                         db.collection('codeAssignmentScores').get()
                     ]);
-
-                    const userScores = new Map(scoresSnap.docs.filter(d => d.data().userId === userId).map(d => [d.data().examId, d.data()]));
+                    
+                    const userStandaloneScores = new Map(scoresSnap.docs.filter(d => d.data().userId === userId && d.data().examType !== 'quiz').map(d => [d.data().examId, d.data()]));
                     const userCodeAssignmentScores = new Map(codeAssignmentScoresSnap.docs.filter(d => d.data().userId === userId).map(d => [d.data().assignmentId, d.data()]));
                     
                     const enrolledExams = examsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     const enrolledCodeAssignments = codeAssignmentsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderNotifications(notificationsSnap, enrolledExams, enrolledCodeAssignments, userScores, userCodeAssignmentScores);
+                    renderNotifications(notificationsSnap, enrolledExams, enrolledCodeAssignments, userStandaloneScores, userCodeAssignmentScores);
 
                     const allUsers = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
-                    renderLeaderboards(scoresSnap, codeAssignmentScoresSnap, allUsers, userId, userProfile);
+                    renderLeaderboards(scoresSnap, codeAssignmentScoresSnap, allUsers, userId, userProfile, usersSnap);
 
                     if (enrollmentsSnap.empty) {
                         document.getElementById('enrollment-prompt').style.display = 'block';
@@ -429,9 +429,26 @@
                         const lessonsPromises = enrolledCourseIds.map(id => db.collection('lessons').where('courseId', '==', id).get());
                         const lessonsSnaps = await Promise.all(lessonsPromises);
                         const allEnrolledLessons = lessonsSnaps.flatMap(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                        
+                        let totalChapters = 0;
+                        let completedChapters = 0;
+                        enrolledCourses.forEach(course => {
+                            const courseChapters = course.chapters || [];
+                            totalChapters += courseChapters.length;
+
+                            courseChapters.forEach((chapterName, chapterIndex) => {
+                                const itemsInChapter = allEnrolledLessons.filter(l => l.courseId === course.id && l.chapterIndex === chapterIndex);
+                                if (itemsInChapter.length > 0 && itemsInChapter.every(item => userProgress.has(item.id))) {
+                                    completedChapters++;
+                                }
+                            });
+                        });
+
+                        const totalAssessments = enrolledExams.length + enrolledCodeAssignments.length;
+                        const completedAssessments = userStandaloneScores.size + userCodeAssignmentScores.size;
 
                         renderFeaturedCourse(enrolledCourses, allEnrolledLessons, allSubjects, userProgress);
-                        renderOverallProgress(allEnrolledLessons.length, enrolledExams.length + enrolledCodeAssignments.length, userProgress.size, userScores.size + userCodeAssignmentScores.size);
+                        renderOverallProgress(totalChapters, totalAssessments, completedChapters, completedAssessments);
                     }
                 } catch(error) {
                      console.error("Error loading dashboard data:", error);
@@ -515,9 +532,9 @@
                 }
             };
             
-            const renderOverallProgress = (totalLessons, totalAssessments, completedLessons, completedAssessments) => {
-                const overallPercent = (totalLessons + totalAssessments > 0) ? Math.round(((completedLessons + completedAssessments) / (totalLessons + totalAssessments)) * 100) : 0;
-                document.getElementById('lessons-completed-stat').textContent = `${completedLessons} / ${totalLessons}`;
+            const renderOverallProgress = (totalChapters, totalAssessments, completedChapters, completedAssessments) => {
+                const overallPercent = (totalChapters + totalAssessments > 0) ? Math.round(((completedChapters + completedAssessments) / (totalChapters + totalAssessments)) * 100) : 0;
+                document.getElementById('chapters-completed-stat').textContent = `${completedChapters} / ${totalChapters}`;
                 document.getElementById('assessments-completed-stat').textContent = `${completedAssessments} / ${totalAssessments}`;
                 document.getElementById('overall-progress-percent').textContent = `${overallPercent}%`;
                 const ring = document.getElementById('overall-progress-ring');
@@ -528,12 +545,29 @@
                 ring.style.strokeDashoffset = offset;
             };
 
-            const renderLeaderboards = (scoresSnap, codeAssignmentScoresSnap, users, currentUserId, currentUserProfile) => {
+            const renderLeaderboards = async (scoresSnap, codeAssignmentScoresSnap, users, currentUserId, currentUserProfile, usersSnap) => {
                 const userPoints = {};
                 users.forEach((profile, id) => userPoints[id] = 0);
                 scoresSnap.forEach(doc => { const score = doc.data(); userPoints[score.userId] = (userPoints[score.userId] || 0) + score.pointsReceived; });
                 codeAssignmentScoresSnap.forEach(doc => { const score = doc.data(); userPoints[score.userId] = (userPoints[score.userId] || 0) + score.totalScoreObtained; });
                 
+                const attendancePromises = usersSnap.docs.map(userDoc => 
+                    db.collection('users').doc(userDoc.id).collection('scores').doc('attendance').get()
+                );
+                const attendanceSnaps = await Promise.all(attendancePromises);
+
+                attendanceSnaps.forEach((doc, index) => {
+                    const userId = usersSnap.docs[index].id;
+                    if (doc.exists && userPoints[userId] !== undefined) {
+                        const attendanceData = doc.data();
+                        Object.keys(attendanceData).forEach(key => {
+                            if (!isNaN(Date.parse(key))) {
+                                userPoints[userId] += attendanceData[key] || 0;
+                            }
+                        });
+                    }
+                });
+
                 const sortedUsers = Object.keys(userPoints).filter(id => users.has(id)).sort((a,b) => userPoints[b] - userPoints[a]);
                 
                 const createLeaderboardHTML = (userList) => {
