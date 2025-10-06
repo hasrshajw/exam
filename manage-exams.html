@@ -3,31 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Assessments - Admin</title>
+    <title>Manage Exams - Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
-            --text-primary: #111827; --text-secondary: #6B7280; --brand-purple: #6D28D9;
-            --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --danger-color: #EF4444;
-            --danger-hover: #DC2626; --danger-bg-light: #FEE2E2; --danger-text-dark: #B91C1C;
-            --success-color: #10B981; --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --danger-hover: #DC2626;
+            --danger-bg-light: #FEE2E2;
+            --danger-text-dark: #B91C1C;
+            --success-color: #10B981;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
-        a { text-decoration: none; color: inherit; }
+        a { text-decoration: none; }
         ul { list-style: none; }
+
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
         .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .content-body { padding: 2rem 2.5rem; }
+        
         .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
         .logo-image { height: 40px; }
         .main-nav { flex-grow: 1; }
@@ -53,8 +64,7 @@
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-        .admin-view { display: none; }
-        .admin-view.active { display: block; }
+
         .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
         .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
@@ -67,6 +77,7 @@
         .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .secondary-btn:hover { background-color: var(--hover-bg); }
         .menu-toggle, .sidebar-close-btn { display: none; }
+
         .admin-table { width: 100%; background-color: var(--widget-bg); border-radius: 12px; border-collapse: collapse; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .admin-table th, .admin-table td { padding: 1rem 1.5rem; text-align: left; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         .admin-table th { background: #F9FAFB; font-size: 0.75rem; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.05em; font-weight: 600; }
@@ -78,11 +89,22 @@
         .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--success-color); }
         input:checked + .slider:before { transform: translateX(20px); }
+        
         .actions-cell { text-align: right !important; width: 1%; white-space: nowrap; }
-        .action-btn, .delete-btn { font-weight: 600; background: none; border: none; cursor: pointer; }
-        .action-btn { color: var(--brand-purple); margin-right: 1rem; }
-        .delete-btn { color: var(--danger-color); }
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .actions-container { position: relative; display: inline-flex; }
+        .actions-container.menu-open { z-index: 20; }
+        .action-menu-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .action-menu-btn:hover { background-color: var(--hover-bg); }
+        .action-menu-btn i { font-size: 1.5rem; color: var(--text-secondary); }
+        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-item:hover { background-color: var(--hover-bg); }
+        .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .action-item.edit { color: var(--text-primary); }
+        .action-item.delete { color: var(--danger-color); }
+
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
         .modal-overlay.show .modal-content { transform: scale(1); }
@@ -93,8 +115,8 @@
         .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem 2rem; }
         .form-field { margin-bottom: 1.25rem; }
         .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
-        .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; font-family: 'IBM Plex Sans', sans-serif; }
-        .form-field input:focus, .form-field textarea:focus, .form-field select:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
+        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
         .full-width { grid-column: 1 / -1; }
         .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
@@ -105,26 +127,37 @@
         .accordion-button i { transition: transform 0.3s ease; font-size: 1.5rem; }
         .accordion-button.active i { transform: rotate(180deg); }
         .accordion-content-inner { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: var(--widget-bg); }
-        .question-card, .testcase-card { padding: 1.5rem; position: relative; border-top: 1px solid var(--border-color); }
-        .testcase-card { margin-top: 1rem; border: 1px solid var(--border-color); border-radius: 8px; }
+        .question-card { padding: 1.5rem; position: relative; }
         .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         .remove-item-btn:hover { background-color: var(--danger-hover); color: white; }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
         .modal-footer .secondary-btn { margin-right: 0.75rem; }
-        .problem-container { display: flex; flex-direction: column; gap: 1.5rem; }
-        .problem-card { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm); }
-        .problem-header { padding: 1rem 1.5rem; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-        .problem-title { font-size: 1.1rem; font-weight: 600; }
-        .problem-header-actions { display: flex; align-items: center; }
-        .problem-header i { font-size: 1.5rem; transition: transform 0.3s ease; }
-        .problem-header.active i { transform: rotate(180deg); }
-        .problem-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; border-top: 1px solid transparent; }
-        .problem-header.active + .problem-body { border-color: var(--border-color); }
-        .problem-body-content { padding: 1.5rem; }
-        .problem-actions { text-align: right; padding-top: 1.5rem; border-top: 1px solid var(--border-color); margin-top: 1.5rem; display: flex; justify-content: flex-end; align-items: center; gap: 0.75rem; }
-        .type-choice-modal .modal-content { max-width: 400px; }
-        .type-choice-modal .modal-body { text-align: center; }
-        .type-choice-modal .modal-footer { display: flex; justify-content: center; gap: 1rem; }
+
+        .actionsheet-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); }
+        .actionsheet-overlay.show { opacity: 1; pointer-events: auto; }
+        .actionsheet { position: fixed; bottom: 0; left: 0; right: 0; background-color: var(--widget-bg); border-top-left-radius: 1rem; border-top-right-radius: 1rem; padding: 1rem; z-index: 2001; transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .actionsheet.show { transform: translateY(0); }
+        .actionsheet-header { text-align: center; padding-bottom: 1rem; }
+        .actionsheet-header::before { content: ''; display: block; width: 40px; height: 4px; background-color: var(--border-color); border-radius: 2px; margin: 0 auto 1rem; }
+        .actionsheet-title { font-size: 1.25rem; font-weight: 700; }
+        .actionsheet-content { padding: 1rem 0; border-top: 1px solid var(--border-color); margin-top: 1rem; }
+        .actionsheet-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem; text-align: left; margin-bottom: 1.5rem; }
+        .actionsheet-details p { font-size: 0.875rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .actionsheet-details strong { display: block; font-size: 1rem; font-weight: 600; color: var(--text-primary); }
+        .actionsheet-status-control { display: flex; justify-content: space-between; align-items: center; padding: 1rem; background-color: var(--hover-bg); border-radius: 12px; }
+        
+        .actionsheet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem 0 0.5rem 0; }
+        .actionsheet-btn { padding: 0.9rem 1rem; border-radius: 12px; font-weight: 600; font-size: 0.9rem; cursor: pointer; border: none; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .actionsheet-btn svg { width: 18px; height: 18px; }
+        .actionsheet-btn:active { transform: scale(0.97); }
+        .actionsheet-btn--edit { background-color: var(--hover-bg); color: var(--text-primary); }
+        .actionsheet-btn--edit:hover { background-color: var(--border-color); }
+        .actionsheet-btn--delete { background-color: var(--danger-bg-light); color: var(--danger-text-dark); }
+        .actionsheet-btn--delete:hover { background-color: #FECACA; }
+        .actionsheet-cancel button { width: 100%; background-color: var(--widget-bg); color: var(--text-secondary); font-weight: 600; padding: 0.9rem; border: none; cursor: pointer; border-radius: 12px; transition: background-color 0.2s ease; }
+        .actionsheet-cancel button:hover { background-color: var(--hover-bg); }
+
+        .mobile-card-view { display: none; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -135,6 +168,25 @@
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+            .admin-table { display: none; }
+            .mobile-card-view { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+            .exam-card-mobile { background-color: var(--widget-bg); border-radius: 12px; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; }
+            .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+            .card-header h3 { font-size: 1.125rem; font-weight: 600; line-height: 1.4; flex-grow: 1; }
+            .status-badge { font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem; border-radius: 99px; flex-shrink: 0; }
+            .status-badge.active { background-color: #D1FAE5; color: #065F46; }
+            .status-badge.locked { background-color: var(--danger-bg-light); color: var(--danger-text-dark); }
+            .card-body { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; color: var(--text-secondary); font-size: 0.875rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border-color); }
+            .info-item { display: flex; align-items: center; gap: 0.5rem; }
+            .info-item i { font-size: 1.1rem; }
+            .card-footer { display: flex; justify-content: flex-end; }
+            .card-footer .primary-btn { width: 100%; justify-content: center; }
+        }
+        @media (max-width: 480px) {
+            .admin-content-header { flex-direction: column; align-items: stretch; }
+            .admin-content-header h2 { font-size: 1.5rem; }
+            .admin-content-header .primary-btn { width: 100%; justify-content: center; }
+            .form-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -170,49 +222,23 @@
         <main class="main-area">
             <header class="main-header">
                 <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
-                <h1>Manage Assessments</h1>
+                <h1>Manage Exams</h1>
             </header>
             <section class="content-body">
-                <div id="assignments-view" class="admin-view active">
-                    <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
-                    <div class="admin-content-header">
-                        <h2 id="page-title"></h2>
-                        <button class="primary-btn" id="create-assessment-btn"><i class='bx bx-plus'></i> Create New Assessment</button>
-                    </div>
-                    <table class="admin-table">
-                        <thead><tr><th>Name</th><th>Type</th><th>Items</th><th>Duration</th><th>Status</th><th>Actions</th></tr></thead>
-                        <tbody id="assessments-tbody"></tbody>
-                    </table>
+                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
+                <div class="admin-content-header">
+                    <h2 id="page-title"></h2>
+                    <button class="primary-btn" id="create-exam-btn"><i class='bx bx-plus'></i> Create New Exam</button>
                 </div>
-                <div id="problems-view" class="admin-view">
-                    <button class="back-btn" id="back-to-assignments-btn"><i class='bx bx-arrow-back'></i> Back to Assessments</button>
-                    <div class="admin-content-header">
-                        <h2 id="problems-page-title"></h2>
-                        <div>
-                            <input type="file" id="problems-file-input" accept=".json" style="display: none;">
-                            <button class="secondary-btn" id="upload-problems-btn"><i class='bx bx-upload'></i> Upload JSON</button>
-                            <button class="primary-btn" id="add-problem-btn"><i class='bx bx-plus'></i> Add Problem</button>
-                        </div>
-                    </div>
-                    <div id="problems-container" class="problem-container"></div>
-                </div>
+                <table class="admin-table">
+                    <thead><tr><th>Exam Name</th><th>Duration</th><th>Questions</th><th>Deadline</th><th>Status</th><th>Actions</th></tr></thead>
+                    <tbody id="exams-tbody"></tbody>
+                </table>
+                <div class="mobile-card-view" id="exams-cards"></div>
             </section>
         </main>
     </div>
 
-    <div class="modal-overlay type-choice-modal" id="type-choice-modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="type-choice-modal-title">Choose Assessment Type</h3><button class="close-btn">&times;</button></div>
-            <div class="modal-body">
-                <p>What type of assessment would you like to create?</p>
-            </div>
-            <div class="modal-footer">
-                <button class="secondary-btn" id="create-mcq-btn">MCQ Exam</button>
-                <button class="primary-btn" id="create-code-btn">Code Assignment</button>
-            </div>
-        </div>
-    </div>
-    
     <div class="modal-overlay" id="exam-modal">
         <div class="modal-content">
             <div class="modal-header"><h3 id="exam-modal-title"></h3><button class="close-btn">&times;</button></div>
@@ -222,6 +248,7 @@
                     <div class="form-grid">
                         <div class="form-field"><label for="exam-name">Exam Name</label><input type="text" id="exam-name" required></div>
                         <div class="form-field"><label for="exam-duration">Duration (minutes)</label><input type="number" id="exam-duration" required></div>
+                        <div class="form-field full-width"><label for="exam-deadline-date">Deadline Date (optional)</label><input type="date" id="exam-deadline-date"></div>
                     </div>
                     <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn"><i class='bx bx-plus'></i> Add Question</button></div>
                     <div id="questions-container"></div>
@@ -231,22 +258,34 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="assignment-modal">
-        <div class="modal-content" style="max-width: 500px;">
-            <div class="modal-header"><h3 id="assignment-modal-title"></h3><button class="close-btn">&times;</button></div>
-            <div class="modal-body">
-                <form id="assignment-form">
-                    <input type="hidden" id="assignment-id">
-                    <div class="form-field"><label for="assignment-name">Assignment Name</label><input type="text" id="assignment-name" required></div>
-                    <div class="form-grid">
-                        <div class="form-field"><label for="assignment-duration">Duration (minutes)</label><input type="number" id="assignment-duration" required></div>
-                    </div>
-                </form>
+    <div class="actionsheet-overlay" id="actionsheet-overlay">
+        <div class="actionsheet" id="actionsheet">
+            <div class="actionsheet-header"><h3 id="actionsheet-title"></h3></div>
+            <div class="actionsheet-content">
+                <div class="actionsheet-details">
+                    <div><p>Duration</p><strong id="actionsheet-duration"></strong></div>
+                    <div><p>Questions</p><strong id="actionsheet-questions"></strong></div>
+                    <div style="grid-column: 1 / -1;"><p>Deadline</p><strong id="actionsheet-deadline"></strong></div>
+                </div>
+                <div class="actionsheet-status-control">
+                    <strong>Status</strong>
+                    <label class="lock-switch"><input type="checkbox" id="actionsheet-lock-toggle"><span class="slider"></span></label>
+                </div>
             </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-assignment-btn">Save</button></div>
+            <div class="actionsheet-actions">
+                <button class="actionsheet-btn actionsheet-btn--edit edit-exam-btn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                    Edit
+                </button>
+                <button class="actionsheet-btn actionsheet-btn--delete delete-exam-btn">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                    Delete
+                </button>
+            </div>
+            <div class="actionsheet-cancel"><button id="actionsheet-cancel-btn">Cancel</button></div>
         </div>
     </div>
-    
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
@@ -268,7 +307,6 @@
             const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
             let currentSubject = null;
-            let currentAssignment = null;
 
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
@@ -306,52 +344,86 @@
                 const subjectDoc = await db.collection('subjects').doc(subjectId).get();
                 if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
                 currentSubject = { id: subjectId, ...subjectDoc.data() };
-                document.getElementById('page-title').textContent = `Assessments in ${currentSubject.name}`;
-                loadAssessments();
+                document.getElementById('page-title').textContent = `Exams in ${currentSubject.name}`;
+                loadExams();
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
-            const switchView = (view) => {
-                document.querySelectorAll('.admin-view').forEach(v => v.classList.remove('active'));
-                document.getElementById(`${view}-view`).classList.add('active');
+            const formatDate = (timestamp) => {
+                if (!timestamp) return "No Deadline";
+                return new Date(timestamp.seconds * 1000).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
             };
 
-            const loadAssessments = () => {
-                const tbody = document.getElementById('assessments-tbody');
+            const loadExams = () => {
+                const tbody = document.getElementById('exams-tbody');
+                const cardsContainer = document.getElementById('exams-cards');
                 db.collection('exams').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
                     tbody.innerHTML = '';
-                    snapshot.docs.sort((a,b) => a.data().name.localeCompare(b.data().name)).forEach(doc => {
-                        const exam = { id: doc.id, ...doc.data() };
-                        const itemCount = exam.type === 'mcq' ? (exam.questions || []).length : (exam.problems || []).length;
-                        const itemLabel = exam.type === 'mcq' ? 'Questions' : 'Problems';
+                    cardsContainer.innerHTML = '';
+                    snapshot.docs.sort((a, b) => a.data().name.localeCompare(b.data().name)).forEach(doc => {
+                        const exam = doc.data();
+                        
                         const row = document.createElement('tr');
                         row.innerHTML = `
                             <td>${exam.name}</td>
-                            <td><span style="text-transform: uppercase; font-weight: 600; font-size: 0.8rem;">${exam.type}</span></td>
-                            <td>${itemCount} ${itemLabel}</td>
                             <td>${exam.duration / 60} min</td>
-                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${exam.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
-                            <td>
-                                ${exam.type === 'code' ? `<button class="action-btn manage-problems-btn" data-id="${exam.id}" data-name="${exam.name}">Manage Problems</button>` : ''}
-                                <button class="action-btn edit-assessment-btn" data-id="${exam.id}">Edit</button>
-                                <button class="delete-btn delete-assessment-btn" data-id="${exam.id}">Delete</button>
+                            <td>${exam.questions.length}</td>
+                            <td>${formatDate(exam.deadline)}</td>
+                            <td><label class="lock-switch"><input type="checkbox" class="lock-toggle" data-id="${doc.id}" ${!exam.isLocked ? 'checked' : ''}><span class="slider"></span></label></td>
+                            <td class="actions-cell">
+                                <div class="actions-container">
+                                    <button class="action-menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                    <div class="action-dropdown">
+                                        <button class="action-item edit" data-id="${doc.id}">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                            Edit
+                                        </button>
+                                        <button class="action-item delete" data-id="${doc.id}">
+                                            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
                             </td>`;
                         tbody.appendChild(row);
+
+                        const card = document.createElement('div');
+                        card.className = 'exam-card-mobile';
+                        const statusClass = !exam.isLocked ? 'active' : 'locked';
+                        const statusText = !exam.isLocked ? 'Active' : 'Locked';
+                        card.innerHTML = `
+                            <div class="card-header">
+                                <h3>${exam.name}</h3>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="card-body">
+                                <div class="info-item"><i class='bx bx-time-five'></i> ${exam.duration / 60} min</div>
+                                <div class="info-item"><i class='bx bx-list-ul'></i> ${exam.questions.length} Questions</div>
+                                <div class="info-item"><i class='bx bx-calendar-x'></i> ${formatDate(exam.deadline)}</div>
+                            </div>
+                            <div class="card-footer">
+                                <button class="primary-btn manage-mobile-btn" data-id="${doc.id}">Manage</button>
+                            </div>`;
+                        cardsContainer.appendChild(card);
                     });
                 });
             };
 
             const openExamModal = (exam = null) => {
                 const modal = document.getElementById('exam-modal');
-                modal.querySelector('#exam-modal-title').textContent = exam ? 'Edit MCQ Exam' : 'Create MCQ Exam';
-                modal.querySelector('#exam-form').reset();
+                modal.querySelector('#exam-modal-title').textContent = exam ? 'Edit Exam' : 'Create New Exam';
                 modal.querySelector('#exam-id').value = exam ? exam.id : '';
                 modal.querySelector('#exam-name').value = exam ? exam.name : '';
                 modal.querySelector('#exam-duration').value = exam ? exam.duration / 60 : '';
+                if (exam && exam.deadline) {
+                    modal.querySelector('#exam-deadline-date').value = new Date(exam.deadline.seconds * 1000).toISOString().split('T')[0];
+                } else {
+                    modal.querySelector('#exam-deadline-date').value = '';
+                }
                 const questionsContainer = modal.querySelector('#questions-container');
                 questionsContainer.innerHTML = '';
-                if (exam && exam.questions) exam.questions.forEach(addQuestionToForm);
+                if (exam) exam.questions.forEach(addQuestionToForm);
                 modal.classList.add('show');
             };
 
@@ -379,121 +451,99 @@
                 });
             };
 
-            const openAssignmentModal = (assignment = null) => {
-                const modal = document.getElementById('assignment-modal');
-                modal.querySelector('#assignment-modal-title').textContent = assignment ? 'Edit Code Assignment' : 'Create Code Assignment';
-                modal.querySelector('#assignment-form').reset();
-                modal.querySelector('#assignment-id').value = assignment ? assignment.id : '';
-                modal.querySelector('#assignment-name').value = assignment ? assignment.name : '';
-                modal.querySelector('#assignment-duration').value = assignment ? assignment.duration / 60 : '';
-                modal.classList.add('show');
+            const openActionsheet = async (examId) => {
+                const doc = await db.collection('exams').doc(examId).get();
+                if(!doc.exists) return;
+                const exam = doc.data();
+                
+                document.getElementById('actionsheet-title').textContent = exam.name;
+                document.getElementById('actionsheet-duration').textContent = `${exam.duration / 60} min`;
+                document.getElementById('actionsheet-questions').textContent = `${exam.questions.length} Questions`;
+                document.getElementById('actionsheet-deadline').textContent = formatDate(exam.deadline);
+                
+                const toggle = document.getElementById('actionsheet-lock-toggle');
+                toggle.checked = !exam.isLocked;
+                toggle.dataset.id = examId;
+                
+                const sheet = document.getElementById('actionsheet');
+                sheet.querySelector('.edit-exam-btn').dataset.id = examId;
+                sheet.querySelector('.delete-exam-btn').dataset.id = examId;
+                document.getElementById('actionsheet-overlay').classList.add('show');
+                sheet.classList.add('show');
+            };
+
+            const closeActionsheet = () => {
+                document.getElementById('actionsheet-overlay').classList.remove('show');
+                document.getElementById('actionsheet').classList.remove('show');
             };
             
-            const createProblemCard = (id, problem) => {
-                const card = document.createElement('div');
-                card.className = 'problem-card';
-                card.dataset.id = id || `new_${Date.now()}`;
-                card.innerHTML = `
-                    <div class="problem-header">
-                        <span class="problem-title">${problem.title || 'New Problem'}</span>
-                        <div class="problem-header-actions"><i class='bx bx-chevron-down'></i></div>
-                    </div>
-                    <div class="problem-body">
-                        <div class="problem-body-content">
-                            <form class="problem-form">
-                                <div class="form-grid">
-                                    <div class="form-field"><label>Problem Title</label><input type="text" class="problem-title-input" value="${problem.title || ''}" required></div>
-                                    <div class="form-field"><label>Points</label><input type="number" class="problem-points-input" value="${problem.points || ''}" required></div>
-                                </div>
-                                <div class="form-field"><label>Problem Statement (HTML allowed)</label><textarea rows="5" class="problem-statement-input" required>${problem.statement || ''}</textarea></div>
-                                <div class="form-grid">
-                                    <div class="form-field"><label>Function Name</label><input type="text" class="problem-function-name-input" value="${problem.functionName || ''}" required></div>
-                                    <div class="form-field"><label>Starter Code</label><textarea rows="5" class="problem-starter-code-input" required>${problem.starterCode || ''}</textarea></div>
-                                </div>
-                                <h4>Test Cases</h4><div class="testcases-container"></div>
-                                <button type="button" class="secondary-btn add-testcase-btn" style="margin-top: 1rem;">+ Add Test Case</button>
-                                <div class="problem-actions">
-                                    <button type="button" class="delete-btn delete-problem-btn">Delete Problem</button>
-                                    <button type="submit" class="primary-btn">Save Problem</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>`;
-                const testcasesContainer = card.querySelector('.testcases-container');
-                (problem.testCases || []).forEach(tc => testcasesContainer.appendChild(createTestCaseForm(tc)));
-                card.querySelector('.problem-title-input').addEventListener('input', e => {
-                    card.querySelector('.problem-header .problem-title').textContent = e.target.value || 'New Problem';
-                });
-                return card;
-            };
-
-            const createTestCaseForm = (testCase = {}) => {
-                const card = document.createElement('div');
-                card.className = 'testcase-card';
-                card.innerHTML = `
-                    <button type="button" class="remove-item-btn">&times;</button>
-                    <div class="form-field"><label>Input (JSON Object)</label><textarea rows="3" class="testcase-input" required>${testCase.input ? JSON.stringify(testCase.input, null, 2) : ''}</textarea></div>
-                    <div class="form-field"><label>Expected Output (JSON value)</label><textarea rows="2" class="testcase-expected" required>${testCase.expected !== undefined ? JSON.stringify(testCase.expected, null, 2) : ''}</textarea></div>
-                    <div class="form-field" style="flex-direction: row; align-items: center; gap: 0.5rem;"><input type="checkbox" class="testcase-hidden" ${testCase.hidden ? 'checked' : ''} style="width:auto;"><label>Hidden</label></div>`;
-                return card;
-            };
-
             document.addEventListener('click', async e => {
+                const isDropdownButton = e.target.closest('.action-menu-btn');
+                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
+                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                        dropdown.classList.remove('active');
+                        dropdown.closest('.actions-container').classList.remove('menu-open');
+                    }
+                });
+                if (isDropdownButton) {
+                    const dropdown = isDropdownButton.nextElementSibling;
+                    const container = isDropdownButton.closest('.actions-container');
+                    dropdown.classList.toggle('active');
+                    container.classList.toggle('menu-open', dropdown.classList.contains('active'));
+                }
+                
                 const button = e.target.closest('button');
                 if (!button) return;
-
-                if (button.id === 'create-assessment-btn') { document.getElementById('type-choice-modal').classList.add('show'); }
-                if (button.id === 'create-mcq-btn') { document.getElementById('type-choice-modal').classList.remove('show'); openExamModal(); }
-                if (button.id === 'create-code-btn') { document.getElementById('type-choice-modal').classList.remove('show'); openAssignmentModal(); }
                 
-                if (button.matches('.edit-assessment-btn')) {
+                if (button.id === 'create-exam-btn') openExamModal();
+                if (button.matches('.edit-exam-btn, .action-item.edit')) {
+                    closeActionsheet();
                     const doc = await db.collection('exams').doc(button.dataset.id).get();
-                    const exam = { id: doc.id, ...doc.data() };
-                    if (exam.type === 'mcq') openExamModal(exam);
-                    else if (exam.type === 'code') openAssignmentModal(exam);
+                    openExamModal({ id: doc.id, ...doc.data() });
                 }
-                if (button.matches('.delete-assessment-btn')) {
-                    if (confirm('Are you sure you want to delete this assessment? This action cannot be undone.')) {
+                if (button.matches('.delete-exam-btn, .action-item.delete')) {
+                    closeActionsheet();
+                    if (confirm('Are you sure you want to delete this exam? This action cannot be undone.')) {
                         await db.collection('exams').doc(button.dataset.id).delete();
                     }
                 }
-                if (button.matches('.manage-problems-btn')) {
-                    currentAssignment = { id: button.dataset.id, name: button.dataset.name };
-                    document.getElementById('problems-page-title').textContent = `Problems in ${currentAssignment.name}`;
-                    db.collection('exams').doc(currentAssignment.id).onSnapshot(doc => {
-                        const container = document.getElementById('problems-container');
-                        container.innerHTML = '';
-                        const problems = doc.data().problems || [];
-                        problems.forEach(problem => container.appendChild(createProblemCard(problem.id, problem)));
-                    });
-                    switchView('problems');
-                }
-                if (button.id === 'back-to-assignments-btn') { currentAssignment = null; switchView('assignments'); }
+                if (button.matches('.manage-mobile-btn')) openActionsheet(button.dataset.id);
                 if (button.id === 'add-question-btn') addQuestionToForm();
-                if (button.id === 'add-problem-btn') {
-                    const newCard = createProblemCard('', {});
-                    document.getElementById('problems-container').appendChild(newCard);
-                    const header = newCard.querySelector('.problem-header');
-                    header.classList.add('active');
-                    const content = header.nextElementSibling;
-                    setTimeout(() => { content.style.maxHeight = content.scrollHeight + "px"; }, 10);
+                if (button.matches('.remove-item-btn')) {
+                    button.closest('.accordion-item').remove();
+                    document.querySelectorAll('#questions-container .accordion-button span').forEach((span, index) => {
+                        const currentText = span.textContent.split('. ')[1];
+                        span.textContent = `${index + 1}. ${currentText}`;
+                    });
                 }
-                if (button.matches('.remove-item-btn')) button.parentElement.remove();
                 if (button.matches('.accordion-button')) {
                     button.classList.toggle('active');
                     const content = button.nextElementSibling;
                     content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
                 }
-                if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) button.closest('.modal-overlay').classList.remove('show');
+                if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) {
+                    button.closest('.modal-overlay').classList.remove('show');
+                }
+                if (button.id === 'actionsheet-cancel-btn' || e.target.id === 'actionsheet-overlay') closeActionsheet();
+            });
+            
+            document.getElementById('exams-tbody').addEventListener('change', async e => {
+                 if (e.target.classList.contains('lock-toggle')) {
+                    await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+                }
             });
 
-            document.getElementById('assessments-tbody').addEventListener('change', async e => {
-                if (e.target.matches('.lock-toggle')) await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
+            document.getElementById('actionsheet-lock-toggle').addEventListener('change', async e => {
+                await db.collection('exams').doc(e.target.dataset.id).update({ isLocked: !e.target.checked });
             });
 
             document.getElementById('save-exam-btn').addEventListener('click', async () => {
                 const form = document.getElementById('exam-form');
-                if (!form.checkValidity()) { form.reportValidity(); return; }
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
                 const id = document.getElementById('exam-id').value;
                 const questions = [];
                 document.querySelectorAll('#questions-container .question-card').forEach(card => {
@@ -505,102 +555,28 @@
                         type: 'Mcq'
                     });
                 });
+                const date = document.getElementById('exam-deadline-date').value;
+                let deadline = null;
+                if(date) {
+                    const d = new Date(date);
+                    d.setHours(23, 59, 59, 999);
+                    deadline = firebase.firestore.Timestamp.fromDate(d);
+                }
+
                 const data = { 
                     name: document.getElementById('exam-name').value.trim(), 
                     duration: parseInt(document.getElementById('exam-duration').value, 10) * 60, 
                     subjectId: currentSubject.id, 
                     questions, 
-                    type: 'mcq',
-                    isLocked: true
+                    deadline 
                 };
-                if (id) await db.collection('exams').doc(id).update(data);
-                else await db.collection('exams').add(data);
-                document.getElementById('exam-modal').classList.remove('show');
-            });
-            
-            document.getElementById('save-assignment-btn').addEventListener('click', async () => {
-                const id = document.getElementById('assignment-id').value;
-                const data = { 
-                    name: document.getElementById('assignment-name').value.trim(), 
-                    subjectId: currentSubject.id,
-                    duration: parseInt(document.getElementById('assignment-duration').value, 10) * 60,
-                    isLocked: true,
-                    type: 'code',
-                    problems: []
-                };
-                if (!data.name || isNaN(data.duration) || data.duration <= 0) { alert('Name and a valid positive Duration are required'); return; }
                 if (id) {
-                    await db.collection('exams').doc(id).update({ name: data.name, duration: data.duration });
+                    await db.collection('exams').doc(id).update(data);
                 } else {
+                    data.isLocked = true;
                     await db.collection('exams').add(data);
                 }
-                document.getElementById('assignment-modal').classList.remove('show');
-            });
-
-            document.getElementById('problems-container').addEventListener('click', e => {
-                const button = e.target.closest('button');
-                if (!button) return;
-                if (button.matches('.add-testcase-btn')) {
-                    const container = button.previousElementSibling;
-                    container.appendChild(createTestCaseForm());
-                    const problemBody = button.closest('.problem-body');
-                    problemBody.style.maxHeight = problemBody.scrollHeight + "px";
-                }
-            });
-
-            document.getElementById('problems-container').addEventListener('submit', async e => {
-                e.preventDefault();
-                const form = e.target;
-                const problemCard = form.closest('.problem-card');
-                const problemId = problemCard.dataset.id;
-                
-                const testCases = [];
-                let validJson = true;
-                form.querySelectorAll('.testcases-container .testcase-card').forEach(card => {
-                    if (!validJson) return;
-                    try {
-                        testCases.push({
-                            input: JSON.parse(card.querySelector('.testcase-input').value),
-                            expected: JSON.parse(card.querySelector('.testcase-expected').value),
-                            hidden: card.querySelector('.testcase-hidden').checked
-                        });
-                    } catch (err) { validJson = false; alert(`Invalid JSON in a test case.\nError: ${err.message}`); }
-                });
-                if (!validJson) return;
-
-                const data = {
-                    title: form.querySelector('.problem-title-input').value.trim(),
-                    points: parseInt(form.querySelector('.problem-points-input').value, 10),
-                    statement: form.querySelector('.problem-statement-input').value,
-                    functionName: form.querySelector('.problem-function-name-input').value.trim(),
-                    starterCode: form.querySelector('.problem-starter-code-input').value,
-                    testCases
-                };
-
-                if (!data.title || isNaN(data.points) || !data.functionName) { alert('Title, Points, and Function Name are required.'); return; }
-
-                try {
-                    const assignmentRef = db.collection('exams').doc(currentAssignment.id);
-                    const doc = await assignmentRef.get();
-                    let problems = doc.data().problems || [];
-
-                    if (problemId && !problemId.startsWith('new_')) {
-                        const problemIndex = problems.findIndex(p => p.id === problemId);
-                        if (problemIndex > -1) {
-                            problems[problemIndex] = { ...data, id: problemId };
-                        }
-                    } else {
-                        const newId = 'problem_' + Date.now();
-                        problems.push({ ...data, id: newId });
-                        problemCard.dataset.id = newId;
-                    }
-                    
-                    await assignmentRef.update({ problems: problems });
-                    alert('Problem saved!');
-                    const header = problemCard.querySelector('.problem-header');
-                    header.classList.remove('active');
-                    header.nextElementSibling.style.maxHeight = null;
-                } catch (err) { alert(`Error saving problem: ${err.message}`); }
+                document.getElementById('exam-modal').classList.remove('show');
             });
         });
     </script>
