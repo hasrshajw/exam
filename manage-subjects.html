@@ -81,7 +81,7 @@
         .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
         .action-item.delete { color: var(--danger-color); }
         .card-filename { color: var(--text-secondary); font-size: 0.875rem; font-family: monospace; }
-        .card-actions { border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; background-color: #F9FAFB; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
+        .card-actions { border-top: 1px solid var(--border-color); padding: 1rem 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 0.75rem; background-color: #F9FAFB; border-bottom-left-radius: 12px; border-bottom-right-radius: 12px; }
         .card-actions .action-link { padding: 0.6rem 1rem; border-radius: 8px; font-weight: 600; font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background-color 0.2s ease; text-align: center; }
         .card-actions .action-link svg { width: 16px; height: 16px; }
         .card-actions .action-link--primary { background-color: var(--hover-bg); color: var(--text-primary); }
@@ -97,8 +97,8 @@
         .modal-body { padding: 1.5rem 2rem; }
         .form-field { margin-bottom: 1.25rem; }
         .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
-        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-        .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
+        .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field input:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
         .confirm-modal .modal-content { max-width: 420px; }
         .confirm-modal .modal-body { text-align: center; padding: 2rem 1.5rem 1.5rem; }
@@ -185,7 +185,6 @@
                     <input type="hidden" id="subject-id">
                     <div class="form-field"><label for="subject-name">Subject Name</label><input type="text" id="subject-name" required></div>
                     <div class="form-field"><label for="subject-page">Page Filename (e.g., java-courses.html)</label><input type="text" id="subject-page" required></div>
-                    <div class="form-field"><label for="subject-chapters">Chapters (one per line)</label><textarea id="subject-chapters" rows="6"></textarea></div>
                 </form>
             </div>
             <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-subject-btn">Save Subject</button></div>
@@ -283,8 +282,9 @@
                                 <p class="card-filename">${subject.page}</p>
                             </div>
                             <div class="card-actions">
-                                <a href="manage-lessons.html?subjectId=${doc.id}" class="action-link action-link--primary"><i class='bx bxs-book-content'></i> Lessons</a>
-                                <a href="manage-exams.html?subjectId=${doc.id}" class="action-link action-link--primary"><i class='bx bxs-graduation'></i> Assessments</a>
+                                <a href="manage-lessons.html?courseId=${subject.courseId}" class="action-link action-link--primary"><i class='bx bxs-book-content'></i> Content</a>
+                                <a href="manage-exams.html?subjectId=${doc.id}" class="action-link action-link--primary"><i class='bx bxs-graduation'></i> Exams</a>
+                                <a href="manage-code.html?subjectId=${doc.id}" class="action-link action-link--primary"><i class='bx bxs-terminal'></i> Code Exams</a>
                             </div>`;
                         gridContainer.appendChild(card);
                     });
@@ -297,7 +297,6 @@
                 modal.querySelector('#subject-id').value = subject ? subject.id : '';
                 modal.querySelector('#subject-name').value = subject ? subject.name : '';
                 modal.querySelector('#subject-page').value = subject ? subject.page : '';
-                modal.querySelector('#subject-chapters').value = subject && subject.chapters ? subject.chapters.join('\n') : '';
                 modal.classList.add('show');
             };
             
@@ -314,20 +313,37 @@
             };
 
             const deleteSubject = async (subjectId) => {
-                openConfirmationModal('Delete Subject?', 'This will delete the subject and ALL of its lessons and exams permanently. This action cannot be undone.', async () => {
+                openConfirmationModal('Delete Subject?', 'This will delete the subject and ALL of its courses, lessons, enrollments, and exams permanently. This action cannot be undone.', async () => {
                     const actionOverlay = document.getElementById('action-overlay');
                     actionOverlay.classList.add('show');
                     try {
                         const batch = db.batch();
+                        const coursesQuery = await db.collection('courses').where('subjectId', '==', subjectId).get();
+                        const courseIds = coursesQuery.docs.map(d => d.id);
+                        if (courseIds.length > 0) {
+                            const [lessonsQuery, enrollmentsQuery] = await Promise.all([
+                                db.collection('lessons').where('courseId', 'in', courseIds).get(),
+                                db.collection('enrollments').where('courseId', 'in', courseIds).get()
+                            ]);
+                            lessonsQuery.forEach(doc => batch.delete(doc.ref));
+                            enrollmentsQuery.forEach(doc => batch.delete(doc.ref));
+                            const allUsersQuery = await db.collection('users').get();
+                            for (const userDoc of allUsersQuery.docs) {
+                                const progressQuery = await db.collection('users').doc(userDoc.id).collection('progress').where('courseId', 'in', courseIds).get();
+                                progressQuery.forEach(doc => batch.delete(doc.ref));
+                            }
+                        }
+                        coursesQuery.forEach(doc => batch.delete(doc.ref));
                         
-                        const lessonsQuery = await db.collection('lessons').where('subjectId', '==', subjectId).get();
-                        lessonsQuery.forEach(doc => batch.delete(doc.ref));
-
                         const examsQuery = await db.collection('exams').where('subjectId', '==', subjectId).get();
+                        const examIds = examsQuery.docs.map(d => d.id);
+                        if (examIds.length > 0) {
+                            const scoresQuery = await db.collection('scores').where('examId', 'in', examIds).get();
+                            scoresQuery.forEach(doc => batch.delete(doc.ref));
+                        }
                         examsQuery.forEach(doc => batch.delete(doc.ref));
                         
                         batch.delete(db.collection('subjects').doc(subjectId));
-                        
                         await batch.commit();
                     } catch(error) {
                         console.error("Deletion failed: ", error);
@@ -372,16 +388,27 @@
                 const id = document.getElementById('subject-id').value;
                 const subjectName = document.getElementById('subject-name').value.trim();
                 const subjectPage = document.getElementById('subject-page').value.trim();
-                const chapters = document.getElementById('subject-chapters').value.split('\n').map(line => line.trim()).filter(Boolean);
-
-                if (!subjectName || !subjectPage) { alert('Name and Page are required.'); return; }
-                
-                const subjectData = { name: subjectName, page: subjectPage, chapters };
+                if (!subjectName || !subjectPage) { alert('All fields are required.'); return; }
+                const subjectData = { name: subjectName, page: subjectPage };
                 
                 if (id) {
-                    await db.collection('subjects').doc(id).update(subjectData);
+                    const subjectRef = db.collection('subjects').doc(id);
+                    const subjectDoc = await subjectRef.get();
+                    const existingCourseId = subjectDoc.data().courseId;
+                    const batch = db.batch();
+                    batch.update(subjectRef, subjectData);
+                    if (existingCourseId) {
+                        const courseRef = db.collection('courses').doc(existingCourseId);
+                        batch.update(courseRef, { name: `${subjectName} Course` });
+                    }
+                    await batch.commit();
                 } else {
-                    await db.collection('subjects').add(subjectData);
+                    const newSubjectRef = db.collection('subjects').doc();
+                    const newCourseRef = db.collection('courses').doc();
+                    const batch = db.batch();
+                    batch.set(newCourseRef, { name: `${subjectName} Course`, subjectId: newSubjectRef.id, chapters: [] });
+                    batch.set(newSubjectRef, { ...subjectData, courseId: newCourseRef.id });
+                    await batch.commit();
                 }
                 closeModal('subject-modal');
             });
