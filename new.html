@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Course & Content</title>
+    <title>Java - Course & Content</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -29,6 +29,7 @@
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-green); }
         .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-content-wrapper { display: flex; align-items: center; gap: 0.75rem; width: 100%; }
         .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
         .profile-details { flex-grow: 1; min-width: 0; }
         .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
@@ -51,7 +52,8 @@
         .content-body { padding: 2rem 3rem 3rem 3rem; display: grid; grid-template-columns: 1fr 340px; gap: 2rem; align-items: flex-start; }
         .main-content { min-width: 0; }
         .content-sidebar { position: sticky; top: calc(2rem + 73px); }
-        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; margin-bottom: 2rem; }
+        .pill-nav-container { display: flex; justify-content: flex-start; margin-bottom: 2rem; }
+        .pill-nav { position: relative; display: inline-flex; background-color: var(--hover-bg); border-radius: 99px; padding: 0.25rem; }
         .nav-tab { border: none; background: none; padding: 0.5rem 1.25rem; font-size: 1rem; font-weight: 600; cursor: pointer; color: var(--text-secondary); border-radius: 99px; position: relative; z-index: 2; transition: color 0.3s ease; }
         .nav-tab.active { color: var(--text-primary); }
         #pill-slider { position: absolute; top: 0.25rem; bottom: 0.25rem; border-radius: 99px; background-color: var(--widget-bg); box-shadow: var(--shadow); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1; }
@@ -60,14 +62,14 @@
         .chapter-group { margin-bottom: var(--space-xl); }
         .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color); }
         .content-list { display: flex; flex-direction: column; gap: 0.75rem; }
-        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; text-decoration: none; }
+        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; cursor: pointer; }
         .card:not([data-status='locked']):hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
         .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; font-weight: 600; }
         .card-info { flex-grow: 1; } .card-title { font-weight: 600; font-size: 1rem; color: var(--text-primary); }
         .card-meta { font-size: 0.85rem; color: var(--text-secondary); }
-        .card-button { background-color: var(--c-primary); color: #FFFFFF; border: none; border-radius: 0.75rem; padding: 0.6rem 1.25rem; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; }
+        .card-button { background-color: var(--c-primary); color: #FFFFFF; border: none; border-radius: 0.75rem; padding: 0.6rem 1rem; font-size: 0.9rem; font-weight: 600; transition: background-color 0.2s ease; min-width: 120px; text-align: center; }
         .card-button:hover { background-color: var(--c-primary-dark); }
-        .card-status-icon { font-size: 1.5rem; color: var(--c-accent); margin-left: 1rem; }
+        .card-status-icon { font-size: 1.5rem; color: var(--c-accent); margin-left: auto; }
         .card[data-status="completed"] { background-color: #F8F8F8; }
         .card[data-status="completed"] .card-title { color: var(--text-secondary); }
         .card-prefix--completed { background-color: var(--c-accent-light); color: var(--c-accent); }
@@ -81,7 +83,6 @@
         .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
         .stat-item { text-align: center; } .stat-value { font-size: 1.75rem; font-weight: 700; color: var(--text-primary); }
         .stat-label { font-size: 0.875rem; color: var(--text-secondary); }
-        .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 500px; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
@@ -90,13 +91,20 @@
         .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
         .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
         .close-btn:hover { background-color: var(--hover-bg); }
-        .modal-body { padding: 1.5rem 2rem; }
-        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 2rem; text-align: center; }
-        .result-item h4 { font-size: 1.5rem; font-weight: 700; }
-        .result-item p { color: var(--text-secondary); font-size: 0.875rem; }
-        .result-item.full-width { grid-column: 1 / -1; }
-        .result-item.full-width h4 { font-size: 2.5rem; color: var(--brand-green); }
-        .modal-footer { padding: 1rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; }
+        .modal-body { padding: 1.5rem 2rem; text-align: center; }
+        .modal-body p { font-size: 1rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .modal-body h2 { font-size: 3rem; font-weight: 700; color: var(--brand-green); margin-bottom: 1rem; }
+        .menu-toggle { display: none; } .sidebar-close-btn { display: none; }
+        
+        @keyframes shimmer { 100% { transform: translateX(100%); } }
+        .skeleton { background-color: #e2e8f0; position: relative; overflow: hidden; }
+        .skeleton::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; transform: translateX(-100%); background-image: linear-gradient(90deg, rgba(255, 255, 255, 0) 0, rgba(255, 255, 255, 0.2) 20%, rgba(255, 255, 255, 0.5) 60%, rgba(255, 255, 255, 0)); animation: shimmer 2s infinite; }
+        .skeleton-line { height: 14px; border-radius: 4px; }
+        .skeleton-avatar { width: 40px; height: 40px; border-radius: 50%; }
+        .skeleton-pill-nav { display: inline-flex; background-color: #e2e8f0; border-radius: 99px; padding: 0.25rem; position: relative;}
+        .skeleton-pill { width: 110px; height: 32px; border-radius: 99px; margin: 2px; }
+        .skeleton-pill-nav::before { content:''; position: absolute; top: 0.25rem; bottom: 0.25rem; left: 0.25rem; width: 114px; background-color: var(--widget-bg); border-radius: 99px; z-index: 1;}
+
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
@@ -111,19 +119,23 @@
             .sidebar-close-btn:hover { color: #b91c1c; }
             .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
+            .pill-nav-container { justify-content: center; }
+            .stat-value { font-size: 1.5rem; }
+            .stat-label { font-size: 0.8rem; }
             .chapter-title { font-size: 1.25rem; }
+            .card { padding: 0.6rem; }
             .card-title { font-size: 0.95rem; }
             .card-meta { font-size: 0.8rem; }
+            .card-button { font-size: 0.85rem; min-width: 110px; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading...</div>
     <div class="overlay" id="overlay"></div>
-    <div class="dashboard-container" style="display: none;">
+    <div class="dashboard-container">
         <aside class="sidebar" id="sidebar">
             <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <div class="sidebar-header"><img src="" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="dashboard.html"><i class='bx bx-home-alt'></i> Dashboard</a></li>
@@ -135,9 +147,18 @@
                 </ul>
             </nav>
             <div class="profile-section" id="profile-section">
-                <img src="" alt="Profile Picture" class="profile-avatar">
-                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                <div class="profile-skeleton" style="display: flex; align-items: center; gap: 0.75rem; width: 100%;">
+                    <div class="skeleton skeleton-avatar"></div>
+                    <div style="flex-grow: 1; min-width: 0;">
+                        <div class="skeleton skeleton-line" style="width: 70%; height: 14px; margin-bottom: 0.5rem;"></div>
+                        <div class="skeleton skeleton-line" style="width: 90%; height: 12px;"></div>
+                    </div>
+                </div>
+                <div class="profile-content-wrapper" style="display: none;">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                    <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+                </div>
             </div>
             <div class="profile-popup" id="profile-popup">
                 <div class="popup-header">
@@ -155,61 +176,90 @@
                 <i class='bx bx-menu menu-toggle' id="menu-toggle"></i>
                 <h1>Course & Content</h1>
             </header>
-            <section class="hero-section">
-                <div class="container">
-                    <p class="breadcrumbs"><a href="dashboard.html">Dashboard</a> &gt; <span id="subject-breadcrumb"></span></p>
-                    <h1 class="hero-title" id="subject-title"></h1>
-                </div>
-            </section>
-            <div class="content-body">
-                <div class="main-content">
-                    <div class="pill-nav">
-                        <div id="pill-slider"></div>
-                        <button id="courseTab" class="nav-tab active">Curriculum</button>
-                        <button id="assessmentsTab" class="nav-tab">Assessments</button>
+            <div id="skeleton-loader">
+                <section class="hero-section">
+                    <div class="container">
+                        <p class="breadcrumbs"><span class="skeleton skeleton-line" style="width: 200px; height: 16px; display: inline-block; background-color: rgba(255,255,255,0.1);"></span></p>
+                        <h1 class="hero-title"><span class="skeleton" style="width: 350px; height: 48px; display: inline-block; border-radius: 8px; background-color: rgba(255,255,255,0.1);"></span></h1>
                     </div>
-                    <div id="courseContent" class="content-section active"></div>
-                    <div id="assessmentsContent" class="content-section"></div>
-                </div>
-                <aside class="content-sidebar">
-                    <div id="sidebarCard" class="sidebar-card">
-                        <h4>Subject Progress</h4>
-                        <div class="stat-grid">
-                            <div class="stat-item"><div class="stat-value" id="stat-lessons">0</div><div class="stat-label">Lessons</div></div>
-                            <div class="stat-item"><div class="stat-value" id="stat-assessments">0</div><div class="stat-label">Assessments</div></div>
-                            <div class="stat-item"><div class="stat-value" id="stat-completed">0%</div><div class="stat-label">Completed</div></div>
-                            <div class="stat-item"><div class="stat-value" id="stat-avg-score">-</div><div class="stat-label">Avg. Score</div></div>
+                </section>
+                <div class="content-body">
+                    <div class="main-content">
+                        <div class="pill-nav-container">
+                            <div class="skeleton-pill-nav">
+                                <div class="skeleton-pill"></div>
+                                <div class="skeleton-pill"></div>
+                            </div>
+                        </div>
+                        <div class="chapter-group" style="margin-bottom: 2.5rem;">
+                            <div class="skeleton skeleton-line" style="width: 250px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
+                            <div class="content-list">
+                                <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 80%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 40%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
+                                <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 75%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 35%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
+                            </div>
+                        </div>
+                         <div class="chapter-group">
+                            <div class="skeleton skeleton-line" style="width: 300px; height: 24px; margin-bottom: 1.5rem; border-radius: 8px;"></div>
+                            <div class="content-list">
+                                <div class="card" style="border-color: transparent; box-shadow: none;"><div class="skeleton skeleton-avatar"></div><div class="card-info" style="flex-grow: 1;"><p class="skeleton skeleton-line" style="height: 16px; width: 70%; margin-bottom: 0.5rem;"></p><p class="skeleton skeleton-line" style="height: 14px; width: 30%;"></p></div><div class="skeleton" style="height: 38px; min-width: 120px; border-radius: var(--radius-lg);"></div></div>
+                            </div>
                         </div>
                     </div>
-                </aside>
+                    <aside class="content-sidebar">
+                        <div class="sidebar-card" style="border: none; box-shadow: var(--shadow);">
+                            <h4 class="skeleton skeleton-line" style="height: 20px; width: 150px; margin-bottom: 1.5rem; border-radius: 8px;"></h4>
+                            <div class="stat-grid">
+                                <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                                <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                                <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                                <div class="stat-item"><div class="skeleton" style="width: 50px; height: 28px; margin: 0 auto 0.5rem; border-radius: 8px;"></div><div class="skeleton skeleton-line" style="width: 60px; height: 14px; margin: 0 auto;"></div></div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+            <div id="real-content" style="display:none; contents;">
+                <section class="hero-section">
+                    <div class="container">
+                        <p class="breadcrumbs"><a href="dashboard.html">Dashboard</a> &gt; <span id="subject-breadcrumb"></span></p>
+                        <h1 class="hero-title" id="subject-title"></h1>
+                    </div>
+                </section>
+                <div class="content-body">
+                    <div class="main-content">
+                        <div class="pill-nav-container">
+                            <div class="pill-nav">
+                                <div id="pill-slider"></div>
+                                <button id="courseTab" class="nav-tab active">Curriculum</button>
+                                <button id="assessmentsTab" class="nav-tab">Assessments</button>
+                            </div>
+                        </div>
+                        <div id="courseContent" class="content-section active"></div>
+                        <div id="assessmentsContent" class="content-section"></div>
+                    </div>
+                    <aside class="content-sidebar">
+                        <div id="sidebarCard" class="sidebar-card">
+                            <h4>Subject Progress</h4>
+                            <div class="stat-grid">
+                                <div class="stat-item"><div class="stat-value" id="stat-courses">0</div><div class="stat-label">Courses</div></div>
+                                <div class="stat-item"><div class="stat-value" id="stat-lessons">0</div><div class="stat-label">Lessons</div></div>
+                                <div class="stat-item"><div class="stat-value" id="stat-completed">0%</div><div class="stat-label">Completed</div></div>
+                                <div class="stat-item"><div class="stat-value" id="stat-avg-score">-</div><div class="stat-label">Avg. Score</div></div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
             </div>
         </main>
     </div>
-
+    
     <div class="modal-overlay" id="results-modal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="results-modal-title">Assessment Results</h3>
-                <button class="close-btn">&times;</button>
-            </div>
+            <div class="modal-header"><h3 id="results-modal-title"></h3><button class="close-btn">&times;</button></div>
             <div class="modal-body">
-                <div class="result-grid">
-                    <div class="result-item full-width">
-                        <h4 id="result-percentage"></h4>
-                        <p>Overall Score</p>
-                    </div>
-                    <div class="result-item">
-                        <h4 id="result-points"></h4>
-                        <p>Points Earned</p>
-                    </div>
-                    <div class="result-item">
-                        <h4 id="result-time"></h4>
-                        <p>Time Taken</p>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="primary-btn">Close</button>
+                <p>Your Score</p>
+                <h2 id="results-modal-score"></h2>
+                <p id="results-modal-details"></p>
             </div>
         </div>
     </div>
@@ -232,26 +282,11 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-
+            const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
             const CURRENT_PAGE_FILENAME = "new.html";
-            let userScoresMap = new Map();
+            let currentUser = null;
 
-            auth.onAuthStateChanged(async (user) => {
-                if (user) {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                    const userProfile = userDoc.data();
-                    initSharedUI(userProfile);
-                    await loadAndRenderContent(user.uid);
-                    document.querySelector('.dashboard-container').style.display = 'grid';
-                    document.getElementById('loading-overlay').style.display = 'none';
-                } else { window.location.href = 'index.html'; }
-            });
-
-            const initSharedUI = (userProfile) => {
-                document.querySelectorAll('.profile-avatar').forEach(el => el.src = userProfile.photoURL || '');
-                document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
-                document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
+            const setupEventListeners = () => {
                 document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
                 const profileSection = document.getElementById('profile-section');
                 const profilePopup = document.getElementById('profile-popup');
@@ -265,12 +300,9 @@
                 menuToggle.addEventListener('click', toggleMenu);
                 closeBtn.addEventListener('click', toggleMenu);
                 overlay.addEventListener('click', toggleMenu);
-                
                 const tabs = document.querySelectorAll('.nav-tab');
                 const slider = document.getElementById('pill-slider');
-                const activeTab = document.querySelector('.nav-tab.active');
-                function moveSlider(tab) { if(tab) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
-                moveSlider(activeTab);
+                function moveSlider(tab) { if(tab && slider) { slider.style.width = `${tab.offsetWidth}px`; slider.style.left = `${tab.offsetLeft}px`; }}
                 tabs.forEach(tab => {
                     tab.addEventListener('click', (e) => {
                         tabs.forEach(t => t.classList.remove('active'));
@@ -281,60 +313,110 @@
                         document.getElementById('assessmentsContent').classList.toggle('active', !isCourseTab);
                     });
                 });
-
-                document.addEventListener('click', e => {
-                    if (e.target.closest('.view-results-btn')) {
-                        const examId = e.target.closest('.view-results-btn').dataset.examId;
-                        showResultsModal(examId);
-                    }
-                    if (e.target.closest('#results-modal .close-btn') || e.target.closest('#results-modal .primary-btn')) {
-                        document.getElementById('results-modal').classList.remove('show');
-                    }
+                document.querySelector('#results-modal .close-btn').addEventListener('click', () => {
+                    document.getElementById('results-modal').classList.remove('show');
                 });
             };
 
+            const updateProfileUI = (userProfile) => {
+                const logoUrl = localStorage.getItem('dashboardLogoUrl');
+                if(logoUrl) document.querySelector('.logo-image').src = logoUrl;
+                const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
+
+                if(profileToUse) {
+                    document.querySelectorAll('.profile-avatar').forEach(el => {
+                        el.src = profileToUse.photoURL || DEFAULT_AVATAR;
+                        el.onerror = () => { el.src = DEFAULT_AVATAR; };
+                    });
+                    document.querySelectorAll('.profile-name').forEach(el => el.textContent = profileToUse.displayName);
+                    document.querySelectorAll('.profile-email').forEach(el => el.textContent = profileToUse.email);
+                    document.querySelector('.profile-skeleton').style.display = 'none';
+                    document.querySelector('.profile-content-wrapper').style.display = 'flex';
+                }
+            };
+            
+            setupEventListeners();
+            updateProfileUI();
+
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    currentUser = user;
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    if (!userDoc.exists) { window.location.href = 'index.html'; return; }
+                    const userProfile = userDoc.data();
+                    updateProfileUI(userProfile);
+                    await loadAndRenderContent(user.uid);
+                } else { window.location.href = 'index.html'; }
+            });
+
             const loadAndRenderContent = async (userId) => {
-                const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
-                if (subjectQuery.empty) { document.querySelector('.main-area').innerHTML = '<h1>Subject not found.</h1>'; return; }
-                const subjectDoc = subjectQuery.docs[0];
-                const subject = { id: subjectDoc.id, ...subjectDoc.data() };
-                document.getElementById('subject-title').textContent = subject.name;
-                document.getElementById('subject-breadcrumb').textContent = subject.name;
+                try {
+                    const subjectQuery = await db.collection('subjects').where('page', '==', CURRENT_PAGE_FILENAME).limit(1).get();
+                    if (subjectQuery.empty) { document.querySelector('.main-area').innerHTML = '<h1>Subject not found.</h1>'; return; }
+                    const subjectDoc = subjectQuery.docs[0];
+                    const subjectId = subjectDoc.id;
+                    document.getElementById('subject-title').textContent = subjectDoc.data().name;
+                    document.getElementById('subject-breadcrumb').textContent = subjectDoc.data().name;
 
-                const [lessonsSnapshot, examsSnapshot, progressSnapshot, userScoresSnapshot] = await Promise.all([
-                    db.collection('lessons').where('subjectId', '==', subject.id).get(),
-                    db.collection('exams').where('subjectId', '==', subject.id).get(),
-                    db.collection('users').doc(userId).collection('progress').where('subjectId', '==', subject.id).get(),
-                    db.collection('users').doc(userId).collection('scores').where('subjectId', '==', subject.id).get()
-                ]);
+                    const [coursesSnapshot, examsSnapshot, codeAssignmentsSnapshot, progressSnapshot, scoresSnapshot, codeAssignmentScoresSnapshot] = await Promise.all([
+                        db.collection('courses').where('subjectId', '==', subjectId).get(),
+                        db.collection('exams').where('subjectId', '==', subjectId).get(),
+                        db.collection('codeAssignments').where('subjectId', '==', subjectId).get(),
+                        db.collection('users').doc(userId).collection('progress').get(),
+                        db.collection('scores').where('userId', '==', userId).where('subjectId', '==', subjectId).get(),
+                        db.collection('codeAssignmentScores').where('userId', '==', userId).where('subjectId', '==', subjectId).get()
+                    ]);
 
-                const userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
-                userScoresMap = new Map(userScoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
+                    const userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
+                    const userScores = new Map(scoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
+                    const userCodeAssignmentScores = new Map(codeAssignmentScoresSnapshot.docs.map(doc => [doc.data().assignmentId, doc.data()]));
 
-                renderCourses(subject, lessonsSnapshot, userProgress);
-                renderAssessments(examsSnapshot, userScoresMap);
-                updateSidebarStats(lessonsSnapshot, examsSnapshot, userProgress, userScoresMap);
+                    const courseIds = coursesSnapshot.docs.map(doc => doc.id);
+                    let lessonsByCourse = {};
+                    if (courseIds.length > 0) {
+                        const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
+                        lessonsQuery.forEach(doc => {
+                            const lesson = { id: doc.id, ...doc.data() };
+                            if (!lessonsByCourse[lesson.courseId]) lessonsByCourse[lesson.courseId] = [];
+                            lessonsByCourse[lesson.courseId].push(lesson);
+                        });
+                    }
+                    
+                    renderCourses(coursesSnapshot, lessonsByCourse, userProgress);
+                    renderAssessments(examsSnapshot, codeAssignmentsSnapshot, userScores, userCodeAssignmentScores);
+                    updateSidebarStats(coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores);
+                } finally {
+                    document.getElementById('skeleton-loader').style.display = 'none';
+                    document.getElementById('real-content').style.display = 'contents';
+                    const activeTab = document.querySelector('.nav-tab.active');
+                    const slider = document.getElementById('pill-slider');
+                    if(activeTab && slider) {
+                        slider.style.width = `${activeTab.offsetWidth}px`;
+                        slider.style.left = `${activeTab.offsetLeft}px`;
+                    }
+                }
             };
 
-            const renderCourses = (subject, lessonsSnapshot, userProgress) => {
+            const renderCourses = (coursesSnapshot, lessonsByCourse, userProgress) => {
                 const container = document.getElementById('courseContent');
                 container.innerHTML = '';
-                if (!subject.chapters || subject.chapters.length === 0) { container.innerHTML = '<p>No curriculum defined for this subject yet.</p>'; return; }
-                
-                const allLessons = lessonsSnapshot.docs.map(d => ({id: d.id, ...d.data()})).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
-                const firstUncompletedLesson = allLessons.find(l => !userProgress.has(l.id));
+                if (coursesSnapshot.empty) { container.innerHTML = '<p>No courses available in this subject yet.</p>'; return; }
+                const allLessonsInSubject = Object.values(lessonsByCourse).flat().sort((a,b) => (a.courseId || '').localeCompare(b.courseId || '') || (a.chapterIndex - b.chapterIndex) || (a.order - b.order));
+                const firstUncompletedLesson = allLessonsInSubject.find(l => !userProgress.has(l.id));
 
-                subject.chapters.forEach((chapterName, chapterIndex) => {
-                    const lessonsInChapter = allLessons.filter(l => l.chapterIndex === chapterIndex);
-                    const chapterGroup = document.createElement('div');
-                    chapterGroup.className = 'chapter-group';
-                    chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="content-list"></div>`;
-                    const lessonsContainer = chapterGroup.querySelector('.content-list');
+                coursesSnapshot.docs.forEach(courseDoc => {
+                    const course = courseDoc.data();
+                    const lessons = (lessonsByCourse[courseDoc.id] || []);
+                    (course.chapters || []).forEach((chapterName, chapterIndex) => {
+                        const lessonsInChapter = lessons.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
+                        if (lessonsInChapter.length === 0) return;
+                        const chapterGroup = document.createElement('div');
+                        chapterGroup.className = 'chapter-group';
+                        chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="content-list"></div>`;
+                        const lessonsContainer = chapterGroup.querySelector('.content-list');
 
-                    if (lessonsInChapter.length > 0) {
                         lessonsInChapter.forEach(lesson => {
-                            const card = document.createElement('a');
-                            card.href = `lesson-view.html?id=${lesson.id}`;
+                            const card = document.createElement('div');
                             card.className = 'card';
                             const isCompleted = userProgress.has(lesson.id);
                             const isNext = firstUncompletedLesson && lesson.id === firstUncompletedLesson.id;
@@ -342,76 +424,81 @@
 
                             if (isCompleted) {
                                 status = 'completed'; prefixClass = 'card-prefix--completed'; statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
+                                buttonHtml = '<button class="card-button">Completed</button>';
                             } else if (isNext) {
                                 status = 'next'; prefixClass = 'card-prefix--default'; buttonHtml = '<button class="card-button">Start Lesson</button>';
                             } else {
                                 status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
                             }
 
-                            if (status === 'locked') card.style.pointerEvents = 'none';
+                            if (status !== 'locked') {
+                                card.onclick = () => window.location.href = `lesson-view.html?id=${courseDoc.id}`;
+                            } else { card.style.pointerEvents = 'none'; }
                             card.dataset.status = status;
                             card.innerHTML = `<div class="card-prefix ${prefixClass}">${lesson.chapterIndex + 1}.${lesson.order + 1}</div><div class="card-info"><p class="card-title">${lesson.title}</p><p class="card-meta">${lesson.duration}</p></div>${statusIcon}${buttonHtml}`;
                             lessonsContainer.appendChild(card);
                         });
-                    } else {
-                        lessonsContainer.innerHTML = `<p style="color: var(--text-secondary); padding: 0.5rem;">No lessons in this chapter yet.</p>`;
-                    }
-                    container.appendChild(chapterGroup);
+                        container.appendChild(chapterGroup);
+                    });
                 });
             };
 
-            const renderAssessments = (examsSnapshot, userScoresMap) => {
+            const renderAssessments = async (examsSnapshot, codeAssignmentsSnapshot, userScores, userCodeAssignmentScores) => {
                 const container = document.getElementById('assessmentsContent');
                 container.innerHTML = '';
-                
-                const assessments = examsSnapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-                assessments.sort((a, b) => (a.data.createdAt?.seconds || 0) - (b.data.createdAt?.seconds || 0));
+                let assessments = [];
+                examsSnapshot.forEach(doc => assessments.push({ type: 'mcq', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || { seconds: 0 } }));
+                codeAssignmentsSnapshot.forEach(doc => assessments.push({ type: 'code', id: doc.id, data: doc.data(), createdAt: doc.data().createdAt || { seconds: 0 } }));
+                assessments.sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
 
                 if (assessments.length === 0) { container.innerHTML = '<p>No assessments available in this subject yet.</p>'; return; }
-
+                
                 const assessmentGroup = document.createElement('div');
                 assessmentGroup.className = 'chapter-group';
                 assessmentGroup.innerHTML = `<div class="content-list"></div>`;
                 const listContainer = assessmentGroup.querySelector('.content-list');
 
-                assessments.forEach(item => {
-                    const score = userScoresMap.get(item.id);
-                    const isCompleted = !!score;
-                    
-                    const card = document.createElement(isCompleted ? 'div' : 'a');
+                for (const item of assessments) {
+                    const card = document.createElement('div');
                     card.className = 'card';
-                    
-                    let meta = '', buttonText = '', isLocked = item.data.isLocked;
+                    let meta = '', buttonText = '', isCompleted = false, isLocked = false;
+                    let scoreData = null;
 
-                    if (item.data.type === 'mcq') {
-                        if (!isCompleted) card.href = `exam.html?id=${item.id}`;
-                        if (isCompleted) {
-                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                    if (item.type === 'mcq') {
+                        const exam = item.data;
+                        scoreData = userScores.get(item.id);
+                        isLocked = exam.isLocked;
+                        if (scoreData) {
+                            isCompleted = true;
+                            const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
                             meta = `MCQ Exam • Score: ${percentage}%`;
                             buttonText = 'View Results';
+                            card.addEventListener('click', () => showResultsModal(scoreData, false));
                         } else {
-                            meta = `MCQ Exam • ${(item.data.questions || []).length} Questions • ${item.data.duration / 60} min`;
+                            meta = `MCQ Exam • ${exam.questions.length} Questions • ${exam.duration / 60} min`;
                             buttonText = isLocked ? 'Locked' : 'Start Exam';
+                            if (!isLocked) card.addEventListener('click', () => window.location.href = `exam.html?id=${item.id}`);
                         }
-                    } else if (item.data.type === 'code') {
-                        if (!isCompleted) card.href = `code.html?id=${item.id}`;
-                        if (isCompleted) {
-                            const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
+                    } else if (item.type === 'code') {
+                        const assignment = item.data;
+                        scoreData = userCodeAssignmentScores.get(item.id);
+                        isLocked = assignment.isLocked;
+                        if(scoreData){
+                            isCompleted = true;
+                             const percentage = scoreData.totalScorePossible > 0 ? Math.round((scoreData.totalScoreObtained / scoreData.totalScorePossible) * 100) : 0;
                             meta = `Code Assignment • Score: ${percentage}%`;
                             buttonText = 'View Results';
+                            card.addEventListener('click', () => showResultsModal(scoreData, true));
                         } else {
-                            meta = `Code Assignment • ${(item.data.problems || []).length} Problems • ${item.data.duration / 60} min`;
-                            buttonText = isLocked ? 'Locked' : 'Start Challenge';
+                            meta = `Code Assignment • ${assignment.duration / 60} min`;
+                            buttonText = isLocked ? 'Locked' : 'Start Code';
+                             if (!isLocked) card.addEventListener('click', () => window.location.href = `code.html?id=${item.id}`);
                         }
                     }
                     
-                    if(isLocked && !isCompleted) card.style.pointerEvents = 'none';
-
-                    const buttonClass = isCompleted ? 'view-results-btn' : (isLocked ? 'card-button--locked' : '');
-                    const buttonDataAttr = isCompleted ? `data-exam-id="${item.id}"` : '';
-
-                    const iconClass = item.data.type === 'mcq' ? 'bxs-file-doc' : 'bxs-code-alt';
-                    card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${buttonClass}" ${buttonDataAttr}>${buttonText}</button>`;
+                    if(isLocked && !isCompleted) card.dataset.status = 'locked';
+                    const iconClass = item.type === 'mcq' ? 'bxs-file-doc' : 'bxs-code-alt';
+                    card.innerHTML = `<div class="card-prefix card-prefix--default"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.data.name}</p><p class="card-meta">${meta}</p></div><button class="card-button ${isLocked && !isCompleted ? 'card-button--locked' : ''}">${buttonText}</button>`;
                     
                     if (isCompleted) {
                         card.dataset.status = 'completed';
@@ -419,52 +506,44 @@
                         card.querySelector('.card-info').insertAdjacentHTML('afterend', `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`);
                     }
                     listContainer.appendChild(card);
-                });
+                };
                 container.appendChild(assessmentGroup);
             };
 
-            const showResultsModal = (examId) => {
-                const score = userScoresMap.get(examId);
-                if (!score) return;
-
+            const showResultsModal = (score) => {
                 const modal = document.getElementById('results-modal');
-                const percentage = score.totalPoints > 0 ? Math.round((score.pointsReceived / score.totalPoints) * 100) : 0;
-                
-                let timeTaken = 'N/A';
-                if (score.timeTakenInSeconds) {
-                    const minutes = Math.floor(score.timeTakenInSeconds / 60);
-                    const seconds = score.timeTakenInSeconds % 60;
-                    timeTaken = `${minutes}m ${seconds}s`;
-                }
+                const isCode = !!score.assignmentName;
+                const title = isCode ? score.assignmentName : score.examName;
+                const points = isCode ? score.totalScoreObtained : score.pointsReceived;
+                const total = isCode ? score.totalScorePossible : score.totalPoints;
+                const percentage = total > 0 ? Math.round((points / total) * 100) : 0;
 
-                modal.querySelector('#results-modal-title').textContent = score.examName;
-                modal.querySelector('#result-percentage').textContent = `${percentage}%`;
-                modal.querySelector('#result-points').textContent = `${score.pointsReceived} / ${score.totalPoints}`;
-                modal.querySelector('#result-time').textContent = timeTaken;
-                
+                document.getElementById('results-modal-title').textContent = title;
+                document.getElementById('results-modal-score').textContent = `${percentage}%`;
+                document.getElementById('results-modal-details').textContent = `${points} / ${total} Points`;
                 modal.classList.add('show');
             };
-            
-            const updateSidebarStats = (lessonsSnapshot, examsSnapshot, userProgress, userScoresMap) => {
-                const totalLessons = lessonsSnapshot.size;
-                const totalAssessments = examsSnapshot.size;
-                const completedLessons = userProgress.size;
 
+            const updateSidebarStats = async (coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores) => {
+                const totalCourses = coursesSnapshot.size;
+                const totalLessons = Object.values(lessonsByCourse).flat().length;
+                const completedLessons = userProgress.size;
                 const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
                 
-                let totalScore = 0;
-                let scoreCount = 0;
-                userScoresMap.forEach(score => {
-                    if (score.examType !== 'attendance') {
-                        totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
-                        scoreCount++;
-                    }
+                let totalScore = 0, scoreCount = 0;
+                userScores.forEach(score => {
+                    totalScore += score.totalPoints > 0 ? (score.pointsReceived / score.totalPoints) * 100 : 0;
+                    scoreCount++;
                 });
-                
+                userCodeAssignmentScores.forEach(score => {
+                    totalScore += score.totalScorePossible > 0 ? (score.totalScoreObtained / score.totalScorePossible) * 100 : 0;
+                    scoreCount++;
+                });
+
                 const avgScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : '-';
 
+                document.getElementById('stat-courses').textContent = totalCourses;
                 document.getElementById('stat-lessons').textContent = totalLessons;
-                document.getElementById('stat-assessments').textContent = totalAssessments;
                 document.getElementById('stat-completed').textContent = `${progressPercent}%`;
                 document.getElementById('stat-avg-score').textContent = avgScore === '-' ? '-' : `${avgScore}%`;
             };
