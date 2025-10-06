@@ -10,9 +10,15 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
-            --text-primary: #111827; --text-secondary: #6B7280; --brand-purple: #6D28D9;
-            --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --success-color: #10B981;
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #002726;
+            --text-secondary: #6B7280;
+            --brand-purple: #6D28D9;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --success-color: #10B981;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
@@ -22,7 +28,7 @@
         a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
-        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
         .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .content-body { padding: 2rem 2.5rem; }
@@ -31,7 +37,22 @@
         .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: all 0.2s ease; }
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
         .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-purple); }
-        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { padding-top: 0.5rem; }
+        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); }
+        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); }
+        .popup-list a.logout { color: var(--danger-color); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .primary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: var(--brand-purple); color: white; }
         .primary-btn:hover:not(:disabled) { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
@@ -59,23 +80,58 @@
         .status-message.success { color: var(--success-color); }
         .status-message.error { color: var(--danger-color); }
         .placeholder { padding: 3rem; text-align: center; color: var(--text-secondary); }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 1.25rem 1.5rem; }
+            .content-body { padding: 1.5rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+        }
+        @media (max-width: 480px) {
+            .content-body { padding: 1rem; }
+            .main-header { padding: 1rem; }
+        }
     </style>
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
+    <div class="overlay" id="overlay"></div>
     <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
             <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
-                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
-                    <li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
+                    <li><a href="admin.html" class="active"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                    <li><a href="manage-subjects.html"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
                     <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
                 </ul>
             </nav>
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+            </div>
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-header">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                </div>
+                <ul class="popup-list">
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
         </aside>
         <main class="main-area">
-            <header class="main-header"><h1>Manage Attendance</h1></header>
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
+                <h1>Manage Attendance</h1>
+            </header>
             <section class="content-body">
                 <div class="controls-bar">
                     <div class="form-field">
@@ -124,11 +180,32 @@
 
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
                     initPage();
                 } else {
                     window.location.href = 'index.html';
                 }
             });
+
+            const initSharedUI = (adminProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
+                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                const profileSection = document.getElementById('profile-section');
+                const profilePopup = document.getElementById('profile-popup');
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
+                const overlay = document.getElementById('overlay');
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                menuToggle.addEventListener('click', toggleMenu);
+                closeBtn.addEventListener('click', toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
+            };
 
             const dom = {
                 subjectSelect: document.getElementById('subject-select'),
@@ -179,13 +256,24 @@
                 }
 
                 const userIds = enrollmentsSnap.docs.map(doc => doc.data().userId);
-                
-                const userDocs = await Promise.all(userIds.map(id => db.collection('users').doc(id).get()));
-                const attendanceDocs = await Promise.all(userIds.map(id => db.collection('users').doc(id).collection('scores').doc('attendance').get()));
-                
-                const usersMap = new Map(userDocs.map(doc => [doc.id, doc.data()]));
-                const attendanceMap = new Map(attendanceDocs.map((doc, i) => [userIds[i], doc.data()]));
+                if (userIds.length === 0) {
+                     dom.studentListContent.innerHTML = '<div class="placeholder">No students found for this enrollment.</div>';
+                    return;
+                }
 
+                const usersSnap = await db.collection('users').where(firebase.firestore.FieldPath.documentId(), 'in', userIds).get();
+                const usersMap = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
+                
+                const attendanceRef = db.collection('scores').where('userId', 'in', userIds).where('examType', '==', 'attendance').where('subjectId', '==', subjectId);
+                const attendanceSnap = await attendanceRef.get();
+                const attendanceMap = new Map();
+                attendanceSnap.forEach(doc => {
+                    const data = doc.data();
+                    if(data.attendanceData && data.attendanceData[date]){
+                        attendanceMap.set(data.userId, true);
+                    }
+                });
+                
                 dom.studentListContent.innerHTML = '';
                 let hasStudentsToMark = false;
 
@@ -193,8 +281,7 @@
                     const user = usersMap.get(userId);
                     if (!user) return;
 
-                    const userAttendance = attendanceMap.get(userId);
-                    const isPresent = userAttendance && userAttendance[date];
+                    const isPresent = attendanceMap.has(userId);
 
                     if (!isPresent) hasStudentsToMark = true;
 
@@ -215,6 +302,7 @@
 
                 dom.submitBtn.disabled = !hasStudentsToMark;
                 dom.selectAllCheckbox.checked = false;
+                dom.selectAllCheckbox.disabled = !hasStudentsToMark;
             };
             
             const handleSelectAll = (e) => {
@@ -239,18 +327,34 @@
 
                 const batch = db.batch();
                 
-                selectedCheckboxes.forEach(checkbox => {
+                for(const checkbox of selectedCheckboxes) {
                     const userId = checkbox.dataset.userId;
-                    const attendanceRef = db.collection('users').doc(userId).collection('scores').doc('attendance');
+                    const query = db.collection('scores').where('userId', '==', userId).where('examType', '==', 'attendance').where('subjectId', '==', subjectId);
+                    const snapshot = await query.get();
+
+                    const attendanceDataUpdate = { [`attendanceData.${date}`]: true };
                     
-                    const updateData = {
-                        [`${date}`]: 10,
-                        subjectId: subjectId,
-                        examType: "attendance"
-                    };
-                    
-                    batch.set(attendanceRef, updateData, { merge: true });
-                });
+                    if (snapshot.empty) {
+                        const newScoreRef = db.collection('scores').doc();
+                        batch.set(newScoreRef, {
+                            userId: userId,
+                            subjectId: subjectId,
+                            examType: "attendance",
+                            pointsReceived: 10,
+                            totalPoints: 10,
+                            attendanceData: { [date]: true },
+                            submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    } else {
+                        const docRef = snapshot.docs[0].ref;
+                        batch.update(docRef, {
+                            ...attendanceDataUpdate,
+                            pointsReceived: firebase.firestore.FieldValue.increment(10),
+                            totalPoints: firebase.firestore.FieldValue.increment(10),
+                            submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+                }
 
                 try {
                     await batch.commit();
@@ -262,7 +366,6 @@
                     dom.statusMessage.textContent = 'An error occurred. Please try again.';
                     dom.statusMessage.className = 'status-message error';
                 } finally {
-                    dom.submitBtn.disabled = false;
                     dom.submitBtn.innerHTML = "<i class='bx bx-check-double'></i> Submit Attendance";
                 }
             };
