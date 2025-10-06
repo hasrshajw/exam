@@ -327,7 +327,7 @@
             finalProblemOverlay: document.getElementById('final-problem-overlay')
         };
         
-        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0, examStartTime;
+        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false, violationCount = 0;
 
         async function main() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -336,28 +336,24 @@
             auth.onAuthStateChanged(async user => {
                 if (user) {
                     currentUser = user;
+                    await fetchData();
                     const completedScoreData = await checkIfAssignmentCompleted();
                     if (completedScoreData) {
                         showFinalResultsPage(completedScoreData);
                     } else {
-                        await fetchData();
-                        if(assignment) await initPyodide();
+                        await initPyodide();
                     }
                 } else { window.location.href = 'index.html'; }
             });
         }
 
         async function fetchData() {
-            const assignmentDoc = await db.collection('exams').doc(assignmentId).get();
-            if (!assignmentDoc.exists || assignmentDoc.data().type !== 'code') {
-                DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>';
-                assignment = null;
-                return;
-            }
+            const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
+            if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
             assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
             DOMElements.assignmentTitle.textContent = assignment.name;
-            
-            problems = assignment.problems || [];
+            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
+            problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             problems.forEach(p => {
                 userCodeState[p.id] = p.starterCode;
                 problemStatus[p.id] = 'not-attempted';
@@ -366,16 +362,28 @@
         }
 
         async function checkIfAssignmentCompleted() {
-            const scoreQuery = await db.collection('users').doc(currentUser.uid).collection('scores').where('examId', '==', assignmentId).limit(1).get();
-            return scoreQuery.empty ? null : scoreQuery.docs[0].data();
+            const scoreQuery = await db.collection('codeAssignmentScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
+            return scoreQuery.empty ? false : scoreQuery.docs[0].data();
         }
 
         function showFinalResultsPage(scoreData) {
             DOMElements.loadingOverlay.style.display = 'none';
             DOMElements.ideDashboard.style.display = 'none';
-            DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.pointsReceived} / ${scoreData.totalPoints}`;
+            DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
             DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
-            DOMElements.finalResultsList.style.display = 'none';
+            db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
+                const problemScores = {};
+                scoresSnap.forEach(doc => {
+                    const score = doc.data();
+                    problemScores[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
+                });
+                DOMElements.finalResultsList.innerHTML = problems.map(p => {
+                    const status = problemScores[p.id] || 'notattempted';
+                    const statusClass = `final-status ${status}`;
+                    const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
+                    return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
+                }).join('');
+            });
             DOMElements.resultsOverlay.classList.add('show');
         }
 
@@ -399,7 +407,9 @@
                 editorInstance.addAction({
                     id: action.id,
                     label: action.label,
-                    keybindings: [ monaco.KeyMod.CtrlCmd | action.key ],
+                    keybindings: [
+                        monaco.KeyMod.CtrlCmd | action.key,
+                    ],
                     contextMenuGroupId: '9_cutcopypaste',
                     contextMenuOrder: 1.5,
                     run: (ed) => {
@@ -409,7 +419,6 @@
                 });
             });
         }
-
         function initEditor() {
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
             require(['vs/editor/editor.main'], () => {
@@ -448,7 +457,7 @@
             const alertEl = document.createElement('div');
             alertEl.id = alertId;
             alertEl.className = `advanced-alert alert-${type}`;
-            const iconId = type === 'warning' ? '#icon-alert-triangle' : (type === 'info' ? '#icon-info-circle' : '#icon-shield-warning');
+            const iconId = type === 'warning' ? '#icon-alert-triangle' : (type === 'info' ? '#icon-info-circle' : '#icon-info-circle');
             alertEl.innerHTML = `<div class="alert-icon"><svg><use href="${iconId}"></use></svg></div><div class="alert-content"><div class="alert-title">${title}</div><div class="alert-message">${message}</div></div><div class="alert-progress"></div>`;
             DOMElements.alertContainer.appendChild(alertEl);
             setTimeout(() => { const el = document.getElementById(alertId); if (el) { el.classList.add('fade-out'); el.addEventListener('animationend', () => el.remove()); } }, 5000);
@@ -476,11 +485,8 @@
             const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
             let endTime = localStorage.getItem(storageKey);
             if (!endTime) {
-                examStartTime = Date.now();
-                endTime = examStartTime + assignment.duration * 1000;
+                endTime = Date.now() + assignment.duration * 1000;
                 localStorage.setItem(storageKey, endTime);
-            } else {
-                examStartTime = parseInt(endTime) - assignment.duration * 1000;
             }
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
@@ -506,51 +512,40 @@
         }
         
         async function endExam(title = "Test Finished", reason = "User ended exam") {
-            if (isTestEnded || isSubmitting) return;
+            if(isTestEnded || isSubmitting) return;
             isSubmitting = true;
             isTestEnded = true;
             pauseTimer();
-            if (editor) editor.updateOptions({ readOnly: true });
+            if(editor) editor.updateOptions({ readOnly: true });
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
-
-            let pointsReceived = 0;
-            const totalPoints = problems.reduce((sum, p) => sum + (p.points || 0), 0);
-            problems.forEach(p => {
-                if (problemStatus[p.id] === 'solved') {
-                    pointsReceived += p.points;
-                }
-            });
-            
-            const timeTakenInSeconds = Math.round((Date.now() - examStartTime) / 1000);
-
-            const scoreData = {
-                examId: assignmentId,
-                examName: assignment.name,
-                examType: 'code',
-                subjectId: assignment.subjectId,
-                pointsReceived: pointsReceived,
-                totalPoints: totalPoints,
-                timeTakenInSeconds: timeTakenInSeconds,
-                violations: violationCount,
-                submissionReason: reason,
-                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+            let totalScoreObtained = 0;
+            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
+            scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
+            const solvedCount = Object.values(problemStatus).filter(s => s === 'solved').length;
+            const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
+            const finalScoreData = {
+                userId: currentUser.uid, assignmentId: assignmentId,
+                assignmentName: assignment.name, subjectId: assignment.subjectId,
+                totalScoreObtained, totalScorePossible,
+                problemsSolved: solvedCount, totalProblems: problems.length,
+                completedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                submissionReason: reason
             };
-
-            await db.collection('users').doc(currentUser.uid).collection('scores').add(scoreData);
+            await db.collection('codeAssignmentScores').add(finalScoreData);
             
             localStorage.removeItem(`examEndTime_${currentUser.uid}_${assignmentId}`);
+            localStorage.removeItem(`fullscreenAttempts_${assignmentId}`);
+            localStorage.removeItem(`visibilityAttempts_${assignmentId}`);
 
-            DOMElements.finalScoreMessage.textContent = `Final Score: ${pointsReceived} / ${totalPoints}`;
+            DOMElements.finalScoreMessage.textContent = `Final Score: ${totalScoreObtained} / ${totalScorePossible}`;
             DOMElements.finalResultsList.innerHTML = problems.map(p => {
                 const status = problemStatus[p.id] || 'notattempted';
                 const statusClass = `final-status ${status}`;
                 const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
                 return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
             }).join('');
-            
             DOMElements.resultsOverlay.querySelector('h2').textContent = title;
             DOMElements.resultsOverlay.classList.add('show');
-            
             let countdown = 30;
             const redirectMessageEl = document.getElementById('redirect-message');
             const countdownInterval = setInterval(() => {
@@ -558,23 +553,25 @@
                 countdown--;
                 if (countdown < 0) {
                     clearInterval(countdownInterval);
-                    window.location.href = 'dashboard.html';
+                    window.location.href = '/course.html';
                 }
             }, 1000);
             isSubmitting = false;
         }
 
         function initEventListeners() {
+            // This is the SINGLE, correct block for disabling actions.
             const preventedActionHandler = (e, action) => { e.preventDefault(); showAdvancedAlert('error', 'Action Disabled', `${action} has been disabled during the exam.`); };
             document.addEventListener('contextmenu', e => preventedActionHandler(e, 'Right-click'));
             document.addEventListener('copy', e => preventedActionHandler(e, 'Copying'));
             document.addEventListener('paste', e => preventedActionHandler(e, 'Pasting'));
             document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'x', 'p', 'u', 's'].includes(e.key.toLowerCase()) || e.key === 'F12') { preventedActionHandler(e, `Shortcut (${e.key})`); } });
 
+            // All other event listeners
             [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
             [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
             [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
-                if (confirm("Are you sure you want to end the test? This will submit your current progress.")) {
+                if(confirm("Are you sure you want to end the test and submit your answers?")) {
                     endExam();
                 }
             }));
@@ -636,7 +633,7 @@
                 editor.updateOptions({ readOnly: isSubmitted });
             }
             [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSubmitted);
-            DOMElements.publicTestCases.innerHTML = (problem.testCases || []).filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
+            DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
             DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
             DOMElements.consoleOutput.textContent = 'No console output.';
             renderProblemList();
@@ -670,14 +667,16 @@
             DOMElements.resultsContent.innerHTML = '';
             DOMElements.consoleOutput.textContent = '';
             const problem = problems.find(p => p.id === currentProblemId);
-            const testsToRun = isSubmission ? (problem.testCases || []) : (problem.testCases || []).filter(tc => !tc.hidden);
+            const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
             const results = [];
             for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
             if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
             
             if (isSubmission) {
                 const allPassed = results.every(r => r.status === 'pass');
+                const previousStatus = problemStatus[currentProblemId];
                 problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
+                if (previousStatus !== 'solved') { await saveScore(problem, allPassed); }
                 renderProblemList();
                 
                 const currentProblemIndex = problems.findIndex(p => p.id === currentProblemId);
@@ -725,6 +724,15 @@
             } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent += `\n--- ERROR ---\n${e.toString()}`; } 
             finally { pyodide.setStdout(); pyodide.setStderr(); }
             return { ...testCase, ...result };
+        }
+
+        async function saveScore(problem, wasCorrect) {
+            const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
+            const scoreSnap = await scoreRef.get();
+            if (scoreSnap.empty) {
+                const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
+                try { await db.collection('codeScores').add(scoreData); } catch (e) { console.error("Error saving score:", e); showAdvancedAlert('error', 'Save Failed', 'Could not save your score.'); }
+            }
         }
 
         function renderResults(results, isSubmission) {
