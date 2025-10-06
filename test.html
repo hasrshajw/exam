@@ -3,271 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manage Course Content - Admin</title>
+    <title>Lesson Player - Exam Portal</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --body-bg: #F9FAFB;
-            --widget-bg: #FFFFFF;
-            --border-color: #E5E7EB;
-            --text-primary: #111827;
-            --text-secondary: #6B7280;
-            --brand-purple: #6D28D9;
-            --brand-purple-hover: #5B21B6;
-            --hover-bg: #F3F4F6;
-            --danger-color: #EF4444;
-            --danger-hover: #DC2626;
-            --danger-bg-light: #FEE2E2;
-            --danger-text-dark: #B91C1C;
-            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --font-family: 'IBM Plex Sans', sans-serif;
+            --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
+            --color-sidebar-bg: #10172a; --color-sidebar-bg-alt: #1e293b;
+            --color-sidebar-text: #e2e8f0; --color-sidebar-text-muted: #64748b; --color-sidebar-hover: #1e293b;
+            --color-background: #f8fafc; --color-surface: #ffffff; --color-text-primary: #0f172a; --color-text-secondary: #475569;
+            --color-border: #e2e8f0; --color-success: #10b981; --color-danger: #ef4444;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05); --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --border-radius-md: 8px; --border-radius-lg: 12px;
+            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        html { scroll-behavior: smooth; }
-        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
-        a { text-decoration: none; }
-        ul { list-style: none; }
-
-        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
-        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
-        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
-        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
-        .content-body { padding: 2rem 2.5rem; }
-        
-        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
-        .logo-image { height: 40px; }
-        .main-nav { flex-grow: 1; }
-        .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
-        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
-        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
-        .main-nav a:hover { background-color: var(--hover-bg); }
-        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
-        .main-nav a.active i { color: var(--brand-purple); }
-        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
-        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-        .profile-details { flex-grow: 1; min-width: 0; }
-        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
-        .profile-section.active .profile-options i { transform: rotate(180deg); }
-        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
-        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
-        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .popup-list { padding-top: 0.5rem; }
-        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
-        .popup-list a:hover { background-color: var(--hover-bg); }
-        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
-        .popup-list a.logout i { color: var(--danger-color); }
-        .popup-list a.logout { color: var(--danger-color); }
-
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
-        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
-        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .back-btn { margin-bottom: 1.5rem; font-weight: 600; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; }
-        .back-btn:hover { color: var(--brand-purple-hover); }
-        .back-btn i { font-size: 1.25rem; }
-        .primary-btn, .secondary-btn, .danger-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .primary-btn { background-color: var(--brand-purple); color: white; }
-        .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
-        .secondary-btn:hover { background-color: var(--hover-bg); }
-        .danger-btn { background-color: var(--danger-color); color: white; }
-        .danger-btn:hover { background-color: var(--danger-hover); }
-        .menu-toggle, .sidebar-close-btn { display: none; }
-        
-        .chapter-block { background-color: var(--widget-bg); border-radius: 12px; margin-bottom: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
-        .chapter-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
-        .chapter-title-display { font-size: 1.25rem; font-weight: 600; flex-grow: 1; }
-        .chapter-actions { position: relative; }
-        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
-        .action-btn:hover { background-color: var(--hover-bg); }
-        .action-btn i, .action-btn svg { font-size: 1.5rem; color: var(--text-secondary); width: 20px; height: 20px; }
-        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
-        .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
-        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
-        .action-item:hover { background-color: var(--hover-bg); }
-        .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-        .action-item.delete { color: var(--danger-color); }
-        
-        .lessons-list { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
-        .lesson-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px; }
-        .lesson-item:hover { background-color: #F9FAFB; }
-        .lesson-icon { color: var(--text-secondary); font-size: 1.25rem; }
-        .lesson-details { flex: 1; }
-        .lesson-details .title { font-weight: 500; color: var(--text-primary); }
-        .lesson-details .duration { font-size: 0.8rem; color: var(--text-secondary); }
-        .lesson-actions { display: flex; align-items: center; gap: 0.25rem; }
-        .lesson-actions .action-btn.edit svg { color: var(--text-primary); }
-        .lesson-actions .action-btn.delete svg { color: var(--danger-color); }
-        
-        .add-content-container { padding: 1rem 1.5rem 1.5rem; border-top: 1px solid var(--border-color); margin-top: 0.5rem; display: flex; gap: 0.75rem; }
-        .add-content-container .primary-btn, .add-content-container .secondary-btn { flex: 1; }
-        .add-chapter-container { padding: 1rem 0; }
-        .add-chapter-btn { width: 100%; padding: 1rem; background-color: var(--widget-bg); border: 2px dashed var(--border-color); color: var(--text-secondary); font-weight: 600; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.9rem; }
-        .add-chapter-btn:hover { background-color: var(--hover-bg); border-color: var(--brand-purple); color: var(--brand-purple); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-        
-        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
-        .modal-overlay.show { opacity: 1; visibility: visible; }
-        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
-        #quiz-modal .modal-content { max-width: 800px; }
-        .modal-overlay.show .modal-content { transform: scale(1); }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
-        .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
-        .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
-        .close-btn:hover { background-color: var(--hover-bg); }
-        .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem 2rem; }
-        .form-field { margin-bottom: 1.25rem; }
-        .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
-        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
-        .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
-        .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
-        
-        .confirm-modal .modal-content { max-width: 420px; }
-        .confirm-modal .modal-body { text-align: center; padding-top: 2rem; }
-        .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background-color: var(--danger-bg-light); color: var(--danger-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
-        .confirm-icon i { font-size: 1.5rem; }
-        .confirm-modal h4 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
-        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
-        .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
-
-        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
-        .questions-header h4 { font-size: 1.125rem; font-weight: 700; }
-        .accordion-item { border: 1px solid var(--border-color); border-radius: 12px; margin-top: 1rem; overflow: hidden; }
-        .accordion-button { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; padding: 1rem 1.5rem; background-color: #F9FAFB; border: none; cursor: pointer; font-weight: 600; font-size: 1rem; }
-        .accordion-button span { flex-grow: 1; }
-        .accordion-button i { transition: transform 0.3s ease; font-size: 1.5rem; }
-        .accordion-button.active i { transform: rotate(180deg); }
-        .accordion-content-inner { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: var(--widget-bg); }
-        .question-card { padding: 1.5rem; position: relative; }
-        .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .remove-item-btn:hover { background-color: var(--danger-hover); color: white; }
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
-        .full-width { grid-column: 1 / -1; }
-
-        @media (max-width: 1024px) {
-            .dashboard-container { grid-template-columns: 1fr; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
-            .sidebar.active { transform: translateX(0); }
-            .main-header { padding: 1.25rem 1.5rem; }
-            .content-body { padding: 1.5rem; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: none; background: none; }
-            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
-            .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-            .overlay.active { opacity: 1; pointer-events: auto; }
-        }
-        @media (max-width: 480px) {
-             .admin-content-header { flex-direction: column; align-items: stretch; }
-            .admin-content-header h2 { font-size: 1.5rem; text-align: center; }
-            .primary-btn, .secondary-btn { width: 100%; }
-            .confirm-modal .modal-footer { grid-template-columns: 1fr; }
-            .content-body { padding: 1rem; }
-            .main-header { padding: 1rem; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body { font-family: var(--font-family); background-color: var(--color-background); color: var(--color-text-primary); overflow: hidden; }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+        svg { display: block; width: 100%; height: 100%; }
+        .course-container { display: flex; height: 100%; position: relative; }
+        .sidebar { width: 340px; background-color: var(--color-sidebar-bg); color: var(--color-sidebar-text); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform 0.3s ease-in-out; border-right: 1px solid var(--color-sidebar-bg-alt); }
+        .sidebar-header { margin-bottom: 24px; } .sidebar-header .course-category { font-size: 0.9rem; color: var(--color-sidebar-text-muted); margin-bottom: 4px; } .sidebar-header .course-title { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
+        .progress-container { margin-bottom: 24px; font-size: 0.8rem; color: var(--color-sidebar-text-muted); } .progress-bar { width: 100%; height: 6px; background-color: var(--color-sidebar-bg-alt); border-radius: 3px; margin-top: 8px; overflow: hidden; } .progress-bar .progress { height: 100%; background-color: var(--color-primary); border-radius: 3px; transition: width 0.4s ease-in-out; }
+        .sidebar nav { flex: 1; overflow: hidden; position: relative; }
+        .course-nav { height: 100%; list-style: none; overflow-y: auto; padding-right: 12px; } .course-nav::-webkit-scrollbar { width: 6px; } .course-nav::-webkit-scrollbar-track { background: transparent; } .course-nav::-webkit-scrollbar-thumb { background: var(--color-sidebar-hover); border-radius: 3px; }
+        .chapter-item { margin-top: 16px; }
+        .chapter-header { display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius-md); cursor: pointer; user-select: none; transition: background-color var(--transition-fast); }
+        .chapter-header:hover { background-color: var(--color-sidebar-hover); }
+        .chapter-number { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background-color: var(--color-sidebar-bg-alt); font-size: 0.8rem; font-weight: 600; margin-right: 12px; flex-shrink: 0; }
+        .chapter-title-group { display: flex; flex-direction: column; flex-grow: 1; }
+        .chapter-title { font-weight: 600; font-size: 1rem; color: var(--color-sidebar-text); }
+        .chapter-progress { font-size: 0.75rem; color: var(--color-sidebar-text-muted); }
+        .chapter-status-icon { flex-shrink: 0; width: 20px; height: 20px; margin: 0 8px; color: var(--color-success); opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
+        .chapter-header.completed .chapter-status-icon { opacity: 1; transform: scale(1); }
+        .chapter-toggle-icon { width: 20px; height: 20px; color: var(--color-sidebar-text-muted); transition: transform var(--transition-fast); }
+        .chapter-header.collapsed .chapter-toggle-icon { transform: rotate(-90deg); }
+        .lesson-list-container { position: relative; padding-left: 24px; margin-left: 12px; }
+        .lesson-list-container::before { content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 2px; background-color: var(--color-sidebar-bg-alt); border-radius: 1px; }
+        .lesson-list { list-style: none; max-height: 1000px; overflow: hidden; transition: max-height 0.4s ease-in-out; }
+        .chapter-header.collapsed + .lesson-list-container .lesson-list { max-height: 0; }
+        .lesson-item { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: var(--border-radius-md); margin-top: 8px; transition: all var(--transition-fast); position: relative; } 
+        .lesson-item:not(.locked) { cursor: pointer; }
+        .lesson-item:not(.active):not(.locked):hover { background-color: var(--color-sidebar-hover); transform: translateX(4px); }
+        .lesson-item.active { background-color: var(--color-primary); color: white; font-weight: 600; } 
+        .lesson-item.locked { opacity: 0.5; cursor: not-allowed; }
+        .item-type-icon { font-size: 1.2rem; color: var(--color-sidebar-text-muted); } .active .item-type-icon { color: white; }
+        .lesson-details { display: flex; flex-direction: column; flex-grow: 1; } .lesson-title-nav { font-size: 0.9rem; } .lesson-duration { font-size: 0.75rem; color: var(--color-sidebar-text-muted); } .active .lesson-duration { color: #e0e4f1; }
+        .lesson-status-circle { width: 24px; height: 24px; margin-left: auto; color: var(--color-success); opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); } 
+        .lesson-item.completed:not(.active) .lesson-status-circle { opacity: 1; transform: scale(1); }
+        .main-content { flex-grow: 1; padding: 24px 64px; display: flex; flex-direction: column; overflow-y: auto; }
+        .main-header { display: flex; align-items: center; flex-shrink: 0; gap: 16px; margin-bottom: 32px;}
+        .lesson-area { display: flex; justify-content: center; align-items: flex-start; flex-grow: 1; } 
+        .lesson-view { width: 100%; max-width: 900px; }
+        .lesson-header-main { padding-bottom: 24px; border-bottom: 1px solid var(--color-border); margin-bottom: 32px; }
+        .lesson-header-main .lesson-meta { font-size: 0.9rem; font-weight: 500; color: var(--color-primary); margin-bottom: 12px; } 
+        .lesson-header-main .lesson-title-main { font-size: 2.25rem; font-weight: 700; line-height: 1.3; }
+        .lesson-body { line-height: 1.8; color: var(--color-text-secondary); }
+        .lesson-body h3 { font-size: 1.5rem; font-weight: 600; color: var(--color-text-primary); margin: 40px 0 16px 0; }
+        .lesson-body p { margin-bottom: 20px; }
+        .lesson-body .video-container { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; max-width: 100%; background: #000; border-radius: var(--border-radius-lg); margin: 32px 0; box-shadow: var(--shadow-md); }
+        .lesson-body .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        .quiz-container { display: flex; flex-direction: column; gap: 1rem; }
+        .quiz-question-card { margin-bottom: 2rem; }
+        .quiz-question-card h4 { font-size: 1.25rem; font-weight: 600; color: var(--color-text-primary); margin-bottom: 1rem; }
+        .quiz-option { display: flex; align-items: center; gap: 1rem; padding: 1rem; border: 1px solid var(--color-border); border-radius: var(--border-radius-md); cursor: pointer; transition: all 0.2s; }
+        .quiz-option:hover { background-color: var(--color-primary-light); }
+        .quiz-option.selected { border-color: var(--color-primary); background-color: var(--color-primary-light); }
+        .quiz-option-letter { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--color-text-secondary); display: grid; place-items: center; flex-shrink: 0; font-weight: bold; transition: all 0.2s; }
+        .selected .quiz-option-letter { border-color: var(--color-primary); background-color: var(--color-primary); color: white; }
+        .quiz-results .quiz-option.correct { border-color: var(--color-success); background-color: #f0fdf4; }
+        .quiz-results .quiz-option.incorrect { border-color: var(--color-danger); background-color: #fef2f2; }
+        .quiz-results .quiz-option.correct .quiz-option-letter { background-color: var(--color-success); border-color: var(--color-success); color: white; }
+        .quiz-results .quiz-option.incorrect .quiz-option-letter { background-color: var(--color-danger); border-color: var(--color-danger); color: white; }
+        .quiz-results-summary { text-align: center; padding: 2rem; background-color: var(--color-primary-light); border-radius: var(--border-radius-lg); margin-bottom: 2rem; }
+        .quiz-results-summary h3 { font-size: 2rem; color: var(--color-primary); margin-bottom: 0.5rem; }
+        .quiz-results-summary p { font-weight: 600; color: var(--color-text-secondary); }
+        .lesson-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 48px; border-top: 1px solid var(--color-border); padding-top: 24px; } 
+        .nav-btn { padding: 12px 28px; border-radius: var(--border-radius-md); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; gap: 8px; }
+        .nav-btn.complete-btn { background-color: var(--color-primary); color: white; } 
+        .nav-btn.complete-btn:hover { background-color: var(--color-primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .nav-btn.prev-btn { color: var(--color-text-secondary); } .nav-btn.prev-btn:hover { background-color: var(--color-border); } 
+        .nav-btn:disabled { background-color: #e5e7eb; color: #9ca3af; cursor: not-allowed; transform: none; box-shadow: none; }
+        .menu-toggle, .overlay, .close-menu-btn { display: none; }
+        @media (max-width: 900px) {
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); width: 320px;} .sidebar.active { transform: translateX(0); } .sidebar-header { padding-right: 30px; }
+            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: var(--color-sidebar-hover); border-radius: 50%; color: white; cursor: pointer; } .close-menu-btn .icon { width: 18px; height: 18px; }
+            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease-in-out; } .overlay.active { opacity: 1; pointer-events: auto; }
+            .main-content { padding: 24px 16px; } .main-header { justify-content: flex-start; margin-bottom: 24px; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid var(--color-border); border-radius: 50%; color: var(--color-text-secondary); background-color: var(--color-surface); } .menu-toggle .icon { width: 20px; height: 20px; }
+            .lesson-header-main .lesson-title-main { font-size: 1.75rem; }
         }
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
-    <div class="overlay" id="overlay"></div>
-    <div class="dashboard-container" style="display: none;">
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Content...</div>
+    <div class="course-container" id="course-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
-            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
-            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
-                    <li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
-                    <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
-                </ul>
+            <button class="close-menu-btn" id="close-menu-btn" aria-label="Close menu"><span class="icon"></span></button>
+            <div class="sidebar-header">
+                <p class="course-category" id="sidebar-category"></p>
+                <h1 class="course-title" id="sidebar-title"></h1>
+                <a href="#" id="back-to-subject-link" style="color: var(--color-sidebar-text-muted); font-size: 0.9rem; text-decoration: none; margin-top: 8px;">&larr; Back to Subject</a>
+            </div>
+            <div class="progress-container">
+                <span id="progress-text">0% Completed</span>
+                <div class="progress-bar"><div id="progress-bar-inner" class="progress"></div></div>
+            </div>
+            <nav>
+                <ul class="course-nav" id="course-nav"></ul>
             </nav>
-            <div class="profile-section" id="profile-section">
-                <img src="" alt="Profile Picture" class="profile-avatar">
-                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
-            </div>
-            <div class="profile-popup" id="profile-popup">
-                <div class="popup-header">
-                    <img src="" alt="Profile Picture" class="profile-avatar">
-                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                </div>
-                <ul class="popup-list">
-                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
-                </ul>
-            </div>
         </aside>
-        <main class="main-area">
+
+        <main class="main-content">
             <header class="main-header">
-                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
-                <h1>Manage Course Content</h1>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><span class="icon"></span></button>
             </header>
-            <section class="content-body">
-                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
-                <div class="admin-content-header">
-                    <h2 id="page-title"></h2>
-                </div>
-                <div class="lesson-editor" id="lesson-editor-container"></div>
-                <div class="add-chapter-container">
-                    <button class="add-chapter-btn" id="add-chapter-btn"><i class='bx bx-plus'></i> Add New Chapter</button>
-                </div>
-            </section>
+            <div class="lesson-area">
+                <section class="lesson-view">
+                    <header class="lesson-header-main">
+                        <p class="lesson-meta" id="lesson-meta"></p>
+                        <h2 class="lesson-title-main" id="lesson-title"></h2>
+                    </header>
+                    <div class="lesson-body" id="lesson-content"></div>
+                    <footer class="lesson-footer">
+                        <button class="nav-btn prev-btn" id="prev-btn">&larr; Previous</button>
+                        <button class="nav-btn complete-btn" id="complete-btn">Mark as Complete & Continue &rarr;</button>
+                    </footer>
+                </section>
+            </div>
         </main>
-    </div>
-
-    <div class="modal-overlay" id="lesson-modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="lesson-modal-title"></h3><button class="close-btn">&times;</button></div>
-            <div class="modal-body">
-                <form id="lesson-form">
-                    <input type="hidden" id="lesson-id">
-                    <div class="form-field"><label for="lesson-title">Lesson Title</label><input type="text" id="lesson-title" required></div>
-                    <div class="form-field"><label for="lesson-duration">Duration (e.g., 5 min)</label><input type="text" id="lesson-duration" required></div>
-                    <div class="form-field"><label for="lesson-content">Content (HTML allowed)</label><textarea id="lesson-content" rows="10" required></textarea></div>
-                </form>
-            </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-lesson-btn">Save Lesson</button></div>
-        </div>
-    </div>
-    
-    <div class="modal-overlay" id="quiz-modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="quiz-modal-title"></h3><button class="close-btn">&times;</button></div>
-            <div class="modal-body">
-                <form id="quiz-form">
-                    <input type="hidden" id="quiz-id">
-                    <div class="form-field"><label for="quiz-title">Quiz Title</label><input type="text" id="quiz-title" required></div>
-                    <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn"><i class='bx bx-plus'></i> Add Question</button></div>
-                    <div id="questions-container"></div>
-                </form>
-            </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-quiz-btn">Save Quiz</button></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="edit-chapter-modal">
-        <div class="modal-content">
-            <div class="modal-header"><h3 id="edit-chapter-modal-title">Chapter</h3><button class="close-btn">&times;</button></div>
-            <div class="modal-body">
-                <div class="form-field"><label for="new-chapter-name">Chapter Name</label><input type="text" id="new-chapter-name" required></div>
-            </div>
-            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-chapter-name-btn">Save</button></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay confirm-modal" id="confirm-modal">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="confirm-icon"><i class='bx bxs-trash'></i></div>
-                <h4 id="confirm-title">Are you sure?</h4>
-                <p id="confirm-text">Do you really want to delete this item? This process cannot be undone.</p>
-            </div>
-            <div class="modal-footer">
-                <button class="secondary-btn" id="confirm-cancel-btn">Cancel</button>
-                <button class="danger-btn" id="confirm-delete-btn">Delete</button>
-            </div>
-        </div>
+        <div class="overlay" id="overlay"></div>
     </div>
 
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -275,7 +144,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', () => {
             const firebaseConfig = {
                 apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
                 authDomain: "exam-2e799.firebaseapp.com",
@@ -288,353 +157,305 @@
             firebase.initializeApp(firebaseConfig);
             const auth = firebase.auth();
             const db = firebase.firestore();
-            const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
-            let currentCourse = null;
-            let currentSubject = null;
-
-            auth.onAuthStateChanged(async (user) => {
-                if (user && user.email === ADMIN_EMAIL) {
-                    const userDoc = await db.collection('users').doc(user.uid).get();
-                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
-                    initPage();
-                } else {
-                    window.location.href = 'index.html';
-                }
-            });
-
-            const initSharedUI = (adminProfile) => {
-                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
-                document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
-                document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
-                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-                const profileSection = document.getElementById('profile-section');
-                const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
-                const sidebar = document.getElementById('sidebar');
-                const menuToggle = document.getElementById('menu-toggle');
-                const closeBtn = document.getElementById('sidebar-close-btn');
-                const overlay = document.getElementById('overlay');
-                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
-                menuToggle.addEventListener('click', toggleMenu);
-                closeBtn.addEventListener('click', toggleMenu);
-                overlay.addEventListener('click', toggleMenu);
+            let courseData = null;
+            let subjectData = null;
+            let allItems = [];
+            let userProgress = new Set();
+            let currentItem = null;
+            let currentUser = null;
+            let userQuizAnswers = {};
+            
+            const ICONS = {
+                MENU: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>`,
+                CLOSE: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>`,
+                CHECK: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+                CHEVRON: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" /></svg>`
+            };
+            
+            const dom = { 
+                loadingOverlay: document.getElementById('loading-overlay'), courseContainer: document.getElementById('course-container'),
+                sidebarCategory: document.getElementById('sidebar-category'), sidebarTitle: document.getElementById('sidebar-title'),
+                backToSubjectLink: document.getElementById('back-to-subject-link'), courseNav: document.getElementById('course-nav'), 
+                progressText: document.getElementById('progress-text'), progressBarInner: document.getElementById('progress-bar-inner'), 
+                lessonMeta: document.getElementById('lesson-meta'), lessonTitle: document.getElementById('lesson-title'), 
+                lessonContent: document.getElementById('lesson-content'), prevBtn: document.getElementById('prev-btn'), 
+                completeBtn: document.getElementById('complete-btn'), sidebar: document.getElementById('sidebar'), 
+                menuToggle: document.getElementById('menu-toggle'), overlay: document.getElementById('overlay'), 
+                closeMenuBtn: document.getElementById('close-menu-btn'), 
             };
 
-            const initPage = async () => {
+            auth.onAuthStateChanged(user => {
+                if (user) { currentUser = user; initializeApp(); } 
+                else { window.location.href = 'index.html'; }
+            });
+
+            const initializeApp = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                const courseId = urlParams.get('courseId');
-                if (!courseId) { window.location.href = 'manage-subjects.html'; return; }
-                const courseDoc = await db.collection('courses').doc(courseId).get();
-                if (!courseDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
-                currentCourse = { id: courseId, ...courseDoc.data() };
-                
-                const subjectDoc = await db.collection('subjects').doc(currentCourse.subjectId).get();
-                currentSubject = { id: subjectDoc.id, ...subjectDoc.data() };
+                const itemId = urlParams.get('id');
+                if (!itemId) { alert('Content ID is missing.'); window.location.href = 'dashboard.html'; return; }
 
-                document.getElementById('page-title').textContent = `${currentCourse.name}`;
-                loadLessonEditor();
-                document.querySelector('.dashboard-container').style.display = 'grid';
-                document.getElementById('loading-overlay').style.display = 'none';
+                const itemDoc = await db.collection('lessons').doc(itemId).get();
+                if (!itemDoc.exists) { alert('Content not found.'); window.location.href = 'dashboard.html'; return; }
+                
+                currentItem = { id: itemDoc.id, ...itemDoc.data() };
+                const courseId = currentItem.courseId;
+                const subjectId = currentItem.subjectId;
+
+                const [courseDoc, subjectDoc, lessonsSnapshot, progressSnapshot] = await Promise.all([
+                    db.collection('courses').doc(courseId).get(),
+                    db.collection('subjects').doc(subjectId).get(),
+                    db.collection('lessons').where('courseId', '==', courseId).get(),
+                    db.collection('users').doc(currentUser.uid).collection('progress').where('courseId', '==', courseId).get()
+                ]);
+
+                if (!courseDoc.exists || !subjectDoc.exists) { alert('Course or Subject not found.'); window.location.href = 'dashboard.html'; return; }
+                
+                courseData = { id: courseDoc.id, ...courseDoc.data() };
+                subjectData = { id: subjectDoc.id, ...subjectDoc.data() };
+                allItems = lessonsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
+                userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
+
+                if (allItems.length > 0) { renderAll(); } 
+                else { dom.courseContainer.innerHTML = '<h1>This course has no content yet.</h1>'; }
+                
+                injectIcons();
+                dom.courseContainer.style.display = 'flex';
+                dom.loadingOverlay.style.display = 'none';
+            };
+
+            const renderAll = () => {
+                renderSidebar();
+                renderContent();
+                updateProgress();
+            };
+
+            const renderSidebar = () => {
+                dom.sidebarTitle.textContent = courseData.name;
+                dom.sidebarCategory.textContent = subjectData.name;
+                dom.backToSubjectLink.href = subjectData.page;
+                dom.courseNav.innerHTML = '';
+                const firstUncompleted = allItems.find(item => !userProgress.has(item.id));
+
+                (courseData.chapters || []).forEach((chapterTitle, chapIdx) => {
+                    const itemsInChapter = allItems.filter(l => l.chapterIndex === chapIdx);
+                    if(itemsInChapter.length === 0) return;
+
+                    const completedInChapter = itemsInChapter.filter(l => userProgress.has(l.id)).length;
+                    const isChapterComplete = completedInChapter === itemsInChapter.length;
+                    const isCollapsed = chapIdx !== currentItem.chapterIndex;
+
+                    const chapterItem = document.createElement('li');
+                    chapterItem.className = 'chapter-item';
+                    chapterItem.innerHTML = `<div class="chapter-header ${isChapterComplete ? 'completed' : ''} ${isCollapsed ? 'collapsed' : ''}"><span class="chapter-number">${chapIdx + 1}</span><div class="chapter-title-group"><span class="chapter-title">${chapterTitle}</span><span class="chapter-progress">${completedInChapter} / ${itemsInChapter.length} Completed</span></div><div class="chapter-status-icon">${ICONS.CHECK}</div><div class="chapter-toggle-icon">${ICONS.CHEVRON}</div></div><div class="lesson-list-container"><ul class="lesson-list"></ul></div>`;
+                    
+                    const lessonList = chapterItem.querySelector('.lesson-list');
+                    itemsInChapter.forEach((item) => {
+                        const isLocked = !userProgress.has(item.id) && firstUncompleted && item.id !== firstUncompleted.id;
+                        const li = document.createElement('li');
+                        li.className = `lesson-item ${item.id === currentItem.id ? 'active' : ''} ${userProgress.has(item.id) ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
+                        li.dataset.itemId = item.id;
+                        const iconClass = item.type === 'quiz' ? 'bxs-help-circle' : 'bxs-file-blank';
+                        const duration = item.type === 'lesson' ? `<span class="lesson-duration">${item.duration}</span>` : '';
+                        li.innerHTML = `<i class='item-type-icon bx ${iconClass}'></i><div class="lesson-details"><span class="lesson-title-nav">${item.title}</span>${duration}</div><div class="lesson-status-circle">${ICONS.CHECK}</div>`;
+                        if (!isLocked) { li.addEventListener('click', (e) => { e.preventDefault(); navigateToItem(item.id); }); }
+                        lessonList.appendChild(li);
+                    });
+                    
+                    chapterItem.querySelector('.chapter-header').addEventListener('click', (e) => e.currentTarget.classList.toggle('collapsed'));
+                    dom.courseNav.appendChild(chapterItem);
+                });
             };
             
-            const loadLessonEditor = () => {
-                const container = document.getElementById('lesson-editor-container');
-                db.collection('courses').doc(currentCourse.id).onSnapshot(doc => {
-                    const courseData = doc.data();
-                    if (!courseData) { container.innerHTML = 'Error: Course data could not be loaded.'; return; }
-                    currentCourse.chapters = courseData.chapters || []; 
-                    container.innerHTML = '';
-                    if (currentCourse.chapters.length === 0) {
-                        container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">This course has no chapters yet. Click "Add New Chapter" to begin.</p>';
+            const navigateToItem = (itemId) => {
+                const item = allItems.find(l => l.id === itemId);
+                if (item) {
+                    currentItem = item;
+                    userQuizAnswers = {};
+                    renderAll();
+                    updateURL(itemId);
+                    closeMobileMenu();
+                }
+            };
+
+            const renderContent = () => {
+                if (!currentItem) return;
+                dom.lessonMeta.textContent = `Chapter ${currentItem.chapterIndex + 1} • Item ${currentItem.chapterIndex + 1}.${currentItem.order + 1}`;
+                dom.lessonTitle.textContent = currentItem.title;
+                dom.lessonContent.className = 'lesson-body';
+                
+                if (currentItem.type === 'quiz') {
+                    renderQuiz();
+                } else {
+                    dom.lessonContent.innerHTML = currentItem.content;
+                }
+                updateNavButtons();
+            };
+
+            const renderQuiz = () => {
+                let quizHtml = '<div class="quiz-container">';
+                (currentItem.questions || []).forEach((q, index) => {
+                    quizHtml += `<div class="quiz-question-card" data-question-index="${index}"><h4>${index + 1}. ${q.title}</h4>`;
+                    q.options.forEach((opt, optIndex) => {
+                        quizHtml += `<label class="quiz-option"><input type="radio" name="q${index}" value="${optIndex}" style="display:none;"><span class="quiz-option-letter">${String.fromCharCode(65 + optIndex)}</span><span>${opt}</span></label>`;
+                    });
+                    quizHtml += `</div>`;
+                });
+                quizHtml += '</div>';
+                dom.lessonContent.innerHTML = quizHtml;
+
+                document.querySelectorAll('.quiz-option').forEach(opt => {
+                    opt.addEventListener('click', () => {
+                        const qIndex = opt.closest('.quiz-question-card').dataset.questionIndex;
+                        userQuizAnswers[qIndex] = parseInt(opt.querySelector('input').value, 10);
+                        opt.parentElement.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+                        opt.classList.add('selected');
+                    });
+                });
+            };
+
+            const updateProgress = () => {
+                const totalItems = allItems.length;
+                const completedItems = userProgress.size;
+                const percentage = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+                dom.progressText.textContent = `${percentage}% Completed (${completedItems}/${totalItems})`;
+                dom.progressBarInner.style.width = `${percentage}%`;
+            };
+
+            const updateNavButtons = () => {
+                const currentIndex = allItems.findIndex(l => l.id === currentItem.id);
+                dom.prevBtn.disabled = currentIndex === 0;
+                const isLastItem = currentIndex === allItems.length - 1;
+                const isCompleted = userProgress.has(currentItem.id);
+
+                if (currentItem.type === 'quiz') {
+                    dom.completeBtn.textContent = 'Submit Quiz';
+                    dom.completeBtn.disabled = isCompleted;
+                } else {
+                    if (isLastItem && isCompleted) {
+                        dom.completeBtn.textContent = 'Course Complete!';
+                        dom.completeBtn.disabled = true;
+                    } else if (isCompleted) {
+                        dom.completeBtn.textContent = 'Next →';
+                        dom.completeBtn.disabled = isLastItem;
                     } else {
-                        currentCourse.chapters.forEach((chapter, index) => {
-                            const chapterBlock = document.createElement('div');
-                            chapterBlock.className = 'chapter-block';
-                            chapterBlock.innerHTML = `
-                                <div class="chapter-header" data-chapter-index="${index}">
-                                    <span class="chapter-title-display">${index + 1}. ${chapter}</span>
-                                    <div class="chapter-actions">
-                                        <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
-                                        <div class="action-dropdown">
-                                            <button class="action-item edit-chapter-btn" data-chapter-index="${index}">
-                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
-                                                Rename
-                                            </button>
-                                            <button class="action-item delete delete-chapter-btn" data-chapter-index="${index}">
-                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
-                                                Delete
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="lessons-list" id="chapter-${index}-lessons"></div>
-                                <div class="add-content-container">
-                                    <button class="secondary-btn add-lesson-btn" data-chapter-index="${index}"><i class='bx bx-file'></i> Add Lesson</button>
-                                    <button class="primary-btn add-quiz-btn" data-chapter-index="${index}"><i class='bx bx-help-circle'></i> Add Quiz</button>
-                                </div>`;
-                            container.appendChild(chapterBlock);
-                            loadLessonsForChapter(index);
+                        dom.completeBtn.innerHTML = 'Mark as Complete & Continue &rarr;';
+                        dom.completeBtn.disabled = false;
+                    }
+                }
+            };
+            
+            const handlePrev = () => {
+                const currentIndex = allItems.findIndex(l => l.id === currentItem.id);
+                if (currentIndex > 0) navigateToItem(allItems[currentIndex - 1].id);
+            };
+
+            const handleCompleteAndNext = async () => {
+                if (currentItem.type === 'quiz') { handleSubmitQuiz(); return; }
+                
+                dom.completeBtn.disabled = true;
+                const isAlreadyCompleted = userProgress.has(currentItem.id);
+                
+                if (!isAlreadyCompleted) {
+                    try {
+                        await db.collection('users').doc(currentUser.uid).collection('progress').add({
+                            courseId: currentItem.courseId,
+                            subjectId: currentItem.subjectId,
+                            lessonId: currentItem.id,
+                            completedAt: firebase.firestore.FieldValue.serverTimestamp()
                         });
+                        userProgress.add(currentItem.id);
+                    } catch (error) { console.error("Error saving progress:", error); dom.completeBtn.disabled = false; return; }
+                }
+                
+                const currentIndex = allItems.findIndex(l => l.id === currentItem.id);
+                if (currentIndex < allItems.length - 1) {
+                    navigateToItem(allItems[currentIndex + 1].id);
+                } else { renderAll(); }
+            };
+
+            const handleSubmitQuiz = async () => {
+                if (Object.keys(userQuizAnswers).length !== currentItem.questions.length) {
+                    alert('Please answer all questions before submitting.');
+                    return;
+                }
+                dom.completeBtn.disabled = true;
+                let score = 0;
+                const totalPoints = currentItem.questions.reduce((sum, q) => sum + q.points, 0);
+
+                currentItem.questions.forEach((q, index) => {
+                    if (userQuizAnswers[index] === q.correctAnswer) {
+                        score += q.points;
                     }
                 });
-            };
 
-            const loadLessonsForChapter = (chapterIndex) => {
-                const container = document.getElementById(`chapter-${chapterIndex}-lessons`);
-                db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', chapterIndex).orderBy('order').onSnapshot(snapshot => {
-                    container.innerHTML = '';
-                    if (snapshot.empty) {
-                        container.innerHTML = '<p style="padding: 1rem 1rem; color: var(--text-secondary); text-align: center;">No content in this chapter yet.</p>';
-                    }
-                    snapshot.forEach(doc => {
-                        const itemData = doc.data();
-                        const item = document.createElement('div');
-                        item.className = 'lesson-item';
-                        const iconClass = itemData.type === 'quiz' ? 'bx-help-circle' : 'bx-file';
-                        const duration = itemData.type === 'lesson' ? `<div class="duration">${itemData.duration}</div>` : '';
-
-                        item.innerHTML = `
-                            <i class='bx ${iconClass} lesson-icon'></i>
-                            <div class="lesson-details">
-                                <div class="title">${itemData.title}</div>
-                                ${duration}
-                            </div>
-                            <div class="lesson-actions">
-                                <button class="action-btn edit edit-item-btn" data-id="${doc.id}" aria-label="Edit Item">
-                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
-                                </button>
-                                <button class="action-btn delete delete-item-btn" data-id="${doc.id}" aria-label="Delete Item">
-                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
-                                </button>
-                            </div>`;
-                        container.appendChild(item);
-                    });
-                });
-            };
-
-            const openLessonModal = (lesson = null, chapterIndex) => {
-                const modal = document.getElementById('lesson-modal');
-                modal.querySelector('#lesson-modal-title').textContent = lesson ? 'Edit Lesson' : 'Create New Lesson';
-                modal.dataset.chapterIndex = lesson ? lesson.chapterIndex : chapterIndex;
-                modal.querySelector('#lesson-form').reset();
-                modal.querySelector('#lesson-id').value = lesson ? lesson.id : '';
-                modal.querySelector('#lesson-title').value = lesson ? lesson.title : '';
-                modal.querySelector('#lesson-duration').value = lesson ? lesson.duration : '';
-                modal.querySelector('#lesson-content').value = lesson ? lesson.content : '';
-                modal.classList.add('show');
-            };
-
-            const openQuizModal = (quiz = null, chapterIndex) => {
-                const modal = document.getElementById('quiz-modal');
-                modal.querySelector('#quiz-modal-title').textContent = quiz ? 'Edit Quiz' : 'Create New Quiz';
-                modal.dataset.chapterIndex = quiz ? quiz.chapterIndex : chapterIndex;
-                modal.querySelector('#quiz-form').reset();
-                modal.querySelector('#quiz-id').value = quiz ? quiz.id : '';
-                modal.querySelector('#quiz-title').value = quiz ? quiz.title : '';
-                const questionsContainer = modal.querySelector('#questions-container');
-                questionsContainer.innerHTML = '';
-                if (quiz) quiz.questions.forEach(addQuestionToForm);
-                modal.classList.add('show');
-            };
-
-            const addQuestionToForm = (question = {}) => {
-                const container = document.getElementById('questions-container');
-                const index = container.querySelectorAll('.accordion-item').length;
-                const item = document.createElement('div');
-                item.className = 'accordion-item';
-                item.innerHTML = `
-                    <button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Question'}</span><i class='bx bx-chevron-down'></i></button>
-                    <div class="accordion-content-inner">
-                        <div class="question-card">
-                            <button type="button" class="remove-item-btn" aria-label="Remove Question">&times;</button>
-                            <div class="form-field full-width"><label for="q-title-${index}">Question Title</label><textarea id="q-title-${index}" rows="2" class="question-title" required>${question.title || ''}</textarea></div>
-                            <div class="form-grid">
-                                ${[0, 1, 2, 3].map(i => `<div class="form-field"><label for="q-${index}-opt-${i}">Option ${String.fromCharCode(65 + i)}</label><input type="text" id="q-${index}-opt-${i}" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
-                                <div class="form-field"><label for="q-${index}-correct">Correct Answer (0-3)</label><input type="number" id="q-${index}-correct" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
-                                <div class="form-field"><label for="q-${index}-points">Points</label><input type="number" id="q-${index}-points" class="question-points" value="${question.points || ''}" required></div>
-                            </div>
-                        </div>
-                    </div>`;
-                container.appendChild(item);
-                item.querySelector('.question-title').addEventListener('input', e => {
-                    item.querySelector('.accordion-button span').textContent = `${index + 1}. ${e.target.value || 'New Question'}`;
-                });
-            };
-            
-            const openEditChapterModal = (index, currentName) => {
-                const modal = document.getElementById('edit-chapter-modal');
-                modal.querySelector('#edit-chapter-modal-title').textContent = currentName ? 'Rename Chapter' : 'Add New Chapter';
-                modal.dataset.chapterIndex = index;
-                modal.querySelector('#new-chapter-name').value = currentName;
-                modal.classList.add('show');
-            };
-
-            let confirmCallback = null;
-            const openConfirmationModal = (title, text, onConfirm) => {
-                const modal = document.getElementById('confirm-modal');
-                modal.querySelector('#confirm-title').textContent = title;
-                modal.querySelector('#confirm-text').textContent = text;
-                confirmCallback = onConfirm;
-                modal.classList.add('show');
-            };
-
-            const closeModal = (modalId) => document.getElementById(modalId).classList.remove('show');
-
-            document.getElementById('add-chapter-btn').addEventListener('click', () => openEditChapterModal(null, ''));
-
-            document.getElementById('lesson-editor-container').addEventListener('click', async e => {
-                const target = e.target.closest('button');
-                if (!target) return;
-                
-                if (target.matches('.add-lesson-btn')) openLessonModal(null, target.dataset.chapterIndex);
-                else if (target.matches('.add-quiz-btn')) openQuizModal(null, target.dataset.chapterIndex);
-                else if (target.matches('.edit-item-btn')) {
-                    const doc = await db.collection('lessons').doc(target.dataset.id).get();
-                    const data = { id: doc.id, ...doc.data() };
-                    if (data.type === 'quiz') openQuizModal(data);
-                    else openLessonModal(data);
-                }
-                else if (target.matches('.delete-item-btn')) {
-                    openConfirmationModal('Delete Item', 'Are you sure you want to delete this item?', async () => {
-                        await db.collection('lessons').doc(target.dataset.id).delete();
-                    });
-                }
-                else if (target.matches('.edit-chapter-btn')) {
-                    const index = parseInt(target.dataset.chapterIndex, 10);
-                    openEditChapterModal(index, currentCourse.chapters[index]);
-                }
-                else if (target.matches('.delete-chapter-btn')) {
-                    const index = parseInt(target.dataset.chapterIndex, 10);
-                    const lessonsQuery = await db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', index).limit(1).get();
-                    if (!lessonsQuery.empty) {
-                        alert("Cannot delete a chapter that still contains content. Please delete all items from this chapter first.");
-                        return;
-                    }
-                    openConfirmationModal('Delete Chapter', `Are you sure you want to delete "${currentCourse.chapters[index]}"?`, async () => {
-                        const updatedChapters = currentCourse.chapters.filter((_, i) => i !== index);
-                        await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
-                    });
-                }
-            });
-
-            document.addEventListener('click', e => {
-                const button = e.target.closest('button');
-                if (button && (button.matches('.close-btn') || button.matches('.secondary-btn'))) {
-                    const modal = button.closest('.modal-overlay');
-                    if (modal) modal.classList.remove('show');
-                }
-                if (button && button.matches('.accordion-button')) {
-                    button.classList.toggle('active');
-                    const content = button.nextElementSibling;
-                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
-                }
-                if (button && button.id === 'add-question-btn') addQuestionToForm();
-                if (button && button.matches('.remove-item-btn')) {
-                    const questionCard = button.closest('.accordion-item');
-                    const container = questionCard.parentElement;
-                    questionCard.remove();
-                    container.querySelectorAll('.accordion-button span').forEach((span, index) => {
-                        const currentText = span.textContent.split('. ')[1];
-                        span.textContent = `${index + 1}. ${currentText}`;
-                    });
-                }
-            });
-            
-            document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal('confirm-modal'));
-            document.getElementById('confirm-delete-btn').addEventListener('click', () => {
-                if (confirmCallback) confirmCallback();
-                closeModal('confirm-modal');
-            });
-
-            document.getElementById('save-chapter-name-btn').addEventListener('click', async () => {
-                const modal = document.getElementById('edit-chapter-modal');
-                const index = modal.dataset.chapterIndex;
-                const newName = modal.querySelector('#new-chapter-name').value.trim();
-                if (!newName) { alert("Chapter name cannot be empty."); return; }
-                
-                const updatedChapters = [...currentCourse.chapters];
-                if (index !== null && index !== undefined && index !== 'null') {
-                    updatedChapters[parseInt(index, 10)] = newName;
-                } else {
-                    updatedChapters.push(newName);
-                }
-                await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
-                closeModal('edit-chapter-modal');
-            });
-
-            document.getElementById('save-lesson-btn').addEventListener('click', async () => {
-                const modal = document.getElementById('lesson-modal');
-                const id = modal.querySelector('#lesson-id').value;
-                const chapterIndex = parseInt(modal.dataset.chapterIndex, 10);
-                const data = {
-                    type: 'lesson',
-                    title: modal.querySelector('#lesson-title').value.trim(),
-                    duration: modal.querySelector('#lesson-duration').value.trim(),
-                    content: modal.querySelector('#lesson-content').value.trim(),
-                    courseId: currentCourse.id,
-                    subjectId: currentSubject.id,
-                    chapterIndex: chapterIndex,
-                };
-                if (!data.title || !data.duration) { alert('Title and Duration are required.'); return; }
-                if (id) {
-                    await db.collection('lessons').doc(id).update(data);
-                } else {
-                    const query = await db.collection('lessons').where('courseId', '==', data.courseId).where('chapterIndex', '==', data.chapterIndex).get();
-                    data.order = query.size;
-                    await db.collection('lessons').add(data);
-                }
-                closeModal('lesson-modal');
-            });
-
-             document.getElementById('save-quiz-btn').addEventListener('click', async () => {
-                const modal = document.getElementById('quiz-modal');
-                const form = document.getElementById('quiz-form');
-                if (!form.checkValidity()) { form.reportValidity(); return; }
-
-                const id = document.getElementById('quiz-id').value;
-                const chapterIndex = parseInt(modal.dataset.chapterIndex, 10);
-                const questions = [];
-                document.querySelectorAll('#questions-container .question-card').forEach(card => {
-                    questions.push({
-                        title: card.querySelector('.question-title').value.trim(), 
-                        options: [...card.querySelectorAll('.question-option')].map(opt => opt.value.trim()),
-                        correctAnswer: parseInt(card.querySelector('.question-correct').value, 10), 
-                        points: parseInt(card.querySelector('.question-points').value, 10),
-                    });
-                });
-                
-                const data = {
-                    type: 'quiz',
-                    title: modal.querySelector('#quiz-title').value.trim(),
-                    questions: questions,
-                    courseId: currentCourse.id,
-                    subjectId: currentSubject.id,
-                    chapterIndex: chapterIndex,
+                const scoreData = {
+                    userId: currentUser.uid,
+                    examId: currentItem.id, examName: currentItem.title,
+                    examType: 'quiz', courseId: currentItem.courseId, subjectId: currentItem.subjectId,
+                    pointsReceived: score, totalPoints: totalPoints,
+                    submittedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
-                if (id) {
-                    await db.collection('lessons').doc(id).update(data);
-                } else {
-                    const query = await db.collection('lessons').where('courseId', '==', data.courseId).where('chapterIndex', '==', data.chapterIndex).get();
-                    data.order = query.size;
-                    await db.collection('lessons').add(data);
-                }
-                closeModal('quiz-modal');
-            });
+                try {
+                    await db.collection('scores').add(scoreData);
+                    await db.collection('users').doc(currentUser.uid).collection('progress').add({
+                        courseId: currentItem.courseId,
+                        subjectId: currentItem.subjectId,
+                        lessonId: currentItem.id,
+                        completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    userProgress.add(currentItem.id);
+                } catch (error) { console.error("Error saving quiz score:", error); dom.completeBtn.disabled = false; return; }
+                
+                showQuizResults(score, totalPoints);
+                renderSidebar();
+                updateProgress();
+            };
 
-            document.addEventListener('click', e => {
-                const isDropdownButton = e.target.closest('.chapter-actions .menu-btn');
-                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
-                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
-                        dropdown.classList.remove('active');
-                    }
+            const showQuizResults = (score, totalPoints) => {
+                dom.lessonContent.classList.add('quiz-results');
+                const summary = `<div class="quiz-results-summary"><h3>${score}/${totalPoints}</h3><p>Your Score</p></div>`;
+                dom.lessonContent.insertAdjacentHTML('afterbegin', summary);
+
+                document.querySelectorAll('.quiz-question-card').forEach((card, index) => {
+                    const correctAnswer = currentItem.questions[index].correctAnswer;
+                    const userAnswer = userQuizAnswers[index];
+                    card.querySelectorAll('.quiz-option').forEach((opt, optIndex) => {
+                        opt.style.pointerEvents = 'none';
+                        if (optIndex === correctAnswer) opt.classList.add('correct');
+                        else if (optIndex === userAnswer) opt.classList.add('incorrect');
+                    });
                 });
-                if (isDropdownButton) {
-                    isDropdownButton.nextElementSibling.classList.toggle('active');
+                
+                dom.completeBtn.textContent = 'Next →';
+                const currentIndex = allItems.findIndex(l => l.id === currentItem.id);
+                if (currentIndex < allItems.length - 1) {
+                    dom.completeBtn.disabled = false;
+                } else {
+                    dom.completeBtn.textContent = 'Chapter Complete!';
+                    dom.completeBtn.disabled = true;
                 }
+            };
+            
+            const updateURL = (itemId) => {
+                const newUrl = `lesson-view.html?id=${itemId}`;
+                history.pushState({ itemId }, '', newUrl);
+            };
+
+            window.addEventListener('popstate', (event) => {
+                if (event.state && event.state.itemId) { navigateToItem(event.state.itemId); }
             });
+            
+            const injectIcons = () => { dom.menuToggle.innerHTML = ICONS.MENU; dom.closeMenuBtn.innerHTML = ICONS.CLOSE; };
+            const openMobileMenu = () => { dom.sidebar.classList.add('active'); dom.overlay.classList.add('active'); };
+            const closeMobileMenu = () => { dom.sidebar.classList.remove('active'); dom.overlay.classList.remove('active'); };
+
+            dom.prevBtn.addEventListener('click', handlePrev);
+            dom.completeBtn.addEventListener('click', handleCompleteAndNext);
+            dom.menuToggle.addEventListener('click', openMobileMenu);
+            dom.overlay.addEventListener('click', closeMobileMenu);
+            dom.closeMenuBtn.addEventListener('click', closeMobileMenu);
         });
     </script>
 </body>
