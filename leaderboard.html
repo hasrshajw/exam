@@ -69,8 +69,9 @@
         .rank-value.silver { color: var(--silver); }
         .rank-value.bronze { color: var(--bronze); }
         @keyframes shine { to { background-position: -200% center; } }
+        
         .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 24px 12px; box-shadow: var(--shadow-sm); display: flex; flex-direction: column; }
-        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding: 0 12px; }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .widget-header h2 { font-size: 1.125rem; font-weight: 600; }
         .leaderboard-tabs { display: flex; gap: 0.5rem; background-color: var(--hover-bg); padding: 0.25rem; border-radius: 99px; margin-bottom: 2rem; align-self: center; }
         .tab-btn { padding: 0.6rem 1.25rem; border: none; background-color: transparent; border-radius: 99px; font-weight: 600; cursor: pointer; color: var(--text-secondary); font-size: 0.9rem; transition: all 0.3s ease; }
@@ -89,7 +90,7 @@
         .podium-info { flex-grow: 1; } .podium-name { font-weight: 600; } .podium-score { font-weight: 700; color: var(--brand-green); }
         
         .leaderboard-list { list-style: none; }
-        .leaderboard-list li { display: flex; align-items: center; padding: 0.75rem; border-radius: 8px; transition: background-color 0.2s ease; }
+        .leaderboard-list li { display: flex; align-items: center; padding: 0.75rem 0; border-radius: 8px; transition: background-color 0.2s ease; }
         .leaderboard-list li:hover { background-color: var(--hover-bg); }
         .leaderboard-list li:not(:last-child) { margin-bottom: 0.5rem; }
         .leaderboard-list .rank { font-size: 1rem; font-weight: 600; color: var(--text-secondary); width: 40px; text-align: center; }
@@ -333,6 +334,8 @@
             };
 
             const updateProfileUI = (userProfile) => {
+                const logoUrl = localStorage.getItem('dashboardLogoUrl');
+                if (logoUrl) { document.querySelector('.logo-image').src = logoUrl; }
                 const profileToUse = userProfile || JSON.parse(localStorage.getItem('dashboardUserProfile'));
                 if (profileToUse) {
                     document.querySelectorAll('.profile-avatar').forEach(el => {
@@ -354,68 +357,51 @@
                     currentUserId = user.uid;
                     const userDoc = await db.collection('users').doc(user.uid).get();
                     if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                    currentUserProfile = { id: userDoc.id, ...userDoc.data() };
+                    currentUserProfile = userDoc.data();
                     updateProfileUI(currentUserProfile);
                     await loadLeaderboardData();
                 } else { window.location.href = 'index.html'; }
             });
 
-            const calculateAllUserStats = async () => {
-                const [allScoresSnap, usersSnap] = await Promise.all([
-                    db.collectionGroup('scores').get(),
+            const calculateUserPoints = async () => {
+                const [scoresSnap, codeAssignmentScoresSnap, usersSnap] = await Promise.all([
+                    db.collection('scores').get(),
+                    db.collection('codeAssignmentScores').get(),
                     db.collection('users').get()
                 ]);
 
-                const userStats = new Map();
-                usersSnap.forEach(doc => {
-                    userStats.set(doc.id, {
-                        id: doc.id,
-                        points: 0,
-                        totalTime: 0,
-                        totalViolations: 0,
-                        profile: doc.data()
-                    });
-                });
+                const allUsers = new Map();
+                usersSnap.forEach(doc => allUsers.set(doc.id, doc.data()));
 
-                allScoresSnap.forEach(doc => {
+                const userPoints = new Map();
+                allUsers.forEach((profile, id) => userPoints.set(id, 0));
+
+                scoresSnap.forEach(doc => {
                     const score = doc.data();
-                    const userId = doc.ref.parent.parent.id;
-                    
-                    if (userStats.has(userId)) {
-                        const stats = userStats.get(userId);
-                        let pointsToAdd = 0;
-                        
-                        if(score.examType === 'attendance') {
-                            pointsToAdd = Object.values(score).filter(v => v === 10).length * 10;
-                        } else if (score.pointsReceived) {
-                            pointsToAdd = score.pointsReceived;
-                            stats.totalTime += score.timeTakenInSeconds || 0;
-                            stats.totalViolations += score.violations || 0;
-                        }
-                        stats.points += pointsToAdd;
-                        userStats.set(userId, stats);
+                    if (userPoints.has(score.userId)) {
+                        userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.pointsReceived);
                     }
                 });
 
-                const rankedList = Array.from(userStats.values());
-                
-                rankedList.sort((a, b) => {
-                    if (b.points !== a.points) {
-                        return b.points - a.points;
+                codeAssignmentScoresSnap.forEach(doc => {
+                    const score = doc.data();
+                    if (userPoints.has(score.userId)) {
+                        userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.totalScoreObtained);
                     }
-                    if (a.totalTime !== b.totalTime) {
-                        return a.totalTime - b.totalTime;
-                    }
-                    return a.totalViolations - b.totalViolations;
                 });
-                
-                return rankedList;
+
+                return { userPoints, allUsers };
             };
 
             const loadLeaderboardData = async () => {
                 try {
-                    const rankedList = await calculateAllUserStats();
-                    const collegeList = rankedList.filter(u => u.profile && u.profile.college === currentUserProfile.college);
+                    const { userPoints, allUsers } = await calculateUserPoints();
+                    
+                    const rankedList = Array.from(userPoints.entries()).map(([id, points]) => ({
+                        id, points, profile: allUsers.get(id)
+                    })).filter(u => u.profile).sort((a,b) => b.points - a.points);
+
+                    const collegeList = rankedList.filter(u => u.profile.college === currentUserProfile.college);
                     
                     renderLeaderboard('overall-content', rankedList, true);
                     renderLeaderboard('college-content', collegeList, false);
@@ -431,8 +417,15 @@
             
             const renderLeaderboard = (containerId, userList, isOverall) => {
                 const container = document.getElementById(containerId);
+                let listToRender = [...userList];
+                const currentUserInList = listToRender.some(u => u.id === currentUserId);
+
+                if (!currentUserInList && currentUserProfile) {
+                    listToRender.push({ id: currentUserId, points: 0, profile: currentUserProfile });
+                }
+                
                 let topPerformersHtml = '';
-                const topPerformers = userList.slice(0, 3);
+                const topPerformers = listToRender.filter(u => u.points > 0).slice(0, 3);
                 let startIndexForList = 0;
 
                 if (isOverall && topPerformers.length > 0) {
@@ -446,7 +439,7 @@
                                 <div class="winner-score-container"><p class="winner-score-label">SCORE</p><p class="winner-score-num">${winner.points}</p></div>
                             </div>
                             <div class="winner-card-footer">
-                                <div class="winner-userInfo"><img src="${winnerPhoto}" alt="Profile" class="winner-user-profile-image" onerror="this.src='${DEFAULT_AVATAR}'"><div class="winner-userText"><p class="winner-userName">${winner.profile.displayName} ${winner.id === currentUserId ? '<span style="font-weight: 500; color: #7b8386;">(You)</span>' : ''}</p><p class="winner-collegeName">${winner.profile.college || 'N/A'}</p></div></div>
+                                <div class="winner-userInfo"><img src="${winnerPhoto}" alt="Profile of ${winner.profile.displayName}" class="winner-user-profile-image" onerror="this.src='${DEFAULT_AVATAR}'"><div class="winner-userText"><p class="winner-userName">${winner.profile.displayName}</p><p class="winner-collegeName">${winner.profile.college}</p></div></div>
                                 <div class="winner-medal-container"><svg class="winner-medals" viewBox="0 0 1024 1024"><path d="M896 42.666667h-128l-170.666667 213.333333h128z" fill="#FF4C4C"></path><path d="M768 42.666667h-128l-170.666667 213.333333h128z" fill="#3B8CFF"></path><path d="M640 42.666667h-128L341.333333 256h128z" fill="#F1F1F1"></path><path d="M128 42.666667h128l170.666667 213.333333H298.666667z" fill="#FF4C4C"></path><path d="M256 42.666667h128l170.666667 213.333333h-128z" fill="#3B8CFF"></path><path d="M384 42.666667h128l170.666667 213.333333h-128z" fill="#FBFBFB"></path><path d="M298.666667 256h426.666666v213.333333H298.666667z" fill="#E3A815"></path><path d="M512 661.333333m-320 0a320 320 0 1 0 640 0 320 320 0 1 0-640 0Z" fill="#FDDC3A"></path><path d="M512 661.333333m-256 0a256 256 0 1 0 512 0 256 256 0 1 0-512 0Z" fill="#E3A815"></path><path d="M512 661.333333m-213.333333 0a213.333333 213.333333 0 1 0 426.666666 0 213.333333 213.333333 0 1 0-426.666666 0Z" fill="#F5CF41"></path><path d="M277.333333 256h469.333334a21.333333 21.333333 0 0 1 0 42.666667h-469.333334a21.333333 21.333333 0 0 1 0-42.666667z" fill="#D19A0E"></path><path d="M277.333333 264.533333a12.8 12.8 0 1 0 0 25.6h469.333334a12.8 12.8 0 1 0 0-25.6h-469.333334z m0-17.066666h469.333334a29.866667 29.866667 0 1 1 0 59.733333h-469.333334a29.866667 29.866667 0 1 1 0-59.733333z" fill="#F9D525"></path><path d="M512 746.666667l-100.309333 52.736 19.157333-111.701334-81.152-79.104 112.128-16.298666L512 490.666667l50.176 101.632 112.128 16.298666-81.152 79.104 19.157333 111.701334z" fill="#FFF2A0"></path></svg></div>
                             </div>
                         </div>
@@ -460,19 +453,30 @@
                         let rankIcon = rank;
                         if(rank === 1) rankIcon = `<i class='bx bxs-trophy'></i>`;
                         else if(rank === 2 || rank === 3) rankIcon = `<i class='bx bxs-medal'></i>`;
-                        topPerformersHtml += `<div class="podium-stacked-item rank-${rank}"><div class="podium-rank-badge">${rankIcon}</div><img src="${userPhoto}" alt="Avatar" class="podium-avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="podium-info"><p class="podium-name">${user.profile.displayName} ${user.id === currentUserId ? '<span style="font-weight: 500; color: var(--text-secondary);">(You)</span>' : ''}</p></div><p class="podium-score">${user.points} XP</p></div>`;
+                        topPerformersHtml += `<div class="podium-stacked-item rank-${rank}"><div class="podium-rank-badge">${rankIcon}</div><img src="${userPhoto}" alt="Avatar" class="podium-avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="podium-info"><p class="podium-name">${user.profile.displayName}</p></div><p class="podium-score">${user.points} XP</p></div>`;
                     });
                     topPerformersHtml += '</div>';
                     startIndexForList = topPerformers.length;
                 }
                 
                 let listHtml = '<ul class="leaderboard-list">';
-                userList.slice(startIndexForList).forEach((user, index) => {
-                    const rank = startIndexForList + index + 1;
-                    const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
-                    listHtml += `<li class="${user.id === currentUserId ? 'current-user' : ''}"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName} ${user.id === currentUserId ? '<span style="color: var(--text-secondary); font-weight: 500;">(You)</span>' : ''}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
-                });
+                let currentUserRendered = listToRender.slice(0, startIndexForList).some(u => u.id === currentUserId);
                 
+                listToRender.slice(startIndexForList).forEach((user) => {
+                    const rank = listToRender.findIndex(u => u.id === user.id) + 1;
+                    if(user.id === currentUserId) currentUserRendered = true;
+                    const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
+                    listHtml += `<li class="${user.id === currentUserId ? 'current-user' : ''}"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score" style="padding-right: 8px;">${user.points} XP</p></li>`;
+                });
+
+                if (!currentUserRendered) {
+                     const user = listToRender.find(u => u.id === currentUserId);
+                     if(user){
+                         const rank = listToRender.findIndex(u => u.id === user.id) + 1;
+                         const userPhoto = user.profile.photoURL || DEFAULT_AVATAR;
+                         listHtml += `<li class="current-user"><span class="rank">${user.points > 0 ? rank : '-'}</span><img src="${userPhoto}" alt="Avatar" onerror="this.src='${DEFAULT_AVATAR}'"><div class="info"><p class="name">${user.profile.displayName}</p><p class="affiliation">${isOverall ? user.profile.college : (user.profile.branch || 'N/A')}</p></div><p class="score">${user.points} XP</p></li>`;
+                     }
+                }
                 listHtml += '</ul>';
                 container.innerHTML = topPerformersHtml + listHtml;
             };
@@ -508,29 +512,45 @@
             
             const renderScoreHistory = async () => {
                 const list = document.getElementById('score-history-list');
-                const scoresSnap = await db.collection('users').doc(currentUserId).collection('scores').orderBy('submittedAt', 'desc').get();
+                const [scoresSnap, codeScoresSnap] = await Promise.all([
+                    db.collection('scores').where('userId', '==', currentUserId).orderBy('submittedAt', 'desc').get(),
+                    db.collection('codeAssignmentScores').where('userId', '==', currentUserId).orderBy('completedAt', 'desc').get()
+                ]);
 
-                if (scoresSnap.empty) {
+                let historyItems = [];
+                scoresSnap.forEach(doc => {
+                    const data = doc.data();
+                    historyItems.push({
+                        name: data.examName,
+                        date: data.submittedAt.toDate(),
+                        score: `${data.pointsReceived} / ${data.totalPoints} XP`
+                    });
+                });
+                codeScoresSnap.forEach(doc => {
+                    const data = doc.data();
+                    historyItems.push({
+                        name: data.assignmentName,
+                        date: data.completedAt.toDate(),
+                        score: `${data.totalScoreObtained} / ${data.totalScorePossible} XP`
+                    });
+                });
+
+                historyItems.sort((a,b) => b.date - a.date);
+
+                if(historyItems.length === 0) {
                     list.innerHTML = '<p style="text-align:center; color: var(--text-secondary); padding: 2rem 0;">No assessments completed yet.</p>';
                     return;
                 }
 
-                let historyHtml = '';
-                scoresSnap.forEach(doc => {
-                    const score = doc.data();
-                    if (score.examType === 'attendance') return; 
-
-                    historyHtml += `
-                        <li class="score-history-item">
-                            <div class="score-history-info">
-                                <p>${score.examName}</p>
-                                <span>${score.submittedAt.toDate().toLocaleString()}</span>
-                            </div>
-                            <strong class="score-history-points">${score.pointsReceived} / ${score.totalPoints} XP</strong>
-                        </li>`;
-                });
-                
-                list.innerHTML = historyHtml || '<p style="text-align:center; color: var(--text-secondary); padding: 2rem 0;">No assessments completed yet.</p>';
+                list.innerHTML = historyItems.map(item => `
+                    <li class="score-history-item">
+                        <div class="score-history-info">
+                            <p>${item.name}</p>
+                            <span>${item.date.toLocaleString()}</span>
+                        </div>
+                        <strong class="score-history-points">${item.score}</strong>
+                    </li>
+                `).join('');
             };
         });
     </script>
