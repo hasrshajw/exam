@@ -62,9 +62,10 @@
         .chapter-group { margin-bottom: var(--space-xl); }
         .chapter-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-lg); padding-bottom: var(--space-md); border-bottom: 1px solid var(--border-color); }
         .content-list { display: flex; flex-direction: column; gap: 0.75rem; }
-        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; cursor: pointer; }
+        .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; }
+        .card:not([data-status='locked']) { cursor: pointer; }
         .card:not([data-status='locked']):hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; font-weight: 600; }
+        .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 12px; display: grid; place-items: center; font-size: 1.5rem; font-weight: 600; }
         .card-info { flex-grow: 1; } .card-title { font-weight: 600; font-size: 1rem; color: var(--text-primary); }
         .card-meta { font-size: 0.85rem; color: var(--text-secondary); }
         .card-button { background-color: var(--c-primary); color: #FFFFFF; border: none; border-radius: 0.75rem; padding: 0.6rem 1rem; font-size: 0.9rem; font-weight: 600; transition: background-color 0.2s ease; min-width: 120px; text-align: center; }
@@ -362,7 +363,7 @@
                         db.collection('courses').where('subjectId', '==', subjectId).get(),
                         db.collection('exams').where('subjectId', '==', subjectId).get(),
                         db.collection('codeAssignments').where('subjectId', '==', subjectId).get(),
-                        db.collection('users').doc(userId).collection('progress').get(),
+                        db.collection('users').doc(userId).collection('progress').where('subjectId', '==', subjectId).get(),
                         db.collection('scores').where('userId', '==', userId).where('subjectId', '==', subjectId).get(),
                         db.collection('codeAssignmentScores').where('userId', '==', userId).where('subjectId', '==', subjectId).get()
                     ]);
@@ -372,19 +373,19 @@
                     const userCodeAssignmentScores = new Map(codeAssignmentScoresSnapshot.docs.map(doc => [doc.data().assignmentId, doc.data()]));
 
                     const courseIds = coursesSnapshot.docs.map(doc => doc.id);
-                    let lessonsByCourse = {};
+                    let itemsByCourse = {};
                     if (courseIds.length > 0) {
                         const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
                         lessonsQuery.forEach(doc => {
-                            const lesson = { id: doc.id, ...doc.data() };
-                            if (!lessonsByCourse[lesson.courseId]) lessonsByCourse[lesson.courseId] = [];
-                            lessonsByCourse[lesson.courseId].push(lesson);
+                            const item = { id: doc.id, ...doc.data() };
+                            if (!itemsByCourse[item.courseId]) itemsByCourse[item.courseId] = [];
+                            itemsByCourse[item.courseId].push(item);
                         });
                     }
                     
-                    renderCourses(coursesSnapshot, lessonsByCourse, userProgress);
+                    renderCourses(coursesSnapshot, itemsByCourse, userProgress, userScores);
                     renderAssessments(examsSnapshot, codeAssignmentsSnapshot, userScores, userCodeAssignmentScores);
-                    updateSidebarStats(coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores);
+                    updateSidebarStats(coursesSnapshot, itemsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores);
                 } finally {
                     document.getElementById('skeleton-loader').style.display = 'none';
                     document.getElementById('real-content').style.display = 'contents';
@@ -397,45 +398,69 @@
                 }
             };
 
-            const renderCourses = (coursesSnapshot, lessonsByCourse, userProgress) => {
+            const renderCourses = (coursesSnapshot, itemsByCourse, userProgress, userScores) => {
                 const container = document.getElementById('courseContent');
                 container.innerHTML = '';
                 if (coursesSnapshot.empty) { container.innerHTML = '<p>No courses available in this subject yet.</p>'; return; }
-                const allLessonsInSubject = Object.values(lessonsByCourse).flat().sort((a,b) => (a.courseId || '').localeCompare(b.courseId || '') || (a.chapterIndex - b.chapterIndex) || (a.order - b.order));
-                const firstUncompletedLesson = allLessonsInSubject.find(l => !userProgress.has(l.id));
+
+                const allItemsInSubject = Object.values(itemsByCourse).flat().sort((a,b) => (a.courseId || '').localeCompare(b.courseId || '') || (a.chapterIndex - b.chapterIndex) || (a.order - b.order));
+                const firstUncompletedItem = allItemsInSubject.find(item => !userProgress.has(item.id));
 
                 coursesSnapshot.docs.forEach(courseDoc => {
                     const course = courseDoc.data();
-                    const lessons = (lessonsByCourse[courseDoc.id] || []);
+                    const items = (itemsByCourse[courseDoc.id] || []);
                     (course.chapters || []).forEach((chapterName, chapterIndex) => {
-                        const lessonsInChapter = lessons.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
-                        if (lessonsInChapter.length === 0) return;
+                        const itemsInChapter = items.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
+                        if (itemsInChapter.length === 0) return;
+
                         const chapterGroup = document.createElement('div');
                         chapterGroup.className = 'chapter-group';
                         chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="content-list"></div>`;
                         const lessonsContainer = chapterGroup.querySelector('.content-list');
 
-                        lessonsInChapter.forEach(lesson => {
+                        itemsInChapter.forEach(item => {
                             const card = document.createElement('div');
                             card.className = 'card';
-                            const isCompleted = userProgress.has(lesson.id);
-                            const isNext = firstUncompletedLesson && lesson.id === firstUncompletedLesson.id;
-                            let status, prefixClass, buttonHtml = '', statusIcon = '';
+                            const isCompleted = userProgress.has(item.id);
+                            const isNext = firstUncompletedItem && item.id === firstUncompletedItem.id;
+                            let status, prefixClass, buttonHtml = '', statusIcon = '', meta = '';
+                            
+                            const iconClass = item.type === 'quiz' ? 'bxs-help-circle' : 'bxs-file-blank';
+                            const buttonText = item.type === 'quiz' ? 'Start Quiz' : 'Start Lesson';
 
                             if (isCompleted) {
-                                status = 'completed'; prefixClass = 'card-prefix--completed'; statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
-                                buttonHtml = '<button class="card-button">Completed</button>';
+                                status = 'completed';
+                                prefixClass = 'card-prefix--completed';
+                                statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
+                                if (item.type === 'quiz') {
+                                    const scoreData = userScores.get(item.id);
+                                    if(scoreData){
+                                        const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
+                                        meta = `Score: ${percentage}%`;
+                                        buttonHtml = `<button class="card-button">View Results</button>`;
+                                        card.onclick = () => showResultsModal(scoreData);
+                                    } else {
+                                        buttonHtml = `<button class="card-button">Completed</button>`;
+                                    }
+                                } else {
+                                     meta = item.duration;
+                                     buttonHtml = `<button class="card-button">Completed</button>`;
+                                }
                             } else if (isNext) {
-                                status = 'next'; prefixClass = 'card-prefix--default'; buttonHtml = '<button class="card-button">Start Lesson</button>';
+                                status = 'next';
+                                prefixClass = 'card-prefix--default';
+                                buttonHtml = `<button class="card-button">${buttonText}</button>`;
+                                meta = item.type === 'lesson' ? item.duration : `${item.questions.length} Questions`;
+                                card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
                             } else {
-                                status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
+                                status = 'locked';
+                                prefixClass = 'card-prefix--locked';
+                                buttonHtml = `<button class="card-button card-button--locked">Locked</button>`;
+                                meta = item.type === 'lesson' ? item.duration : `${item.questions.length} Questions`;
                             }
 
-                            if (status !== 'locked') {
-                                card.onclick = () => window.location.href = `lesson-view.html?id=${courseDoc.id}`;
-                            } else { card.style.pointerEvents = 'none'; }
                             card.dataset.status = status;
-                            card.innerHTML = `<div class="card-prefix ${prefixClass}">${lesson.chapterIndex + 1}.${lesson.order + 1}</div><div class="card-info"><p class="card-title">${lesson.title}</p><p class="card-meta">${lesson.duration}</p></div>${statusIcon}${buttonHtml}`;
+                            card.innerHTML = `<div class="card-prefix ${prefixClass}"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.title}</p><p class="card-meta">${meta}</p></div>${statusIcon}${buttonHtml}`;
                             lessonsContainer.appendChild(card);
                         });
                         container.appendChild(chapterGroup);
@@ -473,7 +498,7 @@
                             const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
                             meta = `MCQ Exam • Score: ${percentage}%`;
                             buttonText = 'View Results';
-                            card.addEventListener('click', () => showResultsModal(scoreData, false));
+                            card.addEventListener('click', () => showResultsModal(scoreData));
                         } else {
                             meta = `MCQ Exam • ${exam.questions.length} Questions • ${exam.duration / 60} min`;
                             buttonText = isLocked ? 'Locked' : 'Start Exam';
@@ -513,7 +538,7 @@
             const showResultsModal = (score) => {
                 const modal = document.getElementById('results-modal');
                 const isCode = !!score.assignmentName;
-                const title = isCode ? score.assignmentName : score.examName;
+                const title = isCode ? score.assignmentName : (score.examName || 'Quiz Results');
                 const points = isCode ? score.totalScoreObtained : score.pointsReceived;
                 const total = isCode ? score.totalScorePossible : score.totalPoints;
                 const percentage = total > 0 ? Math.round((points / total) * 100) : 0;
@@ -524,11 +549,12 @@
                 modal.classList.add('show');
             };
 
-            const updateSidebarStats = async (coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores) => {
+            const updateSidebarStats = async (coursesSnapshot, itemsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores) => {
                 const totalCourses = coursesSnapshot.size;
-                const totalLessons = Object.values(lessonsByCourse).flat().length;
-                const completedLessons = userProgress.size;
-                const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+                const allItems = Object.values(itemsByCourse).flat();
+                const totalLessonsAndQuizzes = allItems.length;
+                const completedLessonsAndQuizzes = userProgress.size;
+                const progressPercent = totalLessonsAndQuizzes > 0 ? Math.round((completedLessonsAndQuizzes / totalLessonsAndQuizzes) * 100) : 0;
                 
                 let totalScore = 0, scoreCount = 0;
                 userScores.forEach(score => {
@@ -543,7 +569,7 @@
                 const avgScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : '-';
 
                 document.getElementById('stat-courses').textContent = totalCourses;
-                document.getElementById('stat-lessons').textContent = totalLessons;
+                document.getElementById('stat-lessons').textContent = totalLessonsAndQuizzes;
                 document.getElementById('stat-completed').textContent = `${progressPercent}%`;
                 document.getElementById('stat-avg-score').textContent = avgScore === '-' ? '-' : `${avgScore}%`;
             };
