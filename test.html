@@ -306,6 +306,7 @@
 
                 document.querySelectorAll('.quiz-option').forEach(opt => {
                     opt.addEventListener('click', () => {
+                        if (userProgress.has(currentItem.id)) return;
                         const qIndex = opt.closest('.quiz-question-card').dataset.questionIndex;
                         userQuizAnswers[qIndex] = parseInt(opt.querySelector('input').value, 10);
                         opt.parentElement.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
@@ -329,8 +330,8 @@
                 const isCompleted = userProgress.has(currentItem.id);
 
                 if (currentItem.type === 'quiz') {
-                    dom.completeBtn.textContent = 'Submit Quiz';
-                    dom.completeBtn.disabled = isCompleted;
+                    dom.completeBtn.textContent = isCompleted ? 'Next →' : 'Submit Quiz';
+                    dom.completeBtn.disabled = isLastItem && isCompleted;
                 } else {
                     if (isLastItem && isCompleted) {
                         dom.completeBtn.textContent = 'Course Complete!';
@@ -351,7 +352,10 @@
             };
 
             const handleCompleteAndNext = async () => {
-                if (currentItem.type === 'quiz') { handleSubmitQuiz(); return; }
+                if (currentItem.type === 'quiz' && !userProgress.has(currentItem.id)) {
+                    handleSubmitQuiz();
+                    return;
+                }
                 
                 dom.completeBtn.disabled = true;
                 const isAlreadyCompleted = userProgress.has(currentItem.id);
@@ -381,11 +385,11 @@
                 }
                 dom.completeBtn.disabled = true;
                 let score = 0;
-                const totalPoints = currentItem.questions.reduce((sum, q) => sum + q.points, 0);
+                const totalPoints = currentItem.questions.reduce((sum, q) => sum + (q.points || 0), 0);
 
                 currentItem.questions.forEach((q, index) => {
                     if (userQuizAnswers[index] === q.correctAnswer) {
-                        score += q.points;
+                        score += (q.points || 0);
                     }
                 });
 
