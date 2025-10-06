@@ -12,7 +12,8 @@
         :root {
             --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
             --text-primary: #111827; --text-secondary: #6B7280; --brand-purple: #6D28D9;
-            --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --success-color: #10B981; --danger-color: #EF4444;
+            --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --success-color: #10B981;
+            --danger-color: #EF4444;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
@@ -20,7 +21,7 @@
         html { scroll-behavior: smooth; }
         body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
         a { text-decoration: none; color: inherit; }
-        ul, ol { list-style: none; }
+        ul { list-style: none; }
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
@@ -36,47 +37,35 @@
         .profile-details { flex-grow: 1; min-width: 0; }
         .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
         .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
-        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
-        .profile-section.active .profile-options i { transform: rotate(180deg); }
-        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
-        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
-        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
-        .popup-list { padding-top: 0.5rem; }
-        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
-        .popup-list a:hover { background-color: var(--hover-bg); }
-        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
-        .popup-list a.logout i { color: var(--danger-color); } .popup-list a.logout { color: var(--danger-color); }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .primary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; background-color: var(--brand-purple); color: white; }
         .primary-btn:hover:not(:disabled) { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
-        .primary-btn:disabled { background-color: #D1D5DB; cursor: not-allowed; transform: none; box-shadow: none; }
-        .primary-btn .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-        .primary-btn.loading .spinner { display: inline-block; }
-        .primary-btn.loading .btn-text { display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .primary-btn:disabled { background-color: #D1D5DB; cursor: not-allowed; transform: none; box-shadow: none;}
         .controls-bar { display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end; margin-bottom: 2rem; }
         .form-field { flex-grow: 1; min-width: 200px; }
         .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
-        .form-field select, .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; font-family: 'IBM Plex Sans', sans-serif; transition: all 0.2s ease; background-color: var(--widget-bg); }
+        .form-field select, .form-field input { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; font-family: 'IBM Plex Sans', sans-serif; transition: all 0.2s ease; }
         .form-field select:focus, .form-field input:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.2); }
         .student-list-container { background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
         .student-list-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
         .student-list-header h3 { font-size: 1.25rem; font-weight: 600; }
-        .select-all-label { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; user-select: none; }
-        .student-list { max-height: calc(100vh - 400px); overflow-y: auto; }
-        .student-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s ease; cursor: pointer; }
+        .select-all-label { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; }
+        .student-list { max-height: calc(100vh - 320px); overflow-y: auto; }
+        .student-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); transition: background-color 0.2s ease; cursor: pointer;}
         .student-item:last-child { border-bottom: none; }
         .student-item:hover { background-color: var(--hover-bg); }
         .student-item.is-present { background-color: #F0FDF4; color: var(--text-secondary); }
+        .student-item.is-present .student-name { font-weight: 500; }
         .student-checkbox { width: 20px; height: 20px; accent-color: var(--brand-purple); cursor: pointer; }
         .student-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
         .student-details { flex-grow: 1; }
-        .student-name { font-weight: 600; color: var(--text-primary); } .is-present .student-name { color: inherit; }
-        .student-email { font-size: 0.875rem; }
-        .status-message { margin-top: 1.5rem; font-weight: 500; text-align: center; padding: 1rem; border-radius: 8px; }
-        .status-message.success { color: #065F46; background-color: #D1FAE5; }
-        .status-message.error { color: var(--danger-text-dark); background-color: var(--danger-bg-light); }
-        .placeholder { padding: 3rem; text-align: center; color: var(--text-secondary); font-weight: 500; }
+        .student-name { font-weight: 600; }
+        .student-email { font-size: 0.875rem; color: var(--text-secondary); }
+        .status-message { margin-top: 1rem; font-weight: 500; text-align: center; }
+        .status-message.success { color: var(--success-color); }
+        .status-message.error { color: var(--danger-color); }
+        .placeholder { padding: 3rem; text-align: center; color: var(--text-secondary); }
         .menu-toggle, .sidebar-close-btn { display: none; }
         @media (max-width: 1024px) {
             .dashboard-container { grid-template-columns: 1fr; }
@@ -88,7 +77,11 @@
             .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
             .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
             .overlay.active { opacity: 1; pointer-events: auto; }
-            .student-list { max-height: calc(100vh - 450px); }
+        }
+        @media (max-width: 640px) {
+            .controls-bar { flex-direction: column; align-items: stretch; }
+            .content-body { padding: 1rem; }
+            .main-header { padding: 1rem; }
         }
     </style>
 </head>
@@ -111,15 +104,6 @@
                 <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
                 <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
             </div>
-            <div class="profile-popup" id="profile-popup">
-                <div class="popup-header">
-                    <img src="" alt="Profile Picture" class="profile-avatar">
-                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
-                </div>
-                <ul class="popup-list">
-                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
-                </ul>
-            </div>
         </aside>
         <main class="main-area">
             <header class="main-header">
@@ -129,17 +113,14 @@
             <section class="content-body">
                 <div class="controls-bar">
                     <div class="form-field">
-                        <label for="course-select">Select Course</label>
-                        <select id="course-select"></select>
+                        <label for="subject-select">Select Subject</label>
+                        <select id="subject-select"></select>
                     </div>
                     <div class="form-field">
                         <label for="attendance-date">Select Date</label>
                         <input type="date" id="attendance-date">
                     </div>
-                    <button class="primary-btn" id="submit-attendance-btn" disabled>
-                        <span class="btn-text"><i class='bx bx-check-double'></i> Submit Attendance</span>
-                        <span class="spinner"></span>
-                    </button>
+                    <button class="primary-btn" id="submit-attendance-btn" disabled><i class='bx bx-check-double'></i> Submit Attendance</button>
                 </div>
                 <div class="student-list-container">
                     <div class="student-list-header">
@@ -147,10 +128,10 @@
                         <label class="select-all-label"><input type="checkbox" id="select-all-checkbox"> Select All</label>
                     </div>
                     <div class="student-list" id="student-list-content">
-                        <div class="placeholder">Select a course to view enrolled students.</div>
+                        <div class="placeholder">Select a subject to view enrolled students.</div>
                     </div>
                 </div>
-                <div id="status-message" style="display:none;"></div>
+                <div id="status-message" class="status-message"></div>
             </section>
         </main>
     </div>
@@ -186,7 +167,7 @@
             });
 
             const dom = {
-                courseSelect: document.getElementById('course-select'),
+                subjectSelect: document.getElementById('subject-select'),
                 attendanceDate: document.getElementById('attendance-date'),
                 studentListContent: document.getElementById('student-list-content'),
                 submitBtn: document.getElementById('submit-attendance-btn'),
@@ -198,11 +179,6 @@
                 document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
                 document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
                 document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
-                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
-                const profileSection = document.getElementById('profile-section');
-                const profilePopup = document.getElementById('profile-popup');
-                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
-                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
                 const sidebar = document.getElementById('sidebar');
                 const menuToggle = document.getElementById('menu-toggle');
                 const closeBtn = document.getElementById('sidebar-close-btn');
@@ -215,8 +191,8 @@
 
             const initPage = async () => {
                 dom.attendanceDate.value = new Date().toISOString().slice(0, 10);
-                await loadCourses();
-                dom.courseSelect.addEventListener('change', loadEnrolledStudents);
+                await loadSubjects();
+                dom.subjectSelect.addEventListener('change', loadEnrolledStudents);
                 dom.attendanceDate.addEventListener('change', loadEnrolledStudents);
                 dom.selectAllCheckbox.addEventListener('change', handleSelectAll);
                 dom.submitBtn.addEventListener('click', handleSubmitAttendance);
@@ -224,45 +200,45 @@
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
-            const loadCourses = async () => {
-                const coursesSnap = await db.collection('courses').orderBy('name').get();
-                dom.courseSelect.innerHTML = '<option value="">-- Select a course --</option>';
-                coursesSnap.forEach(doc => {
+            const loadSubjects = async () => {
+                const subjectsSnap = await db.collection('subjects').orderBy('name').get();
+                dom.subjectSelect.innerHTML = '<option value="">-- Select a subject --</option>';
+                subjectsSnap.forEach(doc => {
                     const option = document.createElement('option');
                     option.value = doc.id;
                     option.textContent = doc.data().name;
-                    option.dataset.subjectId = doc.data().subjectId;
-                    dom.courseSelect.appendChild(option);
+                    dom.subjectSelect.appendChild(option);
                 });
             };
 
             const loadEnrolledStudents = async () => {
-                const selectedOption = dom.courseSelect.options[dom.courseSelect.selectedIndex];
-                const courseId = selectedOption.value;
+                const subjectId = dom.subjectSelect.value;
                 const date = dom.attendanceDate.value;
-                
                 dom.studentListContent.innerHTML = '<div class="placeholder">Loading students...</div>';
                 dom.submitBtn.disabled = true;
-                dom.statusMessage.style.display = 'none';
 
-                if (!courseId || !date) {
-                    dom.studentListContent.innerHTML = '<div class="placeholder">Select a course and date to view students.</div>';
+                if (!subjectId || !date) {
+                    dom.studentListContent.innerHTML = '<div class="placeholder">Select a subject and date to view students.</div>';
                     return;
                 }
 
-                const enrollmentsSnap = await db.collection('enrollments').where('courseId', '==', courseId).get();
+                const enrollmentsSnap = await db.collection('enrollments').where('subjectId', '==', subjectId).get();
                 if (enrollmentsSnap.empty) {
-                    dom.studentListContent.innerHTML = '<div class="placeholder">No students are enrolled in this course.</div>';
+                    dom.studentListContent.innerHTML = '<div class="placeholder">No students are enrolled in this subject.</div>';
                     return;
                 }
+
                 const userIds = enrollmentsSnap.docs.map(doc => doc.data().userId);
+                if (userIds.length === 0) {
+                     dom.studentListContent.innerHTML = '<div class="placeholder">No students are enrolled in this subject.</div>';
+                     return;
+                }
                 
-                const [userDocs, attendanceDocs] = await Promise.all([
-                    Promise.all(userIds.map(id => db.collection('users').doc(id).get())),
-                    Promise.all(userIds.map(id => db.collection('users').doc(id).collection('scores').doc('attendance').get()))
-                ]);
+                const userDocs = await Promise.all(userIds.map(id => db.collection('users').doc(id).get()));
+                const attendanceRefs = userIds.map(id => db.collection('users').doc(id).collection('scores').doc('attendance'));
+                const attendanceDocs = await Promise.all(attendanceRefs.map(ref => ref.get()));
                 
-                const usersMap = new Map(userDocs.map(doc => [doc.id, doc.data()]));
+                const usersMap = new Map(userDocs.filter(d => d.exists).map(doc => [doc.id, doc.data()]));
                 const attendanceMap = new Map(attendanceDocs.map((doc, i) => [userIds[i], doc.data()]));
 
                 dom.studentListContent.innerHTML = '';
@@ -294,7 +270,11 @@
 
                 dom.submitBtn.disabled = !hasStudentsToMark;
                 dom.selectAllCheckbox.checked = false;
-                dom.selectAllCheckbox.disabled = !hasStudentsToMark;
+                 if (!hasStudentsToMark && userIds.length > 0) {
+                     dom.selectAllCheckbox.disabled = true;
+                } else {
+                     dom.selectAllCheckbox.disabled = false;
+                }
             };
             
             const handleSelectAll = (e) => {
@@ -305,18 +285,17 @@
             };
 
             const handleSubmitAttendance = async () => {
-                const selectedOption = dom.courseSelect.options[dom.courseSelect.selectedIndex];
-                const subjectId = selectedOption.dataset.subjectId;
+                const subjectId = dom.subjectSelect.value;
                 const date = dom.attendanceDate.value;
 
-                if (!subjectId || !date) { alert('Please select a course and date.'); return; }
+                if (!subjectId || !date) { alert('Please select a subject and date.'); return; }
                 
                 const selectedCheckboxes = [...document.querySelectorAll('.student-checkbox:checked:not(:disabled)')];
-                if (selectedCheckboxes.length === 0) { alert('Please select at least one student to mark as present.'); return; }
+                if (selectedCheckboxes.length === 0) { alert('Please select at least one student.'); return; }
                 
                 dom.submitBtn.disabled = true;
-                dom.submitBtn.classList.add('loading');
-                dom.statusMessage.style.display = 'none';
+                dom.submitBtn.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> Submitting...";
+                dom.statusMessage.textContent = '';
 
                 const batch = db.batch();
                 
@@ -339,12 +318,12 @@
                     dom.statusMessage.className = 'status-message success';
                     await loadEnrolledStudents();
                 } catch (error) {
-                    dom.statusMessage.textContent = 'An error occurred while submitting attendance. Please try again.';
+                    console.error("Error submitting attendance: ", error);
+                    dom.statusMessage.textContent = 'An error occurred. Please try again.';
                     dom.statusMessage.className = 'status-message error';
                 } finally {
                     dom.submitBtn.disabled = false;
-                    dom.submitBtn.classList.remove('loading');
-                    dom.statusMessage.style.display = 'block';
+                    dom.submitBtn.innerHTML = "<i class='bx bx-check-double'></i> Submit Attendance";
                 }
             };
         });
