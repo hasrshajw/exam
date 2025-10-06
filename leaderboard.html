@@ -373,33 +373,55 @@
                 const allUsers = new Map();
                 usersSnap.forEach(doc => allUsers.set(doc.id, doc.data()));
 
-                const userPoints = new Map();
-                allUsers.forEach((profile, id) => userPoints.set(id, 0));
+                const userMetrics = new Map();
+                allUsers.forEach((profile, id) => userMetrics.set(id, { points: 0, duration: 0 }));
 
                 scoresSnap.forEach(doc => {
                     const score = doc.data();
-                    if (userPoints.has(score.userId)) {
-                        userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.pointsReceived);
+                    if (userMetrics.has(score.userId)) {
+                        const current = userMetrics.get(score.userId);
+                        current.points += score.pointsReceived || 0;
+                        current.duration += score.timeTaken || 0; 
                     }
                 });
 
                 codeAssignmentScoresSnap.forEach(doc => {
                     const score = doc.data();
-                    if (userPoints.has(score.userId)) {
-                        userPoints.set(score.userId, (userPoints.get(score.userId) || 0) + score.totalScoreObtained);
+                    if (userMetrics.has(score.userId)) {
+                        const current = userMetrics.get(score.userId);
+                        current.points += score.totalScoreObtained || 0;
+                        current.duration += score.timeTaken || 0;
                     }
                 });
 
-                return { userPoints, allUsers };
+                const attendancePromises = usersSnap.docs.map(userDoc => 
+                    db.collection('users').doc(userDoc.id).collection('scores').doc('attendance').get()
+                );
+                const attendanceSnaps = await Promise.all(attendancePromises);
+
+                attendanceSnaps.forEach((doc, index) => {
+                    const userId = usersSnap.docs[index].id;
+                    if (doc.exists && userMetrics.has(userId)) {
+                        const attendanceData = doc.data();
+                        const current = userMetrics.get(userId);
+                        Object.keys(attendanceData).forEach(key => {
+                            if (!isNaN(Date.parse(key))) { // Check if key is a date string
+                                current.points += attendanceData[key] || 0;
+                            }
+                        });
+                    }
+                });
+
+                return { userMetrics, allUsers };
             };
 
             const loadLeaderboardData = async () => {
                 try {
-                    const { userPoints, allUsers } = await calculateUserPoints();
+                    const { userMetrics, allUsers } = await calculateUserPoints();
                     
-                    const rankedList = Array.from(userPoints.entries()).map(([id, points]) => ({
-                        id, points, profile: allUsers.get(id)
-                    })).filter(u => u.profile).sort((a,b) => b.points - a.points);
+                    const rankedList = Array.from(userMetrics.entries()).map(([id, metrics]) => ({
+                        id, ...metrics, profile: allUsers.get(id)
+                    })).filter(u => u.profile).sort((a,b) => (b.points - a.points) || (a.duration - b.duration));
 
                     const collegeList = rankedList.filter(u => u.profile.college === currentUserProfile.college);
                     
@@ -421,7 +443,7 @@
                 const currentUserInList = listToRender.some(u => u.id === currentUserId);
 
                 if (!currentUserInList && currentUserProfile) {
-                    listToRender.push({ id: currentUserId, points: 0, profile: currentUserProfile });
+                    listToRender.push({ id: currentUserId, points: 0, duration: 0, profile: currentUserProfile });
                 }
                 
                 let topPerformersHtml = '';
@@ -512,20 +534,36 @@
             
             const renderScoreHistory = async () => {
                 const list = document.getElementById('score-history-list');
-                const [scoresSnap, codeScoresSnap] = await Promise.all([
+                const [scoresSnap, codeScoresSnap, attendanceDoc, lessonsSnap, coursesSnap] = await Promise.all([
                     db.collection('scores').where('userId', '==', currentUserId).orderBy('submittedAt', 'desc').get(),
-                    db.collection('codeAssignmentScores').where('userId', '==', currentUserId).orderBy('completedAt', 'desc').get()
+                    db.collection('codeAssignmentScores').where('userId', '==', currentUserId).orderBy('completedAt', 'desc').get(),
+                    db.collection('users').doc(currentUserId).collection('scores').doc('attendance').get(),
+                    db.collection('lessons').get(),
+                    db.collection('courses').get()
                 ]);
+
+                const lessonsMap = new Map(lessonsSnap.docs.map(doc => [doc.id, doc.data()]));
+                const coursesMap = new Map(coursesSnap.docs.map(doc => [doc.id, doc.data()]));
 
                 let historyItems = [];
                 scoresSnap.forEach(doc => {
                     const data = doc.data();
-                    historyItems.push({
-                        name: data.examName,
-                        date: data.submittedAt.toDate(),
-                        score: `${data.pointsReceived} / ${data.totalPoints} XP`
-                    });
+                    let name = data.examName;
+                    let date = data.submittedAt.toDate();
+                    let scoreText = `${data.pointsReceived} / ${data.totalPoints} XP`;
+
+                    if (data.examType === 'quiz') {
+                        const lesson = lessonsMap.get(data.examId);
+                        if(lesson) {
+                           const course = coursesMap.get(lesson.courseId);
+                           if(course && course.chapters[lesson.chapterIndex]) {
+                               name = `${lesson.title} (${course.chapters[lesson.chapterIndex]})`;
+                           }
+                        }
+                    }
+                     historyItems.push({ name, date, score: scoreText });
                 });
+                
                 codeScoresSnap.forEach(doc => {
                     const data = doc.data();
                     historyItems.push({
@@ -534,6 +572,20 @@
                         score: `${data.totalScoreObtained} / ${data.totalScorePossible} XP`
                     });
                 });
+
+                if (attendanceDoc.exists) {
+                    const attendanceData = attendanceDoc.data();
+                    Object.keys(attendanceData).forEach(key => {
+                        if (!isNaN(Date.parse(key))) {
+                            historyItems.push({
+                                name: `Class Attendance`,
+                                date: new Date(key),
+                                score: `+${attendanceData[key]} XP`,
+                                description: `For attending class on ${new Date(key).toLocaleDateString()}`
+                            });
+                        }
+                    });
+                }
 
                 historyItems.sort((a,b) => b.date - a.date);
 
@@ -546,7 +598,7 @@
                     <li class="score-history-item">
                         <div class="score-history-info">
                             <p>${item.name}</p>
-                            <span>${item.date.toLocaleString()}</span>
+                            <span>${item.description || item.date.toLocaleString()}</span>
                         </div>
                         <strong class="score-history-points">${item.score}</strong>
                     </li>
