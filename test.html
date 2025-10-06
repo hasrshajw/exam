@@ -162,6 +162,7 @@
             let subjectData = null;
             let allItems = [];
             let userProgress = new Set();
+            let userScores = new Map();
             let currentItem = null;
             let currentUser = null;
             let userQuizAnswers = {};
@@ -201,10 +202,11 @@
                 courseData = { id: courseDoc.id, ...courseDoc.data() };
                 const subjectId = courseData.subjectId;
 
-                const [subjectDoc, lessonsSnapshot, progressSnapshot] = await Promise.all([
+                const [subjectDoc, lessonsSnapshot, progressSnapshot, scoresSnapshot] = await Promise.all([
                     db.collection('subjects').doc(subjectId).get(),
                     db.collection('lessons').where('courseId', '==', courseId).get(),
-                    db.collection('users').doc(currentUser.uid).collection('progress').where('courseId', '==', courseId).get()
+                    db.collection('users').doc(currentUser.uid).collection('progress').where('courseId', '==', courseId).get(),
+                    db.collection('scores').where('userId', '==', currentUser.uid).where('courseId', '==', courseId).get()
                 ]);
 
                 if (!subjectDoc.exists) { alert('Parent subject not found.'); window.location.href = 'dashboard.html'; return; }
@@ -212,6 +214,7 @@
                 subjectData = { id: subjectDoc.id, ...subjectDoc.data() };
                 allItems = lessonsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
                 userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
+                userScores = new Map(scoresSnapshot.docs.map(doc => [doc.data().examId, doc.data()]));
 
                 const firstUncompleted = allItems.find(item => !userProgress.has(item.id));
                 currentItem = firstUncompleted || allItems[allItems.length - 1];
@@ -283,9 +286,14 @@
                 dom.lessonMeta.textContent = `Chapter ${currentItem.chapterIndex + 1} • Item ${currentItem.order + 1}`;
                 dom.lessonTitle.textContent = currentItem.title;
                 dom.lessonContent.className = 'lesson-body';
-                
+
                 if (currentItem.type === 'quiz') {
-                    renderQuiz();
+                    const scoreData = userScores.get(currentItem.id);
+                    if (scoreData) {
+                        renderQuizResultsView(scoreData);
+                    } else {
+                        renderQuiz();
+                    }
                 } else {
                     dom.lessonContent.innerHTML = currentItem.content;
                 }
@@ -306,13 +314,21 @@
 
                 document.querySelectorAll('.quiz-option').forEach(opt => {
                     opt.addEventListener('click', () => {
-                        if (userProgress.has(currentItem.id)) return;
                         const qIndex = opt.closest('.quiz-question-card').dataset.questionIndex;
                         userQuizAnswers[qIndex] = parseInt(opt.querySelector('input').value, 10);
                         opt.parentElement.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
                         opt.classList.add('selected');
                     });
                 });
+            };
+            
+            const renderQuizResultsView = (scoreData) => {
+                dom.lessonContent.innerHTML = `
+                    <div class="quiz-results-summary">
+                        <h3>${scoreData.pointsReceived}/${scoreData.totalPoints}</h3>
+                        <p>Your Score</p>
+                        <p style="margin-top: 1rem; font-size: 0.9rem;">You have already completed this quiz.</p>
+                    </div>`;
             };
 
             const updateProgress = () => {
@@ -410,6 +426,7 @@
                         completedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     userProgress.add(currentItem.id);
+                    userScores.set(currentItem.id, scoreData);
                 } catch (error) { console.error("Error saving quiz score:", error); dom.completeBtn.disabled = false; return; }
                 
                 showQuizResults(score, totalPoints);
@@ -418,28 +435,14 @@
             };
 
             const showQuizResults = (score, totalPoints) => {
-                dom.lessonContent.classList.add('quiz-results');
                 const summary = `<div class="quiz-results-summary"><h3>${score}/${totalPoints}</h3><p>Your Score</p></div>`;
-                dom.lessonContent.insertAdjacentHTML('afterbegin', summary);
+                dom.lessonContent.innerHTML = summary + dom.lessonContent.innerHTML;
 
-                document.querySelectorAll('.quiz-question-card').forEach((card, index) => {
-                    const correctAnswer = currentItem.questions[index].correctAnswer;
-                    const userAnswer = userQuizAnswers[index];
-                    card.querySelectorAll('.quiz-option').forEach((opt, optIndex) => {
-                        opt.style.pointerEvents = 'none';
-                        if (optIndex === correctAnswer) opt.classList.add('correct');
-                        else if (optIndex === userAnswer) opt.classList.add('incorrect');
-                    });
+                document.querySelectorAll('.quiz-option').forEach(opt => {
+                    opt.style.pointerEvents = 'none';
                 });
                 
-                dom.completeBtn.textContent = 'Next →';
-                const currentIndex = allItems.findIndex(l => l.id === currentItem.id);
-                if (currentIndex < allItems.length - 1) {
-                    dom.completeBtn.disabled = false;
-                } else {
-                    dom.completeBtn.textContent = 'Chapter Complete!';
-                    dom.completeBtn.disabled = true;
-                }
+                updateNavButtons();
             };
             
             const updateURL = (courseId) => {
