@@ -64,7 +64,7 @@
         .content-list { display: flex; flex-direction: column; gap: 0.75rem; }
         .card { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); padding: 0.75rem; border-radius: var(--radius-lg); box-shadow: var(--shadow); border: 1px solid var(--border-color); transition: var(--transition); position: relative; cursor: pointer; }
         .card:not([data-status='locked']):hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-        .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; font-weight: 600; }
+        .card-prefix { width: 48px; height: 48px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font-size: 1.5rem; font-weight: 600; }
         .card-info { flex-grow: 1; } .card-title { font-weight: 600; font-size: 1rem; color: var(--text-primary); }
         .card-meta { font-size: 0.85rem; color: var(--text-secondary); }
         .card-button { background-color: var(--c-primary); color: #FFFFFF; border: none; border-radius: 0.75rem; padding: 0.6rem 1rem; font-size: 0.9rem; font-weight: 600; transition: background-color 0.2s ease; min-width: 120px; text-align: center; }
@@ -402,7 +402,7 @@
                 container.innerHTML = '';
                 if (coursesSnapshot.empty) { container.innerHTML = '<p>No courses available in this subject yet.</p>'; return; }
                 const allItemsInSubject = Object.values(lessonsByCourse).flat().sort((a,b) => (a.courseId || '').localeCompare(b.courseId || '') || (a.chapterIndex - b.chapterIndex) || (a.order - b.order));
-                const firstUncompleted = allItemsInSubject.find(l => !userProgress.has(l.id));
+                const firstUncompletedItem = allItemsInSubject.find(l => !userProgress.has(l.id));
 
                 coursesSnapshot.docs.forEach(courseDoc => {
                     const course = courseDoc.data();
@@ -410,55 +410,62 @@
                     (course.chapters || []).forEach((chapterName, chapterIndex) => {
                         const itemsInChapter = items.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
                         if (itemsInChapter.length === 0) return;
+                        
                         const chapterGroup = document.createElement('div');
                         chapterGroup.className = 'chapter-group';
                         chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="content-list"></div>`;
-                        const listContainer = chapterGroup.querySelector('.content-list');
+                        const itemsContainer = chapterGroup.querySelector('.content-list');
 
                         itemsInChapter.forEach(item => {
                             const card = document.createElement('div');
                             card.className = 'card';
                             const isCompleted = userProgress.has(item.id);
-                            const isNext = firstUncompleted && item.id === firstUncompleted.id;
-                            let status, prefixClass, buttonHtml = '', statusIcon = '', metaHtml = '', iconClass = 'bxs-file-blank';
-                            
-                            if (item.type === 'lesson') {
-                                metaHtml = `<p class="card-meta">${item.duration}</p>`;
-                                iconClass = 'bxs-file-blank';
-                                if (isCompleted) { status = 'completed'; buttonHtml = '<button class="card-button">Completed</button>'; }
-                                else if (isNext) { status = 'next'; buttonHtml = '<button class="card-button">Start Lesson</button>'; }
-                                else { status = 'locked'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>'; }
-                            } else if (item.type === 'quiz') {
-                                const scoreData = userScores.get(item.id);
+                            const isNext = firstUncompletedItem && item.id === firstUncompletedItem.id;
+                            let status, prefixClass, buttonHtml = '', statusIcon = '', metaText = '', iconClass = '';
+
+                            if (item.type === 'quiz') {
                                 iconClass = 'bxs-help-circle';
-                                if(scoreData) {
+                                metaText = `${item.questions.length} Questions`;
+                                const scoreData = userScores.get(item.id);
+
+                                if (scoreData) {
+                                    status = 'completed'; prefixClass = 'card-prefix--completed'; statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
                                     const percentage = scoreData.totalPoints > 0 ? Math.round((scoreData.pointsReceived / scoreData.totalPoints) * 100) : 0;
-                                    metaHtml = `<p class="card-meta">Score: ${percentage}%</p>`;
-                                    buttonHtml = `<button class="card-button">View Results</button>`;
+                                    metaText += ` • Score: ${percentage}%`;
+                                    buttonHtml = '<button class="card-button">View Results</button>';
+                                    card.onclick = () => showResultsModal(scoreData);
+                                } else if (isNext || isCompleted) {
+                                    status = 'next'; prefixClass = 'card-prefix--default';
+                                    buttonHtml = '<button class="card-button">Start Quiz</button>';
+                                    card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
                                 } else {
-                                     metaHtml = `<p class="card-meta">${item.questions.length} Questions</p>`;
+                                    status = 'locked'; prefixClass = 'card-prefix--locked';
+                                    buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
+                                    card.style.pointerEvents = 'none';
                                 }
-                                
-                                if (isCompleted) { status = 'completed'; }
-                                else if (isNext) { status = 'next'; if(!scoreData) buttonHtml = '<button class="card-button">Start Quiz</button>'; }
-                                else { status = 'locked'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>'; }
+                            } else { // Lesson
+                                iconClass = 'bxs-file-blank';
+                                metaText = item.duration;
+                                if (isCompleted) {
+                                    status = 'completed'; prefixClass = 'card-prefix--completed'; statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
+                                    buttonHtml = '<button class="card-button">Completed</button>';
+                                    card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
+                                } else if (isNext) {
+                                    status = 'next'; prefixClass = 'card-prefix--default';
+                                    buttonHtml = '<button class="card-button">Start Lesson</button>';
+                                    card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
+                                } else {
+                                    status = 'locked'; prefixClass = 'card-prefix--locked';
+                                    buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
+                                    card.style.pointerEvents = 'none';
+                                }
                             }
                             
-                            if(isCompleted) { prefixClass = 'card-prefix--completed'; statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`; }
-                            else if(isNext) { prefixClass = 'card-prefix--default'; }
-                            else { prefixClass = 'card-prefix--locked'; }
-                            
-                            if (status !== 'locked') {
-                                if(item.type === 'quiz' && userScores.has(item.id)){
-                                    card.onclick = () => showResultsModal(userScores.get(item.id), false);
-                                } else {
-                                    card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
-                                }
-                            } else { card.style.pointerEvents = 'none'; }
-                            
                             card.dataset.status = status;
-                            card.innerHTML = `<div class="card-prefix ${prefixClass}"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.title}</p>${metaHtml}</div>${statusIcon}${buttonHtml}`;
-                            listContainer.appendChild(card);
+                            card.innerHTML = `<div class="card-prefix ${prefixClass}"><i class='bx ${iconClass}'></i></div>
+                                <div class="card-info"><p class="card-title">${item.title}</p><p class="card-meta">${metaText}</p></div>
+                                ${statusIcon}${buttonHtml}`;
+                            itemsContainer.appendChild(card);
                         });
                         container.appendChild(chapterGroup);
                     });
