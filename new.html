@@ -283,7 +283,7 @@
             const auth = firebase.auth();
             const db = firebase.firestore();
             const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
-            const CURRENT_PAGE_FILENAME = "new.html";
+            const CURRENT_PAGE_FILENAME = "java-exams.html";
             let currentUser = null;
 
             const setupEventListeners = () => {
@@ -372,19 +372,19 @@
                     const userCodeAssignmentScores = new Map(codeAssignmentScoresSnapshot.docs.map(doc => [doc.data().assignmentId, doc.data()]));
 
                     const courseIds = coursesSnapshot.docs.map(doc => doc.id);
-                    let lessonsByCourse = {};
+                    let allItemsByCourse = {};
                     if (courseIds.length > 0) {
-                        const lessonsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
-                        lessonsQuery.forEach(doc => {
-                            const lesson = { id: doc.id, ...doc.data() };
-                            if (!lessonsByCourse[lesson.courseId]) lessonsByCourse[lesson.courseId] = [];
-                            lessonsByCourse[lesson.courseId].push(lesson);
+                        const itemsQuery = await db.collection('lessons').where('courseId', 'in', courseIds).get();
+                        itemsQuery.forEach(doc => {
+                            const item = { id: doc.id, ...doc.data() };
+                            if (!allItemsByCourse[item.courseId]) allItemsByCourse[item.courseId] = [];
+                            allItemsByCourse[item.courseId].push(item);
                         });
                     }
                     
-                    renderCourses(coursesSnapshot, lessonsByCourse, userProgress);
+                    renderCourses(coursesSnapshot, allItemsByCourse, userProgress);
                     renderAssessments(examsSnapshot, codeAssignmentsSnapshot, userScores, userCodeAssignmentScores);
-                    updateSidebarStats(coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores);
+                    updateSidebarStats(coursesSnapshot, allItemsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores);
                 } finally {
                     document.getElementById('skeleton-loader').style.display = 'none';
                     document.getElementById('real-content').style.display = 'contents';
@@ -397,46 +397,54 @@
                 }
             };
 
-            const renderCourses = (coursesSnapshot, lessonsByCourse, userProgress) => {
+            const renderCourses = (coursesSnapshot, allItemsByCourse, userProgress) => {
                 const container = document.getElementById('courseContent');
                 container.innerHTML = '';
                 if (coursesSnapshot.empty) { container.innerHTML = '<p>No courses available in this subject yet.</p>'; return; }
-                const allLessonsInSubject = Object.values(lessonsByCourse).flat().sort((a,b) => (a.courseId || '').localeCompare(b.courseId || '') || (a.chapterIndex - b.chapterIndex) || (a.order - b.order));
-                const firstUncompletedLesson = allLessonsInSubject.find(l => !userProgress.has(l.id));
+                const allItemsInSubject = Object.values(allItemsByCourse).flat().sort((a,b) => (a.courseId || '').localeCompare(b.courseId || '') || (a.chapterIndex - b.chapterIndex) || (a.order - b.order));
+                const firstUncompleted = allItemsInSubject.find(l => !userProgress.has(l.id));
 
                 coursesSnapshot.docs.forEach(courseDoc => {
                     const course = courseDoc.data();
-                    const lessons = (lessonsByCourse[courseDoc.id] || []);
+                    const items = (allItemsByCourse[courseDoc.id] || []);
                     (course.chapters || []).forEach((chapterName, chapterIndex) => {
-                        const lessonsInChapter = lessons.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
-                        if (lessonsInChapter.length === 0) return;
+                        const itemsInChapter = items.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
+                        if (itemsInChapter.length === 0) return;
                         const chapterGroup = document.createElement('div');
                         chapterGroup.className = 'chapter-group';
                         chapterGroup.innerHTML = `<h3 class="chapter-title">${chapterName}</h3><div class="content-list"></div>`;
-                        const lessonsContainer = chapterGroup.querySelector('.content-list');
+                        const itemsContainer = chapterGroup.querySelector('.content-list');
 
-                        lessonsInChapter.forEach(lesson => {
+                        itemsInChapter.forEach(item => {
                             const card = document.createElement('div');
                             card.className = 'card';
-                            const isCompleted = userProgress.has(lesson.id);
-                            const isNext = firstUncompletedLesson && lesson.id === firstUncompletedLesson.id;
+                            const isCompleted = userProgress.has(item.id);
+                            const isNext = firstUncompleted && item.id === firstUncompleted.id;
                             let status, prefixClass, buttonHtml = '', statusIcon = '';
+                            const iconClass = item.type === 'quiz' ? 'bx-help-circle' : 'bx-file';
 
                             if (isCompleted) {
                                 status = 'completed'; prefixClass = 'card-prefix--completed'; statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
-                                buttonHtml = '<button class="card-button">Completed</button>';
+                                buttonHtml = `<button class="card-button">${item.type === 'quiz' ? 'View Results' : 'Completed'}</button>`;
                             } else if (isNext) {
-                                status = 'next'; prefixClass = 'card-prefix--default'; buttonHtml = '<button class="card-button">Start Lesson</button>';
+                                status = 'next'; prefixClass = 'card-prefix--default'; buttonHtml = `<button class="card-button">Start</button>`;
                             } else {
-                                status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
+                                status = 'locked'; prefixClass = 'card-prefix--locked'; buttonHtml = `<button class="card-button card-button--locked">Locked</button>`;
                             }
 
                             if (status !== 'locked') {
-                                card.onclick = () => window.location.href = `lesson-view.html?id=${courseDoc.id}`;
+                                if(item.type === 'quiz' && isCompleted) {
+                                     card.onclick = () => showResultsModal(userScores.get(item.id), false);
+                                } else {
+                                     card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
+                                }
                             } else { card.style.pointerEvents = 'none'; }
+                            
                             card.dataset.status = status;
-                            card.innerHTML = `<div class="card-prefix ${prefixClass}">${lesson.chapterIndex + 1}.${lesson.order + 1}</div><div class="card-info"><p class="card-title">${lesson.title}</p><p class="card-meta">${lesson.duration}</p></div>${statusIcon}${buttonHtml}`;
-                            lessonsContainer.appendChild(card);
+                            const meta = item.type === 'lesson' ? `<p class="card-meta">${item.duration}</p>` : `<p class="card-meta">Quiz • ${item.questions.length} Questions</p>`;
+
+                            card.innerHTML = `<div class="card-prefix ${prefixClass}"><i class='bx ${iconClass}'></i></div><div class="card-info"><p class="card-title">${item.title}</p>${meta}</div>${statusIcon}${buttonHtml}`;
+                            itemsContainer.appendChild(card);
                         });
                         container.appendChild(chapterGroup);
                     });
@@ -524,9 +532,12 @@
                 modal.classList.add('show');
             };
 
-            const updateSidebarStats = async (coursesSnapshot, lessonsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores) => {
+            const updateSidebarStats = async (coursesSnapshot, allItemsByCourse, examsSnapshot, codeAssignmentsSnapshot, userProgress, userScores, userCodeAssignmentScores) => {
                 const totalCourses = coursesSnapshot.size;
-                const totalLessons = Object.values(lessonsByCourse).flat().length;
+                const totalItems = Object.values(allItemsByCourse).flat();
+                const totalLessons = totalItems.filter(i => i.type === 'lesson').length;
+                const totalQuizzes = totalItems.filter(i => i.type === 'quiz').length;
+
                 const completedLessons = userProgress.size;
                 const progressPercent = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
                 
@@ -543,7 +554,7 @@
                 const avgScore = scoreCount > 0 ? Math.round(totalScore / scoreCount) : '-';
 
                 document.getElementById('stat-courses').textContent = totalCourses;
-                document.getElementById('stat-lessons').textContent = totalLessons;
+                document.getElementById('stat-lessons').textContent = totalLessons + totalQuizzes;
                 document.getElementById('stat-completed').textContent = `${progressPercent}%`;
                 document.getElementById('stat-avg-score').textContent = avgScore === '-' ? '-' : `${avgScore}%`;
             };
