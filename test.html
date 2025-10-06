@@ -3,716 +3,639 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ProCoder IDE - Coding Environment</title>
+    <title>Manage Course Content - Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --font-mono: 'Menlo', 'Consolas', 'Courier New', monospace;
-            --bg-dark: #0d1117;
-            --surface-dark-rgb: 22, 27, 34;
-            --surface-light-rgb: 33, 38, 45;
-            --border-color-rgb: 48, 54, 61;
-            --text-primary: #c9d1d9;
-            --text-secondary: #8b949e;
-            --accent-glow-rgb: 88, 80, 236;
-            --accent-start: #5850EC;
-            --accent-end: #8A2BE2;
-            --success-rgb: 35, 134, 54;
-            --danger-rgb: 218, 54, 51;
-            --warning-rgb: 227, 179, 65;
-            --border-radius: 8px;
-            --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-            --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --body-bg: #F9FAFB;
+            --widget-bg: #FFFFFF;
+            --border-color: #E5E7EB;
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --brand-purple: #6D28D9;
+            --brand-purple-hover: #5B21B6;
+            --hover-bg: #F3F4F6;
+            --danger-color: #EF4444;
+            --danger-hover: #DC2626;
+            --danger-bg-light: #FEE2E2;
+            --danger-text-dark: #B91C1C;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
         }
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        html, body { height: 100%; overflow: hidden; }
-        body { font-family: var(--font-sans); background-color: var(--bg-dark); color: var(--text-primary); position: relative; }
-        .aurora-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; }
-        .aurora-bg::before, .aurora-bg::after { content: ''; position: absolute; width: 600px; height: 600px; border-radius: 50%; filter: blur(150px); opacity: 0.15; }
-        .aurora-bg::before { background: radial-gradient(circle, var(--accent-start), transparent 70%); top: -20%; left: -10%; animation: moveAurora1 20s infinite alternate; }
-        .aurora-bg::after { background: radial-gradient(circle, var(--accent-end), transparent 70%); bottom: -20%; right: -10%; animation: moveAurora2 25s infinite alternate; }
-        @keyframes moveAurora1 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(100px, 50px) rotate(30deg); } }
-        @keyframes moveAurora2 { from { transform: translate(0, 0) rotate(0deg); } to { transform: translate(-100px, -50px) rotate(-30deg); } }
-        button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
-        svg { display: block; width: 100%; height: 100%; }
-        #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--text-secondary); transition: opacity 0.3s; }
-        .loading-spinner { border: 4px solid rgba(var(--surface-light-rgb), 0.5); border-top: 4px solid var(--accent-start); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .ide-dashboard { display: flex; height: 100%; position: relative; }
-        .sidebar { width: 320px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-right: 1px solid rgba(var(--border-color-rgb), 0.5); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; transition: transform var(--transition-smooth), width var(--transition-smooth); }
-        .sidebar-header { margin-bottom: 24px; padding-left: 12px; }
-        .sidebar-header .test-title { font-size: 1.75rem; font-weight: 700; background: linear-gradient(90deg, var(--accent-start), var(--accent-end)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .sidebar nav { flex-grow: 1; overflow-y: auto; }
-        .problem-nav { list-style: none; }
-        .problem-item { position: relative; display: flex; align-items: center; padding: 12px; border-radius: var(--border-radius); margin-bottom: 8px; cursor: pointer; transition: all var(--transition-fast); border: 1px solid transparent; overflow: hidden; }
-        .problem-item::before { content: ''; position: absolute; left: 0; top: 0; width: 3px; height: 100%; background: linear-gradient(var(--accent-start), var(--accent-end)); transform: translateX(-100%); transition: transform var(--transition-fast); }
-        .problem-item:not(.locked):not(.active):hover { background-color: rgba(var(--surface-light-rgb), 0.5); }
-        .problem-item.active { background-color: rgba(var(--surface-light-rgb), 0.7); }
-        .problem-item.active::before { transform: translateX(0); }
-        .problem-item.locked { cursor: not-allowed; opacity: 0.6; }
-        .problem-item.locked:hover { background-color: transparent; }
-        .p-number { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; margin-right: 16px; font-size: 0.9rem; background-color: rgba(var(--surface-light-rgb), 1); transition: all var(--transition-fast); }
-        .active .p-number { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); color: white; }
-        .p-title { font-size: 0.95rem; font-weight: 500; flex-grow: 1; }
-        .p-status-icon { width: 20px; height: 20px; margin-left: 8px; opacity: 0; transform: scale(0.5); transition: all var(--transition-fast); }
-        .problem-item.solved .p-status-icon, .problem-item.attempted .p-status-icon { opacity: 1; transform: scale(1); }
-        .main-content { flex-grow: 1; padding: 24px 32px; display: flex; flex-direction: column; overflow: hidden; position: relative; }
-        .main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-shrink: 0; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); padding: 12px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); }
-        .header-title-group { display: flex; align-items: center; gap: 16px; }
-        .header-title { font-size: 1.5rem; font-weight: 600; color: var(--text-primary); }
-        .timer-container { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 1rem; color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 0.5); padding: 8px 12px; border-radius: 6px; }
-        .timer-container svg { width: 18px; height: 18px; }
-        .controls { display: flex; gap: 12px; }
-        .btn { padding: 10px 24px; border-radius: var(--border-radius); font-weight: 600; transition: all var(--transition-fast); display: flex; align-items: center; justify-content: center; gap: 8px; border: 1px solid rgba(var(--border-color-rgb), 0.7); }
-        .btn svg { width: 18px; height: 18px; }
-        .btn.run-btn { background-color: rgba(var(--surface-light-rgb), 0.8); color: var(--text-primary); } .btn.run-btn:hover:not(:disabled) { background-color: rgba(var(--border-color-rgb), 0.7); }
-        .btn.submit-btn { background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); border: none; color: white; } .btn.submit-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px -5px rgba(var(--accent-glow-rgb), 0.5); }
-        #end-test-btn { color: rgb(var(--danger-rgb)); border-color: rgb(var(--danger-rgb)); } #end-test-btn:hover:not(:disabled) { background-color: rgba(var(--danger-rgb), 0.1); }
-        .btn:disabled { background-color: rgba(var(--surface-light-rgb), 0.5); color: var(--text-secondary); cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.5; }
-        .loader { width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 1s linear infinite; }
-        .ide-layout { display: flex; flex-direction: column; flex-grow: 1; height: calc(100% - 90px); }
-        .top-panel { flex: 1; display: flex; gap: 16px; min-height: 200px; }
-        .ide-panel { background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); overflow: hidden; display: flex; flex-direction: column; }
-        #problem-details { flex: 1; padding: 24px; overflow-y: auto; }
-        #problem-details-content { animation: fadeIn 0.5s ease-out; } @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        #problem-details h2 { font-size: 1.25rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 12px; color: var(--text-primary); }
-        #problem-statement { line-height: 1.7; color: var(--text-secondary); }
-        #problem-statement code, .test-case code { background-color: var(--bg-dark); border: 1px solid rgba(var(--border-color-rgb), 0.8); padding: 3px 6px; border-radius: 4px; font-family: var(--font-mono); color: var(--text-primary); }
-        .test-case { background-color: rgba(var(--surface-light-rgb), 0.4); border-left: 4px solid var(--accent-start); padding: 16px; margin-top: 16px; border-radius: var(--border-radius); font-size: 0.9rem; }
-        #editor-container { flex: 1; }
-        .resizer { background: transparent; display: flex; align-items: center; justify-content: center; }
-        #resizer-h { height: 16px; cursor: row-resize; } #resizer-h::before { content: '•••'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
-        #resizer-v { width: 16px; cursor: col-resize; } #resizer-v::before { content: '⋮'; color: var(--text-secondary); opacity: 0.5; font-size: 1.5rem; line-height: 0; }
-        .bottom-panel { flex-shrink: 0; display: flex; flex-direction: column; }
-        .tabs { display: flex; padding: 0 12px; background-color: var(--bg-dark); }
-        .tab { position: relative; padding: 12px 20px; cursor: pointer; font-weight: 500; color: var(--text-secondary); transition: all var(--transition-fast); } .tab::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 2px; background-image: linear-gradient(to right, var(--accent-start), var(--accent-end)); transform: scaleX(0); transition: transform var(--transition-fast); } .tab.active { color: var(--text-primary); } .tab.active::after { transform: scaleX(1); }
-        .tab-content-area { flex-grow: 1; overflow-y: auto; }
-        .tab-content { padding: 20px; display: none; font-family: var(--font-mono); font-size: 0.9rem; } .tab-content.active { display: block; } #console-output { white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); }
-        #results-summary { font-weight: bold; margin-bottom: 16px; padding: 12px; border-radius: var(--border-radius); font-size: 1.1rem; display: flex; align-items: center; gap: 10px; }
-        #results-summary.success { background-color: rgba(var(--success-rgb), 0.1); color: rgb(var(--success-rgb)); border-left: 4px solid rgb(var(--success-rgb)); } #results-summary.failure { background-color: rgba(var(--danger-rgb), 0.1); color: rgb(var(--danger-rgb)); border-left: 4px solid rgb(var(--danger-rgb)); }
-        .result-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background-color: rgba(var(--surface-light-rgb), 0.3); border-radius: var(--border-radius); margin-bottom: 8px; }
-        .status { padding: 4px 12px; border-radius: 99px; font-size: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; } .status svg { width: 14px; height: 14px; }
-        .status-pass { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); } .status-fail { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
-        #results-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9998; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        #results-overlay.show { display: flex; opacity: 1; }
-        .results-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 600px; text-align: center; }
-        .results-card h2 { font-size: 2rem; margin-bottom: 8px; } .results-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.25rem; }
-        #redirect-message { font-size: 1rem; margin-top: -16px; }
-        .final-results-list { list-style: none; padding: 0; } .final-results-list li { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: var(--border-radius); background: var(--bg-dark); margin-bottom: 12px; }
-        .final-status { font-weight: bold; padding: 6px 12px; border-radius: 99px; font-size: 0.8rem; }
-        .final-status.solved { color: rgb(var(--success-rgb)); background-color: rgba(var(--success-rgb), 0.1); }
-        .final-status.attempted { color: rgb(var(--danger-rgb)); background-color: rgba(var(--danger-rgb), 0.1); }
-        .final-status.notattempted { color: var(--text-secondary); background-color: rgba(var(--surface-light-rgb), 1); }
-        #alert-container { position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px; }
-        .advanced-alert { display: flex; align-items: flex-start; width: 350px; max-width: 90vw; background-color: rgba(var(--surface-dark-rgb), 0.8); backdrop-filter: blur(10px); border-radius: var(--border-radius); padding: 16px; border-left: 4px solid; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; position: relative; overflow: hidden; }
-        @keyframes slideInRight { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        .advanced-alert.fade-out { animation: slideOutRight 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) both; }
-        @keyframes slideOutRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(120%); opacity: 0; } }
-        .alert-icon { flex-shrink: 0; width: 24px; height: 24px; margin-right: 12px; }
-        .alert-content { flex-grow: 1; }
-        .alert-title { font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
-        .alert-message { font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5; }
-        .alert-progress { position: absolute; bottom: 0; left: 0; height: 3px; width: 100%; background-color: rgba(255,255,255,0.2); }
-        .alert-progress::after { content: ''; position: absolute; top: 0; left: 0; height: 100%; width: 100%; background-color: currentColor; animation: progressShrink 5s linear forwards; }
-        @keyframes progressShrink { from { transform: scaleX(1); } to { transform: scaleX(0); } }
-        .advanced-alert.alert-error { border-color: rgb(var(--danger-rgb)); color: rgb(var(--danger-rgb)); }
-        .advanced-alert.alert-info { border-color: var(--accent-start); color: var(--accent-start); }
-        .mobile-header, .mobile-nav, .mobile-footer { display: none; }
-        .menu-toggle, .overlay, .close-menu-btn { display: none; }
-        .custom-modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(13, 17, 23, 0.7); backdrop-filter: blur(10px); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity var(--transition-fast); }
-        .custom-modal-overlay.show { display: flex; opacity: 1; }
-        .custom-modal-card { background-color: rgba(var(--surface-dark-rgb), 0.8); padding: 40px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); width: 90%; max-width: 500px; text-align: center; animation: fadeIn 0.3s ease-out; }
-        .custom-modal-card h2 { font-size: 1.75rem; margin-bottom: 8px; }
-        .custom-modal-card p { color: var(--text-secondary); margin-bottom: 32px; font-size: 1.1rem; line-height: 1.6; }
-        .custom-modal-actions { display: flex; gap: 16px; justify-content: center; }
-        .custom-modal-actions .btn { background-color: rgba(var(--surface-light-rgb), 0.8); }
-        @media (max-width: 900px) {
-            .main-content { padding: 0; height: 100%; }
-            .main-header { display: none; }
-            .ide-layout { height: 100%; }
-            .mobile-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-bottom: 1px solid rgba(var(--border-color-rgb), 0.5); flex-shrink: 0; }
-            .mobile-nav { display: flex; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); margin: 16px; padding: 4px; flex-shrink: 0; }
-            .mobile-nav-btn { position: relative; flex: 1; padding: 10px; font-weight: 600; color: var(--text-secondary); text-align: center; font-size: 0.9rem; border-radius: 6px; transition: all var(--transition-fast); }
-            .mobile-nav-btn.active { color: var(--text-primary); background-color: rgba(var(--surface-light-rgb), 0.8); }
-            .ide-layout { display: flex; flex-direction: column; }
-            .top-panel { display: flex; flex-grow: 1; min-height: 0; background: transparent; backdrop-filter: none; border: none; }
-            .bottom-panel, #problem-details, #editor-container { display: none; flex-direction: column; border: none; background: transparent; backdrop-filter: none; }
-            .bottom-panel { margin: 0 16px 16px; border-radius: var(--border-radius); border: 1px solid rgba(var(--border-color-rgb), 0.5); background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); }
-            #problem-details, #editor-container { padding: 0 16px 16px; }
-            .mobile-view-active { display: flex !important; flex-grow: 1; min-height: 0; }
-            #resizer-h, #resizer-v { display: none; }
-            .sidebar { position: fixed; top: 0; left: 0; height: 100%; z-index: 1000; transform: translateX(-100%); box-shadow: 0 10px 30px rgba(0,0,0,0.2); } .sidebar.active { transform: translateX(0); }
-            .close-menu-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 15px; right: 15px; width: 32px; height: 32px; background: rgba(var(--surface-light-rgb), 0.8); border-radius: 50%; color: white; cursor: pointer; z-index: 1001; } .close-menu-btn svg { width: 18px; height: 18px; }
-            .overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); z-index: 999; opacity: 0; pointer-events: none; transition: opacity var(--transition-smooth); } .overlay.active { opacity: 1; pointer-events: auto; }
-            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border: 1px solid rgba(var(--border-color-rgb), 0.5); border-radius: 50%; color: var(--text-secondary); } .menu-toggle svg { width: 20px; height: 20px; }
-            .mobile-footer { display: none; padding: 12px 16px; background: rgba(var(--surface-dark-rgb), 0.7); backdrop-filter: blur(20px); border-top: 1px solid rgba(var(--border-color-rgb), 0.5); gap: 12px; }
-            .mobile-footer.active { display: flex; }
-            .mobile-footer .btn { flex: 1; }
-            .results-card, .custom-modal-card { padding: 24px; } .results-card h2, .custom-modal-card h2 { font-size: 1.5rem; } .results-card p, .custom-modal-card p { font-size: 1rem; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow: hidden; }
+        a { text-decoration: none; }
+        ul { list-style: none; }
+
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
+        .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
+        .content-body { padding: 2rem 2.5rem; }
+        
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
+        .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; }
+        .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
+        .main-nav a.active i { color: var(--brand-purple); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { padding-top: 0.5rem; }
+        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); }
+        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); }
+        .popup-list a.logout { color: var(--danger-color); }
+
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+        .back-btn { margin-bottom: 1.5rem; font-weight: 600; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; }
+        .back-btn:hover { color: var(--brand-purple-hover); }
+        .back-btn i { font-size: 1.25rem; }
+        .primary-btn, .secondary-btn, .danger-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
+        .primary-btn { background-color: var(--brand-purple); color: white; }
+        .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .secondary-btn:hover { background-color: var(--hover-bg); }
+        .danger-btn { background-color: var(--danger-color); color: white; }
+        .danger-btn:hover { background-color: var(--danger-hover); }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+        
+        .chapter-block { background-color: var(--widget-bg); border-radius: 12px; margin-bottom: 2rem; box-shadow: var(--shadow-sm); border: 1px solid var(--border-color); }
+        .chapter-header { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .chapter-title-display { font-size: 1.25rem; font-weight: 600; flex-grow: 1; }
+        .chapter-actions { position: relative; }
+        .action-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; }
+        .action-btn:hover { background-color: var(--hover-bg); }
+        .action-btn i, .action-btn svg { font-size: 1.5rem; color: var(--text-secondary); width: 20px; height: 20px; }
+        .action-dropdown { position: absolute; right: 0; top: 100%; margin-top: 0.5rem; background-color: var(--widget-bg); border-radius: 12px; border: 1px solid var(--border-color); box-shadow: var(--shadow-lg); z-index: 15; min-width: 150px; padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; opacity: 0; pointer-events: none; transform: translateY(-10px) scale(0.95); transition: opacity 0.15s ease, transform 0.15s ease; }
+        .action-dropdown.active { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+        .action-item { display: flex; align-items: center; gap: 0.75rem; width: 100%; text-align: left; padding: 0.75rem; border-radius: 8px; background: none; border: none; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .action-item:hover { background-color: var(--hover-bg); }
+        .action-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+        .action-item.delete { color: var(--danger-color); }
+        
+        .lessons-list { padding: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+        .lesson-item { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; border-radius: 8px; }
+        .lesson-item:hover { background-color: #F9FAFB; }
+        .lesson-icon { color: var(--text-secondary); font-size: 1.25rem; }
+        .lesson-details { flex: 1; }
+        .lesson-details .title { font-weight: 500; color: var(--text-primary); }
+        .lesson-details .duration { font-size: 0.8rem; color: var(--text-secondary); }
+        .lesson-actions { display: flex; align-items: center; gap: 0.25rem; }
+        .lesson-actions .action-btn.edit svg { color: var(--text-primary); }
+        .lesson-actions .action-btn.delete svg { color: var(--danger-color); }
+        
+        .add-content-container { padding: 1rem 1.5rem 1.5rem; border-top: 1px solid var(--border-color); margin-top: 0.5rem; display: flex; gap: 0.75rem; }
+        .add-content-container .primary-btn, .add-content-container .secondary-btn { flex: 1; }
+        .add-chapter-container { padding: 1rem 0; }
+        .add-chapter-btn { width: 100%; padding: 1rem; background-color: var(--widget-bg); border: 2px dashed var(--border-color); color: var(--text-secondary); font-weight: 600; border-radius: 12px; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-size: 0.9rem; }
+        .add-chapter-btn:hover { background-color: var(--hover-bg); border-color: var(--brand-purple); color: var(--brand-purple); transform: translateY(-2px); box-shadow: var(--shadow-sm); }
+        
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
+        #quiz-modal .modal-content { max-width: 800px; }
+        .modal-overlay.show .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h3 { font-size: 1.25rem; font-weight: 700; }
+        .close-btn { background: none; border: none; cursor: pointer; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background-color 0.2s ease; font-size: 1.75rem; color: var(--text-secondary); }
+        .close-btn:hover { background-color: var(--hover-bg); }
+        .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem 2rem; }
+        .form-field { margin-bottom: 1.25rem; }
+        .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
+        .form-field input, .form-field textarea { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+        .form-field input:focus, .form-field textarea:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
+        .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; border-bottom-left-radius: 1rem; border-bottom-right-radius: 1rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        
+        .confirm-modal .modal-content { max-width: 420px; }
+        .confirm-modal .modal-body { text-align: center; padding-top: 2rem; }
+        .confirm-icon { width: 48px; height: 48px; border-radius: 50%; background-color: var(--danger-bg-light); color: var(--danger-color); display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1rem; }
+        .confirm-icon i { font-size: 1.5rem; }
+        .confirm-modal h4 { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .confirm-modal p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.5; }
+        .confirm-modal .modal-footer { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; padding: 1.5rem; }
+
+        .questions-header { display: flex; justify-content: space-between; align-items: center; margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.5rem; }
+        .questions-header h4 { font-size: 1.125rem; font-weight: 700; }
+        .accordion-item { border: 1px solid var(--border-color); border-radius: 12px; margin-top: 1rem; overflow: hidden; }
+        .accordion-button { display: flex; justify-content: space-between; align-items: center; width: 100%; text-align: left; padding: 1rem 1.5rem; background-color: #F9FAFB; border: none; cursor: pointer; font-weight: 600; font-size: 1rem; }
+        .accordion-button span { flex-grow: 1; }
+        .accordion-button i { transition: transform 0.3s ease; font-size: 1.5rem; }
+        .accordion-button.active i { transform: rotate(180deg); }
+        .accordion-content-inner { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out; background-color: var(--widget-bg); }
+        .question-card { padding: 1.5rem; position: relative; }
+        .remove-item-btn { position: absolute; top: 1rem; right: 1rem; background: var(--hover-bg); color: var(--danger-color); border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .remove-item-btn:hover { background-color: var(--danger-hover); color: white; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.25rem; }
+        .full-width { grid-column: 1 / -1; }
+
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 1.25rem 1.5rem; }
+            .content-body { padding: 1.5rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; border: none; background: none; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+        }
+        @media (max-width: 480px) {
+             .admin-content-header { flex-direction: column; align-items: stretch; }
+            .admin-content-header h2 { font-size: 1.5rem; text-align: center; }
+            .primary-btn, .secondary-btn { width: 100%; }
+            .confirm-modal .modal-footer { grid-template-columns: 1fr; }
+            .content-body { padding: 1rem; }
+            .main-header { padding: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="aurora-bg"></div>
-    <div id="loading-overlay">
-        <div class="loading-spinner"></div>
-        <p>Initializing Environment...</p>
-    </div>
-    <div id="alert-container"></div>
-    <div style="display: none;">
-        <svg xmlns="http://www.w3.org/2000/svg" id="icon-defs">
-            <symbol id="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"></path></symbol>
-            <symbol id="icon-send" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></symbol>
-            <symbol id="icon-check" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></symbol>
-            <symbol id="icon-solved-check" viewBox="0 0 24 24" fill="none"><path d="M7 13L10 16L17 9" stroke="rgb(var(--success-rgb))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="rgb(var(--success-rgb))" stroke-width="2"></circle></symbol>
-            <symbol id="icon-attempted-x" viewBox="0 0 24 24" fill="none"><path d="M15 9L9 15M9 9L15 15" stroke="rgb(var(--danger-rgb))" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><circle cx="12" cy="12" r="10" stroke="rgb(var(--danger-rgb))" stroke-width="2"></circle></symbol>
-            <symbol id="icon-close" viewBox="0 0 24 24" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"></path></symbol>
-            <symbol id="icon-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></symbol>
-            <symbol id="icon-timer" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.414-1.414L11 10.586V6z" clip-rule="evenodd" /></symbol>
-            <symbol id="icon-info-circle" viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z" clip-rule="evenodd" /></symbol>
-        </svg>
-    </div>
-    <main class="ide-dashboard" style="display: none;">
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
-            <button class="close-menu-btn" id="close-menu-btn"><svg><use href="#icon-close"></use></svg></button>
-            <div class="sidebar-header"><h1 class="test-title" id="assignment-title"></h1></div>
-            <nav><ul class="problem-nav" id="problem-list"></ul></nav>
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
+                    <li><a href="manage-subjects.html" class="active"><i class='bx bxs-layer'></i> Subjects & Content</a></li>
+                    <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+            </div>
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-header">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                </div>
+                <ul class="popup-list">
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
         </aside>
-        <div class="main-content">
+        <main class="main-area">
             <header class="main-header">
-                <div class="header-title-group">
-                    <button class="menu-toggle" id="menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                    <h1 class="header-title" id="main-header-title"></h1>
-                </div>
-                <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="timer">00:00:00</span></div>
-                <div class="controls">
-                    <button id="end-test-btn" class="btn">End Test</button>
-                    <button id="run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
-                    <button id="submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
-                </div>
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
+                <h1>Manage Course Content</h1>
             </header>
-            <header class="mobile-header">
-                <button class="menu-toggle" id="mobile-menu-toggle"><svg><use href="#icon-menu"></use></svg></button>
-                 <div class="timer-container"><svg><use href="#icon-timer"></use></svg><span id="mobile-timer">00:00:00</span></div>
-                <button id="mobile-end-test-btn" class="btn" style="padding: 8px 16px;">End Test</button>
-            </header>
-            <div class="mobile-nav">
-                <button class="mobile-nav-btn active" data-view="problem">Problem</button>
-                <button class="mobile-nav-btn" data-view="code">Code</button>
-                <button class="mobile-nav-btn" data-view="results">Results</button>
-            </div>
-            <div class="ide-layout">
-                <div class="top-panel">
-                    <div id="problem-details" class="ide-panel mobile-view-active">
-                         <div id="problem-details-content">
-                             <div id="problem-statement"></div>
-                             <h2 style="margin-top: 24px;">Test Cases</h2>
-                             <div id="public-test-cases"></div>
-                         </div>
-                    </div>
-                    <div id="resizer-v" class="resizer"></div>
-                    <div id="editor-container" class="ide-panel"></div>
+            <section class="content-body">
+                <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
+                <div class="admin-content-header">
+                    <h2 id="page-title"></h2>
                 </div>
-                <div id="resizer-h" class="resizer"></div>
-                <div class="bottom-panel ide-panel">
-                    <div class="tabs">
-                        <div class="tab active" data-tab="results">Test Results</div>
-                        <div class="tab" data-tab="console">Console</div>
-                    </div>
-                    <div class="tab-content-area">
-                        <div id="results" class="tab-content active"><p style="color: var(--text-secondary);">Run or Submit to see results.</p></div>
-                        <div id="console" class="tab-content"><pre id="console-output">No console output.</pre></div>
-                    </div>
+                <div class="lesson-editor" id="lesson-editor-container"></div>
+                <div class="add-chapter-container">
+                    <button class="add-chapter-btn" id="add-chapter-btn"><i class='bx bx-plus'></i> Add New Chapter</button>
                 </div>
+            </section>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="lesson-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="lesson-modal-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <form id="lesson-form">
+                    <input type="hidden" id="lesson-id">
+                    <div class="form-field"><label for="lesson-title">Lesson Title</label><input type="text" id="lesson-title" required></div>
+                    <div class="form-field"><label for="lesson-duration">Duration (e.g., 5 min)</label><input type="text" id="lesson-duration" required></div>
+                    <div class="form-field"><label for="lesson-content">Content (HTML allowed)</label><textarea id="lesson-content" rows="10" required></textarea></div>
+                </form>
             </div>
-             <footer class="mobile-footer">
-                <button id="mobile-run-btn" class="btn run-btn" disabled><svg><use href="#icon-play"></use></svg><span class="btn-text">Run</span></button>
-                <button id="mobile-submit-btn" class="btn submit-btn" disabled><svg><use href="#icon-send"></use></svg><span class="btn-text">Submit</span></button>
-            </footer>
-        </div>
-        <div class="overlay" id="overlay"></div>
-    </main>
-    <div id="results-overlay">
-        <div class="results-card">
-            <h2>Test Finished</h2>
-            <p id="final-score-message">Here is a summary of your session.</p>
-            <ul class="final-results-list" id="final-results-list"></ul>
-            <p id="redirect-message"></p>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-lesson-btn">Save Lesson</button></div>
         </div>
     </div>
-    <div id="final-problem-overlay" class="custom-modal-overlay">
-        <div class="custom-modal-card">
-            <h2>Final Problem Submitted</h2>
-            <p>You have submitted the final problem. Do you want to end the exam now and see your final score?</p>
-            <div class="custom-modal-actions">
-                <button id="final-problem-cancel-btn" class="btn">Return to Problem</button>
-                <button id="final-problem-confirm-btn" class="btn submit-btn">End Exam & See Score</button>
+
+    <div class="modal-overlay" id="quiz-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="quiz-modal-title"></h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <form id="quiz-form">
+                    <input type="hidden" id="quiz-id">
+                    <div class="form-field"><label for="quiz-title">Quiz Title</label><input type="text" id="quiz-title" required></div>
+                    <div class="questions-header"><h4>Questions</h4><button type="button" class="primary-btn" id="add-question-btn"><i class='bx bx-plus'></i> Add Question</button></div>
+                    <div id="questions-container"></div>
+                </form>
+            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-quiz-btn">Save Quiz</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="edit-chapter-modal">
+        <div class="modal-content">
+            <div class="modal-header"><h3 id="edit-chapter-modal-title">Chapter</h3><button class="close-btn">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-field"><label for="new-chapter-name">Chapter Name</label><input type="text" id="new-chapter-name" required></div>
+            </div>
+            <div class="modal-footer"><button class="secondary-btn">Cancel</button><button class="primary-btn" id="save-chapter-name-btn">Save</button></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay confirm-modal" id="confirm-modal">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="confirm-icon"><i class='bx bxs-trash'></i></div>
+                <h4 id="confirm-title">Are you sure?</h4>
+                <p id="confirm-text">Do you really want to delete this item? This process cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn" id="confirm-cancel-btn">Cancel</button>
+                <button class="danger-btn" id="confirm-delete-btn">Delete</button>
             </div>
         </div>
     </div>
+
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/pyodide/v0.25.1/full/pyodide.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs/loader.min.js"></script>
+    
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
-            authDomain: "exam-2e799.firebaseapp.com",
-            projectId: "exam-2e799",
-            storageBucket: "exam-2e799.firebasestorage.app",
-            messagingSenderId: "472506328501",
-            appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
-            measurementId: "G-NX21HT3JKT"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        
-        const DOMElements = { 
-            loadingOverlay: document.getElementById('loading-overlay'), 
-            ideDashboard: document.querySelector('.ide-dashboard'),
-            editorContainer: document.getElementById('editor-container'), 
-            runBtn: document.getElementById('run-btn'), mobileRunBtn: document.getElementById('mobile-run-btn'),
-            submitBtn: document.getElementById('submit-btn'), mobileSubmitBtn: document.getElementById('mobile-submit-btn'),
-            endTestBtn: document.getElementById('end-test-btn'), mobileEndTestBtn: document.getElementById('mobile-end-test-btn'),
-            timer: document.getElementById('timer'), mobileTimer: document.getElementById('mobile-timer'),
-            problemList: document.getElementById('problem-list'), 
-            assignmentTitle: document.getElementById('assignment-title'),
-            mainHeaderTitle: document.getElementById('main-header-title'), 
-            problemDetails: document.getElementById('problem-details'),
-            problemDetailsContent: document.getElementById('problem-details-content'),
-            problemStatement: document.getElementById('problem-statement'), 
-            publicTestCases: document.getElementById('public-test-cases'), 
-            bottomPanel: document.querySelector('.bottom-panel'), 
-            resultsContent: document.getElementById('results'), 
-            consoleOutput: document.getElementById('console-output'), 
-            tabs: document.querySelectorAll('.tab'), 
-            menuToggle: document.getElementById('menu-toggle'), mobileMenuToggle: document.getElementById('mobile-menu-toggle'),
-            closeMenuBtn: document.getElementById('close-menu-btn'), 
-            sidebar: document.getElementById('sidebar'), 
-            overlay: document.getElementById('overlay'), 
-            mobileNav: document.querySelector('.mobile-nav'), 
-            mobileNavBtns: document.querySelectorAll('.mobile-nav-btn'), 
-            mobileFooter: document.querySelector('.mobile-footer'),
-            resultsOverlay: document.getElementById('results-overlay'), 
-            finalResultsList: document.getElementById('final-results-list'), 
-            finalScoreMessage: document.getElementById('final-score-message'), 
-            alertContainer: document.getElementById('alert-container'),
-            finalProblemOverlay: document.getElementById('final-problem-overlay')
-        };
-        
-        let currentUser, assignmentId, assignment, problems = [], currentProblemId, userCodeState = {}, problemStatus = {}, editor, pyodide, timerInterval, isTestEnded = false, isSubmitting = false;
-        
-        function seededRandom(seed) {
-            let state = seed % 2147483647;
-            if (state <= 0) state += 2147483646;
-            return () => {
-                state = (state * 16807) % 2147483647;
-                return (state - 1) / 2147483646;
+        document.addEventListener('DOMContentLoaded', function() {
+            const firebaseConfig = {
+                apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
+                authDomain: "exam-2e799.firebaseapp.com",
+                projectId: "exam-2e799",
+                storageBucket: "exam-2e799.firebasestorage.app",
+                messagingSenderId: "472506328501",
+                appId: "1:472506328501:web:f239c42baed2f4b9f925fc",
+                measurementId: "G-NX21HT3JKT"
             };
-        }
+            firebase.initializeApp(firebaseConfig);
+            const auth = firebase.auth();
+            const db = firebase.firestore();
+            const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
-        function shuffleArray(array, seedString) {
-            const seed = seedString.split('').reduce((hash, char) => (hash << 5) - hash + char.charCodeAt(0) | 0, 0);
-            const random = seededRandom(seed);
-            let currentIndex = array.length, randomIndex;
-            while (currentIndex !== 0) {
-                randomIndex = Math.floor(random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-            }
-            return array;
-        }
+            let currentCourse = null;
+            let currentSubject = null;
 
-        async function main() {
-            const urlParams = new URLSearchParams(window.location.search);
-            assignmentId = urlParams.get('id');
-            if (!assignmentId) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment ID not found.</p>'; return; }
-            auth.onAuthStateChanged(async user => {
-                if (user) {
-                    currentUser = user;
-                    await fetchData();
-                    const completedScoreData = await checkIfAssignmentCompleted();
-                    if (completedScoreData) {
-                        showFinalResultsPage(completedScoreData);
-                    } else {
-                        await initPyodide();
-                    }
-                } else { window.location.href = 'index.html'; }
-            });
-        }
-
-        async function fetchData() {
-            const assignmentDoc = await db.collection('codeAssignments').doc(assignmentId).get();
-            if (!assignmentDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Assignment not found.</p>'; return; }
-            assignment = { id: assignmentDoc.id, ...assignmentDoc.data() };
-            DOMElements.assignmentTitle.textContent = assignment.name;
-            const problemsSnap = await db.collection('codeProblems').where('assignmentId', '==', assignmentId).get();
-            problems = problemsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            shuffleArray(problems, currentUser.uid);
-            problems.forEach(p => {
-                userCodeState[p.id] = p.starterCode;
-                problemStatus[p.id] = 'not-attempted';
-            });
-            currentProblemId = problems.length > 0 ? problems[0].id : null;
-        }
-
-        async function checkIfAssignmentCompleted() {
-            const scoreQuery = await db.collection('codeAssignmentScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).limit(1).get();
-            return scoreQuery.empty ? false : scoreQuery.docs[0].data();
-        }
-
-        function showFinalResultsPage(scoreData) {
-            DOMElements.loadingOverlay.style.display = 'none';
-            DOMElements.ideDashboard.style.display = 'none';
-            DOMElements.finalScoreMessage.textContent = `Final Score: ${scoreData.totalScoreObtained} / ${scoreData.totalScorePossible}`;
-            DOMElements.resultsOverlay.querySelector('h2').textContent = "Assignment Already Completed";
-            db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get().then(scoresSnap => {
-                const problemScores = {};
-                scoresSnap.forEach(doc => {
-                    const score = doc.data();
-                    problemScores[score.problemId] = score.pointsReceived > 0 ? 'solved' : 'attempted';
-                });
-                DOMElements.finalResultsList.innerHTML = problems.map(p => {
-                    const status = problemScores[p.id] || 'notattempted';
-                    const statusClass = `final-status ${status}`;
-                    const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
-                    return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
-                }).join('');
-            });
-            DOMElements.resultsOverlay.classList.add('show');
-        }
-
-        async function initPyodide() {
-            if (!problems.length) { DOMElements.loadingOverlay.innerHTML = '<p>No problems found in this assignment.</p>'; return; }
-            DOMElements.loadingOverlay.querySelector('p').textContent = 'Initializing Python Environment...';
-            try { pyodide = await loadPyodide(); } 
-            catch (error) { DOMElements.loadingOverlay.innerHTML = '<p>Error: Could not load coding environment. Please try again.</p>'; return; }
-            DOMElements.loadingOverlay.querySelector('p').textContent = 'Loading Code Editor...';
-            initEditor();
-        }
-        
-        function initEditor() {
-            require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.34.1/min/vs' }});
-            require(['vs/editor/editor.main'], () => {
-                monaco.editor.defineTheme('pro-dark', { base: 'vs-dark', inherit: true, rules: [{ background: '0D1117' }], colors: { 'editor.background': '#0D1117' } });
-                editor = monaco.editor.create(DOMElements.editorContainer, { language: 'python', theme: 'pro-dark', automaticLayout: true, minimap: { enabled: false }, fontSize: 14, wordWrap: 'on', padding: { top: 16 } });
-                DOMElements.loadingOverlay.style.opacity = '0';
-                setTimeout(() => { DOMElements.loadingOverlay.style.display = 'none'; DOMElements.ideDashboard.style.display = 'flex'; }, 300);
-                init();
-            });
-        }
-        
-        function init() {
-            renderProblemList();
-            loadProblem(currentProblemId);
-            initEventListeners();
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = false);
-            setMobileView('problem');
-            startTimer();
-        }
-
-        function showAdvancedAlert(type, title, message) {
-            const alertId = `alert-${Date.now()}`;
-            const alertEl = document.createElement('div');
-            alertEl.id = alertId;
-            alertEl.className = `advanced-alert alert-${type}`;
-            const iconId = '#icon-info-circle';
-            alertEl.innerHTML = `<div class="alert-icon"><svg><use href="${iconId}"></use></svg></div><div class="alert-content"><div class="alert-title">${title}</div><div class="alert-message">${message}</div></div><div class="alert-progress"></div>`;
-            DOMElements.alertContainer.appendChild(alertEl);
-            setTimeout(() => { const el = document.getElementById(alertId); if (el) { el.classList.add('fade-out'); el.addEventListener('animationend', () => el.remove()); } }, 5000);
-        }
-
-        function startTimer() {
-            const storageKey = `examEndTime_${currentUser.uid}_${assignmentId}`;
-            let endTime = localStorage.getItem(storageKey);
-            if (!endTime) {
-                endTime = Date.now() + assignment.duration * 1000;
-                localStorage.setItem(storageKey, endTime);
-            }
-            clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const remaining = endTime - Date.now();
-                if (remaining <= 0) {
-                    endExam("Time's up!", "Time limit reached");
-                    return;
-                }
-                updateTimerDisplay(remaining);
-            }, 1000);
-        }
-
-        function updateTimerDisplay(remainingMs) { 
-            const totalSeconds = Math.floor(remainingMs / 1000);
-            const hours = Math.floor(totalSeconds / 3600).toString().padStart(2, '0');
-            const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
-            const seconds = (totalSeconds % 60).toString().padStart(2, '0');
-            const timeString = `${hours}:${minutes}:${seconds}`; 
-            DOMElements.timer.textContent = timeString; 
-            DOMElements.mobileTimer.textContent = timeString; 
-        }
-        
-        async function endExam(title = "Test Finished", reason = "User ended exam") {
-            if(isTestEnded || isSubmitting) return;
-            isSubmitting = true;
-            isTestEnded = true;
-            clearInterval(timerInterval);
-            if(editor) editor.updateOptions({ readOnly: true });
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.endTestBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.disabled = true);
-            let totalScoreObtained = 0;
-            const scoresSnap = await db.collection('codeScores').where('userId', '==', currentUser.uid).where('assignmentId', '==', assignmentId).get();
-            scoresSnap.forEach(doc => { totalScoreObtained += doc.data().pointsReceived; });
-            const solvedCount = Object.values(problemStatus).filter(s => s === 'solved').length;
-            const totalScorePossible = problems.reduce((sum, p) => sum + p.points, 0);
-            const finalScoreData = {
-                userId: currentUser.uid, assignmentId: assignmentId,
-                assignmentName: assignment.name, subjectId: assignment.subjectId,
-                totalScoreObtained, totalScorePossible,
-                problemsSolved: solvedCount, totalProblems: problems.length,
-                completedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                submissionReason: reason
-            };
-            await db.collection('codeAssignmentScores').add(finalScoreData);
-            
-            localStorage.removeItem(`examEndTime_${currentUser.uid}_${assignmentId}`);
-
-            DOMElements.finalScoreMessage.textContent = `Final Score: ${totalScoreObtained} / ${totalScorePossible}`;
-            DOMElements.finalResultsList.innerHTML = problems.map(p => {
-                const status = problemStatus[p.id] || 'notattempted';
-                const statusClass = `final-status ${status}`;
-                const statusText = (status === 'notattempted' ? 'Not Attempted' : status).replace(/\b\w/g, l => l.toUpperCase());
-                return `<li><span>${p.title}</span><span class="${statusClass}">${statusText}</span></li>`;
-            }).join('');
-            DOMElements.resultsOverlay.querySelector('h2').textContent = title;
-            DOMElements.resultsOverlay.classList.add('show');
-            let countdown = 30;
-            const redirectMessageEl = document.getElementById('redirect-message');
-            const countdownInterval = setInterval(() => {
-                redirectMessageEl.textContent = `Redirecting in ${countdown} seconds...`;
-                countdown--;
-                if (countdown < 0) {
-                    clearInterval(countdownInterval);
-                    window.location.href = '/course.html';
-                }
-            }, 1000);
-            isSubmitting = false;
-        }
-
-        function initEventListeners() {
-            [DOMElements.runBtn, DOMElements.mobileRunBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(false)));
-            [DOMElements.submitBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.addEventListener('click', () => handleExecution(true)));
-            [DOMElements.endTestBtn, DOMElements.mobileEndTestBtn].forEach(btn => btn.addEventListener('click', () => {
-                if(confirm("Are you sure you want to end the test and submit your answers?")) {
-                    endExam();
-                }
-            }));
-            document.getElementById('final-problem-confirm-btn').addEventListener('click', () => {
-                DOMElements.finalProblemOverlay.classList.remove('show');
-                endExam("Test Finished", "User submitted final problem");
-            });
-            document.getElementById('final-problem-cancel-btn').addEventListener('click', () => {
-                DOMElements.finalProblemOverlay.classList.remove('show');
-            });
-            DOMElements.tabs.forEach(tab => tab.addEventListener('click', switchTab));
-            DOMElements.problemList.addEventListener('click', handleProblemSelect);
-            [DOMElements.menuToggle, DOMElements.mobileMenuToggle].forEach(btn => btn.addEventListener('click', () => { DOMElements.sidebar.classList.add('active'); DOMElements.overlay.classList.add('active'); }));
-            const closeMobileMenu = () => { DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); };
-            DOMElements.closeMenuBtn.addEventListener('click', closeMobileMenu);
-            DOMElements.overlay.addEventListener('click', closeMobileMenu);
-            DOMElements.mobileNav.addEventListener('click', (e) => { const btn = e.target.closest('.mobile-nav-btn'); if (btn) setMobileView(btn.dataset.view); });
-            initResizers();
-        }
-
-        function isProblemUnlocked(problemId) {
-            const problemIndex = problems.findIndex(p => p.id === problemId);
-            if (problemIndex === 0) return true;
-            const prevProblemId = problems[problemIndex - 1].id;
-            return problemStatus[prevProblemId] === 'solved' || problemStatus[prevProblemId] === 'attempted';
-        }
-
-        function renderProblemList() {
-            DOMElements.problemList.innerHTML = problems.map((p, i) => {
-                const status = problemStatus[p.id];
-                const isUnlocked = isProblemUnlocked(p.id);
-                const isActive = p.id === currentProblemId;
-                const icon = status === 'solved' ? '#icon-solved-check' : '#icon-attempted-x';
-                const statusIconHTML = (status === 'solved' || status === 'attempted') ? `<div class="p-status-icon"><svg><use href="${icon}"></use></svg></div>` : '';
-                return `<li class="problem-item ${status} ${isActive ? 'active' : ''} ${!isUnlocked ? 'locked' : ''}" data-id="${p.id}">
-                            <div class="p-number">${i + 1}</div>
-                            <div class="p-title">${p.title}</div>
-                            ${statusIconHTML}
-                        </li>`;
-            }).join('');
-        }
-        
-        function loadProblem(problemId) {
-            currentProblemId = problemId;
-            const problem = problems.find(p => p.id === problemId);
-            if (!problem) return;
-            const status = problemStatus[problemId];
-            const isSubmitted = status === 'solved' || status === 'attempted';
-            DOMElements.mainHeaderTitle.textContent = problem.title;
-            DOMElements.problemStatement.innerHTML = problem.statement;
-            DOMElements.problemDetailsContent.style.animation = 'none';
-            DOMElements.problemDetailsContent.offsetHeight; 
-            DOMElements.problemDetailsContent.style.animation = null; 
-            if (editor) { 
-                editor.setValue(userCodeState[problemId] || problem.starterCode);
-                editor.updateOptions({ readOnly: isSubmitted });
-            }
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(btn => btn.disabled = isSubmitted);
-            DOMElements.publicTestCases.innerHTML = problem.testCases.filter(tc => !tc.hidden).map((tc, i) => `<div class="test-case"><h3>Test Case ${i + 1}</h3><p><strong>Input:</strong> <code>${JSON.stringify(tc.input)}</code></p><p><strong>Output:</strong> <code>${JSON.stringify(tc.expected)}</code></p></div>`).join('');
-            DOMElements.resultsContent.innerHTML = '<p style="color: var(--text-secondary);">Run or Submit to see results.</p>';
-            DOMElements.consoleOutput.textContent = 'No console output.';
-            renderProblemList();
-            setMobileView('problem');
-        }
-        
-        function handleProblemSelect(e) { 
-            const target = e.target.closest('.problem-item');
-            if (!target) return;
-            if (target.classList.contains('locked')) {
-                showAdvancedAlert('info', 'Problem Locked', 'You must submit the current problem before proceeding to the next one.');
-                return;
-            }
-            if (target.dataset.id !== currentProblemId) { 
-                loadProblem(target.dataset.id); 
-                DOMElements.sidebar.classList.remove('active'); DOMElements.overlay.classList.remove('active'); 
-            }
-        }
-        
-        function setMobileView(view) {
-            const IS_DESKTOP = window.innerWidth > 900;
-            if (IS_DESKTOP) return;
-            DOMElements.mobileNavBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.view === view));
-            const views = { problem: DOMElements.problemDetails, code: DOMElements.editorContainer, results: DOMElements.bottomPanel };
-            Object.values(views).forEach(panel => panel.classList.remove('mobile-view-active'));
-            if (views[view]) views[view].classList.add('mobile-view-active');
-            DOMElements.mobileFooter.classList.toggle('active', view === 'code');
-        }
-
-        async function handleExecution(isSubmission) {
-            setLoadingState(true, isSubmission);
-            DOMElements.resultsContent.innerHTML = '';
-            DOMElements.consoleOutput.textContent = '';
-            const problem = problems.find(p => p.id === currentProblemId);
-            const testsToRun = isSubmission ? problem.testCases : problem.testCases.filter(tc => !tc.hidden);
-            const results = [];
-            for (const test of testsToRun) { results.push(await executeTestCase(editor.getValue(), test, problem.functionName)); }
-            if (DOMElements.consoleOutput.textContent.trim() === '') DOMElements.consoleOutput.textContent = 'No console output.';
-            
-            if (isSubmission) {
-                const allPassed = results.every(r => r.status === 'pass');
-                const previousStatus = problemStatus[currentProblemId];
-                problemStatus[currentProblemId] = allPassed ? 'solved' : 'attempted';
-                if (previousStatus !== 'solved') { await saveScore(problem, allPassed); }
-                renderProblemList();
-                
-                const currentProblemIndex = problems.findIndex(p => p.id === currentProblemId);
-                const isLastProblem = currentProblemIndex === problems.length - 1;
-
-                if (isLastProblem) {
-                    DOMElements.finalProblemOverlay.classList.add('show');
+            auth.onAuthStateChanged(async (user) => {
+                if (user && user.email === ADMIN_EMAIL) {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
+                    initPage();
                 } else {
-                    showAdvancedAlert('info', 'Submission Received', `Moving to the next problem...`);
-                    const nextProblemId = problems[currentProblemIndex + 1].id;
-                    setTimeout(() => loadProblem(nextProblemId), 1500);
-                }
-            } else {
-                renderResults(results, false);
-                if (problemStatus[currentProblemId] === 'not-attempted') {
-                    problemStatus[currentProblemId] = 'attempted';
-                    renderProblemList();
-                }
-                document.querySelector('.tab[data-tab="results"]').click();
-                if (!IS_DESKTOP) setMobileView('results');
-            }
-            userCodeState[currentProblemId] = editor.getValue();
-            setLoadingState(false, isSubmission);
-        }
-        
-        async function executeTestCase(code, testCase, functionName) {
-            let result = { status: 'fail', error: null, output: null };
-            const inputDefs = Object.entries(testCase.input).map(([key, value]) => `${key} = ${JSON.stringify(value)}`).join('\n');
-            const funcCall = `${functionName}(${Object.keys(testCase.input).join(', ')})`;
-            const fullScript = `${code}\n\nimport json\n${inputDefs}\nresult = ${funcCall}\nprint("__RESULT_START__")\nprint(json.dumps(result))\nprint("__RESULT_END__")`;
-            try {
-                const capturedOutput = { lines: [] };
-                pyodide.setStdout({ batched: (msg) => capturedOutput.lines.push(msg) });
-                pyodide.setStderr({ batched: (msg) => capturedOutput.lines.push(msg) });
-                await pyodide.runPythonAsync(fullScript);
-                const outputStr = capturedOutput.lines.join('\n');
-                const resultMatch = outputStr.match(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/);
-                const userLogs = outputStr.replace(/__RESULT_START__\n([\s\S]*?)\n__RESULT_END__/, '').trim();
-                if (userLogs) DOMElements.consoleOutput.textContent += `${userLogs}\n`;
-                if (resultMatch && resultMatch[1]) {
-                    const outputJs = JSON.parse(resultMatch[1]);
-                    result.output = outputJs;
-                    if (JSON.stringify(outputJs) === JSON.stringify(testCase.expected)) result.status = 'pass';
-                } else { result.error = "Execution failed to produce a valid result."; }
-            } catch (e) { result.error = e.toString(); DOMElements.consoleOutput.textContent += `\n--- ERROR ---\n${e.toString()}`; } 
-            finally { pyodide.setStdout(); pyodide.setStderr(); }
-            return { ...testCase, ...result };
-        }
-
-        async function saveScore(problem, wasCorrect) {
-            const scoreRef = db.collection('codeScores').where('userId', '==', currentUser.uid).where('problemId', '==', problem.id);
-            const scoreSnap = await scoreRef.get();
-            if (scoreSnap.empty) {
-                const scoreData = { userId: currentUser.uid, assignmentId: assignmentId, problemId: problem.id, pointsReceived: wasCorrect ? problem.points : 0, submittedAt: firebase.firestore.FieldValue.serverTimestamp() };
-                try { await db.collection('codeScores').add(scoreData); } catch (e) { console.error("Error saving score:", e); showAdvancedAlert('error', 'Save Failed', 'Could not save your score.'); }
-            }
-        }
-
-        function renderResults(results, isSubmission) {
-            const passedCount = results.filter(r => r.status === 'pass').length, totalCount = results.length;
-            const success = passedCount === totalCount;
-            let summaryHTML;
-            if (isSubmission) { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}"><div>${success ? 'Accepted' : 'Wrong Answer'} <br><small>${passedCount} / ${totalCount} test cases passed.</small></div></div>`; } 
-            else { summaryHTML = `<div id="results-summary" class="${success ? 'success' : 'failure'}">Run Finished: ${passedCount} / ${totalCount} public cases passed.</div>`; }
-            const resultsHTML = results.map((r, i) => {
-                const caseTitle = r.hidden ? `Hidden Test Case` : `Test Case #${i + 1}`;
-                const statusIcon = r.status === 'pass' ? '#icon-check' : '#icon-close';
-                return `<div class="result-item"><span>${caseTitle}</span><div class="status status-${r.status}"><svg><use href="${statusIcon}"></use></svg>${r.status.toUpperCase() === 'PASS' ? 'PASSED' : 'FAILED'}</div></div>`;
-            }).join('');
-            DOMElements.resultsContent.innerHTML = summaryHTML + resultsHTML;
-        }
-
-        function setLoadingState(isLoading, isSubmission) {
-            const btns = isSubmission ? [DOMElements.submitBtn, DOMElements.mobileSubmitBtn] : [DOMElements.runBtn, DOMElements.mobileRunBtn];
-            [DOMElements.runBtn, DOMElements.submitBtn, DOMElements.mobileRunBtn, DOMElements.mobileSubmitBtn].forEach(b => b.disabled = isLoading || isTestEnded);
-            btns.forEach(btn => {
-                const btnText = btn.querySelector('.btn-text');
-                const isSubmitted = problemStatus[currentProblemId] === 'solved' || problemStatus[currentProblemId] === 'attempted';
-                if (isLoading) { 
-                    btn.querySelector('svg').style.display = 'none';
-                    const loader = document.createElement('div'); loader.className = 'loader'; btn.prepend(loader); 
-                    btnText.textContent = isSubmission ? 'Submitting...' : 'Running...'; 
-                } else { 
-                    btn.querySelector('.loader')?.remove(); 
-                    btn.querySelector('svg').style.display = 'block'; 
-                    btnText.textContent = isSubmission ? 'Submit' : 'Run';
-                    btn.disabled = isSubmitted || isTestEnded;
+                    window.location.href = 'index.html';
                 }
             });
-        }
-        
-        function switchTab(e) { const targetTab = e.currentTarget.dataset.tab; DOMElements.tabs.forEach(t => t.classList.toggle('active', t.dataset.tab === targetTab)); document.querySelectorAll('.tab-content').forEach(c => c.classList.toggle('active', c.id === targetTab)); }
-        
-        function initResizers() {
-            const IS_DESKTOP = window.innerWidth > 900;
-            if (!IS_DESKTOP) return;
-            const resizerH = document.getElementById('resizer-h'), topPanel = resizerH.previousElementSibling, bottomPanel = resizerH.nextElementSibling;
-            const resizerV = document.getElementById('resizer-v'), problemDetails = resizerV.previousElementSibling, editorContainer = resizerV.nextElementSibling;
-            const onMouseMoveH = (e) => { const containerHeight = topPanel.parentElement.clientHeight, newTopHeight = e.clientY - topPanel.getBoundingClientRect().top; const percentage = newTopHeight / containerHeight * 100; topPanel.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
-            const onMouseUpH = () => document.removeEventListener('mousemove', onMouseMoveH);
-            resizerH.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveH); document.addEventListener('mouseup', onMouseUpH, { once: true }); });
-            const onMouseMoveV = (e) => { const containerWidth = problemDetails.parentElement.clientWidth, newLeftWidth = e.clientX - problemDetails.getBoundingClientRect().left; const percentage = newLeftWidth / containerWidth * 100; problemDetails.style.flexBasis = `${Math.max(25, Math.min(75, percentage))}%`; };
-            const onMouseUpV = () => document.removeEventListener('mousemove', onMouseMoveV);
-            resizerV.addEventListener('mousedown', (e) => { e.preventDefault(); document.addEventListener('mousemove', onMouseMoveV); document.addEventListener('mouseup', onMouseUpV, { once: true }); });
-        }
-        
-        main();
+
+            const initSharedUI = (adminProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
+                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                const profileSection = document.getElementById('profile-section');
+                const profilePopup = document.getElementById('profile-popup');
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
+                const overlay = document.getElementById('overlay');
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                menuToggle.addEventListener('click', toggleMenu);
+                closeBtn.addEventListener('click', toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
+            };
+
+            const initPage = async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const courseId = urlParams.get('courseId');
+                if (!courseId) { window.location.href = 'manage-subjects.html'; return; }
+                const courseDoc = await db.collection('courses').doc(courseId).get();
+                if (!courseDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
+                currentCourse = { id: courseId, ...courseDoc.data() };
+                
+                const subjectDoc = await db.collection('subjects').doc(currentCourse.subjectId).get();
+                currentSubject = { id: subjectDoc.id, ...subjectDoc.data() };
+
+                document.getElementById('page-title').textContent = `${currentCourse.name}`;
+                loadLessonEditor();
+                document.querySelector('.dashboard-container').style.display = 'grid';
+                document.getElementById('loading-overlay').style.display = 'none';
+            };
+            
+            const loadLessonEditor = () => {
+                const container = document.getElementById('lesson-editor-container');
+                db.collection('courses').doc(currentCourse.id).onSnapshot(doc => {
+                    const courseData = doc.data();
+                    if (!courseData) { container.innerHTML = 'Error: Course data could not be loaded.'; return; }
+                    currentCourse.chapters = courseData.chapters || []; 
+                    container.innerHTML = '';
+                    if (currentCourse.chapters.length === 0) {
+                        container.innerHTML = '<p style="padding: 1rem; text-align: center; color: var(--text-secondary);">This course has no chapters yet. Click "Add New Chapter" to begin.</p>';
+                    } else {
+                        currentCourse.chapters.forEach((chapter, index) => {
+                            const chapterBlock = document.createElement('div');
+                            chapterBlock.className = 'chapter-block';
+                            chapterBlock.innerHTML = `
+                                <div class="chapter-header" data-chapter-index="${index}">
+                                    <span class="chapter-title-display">${index + 1}. ${chapter}</span>
+                                    <div class="chapter-actions">
+                                        <button class="action-btn menu-btn" aria-label="Actions"><i class='bx bx-dots-vertical-rounded'></i></button>
+                                        <div class="action-dropdown">
+                                            <button class="action-item edit-chapter-btn" data-chapter-index="${index}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Rename
+                                            </button>
+                                            <button class="action-item delete delete-chapter-btn" data-chapter-index="${index}">
+                                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="lessons-list" id="chapter-${index}-lessons"></div>
+                                <div class="add-content-container">
+                                    <button class="secondary-btn add-lesson-btn" data-chapter-index="${index}"><i class='bx bx-file'></i> Add Lesson</button>
+                                    <button class="primary-btn add-quiz-btn" data-chapter-index="${index}"><i class='bx bx-help-circle'></i> Add Quiz</button>
+                                </div>`;
+                            container.appendChild(chapterBlock);
+                            loadLessonsForChapter(index);
+                        });
+                    }
+                });
+            };
+
+            const loadLessonsForChapter = (chapterIndex) => {
+                const container = document.getElementById(`chapter-${chapterIndex}-lessons`);
+                db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', chapterIndex).orderBy('order').onSnapshot(snapshot => {
+                    container.innerHTML = '';
+                    if (snapshot.empty) {
+                        container.innerHTML = '<p style="padding: 1rem 1rem; color: var(--text-secondary); text-align: center;">No content in this chapter yet.</p>';
+                    }
+                    snapshot.forEach(doc => {
+                        const itemData = doc.data();
+                        const item = document.createElement('div');
+                        item.className = 'lesson-item';
+                        const iconClass = itemData.type === 'quiz' ? 'bx-help-circle' : 'bx-file';
+                        const duration = itemData.type === 'lesson' ? `<div class="duration">${itemData.duration}</div>` : '';
+
+                        item.innerHTML = `
+                            <i class='bx ${iconClass} lesson-icon'></i>
+                            <div class="lesson-details">
+                                <div class="title">${itemData.title}</div>
+                                ${duration}
+                            </div>
+                            <div class="lesson-actions">
+                                <button class="action-btn edit edit-item-btn" data-id="${doc.id}" aria-label="Edit Item">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M18.25 5.75C16.8693 4.36929 14.6307 4.36929 13.25 5.75L10.125 8.875L5.52404 13.476C4.86236 14.1376 4.45361 15.0104 4.36889 15.9423L4 20.0001L8.0578 19.6311C8.98967 19.5464 9.86234 19.1377 10.524 18.476L18.25 10.75C19.6307 9.36929 19.6307 7.13071 18.25 5.75V5.75Z" stroke="currentColor" stroke-width="2"></path><path d="M12.5 7.5L16.5 11.5" stroke="currentColor" stroke-width="2"></path></svg>
+                                </button>
+                                <button class="action-btn delete delete-item-btn" data-id="${doc.id}" aria-label="Delete Item">
+                                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M2.99561 7H20.9956" stroke="currentColor" stroke-width="2"></path><path d="M9.99561 11V17M13.9956 11V17" stroke="currentColor" stroke-width="2"></path><path d="M8 6.5L8.68917 4.08792C8.87315 3.44397 9.46173 3 10.1315 3H13.8685C14.5383 3 15.1268 3.44397 15.3108 4.08792L16 6.5" stroke="currentColor" stroke-width="2"></path><path d="M5 7L5.80098 18.2137C5.91312 19.7837 7.21944 21 8.79336 21H15.2066C16.7806 21 18.0869 19.7837 18.199 18.2137L19 7" stroke="currentColor" stroke-width="2"></path></svg>
+                                </button>
+                            </div>`;
+                        container.appendChild(item);
+                    });
+                });
+            };
+
+            const openLessonModal = (lesson = null, chapterIndex) => {
+                const modal = document.getElementById('lesson-modal');
+                modal.querySelector('#lesson-modal-title').textContent = lesson ? 'Edit Lesson' : 'Create New Lesson';
+                modal.dataset.chapterIndex = lesson ? lesson.chapterIndex : chapterIndex;
+                modal.querySelector('#lesson-form').reset();
+                modal.querySelector('#lesson-id').value = lesson ? lesson.id : '';
+                modal.querySelector('#lesson-title').value = lesson ? lesson.title : '';
+                modal.querySelector('#lesson-duration').value = lesson ? lesson.duration : '';
+                modal.querySelector('#lesson-content').value = lesson ? lesson.content : '';
+                modal.classList.add('show');
+            };
+
+            const openQuizModal = (quiz = null, chapterIndex) => {
+                const modal = document.getElementById('quiz-modal');
+                modal.querySelector('#quiz-modal-title').textContent = quiz ? 'Edit Quiz' : 'Create New Quiz';
+                modal.dataset.chapterIndex = quiz ? quiz.chapterIndex : chapterIndex;
+                modal.querySelector('#quiz-form').reset();
+                modal.querySelector('#quiz-id').value = quiz ? quiz.id : '';
+                modal.querySelector('#quiz-title').value = quiz ? quiz.title : '';
+                const questionsContainer = modal.querySelector('#questions-container');
+                questionsContainer.innerHTML = '';
+                if (quiz) quiz.questions.forEach(addQuestionToForm);
+                modal.classList.add('show');
+            };
+
+            const addQuestionToForm = (question = {}) => {
+                const container = document.getElementById('questions-container');
+                const index = container.querySelectorAll('.accordion-item').length;
+                const item = document.createElement('div');
+                item.className = 'accordion-item';
+                item.innerHTML = `
+                    <button type="button" class="accordion-button"><span>${index + 1}. ${question.title || 'New Question'}</span><i class='bx bx-chevron-down'></i></button>
+                    <div class="accordion-content-inner">
+                        <div class="question-card">
+                            <button type="button" class="remove-item-btn" aria-label="Remove Question">&times;</button>
+                            <div class="form-field full-width"><label for="q-title-${index}">Question Title</label><textarea id="q-title-${index}" rows="2" class="question-title" required>${question.title || ''}</textarea></div>
+                            <div class="form-grid">
+                                ${[0, 1, 2, 3].map(i => `<div class="form-field"><label for="q-${index}-opt-${i}">Option ${String.fromCharCode(65 + i)}</label><input type="text" id="q-${index}-opt-${i}" class="question-option" value="${(question.options && question.options[i]) || ''}" required></div>`).join('')}
+                                <div class="form-field"><label for="q-${index}-correct">Correct Answer (0-3)</label><input type="number" id="q-${index}-correct" class="question-correct" min="0" max="3" value="${question.correctAnswer ?? ''}" required></div>
+                                <div class="form-field"><label for="q-${index}-points">Points</label><input type="number" id="q-${index}-points" class="question-points" value="${question.points || ''}" required></div>
+                            </div>
+                        </div>
+                    </div>`;
+                container.appendChild(item);
+                item.querySelector('.question-title').addEventListener('input', e => {
+                    item.querySelector('.accordion-button span').textContent = `${index + 1}. ${e.target.value || 'New Question'}`;
+                });
+            };
+            
+            const openEditChapterModal = (index, currentName) => {
+                const modal = document.getElementById('edit-chapter-modal');
+                modal.querySelector('#edit-chapter-modal-title').textContent = currentName ? 'Rename Chapter' : 'Add New Chapter';
+                modal.dataset.chapterIndex = index;
+                modal.querySelector('#new-chapter-name').value = currentName;
+                modal.classList.add('show');
+            };
+
+            let confirmCallback = null;
+            const openConfirmationModal = (title, text, onConfirm) => {
+                const modal = document.getElementById('confirm-modal');
+                modal.querySelector('#confirm-title').textContent = title;
+                modal.querySelector('#confirm-text').textContent = text;
+                confirmCallback = onConfirm;
+                modal.classList.add('show');
+            };
+
+            const closeModal = (modalId) => document.getElementById(modalId).classList.remove('show');
+
+            document.getElementById('add-chapter-btn').addEventListener('click', () => openEditChapterModal(null, ''));
+
+            document.getElementById('lesson-editor-container').addEventListener('click', async e => {
+                const target = e.target.closest('button');
+                if (!target) return;
+                
+                if (target.matches('.add-lesson-btn')) openLessonModal(null, target.dataset.chapterIndex);
+                else if (target.matches('.add-quiz-btn')) openQuizModal(null, target.dataset.chapterIndex);
+                else if (target.matches('.edit-item-btn')) {
+                    const doc = await db.collection('lessons').doc(target.dataset.id).get();
+                    const data = { id: doc.id, ...doc.data() };
+                    if (data.type === 'quiz') openQuizModal(data);
+                    else openLessonModal(data);
+                }
+                else if (target.matches('.delete-item-btn')) {
+                    openConfirmationModal('Delete Item', 'Are you sure you want to delete this item?', async () => {
+                        await db.collection('lessons').doc(target.dataset.id).delete();
+                    });
+                }
+                else if (target.matches('.edit-chapter-btn')) {
+                    const index = parseInt(target.dataset.chapterIndex, 10);
+                    openEditChapterModal(index, currentCourse.chapters[index]);
+                }
+                else if (target.matches('.delete-chapter-btn')) {
+                    const index = parseInt(target.dataset.chapterIndex, 10);
+                    const lessonsQuery = await db.collection('lessons').where('courseId', '==', currentCourse.id).where('chapterIndex', '==', index).limit(1).get();
+                    if (!lessonsQuery.empty) {
+                        alert("Cannot delete a chapter that still contains content. Please delete all items from this chapter first.");
+                        return;
+                    }
+                    openConfirmationModal('Delete Chapter', `Are you sure you want to delete "${currentCourse.chapters[index]}"?`, async () => {
+                        const updatedChapters = currentCourse.chapters.filter((_, i) => i !== index);
+                        await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
+                    });
+                }
+            });
+
+            document.addEventListener('click', e => {
+                const button = e.target.closest('button');
+                if (button && (button.matches('.close-btn') || button.matches('.secondary-btn'))) {
+                    const modal = button.closest('.modal-overlay');
+                    if (modal) modal.classList.remove('show');
+                }
+                if (button && button.matches('.accordion-button')) {
+                    button.classList.toggle('active');
+                    const content = button.nextElementSibling;
+                    content.style.maxHeight = content.style.maxHeight ? null : content.scrollHeight + "px";
+                }
+                if (button && button.id === 'add-question-btn') addQuestionToForm();
+                if (button && button.matches('.remove-item-btn')) {
+                    const questionCard = button.closest('.accordion-item');
+                    const container = questionCard.parentElement;
+                    questionCard.remove();
+                    container.querySelectorAll('.accordion-button span').forEach((span, index) => {
+                        const currentText = span.textContent.split('. ')[1];
+                        span.textContent = `${index + 1}. ${currentText}`;
+                    });
+                }
+            });
+            
+            document.getElementById('confirm-cancel-btn').addEventListener('click', () => closeModal('confirm-modal'));
+            document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+                if (confirmCallback) confirmCallback();
+                closeModal('confirm-modal');
+            });
+
+            document.getElementById('save-chapter-name-btn').addEventListener('click', async () => {
+                const modal = document.getElementById('edit-chapter-modal');
+                const index = modal.dataset.chapterIndex;
+                const newName = modal.querySelector('#new-chapter-name').value.trim();
+                if (!newName) { alert("Chapter name cannot be empty."); return; }
+                
+                const updatedChapters = [...currentCourse.chapters];
+                if (index !== null && index !== undefined && index !== 'null') {
+                    updatedChapters[parseInt(index, 10)] = newName;
+                } else {
+                    updatedChapters.push(newName);
+                }
+                await db.collection('courses').doc(currentCourse.id).update({ chapters: updatedChapters });
+                closeModal('edit-chapter-modal');
+            });
+
+            document.getElementById('save-lesson-btn').addEventListener('click', async () => {
+                const modal = document.getElementById('lesson-modal');
+                const id = modal.querySelector('#lesson-id').value;
+                const chapterIndex = parseInt(modal.dataset.chapterIndex, 10);
+                const data = {
+                    type: 'lesson',
+                    title: modal.querySelector('#lesson-title').value.trim(),
+                    duration: modal.querySelector('#lesson-duration').value.trim(),
+                    content: modal.querySelector('#lesson-content').value.trim(),
+                    courseId: currentCourse.id,
+                    subjectId: currentSubject.id,
+                    chapterIndex: chapterIndex,
+                };
+                if (!data.title || !data.duration) { alert('Title and Duration are required.'); return; }
+                if (id) {
+                    await db.collection('lessons').doc(id).update(data);
+                } else {
+                    const query = await db.collection('lessons').where('courseId', '==', data.courseId).where('chapterIndex', '==', data.chapterIndex).get();
+                    data.order = query.size;
+                    await db.collection('lessons').add(data);
+                }
+                closeModal('lesson-modal');
+            });
+
+             document.getElementById('save-quiz-btn').addEventListener('click', async () => {
+                const modal = document.getElementById('quiz-modal');
+                const form = document.getElementById('quiz-form');
+                if (!form.checkValidity()) { form.reportValidity(); return; }
+
+                const id = document.getElementById('quiz-id').value;
+                const chapterIndex = parseInt(modal.dataset.chapterIndex, 10);
+                const questions = [];
+                document.querySelectorAll('#questions-container .question-card').forEach(card => {
+                    questions.push({
+                        title: card.querySelector('.question-title').value.trim(), 
+                        options: [...card.querySelectorAll('.question-option')].map(opt => opt.value.trim()),
+                        correctAnswer: parseInt(card.querySelector('.question-correct').value, 10), 
+                        points: parseInt(card.querySelector('.question-points').value, 10),
+                    });
+                });
+                
+                const data = {
+                    type: 'quiz',
+                    title: modal.querySelector('#quiz-title').value.trim(),
+                    questions: questions,
+                    courseId: currentCourse.id,
+                    subjectId: currentSubject.id,
+                    chapterIndex: chapterIndex,
+                };
+
+                if (id) {
+                    await db.collection('lessons').doc(id).update(data);
+                } else {
+                    const query = await db.collection('lessons').where('courseId', '==', data.courseId).where('chapterIndex', '==', data.chapterIndex).get();
+                    data.order = query.size;
+                    await db.collection('lessons').add(data);
+                }
+                closeModal('quiz-modal');
+            });
+
+            document.addEventListener('click', e => {
+                const isDropdownButton = e.target.closest('.chapter-actions .menu-btn');
+                document.querySelectorAll('.action-dropdown.active').forEach(dropdown => {
+                    if (!isDropdownButton || dropdown !== isDropdownButton.nextElementSibling) {
+                        dropdown.classList.remove('active');
+                    }
+                });
+                if (isDropdownButton) {
+                    isDropdownButton.nextElementSibling.classList.toggle('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>
