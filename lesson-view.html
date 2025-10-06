@@ -10,7 +10,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <style>
         :root {
-            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            --font-family: 'IBM Plex Sans', sans-serif;
             --color-primary: #007bff; --color-primary-light: #e6f2ff; --color-primary-dark: #0056b3;
             --color-sidebar-bg: #10172a; --color-sidebar-bg-alt: #1e293b;
             --color-sidebar-text: #e2e8f0; --color-sidebar-text-muted: #64748b; --color-sidebar-hover: #1e293b;
@@ -100,7 +100,7 @@
     </style>
 </head>
 <body>
-    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Lesson...</div>
+    <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center;">Loading Content...</div>
     <div class="course-container" id="course-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
             <button class="close-menu-btn" id="close-menu-btn" aria-label="Close menu"><span class="icon"></span></button>
@@ -158,6 +158,7 @@
             const auth = firebase.auth();
             const db = firebase.firestore();
 
+            let courseData = null;
             let subjectData = null;
             let allItems = [];
             let userProgress = new Set();
@@ -191,28 +192,32 @@
 
             const initializeApp = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                const itemId = urlParams.get('id');
-                if (!itemId) { alert('Content ID is missing.'); window.location.href = 'dashboard.html'; return; }
+                const courseId = urlParams.get('id');
+                if (!courseId) { alert('Course ID is missing.'); window.location.href = 'dashboard.html'; return; }
 
-                const itemDoc = await db.collection('lessons').doc(itemId).get();
-                if (!itemDoc.exists) { alert('Content not found.'); window.location.href = 'dashboard.html'; return; }
+                const courseDoc = await db.collection('courses').doc(courseId).get();
+                if (!courseDoc.exists) { alert('Course not found.'); window.location.href = 'dashboard.html'; return; }
                 
-                currentItem = { id: itemDoc.id, ...itemDoc.data() };
-                const subjectId = currentItem.subjectId;
+                courseData = { id: courseDoc.id, ...courseDoc.data() };
+                const subjectId = courseData.subjectId;
 
                 const [subjectDoc, lessonsSnapshot, progressSnapshot] = await Promise.all([
                     db.collection('subjects').doc(subjectId).get(),
-                    db.collection('lessons').where('subjectId', '==', subjectId).get(),
-                    db.collection('users').doc(currentUser.uid).collection('progress').where('subjectId', '==', subjectId).get()
+                    db.collection('lessons').where('courseId', '==', courseId).get(),
+                    db.collection('users').doc(currentUser.uid).collection('progress').where('courseId', '==', courseId).get()
                 ]);
 
                 if (!subjectDoc.exists) { alert('Parent subject not found.'); window.location.href = 'dashboard.html'; return; }
+                
                 subjectData = { id: subjectDoc.id, ...subjectDoc.data() };
                 allItems = lessonsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
                 userProgress = new Set(progressSnapshot.docs.map(doc => doc.data().lessonId));
 
+                const firstUncompleted = allItems.find(item => !userProgress.has(item.id));
+                currentItem = firstUncompleted || allItems[allItems.length - 1];
+
                 if (allItems.length > 0) { renderAll(); } 
-                else { dom.courseContainer.innerHTML = '<h1>This subject has no content yet.</h1>'; }
+                else { dom.courseContainer.innerHTML = '<h1>This course has no content yet.</h1>'; }
                 
                 injectIcons();
                 dom.courseContainer.style.display = 'flex';
@@ -226,13 +231,13 @@
             };
 
             const renderSidebar = () => {
-                dom.sidebarTitle.textContent = subjectData.name;
-                dom.sidebarCategory.textContent = 'Curriculum';
+                dom.sidebarTitle.textContent = courseData.name;
+                dom.sidebarCategory.textContent = subjectData.name;
                 dom.backToSubjectLink.href = subjectData.page;
                 dom.courseNav.innerHTML = '';
                 const firstUncompleted = allItems.find(item => !userProgress.has(item.id));
 
-                (subjectData.chapters || []).forEach((chapterTitle, chapIdx) => {
+                (courseData.chapters || []).forEach((chapterTitle, chapIdx) => {
                     const itemsInChapter = allItems.filter(l => l.chapterIndex === chapIdx);
                     if(itemsInChapter.length === 0) return;
 
@@ -249,9 +254,10 @@
                         const isLocked = !userProgress.has(item.id) && firstUncompleted && item.id !== firstUncompleted.id;
                         const li = document.createElement('li');
                         li.className = `lesson-item ${item.id === currentItem.id ? 'active' : ''} ${userProgress.has(item.id) ? 'completed' : ''} ${isLocked ? 'locked' : ''}`;
-                        li.dataset.lessonId = item.id;
+                        li.dataset.itemId = item.id;
                         const iconClass = item.type === 'quiz' ? 'bxs-help-circle' : 'bxs-file-blank';
-                        li.innerHTML = `<i class='item-type-icon ${iconClass}'></i><div class="lesson-details"><span class="lesson-title-nav">${item.title}</span>${item.type === 'lesson' ? `<span class="lesson-duration">${item.duration}</span>` : ''}</div><div class="lesson-status-circle">${ICONS.CHECK}</div>`;
+                        const duration = item.type === 'lesson' ? `<span class="lesson-duration">${item.duration}</span>` : '';
+                        li.innerHTML = `<i class='item-type-icon bx ${iconClass}'></i><div class="lesson-details"><span class="lesson-title-nav">${item.title}</span>${duration}</div><div class="lesson-status-circle">${ICONS.CHECK}</div>`;
                         if (!isLocked) { li.addEventListener('click', (e) => { e.preventDefault(); navigateToItem(item.id); }); }
                         lessonList.appendChild(li);
                     });
@@ -267,15 +273,16 @@
                     currentItem = item;
                     userQuizAnswers = {};
                     renderAll();
-                    updateURL(itemId);
+                    updateURL(courseData.id);
                     closeMobileMenu();
                 }
             };
 
             const renderContent = () => {
                 if (!currentItem) return;
-                dom.lessonMeta.textContent = `Chapter ${currentItem.chapterIndex + 1} • Item ${currentItem.chapterIndex + 1}.${currentItem.order + 1}`;
+                dom.lessonMeta.textContent = `Chapter ${currentItem.chapterIndex + 1} • Item ${currentItem.order + 1}`;
                 dom.lessonTitle.textContent = currentItem.title;
+                dom.lessonContent.className = 'lesson-body';
                 
                 if (currentItem.type === 'quiz') {
                     renderQuiz();
@@ -299,6 +306,7 @@
 
                 document.querySelectorAll('.quiz-option').forEach(opt => {
                     opt.addEventListener('click', () => {
+                        if (userProgress.has(currentItem.id)) return;
                         const qIndex = opt.closest('.quiz-question-card').dataset.questionIndex;
                         userQuizAnswers[qIndex] = parseInt(opt.querySelector('input').value, 10);
                         opt.parentElement.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
@@ -322,11 +330,11 @@
                 const isCompleted = userProgress.has(currentItem.id);
 
                 if (currentItem.type === 'quiz') {
-                    dom.completeBtn.textContent = 'Submit Quiz';
-                    dom.completeBtn.disabled = isCompleted;
+                    dom.completeBtn.textContent = isCompleted ? 'Next →' : 'Submit Quiz';
+                    dom.completeBtn.disabled = isLastItem && isCompleted;
                 } else {
                     if (isLastItem && isCompleted) {
-                        dom.completeBtn.textContent = 'Subject Complete!';
+                        dom.completeBtn.textContent = 'Course Complete!';
                         dom.completeBtn.disabled = true;
                     } else if (isCompleted) {
                         dom.completeBtn.textContent = 'Next →';
@@ -344,7 +352,10 @@
             };
 
             const handleCompleteAndNext = async () => {
-                if (currentItem.type === 'quiz') { handleSubmitQuiz(); return; }
+                if (currentItem.type === 'quiz' && !userProgress.has(currentItem.id)) {
+                    handleSubmitQuiz();
+                    return;
+                }
                 
                 dom.completeBtn.disabled = true;
                 const isAlreadyCompleted = userProgress.has(currentItem.id);
@@ -352,6 +363,7 @@
                 if (!isAlreadyCompleted) {
                     try {
                         await db.collection('users').doc(currentUser.uid).collection('progress').add({
+                            courseId: currentItem.courseId,
                             subjectId: currentItem.subjectId,
                             lessonId: currentItem.id,
                             completedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -367,25 +379,36 @@
             };
 
             const handleSubmitQuiz = async () => {
+                if (Object.keys(userQuizAnswers).length !== currentItem.questions.length) {
+                    alert('Please answer all questions before submitting.');
+                    return;
+                }
                 dom.completeBtn.disabled = true;
                 let score = 0;
-                const totalPoints = currentItem.questions.reduce((sum, q) => sum + q.points, 0);
+                const totalPoints = currentItem.questions.reduce((sum, q) => sum + (q.points || 0), 0);
 
                 currentItem.questions.forEach((q, index) => {
                     if (userQuizAnswers[index] === q.correctAnswer) {
-                        score += q.points;
+                        score += (q.points || 0);
                     }
                 });
 
                 const scoreData = {
+                    userId: currentUser.uid,
                     examId: currentItem.id, examName: currentItem.title,
-                    examType: 'quiz', subjectId: currentItem.subjectId,
+                    examType: 'quiz', courseId: currentItem.courseId, subjectId: currentItem.subjectId,
                     pointsReceived: score, totalPoints: totalPoints,
                     submittedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
 
                 try {
-                    await db.collection('users').doc(currentUser.uid).collection('scores').add(scoreData);
+                    await db.collection('scores').add(scoreData);
+                    await db.collection('users').doc(currentUser.uid).collection('progress').add({
+                        courseId: currentItem.courseId,
+                        subjectId: currentItem.subjectId,
+                        lessonId: currentItem.id,
+                        completedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
                     userProgress.add(currentItem.id);
                 } catch (error) { console.error("Error saving quiz score:", error); dom.completeBtn.disabled = false; return; }
                 
@@ -419,9 +442,9 @@
                 }
             };
             
-            const updateURL = (itemId) => {
-                const newUrl = `lesson-view.html?id=${itemId}`;
-                history.pushState({ itemId }, '', newUrl);
+            const updateURL = (courseId) => {
+                const newUrl = `lesson-view.html?id=${courseId}`;
+                history.pushState({ courseId }, '', newUrl);
             };
 
             window.addEventListener('popstate', (event) => {
