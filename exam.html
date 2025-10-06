@@ -270,9 +270,9 @@
             reviewConfirmBtn: document.getElementById('review-confirm-btn')
         };
 
-        let currentUser, examId, examData, questions = [], userAnswers = {}, visitedQuestions = new Set(), currentQuestionIndex = 0, timerInterval, isExamEnded = false, pauseStartTime = null, examStartTime;
-        let violations = 0;
-        const MAX_VIOLATIONS = 3;
+        let currentUser, examId, examData, questions = [], userAnswers = {}, visitedQuestions = new Set(), currentQuestionIndex = 0, timerInterval, isExamEnded = false, pauseStartTime = null;
+        let leaveAttempts = 0;
+        const MAX_LEAVE_ATTEMPTS = 3;
 
         async function main() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -287,9 +287,7 @@
                         showFinalResultsPage(completedScoreData, true);
                     } else {
                         await fetchData();
-                        if (examData) {
-                            DOMElements.startExamBtn.addEventListener('click', startExam);
-                        }
+                        DOMElements.startExamBtn.addEventListener('click', startExam);
                     }
                 } else { window.location.href = 'index.html'; }
             });
@@ -302,15 +300,15 @@
 
         async function fetchData() {
             const examDoc = await db.collection('exams').doc(examId).get();
-            if (!examDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Exam not found.</p>'; examData = null; return; }
+            if (!examDoc.exists) { DOMElements.loadingOverlay.innerHTML = '<p>Exam not found.</p>'; throw new Error("Exam not found"); }
             examData = { id: examDoc.id, ...examDoc.data() };
-            questions = examData.questions ? shuffleArray(examData.questions) : [];
+            questions = shuffleArray(examData.questions);
             questions.forEach((q, index) => { userAnswers[index] = null; });
             DOMElements.loadingOverlay.style.display = 'none';
         }
 
         async function checkIfExamCompleted() {
-            const scoreQuery = await db.collection('users').doc(currentUser.uid).collection('scores').where('examId', '==', examId).limit(1).get();
+            const scoreQuery = await db.collection('scores').where('userId', '==', currentUser.uid).where('examId', '==', examId).limit(1).get();
             return scoreQuery.empty ? false : scoreQuery.docs[0].data();
         }
 
@@ -361,14 +359,16 @@
         function handleLeaveAttempt() {
             if (isExamEnded || DOMElements.pauseOverlay.classList.contains('show')) return;
             if (!document.fullscreenElement) {
-                violations++;
+                leaveAttempts++;
                 updateAttemptsDisplay();
-                if (violations > MAX_VIOLATIONS) {
-                    endExam("Exam Terminated", true, "Exceeded violation limit");
-                } else {
+                const attemptsRemaining = MAX_LEAVE_ATTEMPTS - leaveAttempts;
+                if (attemptsRemaining >= 0) {
                     clearInterval(timerInterval);
                     pauseStartTime = Date.now();
                     DOMElements.pauseOverlay.classList.add('show');
+                } 
+                if (attemptsRemaining < 0) {
+                    endExam("Exam Terminated", true, "Exceeded leave attempts");
                 }
             }
         }
@@ -385,8 +385,8 @@
         }
 
         function updateAttemptsDisplay() {
-            const attemptsRemaining = Math.max(0, MAX_VIOLATIONS - violations);
-            const text = `${attemptsRemaining}/${MAX_VIOLATIONS}`;
+            const attemptsRemaining = Math.max(0, MAX_LEAVE_ATTEMPTS - leaveAttempts);
+            const text = `${attemptsRemaining}/${MAX_LEAVE_ATTEMPTS}`;
             DOMElements.attemptsDisplay.textContent = text;
             DOMElements.mobileAttemptsDisplay.textContent = text;
         }
@@ -417,7 +417,7 @@
             if (!question) return;
 
             DOMElements.questionTitle.textContent = `${index + 1}. ${question.title}`;
-            DOMElements.optionsContainer.innerHTML = (question.options || []).map((opt, optIndex) => `
+            DOMElements.optionsContainer.innerHTML = question.options.map((opt, optIndex) => `
                 <div class="option ${userAnswers[index] === optIndex ? 'selected' : ''}" data-opt-index="${optIndex}">
                     <span class="option-letter">${String.fromCharCode(65 + optIndex)}</span><span class="option-text">${opt}</span>
                 </div>`).join('');
@@ -454,14 +454,7 @@
         function startTimer() {
             const storageKey = `examEndTime_${currentUser.uid}_${examId}`;
             let endTime = localStorage.getItem(storageKey);
-            if (!endTime) { 
-                examStartTime = Date.now();
-                endTime = examStartTime + examData.duration * 1000; 
-                localStorage.setItem(storageKey, endTime);
-            } else {
-                const storedStartTime = endTime - examData.duration * 1000;
-                examStartTime = storedStartTime;
-            }
+            if (!endTime) { endTime = Date.now() + examData.duration * 1000; localStorage.setItem(storageKey, endTime); }
             clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const remaining = endTime - Date.now();
@@ -509,30 +502,15 @@
             DOMElements.examDashboard.style.display = 'none';
 
             let pointsReceived = 0;
-            const totalPoints = questions.reduce((sum, q) => sum + (q.points || 0), 0);
-            questions.forEach((q, index) => { if (q.type === 'Mcq' && userAnswers[index] === q.correctAnswer) { pointsReceived += (q.points || 0); } });
-
-            const timeTakenInSeconds = Math.round((Date.now() - examStartTime) / 1000);
+            const totalPoints = questions.reduce((sum, q) => sum + q.points, 0);
+            questions.forEach((q, index) => { if (q.type === 'Mcq' && userAnswers[index] === q.correctAnswer) { pointsReceived += q.points; } });
 
             const scoreData = {
-                examId: examId,
-                examName: examData.name,
-                examType: examData.type || 'mcq',
-                subjectId: examData.subjectId,
-                pointsReceived: pointsReceived,
-                totalPoints: totalPoints,
-                timeTakenInSeconds: timeTakenInSeconds,
-                violations: violations,
-                submissionReason: reason,
-                submittedAt: firebase.firestore.FieldValue.serverTimestamp()
+                userId: currentUser.uid, examId, examName: examData.name, subjectId: examData.subjectId, 
+                pointsReceived, totalPoints, reason, leaveAttempts, submittedAt: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            try {
-                await db.collection('users').doc(currentUser.uid).collection('scores').add(scoreData);
-            } catch (error) {
-                console.error("Error saving score: ", error);
-            }
-            
+            await db.collection('scores').add(scoreData);
             localStorage.removeItem(`examEndTime_${currentUser.uid}_${examId}`);
             showFinalResultsPage(scoreData, false, title);
         }
