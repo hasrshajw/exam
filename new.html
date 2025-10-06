@@ -437,7 +437,7 @@
                                 } else if (isNext || isCompleted) {
                                     status = 'next'; prefixClass = 'card-prefix--default';
                                     buttonHtml = '<button class="card-button">Start Quiz</button>';
-                                    card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
+                                    card.onclick = () => window.location.href = `lesson-view.html?id=${courseDoc.id}`;
                                 } else {
                                     status = 'locked'; prefixClass = 'card-prefix--locked';
                                     buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
@@ -449,11 +449,11 @@
                                 if (isCompleted) {
                                     status = 'completed'; prefixClass = 'card-prefix--completed'; statusIcon = `<div class="card-status-icon"><i class="bx bxs-check-circle"></i></div>`;
                                     buttonHtml = '<button class="card-button">Completed</button>';
-                                    card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
+                                    card.onclick = () => window.location.href = `lesson-view.html?id=${courseDoc.id}`;
                                 } else if (isNext) {
                                     status = 'next'; prefixClass = 'card-prefix--default';
                                     buttonHtml = '<button class="card-button">Start Lesson</button>';
-                                    card.onclick = () => window.location.href = `lesson-view.html?id=${item.id}`;
+                                    card.onclick = () => window.location.href = `lesson-view.html?id=${courseDoc.id}`;
                                 } else {
                                     status = 'locked'; prefixClass = 'card-prefix--locked';
                                     buttonHtml = '<button class="card-button card-button--locked">Locked</button>';
