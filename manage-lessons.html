@@ -13,7 +13,7 @@
             --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB;
             --text-primary: #111827; --text-secondary: #6B7280; --brand-purple: #6D28D9;
             --brand-purple-hover: #5B21B6; --hover-bg: #F3F4F6; --danger-color: #EF4444;
-            --danger-hover: #DC2626; --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -22,51 +22,61 @@
         a { text-decoration: none; color: inherit; }
         ul { list-style: none; }
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
-        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); }
         .main-header { padding: 1.25rem 2.5rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; }
         .content-body { padding: 2rem 2.5rem; }
-        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; } .logo-image { height: 40px; }
-        .main-nav { flex-grow: 1; } .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
-        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: all 0.2s ease; }
+        .sidebar-header { display: flex; align-items: center; margin-bottom: 3rem; }
+        .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; }
+        .main-nav ul { display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
         .main-nav a i { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
-        .main-nav a:hover { background-color: var(--hover-bg); } .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; } .main-nav a.active i { color: var(--brand-purple); }
-        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); }
+        .main-nav a:hover { background-color: var(--hover-bg); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
+        .main-nav a.active i { color: var(--brand-purple); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-options i { font-size: 1.5rem; color: var(--text-secondary); transition: transform 0.2s ease; }
+        .profile-section.active .profile-options i { transform: rotate(180deg); }
+        .profile-popup { position: absolute; bottom: 90px; left: 1.5rem; right: 1.5rem; background-color: var(--widget-bg); border-radius: 12px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); border: 1px solid var(--border-color); padding: 0.75rem; z-index: 100; opacity: 0; pointer-events: none; transform: translateY(10px) scale(0.95); transition: opacity 0.2s ease, transform 0.2s ease; }
+        .profile-popup.active { opacity: 1; pointer-events: all; transform: translateY(0) scale(1); }
+        .popup-header { display: flex; align-items: center; gap: 0.75rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-color); }
+        .popup-list { padding-top: 0.5rem; }
+        .popup-list a { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem; border-radius: 6px; color: var(--text-primary); }
+        .popup-list a:hover { background-color: var(--hover-bg); }
+        .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
+        .popup-list a.logout i { color: var(--danger-color); }
+        .popup-list a.logout { color: var(--danger-color); }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
-        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
-        .primary-btn { background-color: var(--brand-purple); color: white; }
-        .primary-btn:hover:not(:disabled) { background-color: var(--brand-purple-hover); }
-        .primary-btn:disabled { background-color: #D1D5DB; cursor: not-allowed; }
-        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); }
-        .secondary-btn:hover { background-color: var(--hover-bg); }
         .back-btn { margin-bottom: 1.5rem; font-weight: 600; color: var(--brand-purple); display: inline-flex; align-items: center; gap: 0.5rem; }
         .back-btn:hover { color: var(--brand-purple-hover); }
         .back-btn i { font-size: 1.25rem; }
-        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
-        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; }
-        .chapters-container { display: flex; flex-direction: column; gap: 2rem; }
+        .admin-content-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .admin-content-header h2 { font-size: 1.875rem; font-weight: 700; color: var(--text-primary); }
+        .primary-btn, .secondary-btn { padding: 0.75rem 1.25rem; border-radius: 8px; font-weight: 600; transition: all 0.2s ease-in-out; border: none; font-size: 0.9rem; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .primary-btn { background-color: var(--brand-purple); color: white; }
+        .primary-btn:hover { background-color: var(--brand-purple-hover); transform: translateY(-2px); box-shadow: var(--shadow-md); }
+        .secondary-btn { color: var(--text-primary); background-color: var(--widget-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .secondary-btn:hover { background-color: var(--hover-bg); }
+        .menu-toggle, .sidebar-close-btn { display: none; }
+        .lessons-container { display: flex; flex-direction: column; gap: 2rem; }
         .chapter-group { background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: var(--shadow-sm); }
-        .chapter-header { display: flex; justify-content: space-between; align-items: center; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); }
-        .chapter-title { font-size: 1.25rem; font-weight: 600; display: block; width: 100%; padding: 4px 8px; margin: -4px -8px; border-radius: 6px; }
-        .chapter-title:focus { outline: none; background-color: var(--hover-bg); box-shadow: 0 0 0 2px var(--brand-purple); }
-        .chapter-actions { display: flex; align-items: center; gap: 0.5rem; }
-        .action-icon-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; font-size: 1.25rem; color: var(--text-secondary); }
-        .action-icon-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); }
-        .lessons-list { min-height: 50px; }
-        .lesson-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); cursor: grab; }
+        .chapter-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--border-color); font-size: 1.25rem; font-weight: 600; }
+        .lessons-list { display: flex; flex-direction: column; }
+        .lesson-item { display: grid; grid-template-columns: 40px 1fr auto auto; align-items: center; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
         .lesson-item:last-child { border-bottom: none; }
-        .lesson-item.dragging { opacity: 0.5; background: var(--hover-bg); }
-        .drag-handle { color: var(--text-secondary); font-size: 1.5rem; }
+        .lesson-order { font-weight: 600; font-size: 1rem; color: var(--text-secondary); text-align: center; }
         .lesson-title { font-weight: 600; }
-        .lesson-duration { font-size: 0.875rem; color: var(--text-secondary); }
+        .lesson-duration { color: var(--text-secondary); font-size: 0.875rem; }
         .lesson-actions { display: flex; gap: 0.5rem; }
-        .chapter-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); background-color: #F9FAFB; }
-        .add-chapter-container { margin-top: 2rem; }
-        .add-chapter-btn { width: 100%; justify-content: center; background-color: var(--widget-bg); border: 1px dashed var(--border-color); color: var(--text-secondary); font-weight: 600; padding: 1.25rem; transition: all 0.2s ease; }
-        .add-chapter-btn:hover { background-color: var(--hover-bg); color: var(--text-primary); border-style: solid; }
-        .add-chapter-form { display: none; margin-top: 1rem; }
-        .add-chapter-form.active { display: flex; gap: 0.5rem; }
-        .add-chapter-form input { flex-grow: 1; }
+        .action-icon-btn { background: none; border: none; cursor: pointer; padding: 0.5rem; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; transition: background-color 0.2s ease; font-size: 1.25rem; }
+        .action-icon-btn.edit { color: var(--brand-purple); }
+        .action-icon-btn.delete { color: var(--danger-color); }
+        .action-icon-btn:hover { background-color: var(--hover-bg); }
         .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
         .modal-overlay.show { opacity: 1; visibility: visible; }
         .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 800px; max-height: 90vh; display: flex; flex-direction: column; box-shadow: var(--shadow-lg); transform: scale(0.95); transition: transform 0.2s ease-in-out; }
@@ -78,24 +88,38 @@
         .modal-body { flex-grow: 1; overflow-y: auto; padding: 1.5rem 2rem; }
         .form-field { margin-bottom: 1.25rem; }
         .form-field label { display: block; font-weight: 600; margin-bottom: 0.5rem; font-size: 0.875rem; }
-        .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; font-family: 'IBM Plex Sans', sans-serif; }
+        .form-field input, .form-field textarea, .form-field select { width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); font-size: 1rem; transition: border-color 0.2s ease, box-shadow 0.2s ease; font-family: 'IBM Plex Sans', sans-serif; background-color: var(--widget-bg); }
         .form-field input:focus, .form-field textarea:focus, .form-field select:focus { outline: none; border-color: var(--brand-purple); box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.2); }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
         .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid var(--border-color); text-align: right; background-color: #F9FAFB; }
         .modal-footer .secondary-btn { margin-right: 0.75rem; }
-        .action-overlay { position: fixed; inset: 0; background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(4px); z-index: 3000; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 1rem; }
-        .action-overlay.show { display: flex; }
-        .spinner { border: 4px solid var(--hover-bg); border-top: 4px solid var(--brand-purple); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .action-overlay p { font-weight: 600; color: var(--text-primary); }
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .main-header { padding: 1.25rem 1.5rem; }
+            .content-body { padding: 1.5rem; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; color: var(--text-primary); cursor: pointer; background: none; border: none; }
+            .sidebar-close-btn { display: flex; align-items: center; justify-content: center; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); cursor: pointer; border: none; background: none; }
+            .overlay { position: fixed; inset: 0; background-color: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+            .lesson-item { grid-template-columns: 30px 1fr auto; }
+            .lesson-duration { display: none; }
+        }
+        @media (max-width: 640px) {
+            .form-grid { grid-template-columns: 1fr; }
+            .content-body { padding: 1rem; }
+            .admin-content-header h2 { font-size: 1.5rem; }
+        }
     </style>
 </head>
 <body>
     <div id="loading-overlay" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600;">Authenticating...</div>
-    <div id="action-overlay" class="action-overlay"><div class="spinner"></div><p id="action-text">Saving...</p></div>
+    <div class="overlay" id="overlay"></div>
     <div class="dashboard-container" style="display: none;">
         <aside class="sidebar" id="sidebar">
-             <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><i class='bx bx-x'></i></button>
+            <div class="sidebar-header"><img src="https://ihtnas.com/assets/ihtnas-nav.png" alt="Ihtnas Logo" class="logo-image"></div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="admin.html"><i class='bx bxs-dashboard'></i> Dashboard</a></li>
@@ -103,21 +127,33 @@
                     <li><a href="manage-colleges.html"><i class='bx bxs-school'></i> Colleges</a></li>
                 </ul>
             </nav>
+            <div class="profile-section" id="profile-section">
+                <img src="" alt="Profile Picture" class="profile-avatar">
+                <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                <div class="profile-options"><i class='bx bx-chevron-down'></i></div>
+            </div>
+            <div class="profile-popup" id="profile-popup">
+                <div class="popup-header">
+                    <img src="" alt="Profile Picture" class="profile-avatar">
+                    <div class="profile-details"><span class="profile-name"></span><span class="profile-email"></span></div>
+                </div>
+                <ul class="popup-list">
+                    <li><a href="#" class="logout" id="logout-btn"><i class='bx bx-log-out'></i> Logout</a></li>
+                </ul>
+            </div>
         </aside>
         <main class="main-area">
-            <header class="main-header"><h1>Manage Lessons</h1></header>
+            <header class="main-header">
+                <button class="menu-toggle" id="menu-toggle" aria-label="Open menu"><i class='bx bx-menu'></i></button>
+                <h1>Manage Lessons</h1>
+            </header>
             <section class="content-body">
                 <a href="manage-subjects.html" class="back-btn"><i class='bx bx-arrow-back'></i> Back to Subjects</a>
-                <div class="admin-content-header"><h2 id="page-title"></h2></div>
-                <div id="chapters-container" class="chapters-container"></div>
-                <div class="add-chapter-container">
-                    <button class="add-chapter-btn" id="add-chapter-btn"><i class='bx bx-plus'></i> Add New Chapter</button>
-                    <div class="add-chapter-form" id="add-chapter-form">
-                        <input type="text" id="new-chapter-name" placeholder="Enter new chapter name...">
-                        <button class="primary-btn" id="save-chapter-btn">Save</button>
-                        <button class="secondary-btn" id="cancel-chapter-btn">Cancel</button>
-                    </div>
+                <div class="admin-content-header">
+                    <h2 id="page-title"></h2>
+                    <button class="primary-btn" id="create-lesson-btn"><i class='bx bx-plus'></i> Create New Lesson</button>
                 </div>
+                <div class="lessons-container" id="lessons-container"></div>
             </section>
         </main>
     </div>
@@ -131,13 +167,28 @@
             <div class="modal-body">
                 <form id="lesson-form">
                     <input type="hidden" id="lesson-id">
-                    <input type="hidden" id="chapter-index">
-                    <div class="form-field"><label for="lesson-title">Lesson Title</label><input type="text" id="lesson-title" required></div>
-                    <div class="form-grid">
-                        <div class="form-field"><label for="lesson-order">Order in Chapter</label><input type="number" id="lesson-order" required min="0"></div>
-                        <div class="form-field"><label for="lesson-duration">Duration (e.g., 15 min video)</label><input type="text" id="lesson-duration" required></div>
+                    <div class="form-field">
+                        <label for="lesson-title">Lesson Title</label>
+                        <input type="text" id="lesson-title" required>
                     </div>
-                    <div class="form-field"><label for="lesson-content">Content (HTML)</label><textarea id="lesson-content" rows="10" required></textarea></div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="chapter-select">Chapter</label>
+                            <select id="chapter-select" required></select>
+                        </div>
+                        <div class="form-field">
+                            <label for="lesson-order">Order in Chapter</label>
+                            <input type="number" id="lesson-order" required min="0">
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="lesson-duration">Duration (e.g., 15 min video)</label>
+                        <input type="text" id="lesson-duration" required>
+                    </div>
+                    <div class="form-field">
+                        <label for="lesson-content">Content (HTML)</label>
+                        <textarea id="lesson-content" rows="10" required></textarea>
+                    </div>
                 </form>
             </div>
             <div class="modal-footer">
@@ -168,221 +219,148 @@
             const ADMIN_EMAIL = "harshavardhanjw@gmail.com";
 
             let currentSubject = null;
-            let lessonsData = [];
 
             auth.onAuthStateChanged(async (user) => {
                 if (user && user.email === ADMIN_EMAIL) {
+                    const userDoc = await db.collection('users').doc(user.uid).get();
+                    initSharedUI(userDoc.exists ? userDoc.data() : { displayName: user.displayName, email: user.email, photoURL: user.photoURL });
                     initPage();
                 } else {
                     window.location.href = 'index.html';
                 }
             });
-            
-            const showActionOverlay = (text) => {
-                document.getElementById('action-text').textContent = text;
-                document.getElementById('action-overlay').classList.add('show');
+
+            const initSharedUI = (adminProfile) => {
+                document.querySelectorAll('.profile-avatar').forEach(el => el.src = adminProfile.photoURL || '');
+                document.querySelectorAll('.profile-name').forEach(el => el.textContent = adminProfile.displayName);
+                document.querySelectorAll('.profile-email').forEach(el => el.textContent = adminProfile.email);
+                document.getElementById('logout-btn').addEventListener('click', () => auth.signOut());
+                const profileSection = document.getElementById('profile-section');
+                const profilePopup = document.getElementById('profile-popup');
+                profileSection.addEventListener('click', e => { e.stopPropagation(); profilePopup.classList.toggle('active'); profileSection.classList.toggle('active'); });
+                document.addEventListener('click', e => { if (!profileSection.contains(e.target)) { profilePopup.classList.remove('active'); profileSection.classList.remove('active'); } });
+                const sidebar = document.getElementById('sidebar');
+                const menuToggle = document.getElementById('menu-toggle');
+                const closeBtn = document.getElementById('sidebar-close-btn');
+                const overlay = document.getElementById('overlay');
+                const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+                menuToggle.addEventListener('click', toggleMenu);
+                closeBtn.addEventListener('click', toggleMenu);
+                overlay.addEventListener('click', toggleMenu);
             };
-            const hideActionOverlay = () => document.getElementById('action-overlay').classList.remove('show');
 
             const initPage = async () => {
                 const urlParams = new URLSearchParams(window.location.search);
                 const subjectId = urlParams.get('subjectId');
-                if (!subjectId) { window.location.href = 'manage-subjects.html'; return; }
+                if (!subjectId) {
+                    alert('No subject selected. Redirecting...');
+                    window.location.href = 'manage-subjects.html';
+                    return;
+                }
 
                 const subjectDoc = await db.collection('subjects').doc(subjectId).get();
-                if (!subjectDoc.exists) { window.location.href = 'manage-subjects.html'; return; }
+                if (!subjectDoc.exists) {
+                    alert('Selected subject not found. Redirecting...');
+                    window.location.href = 'manage-subjects.html';
+                    return;
+                }
                 
                 currentSubject = { id: subjectId, ...subjectDoc.data() };
                 document.getElementById('page-title').textContent = `Lessons in ${currentSubject.name}`;
-                
-                db.collection('lessons').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
-                    lessonsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderContent();
-                });
+                loadAndRenderLessons();
                 
                 document.querySelector('.dashboard-container').style.display = 'grid';
                 document.getElementById('loading-overlay').style.display = 'none';
             };
 
-            const renderContent = () => {
-                const container = document.getElementById('chapters-container');
-                container.innerHTML = '';
-                (currentSubject.chapters || []).forEach((chapterName, index) => {
-                    const lessonsInChapter = lessonsData.filter(l => l.chapterIndex === index).sort((a, b) => a.order - b.order);
-                    container.insertAdjacentHTML('beforeend', createChapterHTML(chapterName, index, lessonsInChapter));
+            const loadAndRenderLessons = () => {
+                db.collection('lessons').where('subjectId', '==', currentSubject.id).onSnapshot(snapshot => {
+                    const lessons = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    const container = document.getElementById('lessons-container');
+                    container.innerHTML = '';
+
+                    currentSubject.chapters.forEach((chapterName, chapterIndex) => {
+                        const chapterGroup = document.createElement('div');
+                        chapterGroup.className = 'chapter-group';
+                        chapterGroup.innerHTML = `<div class="chapter-header">${chapterName}</div><div class="lessons-list"></div>`;
+                        
+                        const lessonsList = chapterGroup.querySelector('.lessons-list');
+                        const lessonsInChapter = lessons.filter(l => l.chapterIndex === chapterIndex).sort((a,b) => a.order - b.order);
+
+                        if (lessonsInChapter.length > 0) {
+                            lessonsInChapter.forEach(lesson => {
+                                const lessonItem = document.createElement('div');
+                                lessonItem.className = 'lesson-item';
+                                lessonItem.innerHTML = `
+                                    <div class="lesson-order">${chapterIndex + 1}.${lesson.order + 1}</div>
+                                    <div>
+                                        <div class="lesson-title">${lesson.title}</div>
+                                        <div class="lesson-duration">${lesson.duration}</div>
+                                    </div>
+                                    <div class="lesson-actions">
+                                        <button class="action-icon-btn edit" data-id="${lesson.id}"><i class='bx bxs-edit'></i></button>
+                                        <button class="action-icon-btn delete" data-id="${lesson.id}"><i class='bx bxs-trash'></i></button>
+                                    </div>
+                                `;
+                                lessonsList.appendChild(lessonItem);
+                            });
+                        } else {
+                            lessonsList.innerHTML = `<div style="padding: 1rem 1.5rem; color: var(--text-secondary);">No lessons in this chapter yet.</div>`;
+                        }
+                        container.appendChild(chapterGroup);
+                    });
                 });
-                setupDragAndDrop();
-            };
-            
-            const createChapterHTML = (chapterName, index, lessons) => {
-                return `
-                    <div class="chapter-group" data-index="${index}">
-                        <div class="chapter-header">
-                            <h3 class="chapter-title" contenteditable="false">${chapterName}</h3>
-                            <div class="chapter-actions">
-                                <button class="action-icon-btn rename-chapter-btn"><i class='bx bxs-edit'></i></button>
-                                <button class="action-icon-btn delete-chapter-btn"><i class='bx bxs-trash'></i></button>
-                            </div>
-                        </div>
-                        <div class="lessons-list">${lessons.map(createLessonHTML).join('') || '<p style="padding: 1rem 1.5rem; color: var(--text-secondary);">No lessons in this chapter yet.</p>'}</div>
-                        <div class="chapter-footer"><button class="secondary-btn add-lesson-btn" style="width: 100%; justify-content: center;"><i class="bx bx-plus"></i> Add Lesson</button></div>
-                    </div>`;
             };
 
-            const createLessonHTML = (lesson) => {
-                return `
-                    <div class="lesson-item" draggable="true" data-id="${lesson.id}">
-                        <i class='bx bx-grid-vertical drag-handle'></i>
-                        <div>
-                            <div class="lesson-title">${lesson.title}</div>
-                            <div class="lesson-duration">${lesson.duration}</div>
-                        </div>
-                        <div class="lesson-actions">
-                            <button class="action-icon-btn edit-lesson-btn"><i class='bx bxs-edit'></i></button>
-                            <button class="action-icon-btn delete-lesson-btn"><i class='bx bxs-trash'></i></button>
-                        </div>
-                    </div>`;
-            };
-
-            const openLessonModal = (lesson = null, chapterIndex) => {
+            const openLessonModal = (lesson = null) => {
                 const modal = document.getElementById('lesson-modal');
                 const form = document.getElementById('lesson-form');
                 form.reset();
 
                 modal.querySelector('#lesson-modal-title').textContent = lesson ? 'Edit Lesson' : 'Create New Lesson';
                 modal.querySelector('#lesson-id').value = lesson ? lesson.id : '';
-                modal.querySelector('#chapter-index').value = chapterIndex;
+
+                const chapterSelect = modal.querySelector('#chapter-select');
+                chapterSelect.innerHTML = '';
+                currentSubject.chapters.forEach((name, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = name;
+                    chapterSelect.appendChild(option);
+                });
                 
                 if (lesson) {
                     modal.querySelector('#lesson-title').value = lesson.title;
+                    modal.querySelector('#chapter-select').value = lesson.chapterIndex;
                     modal.querySelector('#lesson-order').value = lesson.order;
                     modal.querySelector('#lesson-duration').value = lesson.duration;
                     modal.querySelector('#lesson-content').value = lesson.content;
-                } else {
-                    const lessonsInChapter = lessonsData.filter(l => l.chapterIndex === chapterIndex);
-                    modal.querySelector('#lesson-order').value = lessonsInChapter.length;
                 }
 
                 modal.classList.add('show');
             };
 
-            const setupDragAndDrop = () => {
-                const lists = document.querySelectorAll('.lessons-list');
-                let draggedItem = null;
-
-                lists.forEach(list => {
-                    list.addEventListener('dragstart', e => {
-                        draggedItem = e.target.closest('.lesson-item');
-                        setTimeout(() => draggedItem.classList.add('dragging'), 0);
-                    });
-                    list.addEventListener('dragend', () => {
-                        if (draggedItem) {
-                            draggedItem.classList.remove('dragging');
-                            draggedItem = null;
-                            updateLessonOrder(list);
-                        }
-                    });
-                    list.addEventListener('dragover', e => {
-                        e.preventDefault();
-                        const afterElement = getDragAfterElement(list, e.clientY);
-                        if (afterElement == null) {
-                            list.appendChild(draggedItem);
-                        } else {
-                            list.insertBefore(draggedItem, afterElement);
-                        }
-                    });
-                });
+            const deleteLesson = async (lessonId) => {
+                if (confirm('Are you sure you want to delete this lesson permanently?')) {
+                    await db.collection('lessons').doc(lessonId).delete();
+                }
             };
-
-            const getDragAfterElement = (container, y) => {
-                const draggableElements = [...container.querySelectorAll('.lesson-item:not(.dragging)')];
-                return draggableElements.reduce((closest, child) => {
-                    const box = child.getBoundingClientRect();
-                    const offset = y - box.top - box.height / 2;
-                    if (offset < 0 && offset > closest.offset) {
-                        return { offset: offset, element: child };
-                    } else {
-                        return closest;
-                    }
-                }, { offset: Number.NEGATIVE_INFINITY }).element;
-            };
-
-            const updateLessonOrder = async (list) => {
-                const lessonItems = list.querySelectorAll('.lesson-item');
-                if (lessonItems.length === 0) return;
-                
-                showActionOverlay('Reordering...');
-                const batch = db.batch();
-                lessonItems.forEach((item, index) => {
-                    const lessonId = item.dataset.id;
-                    const lessonRef = db.collection('lessons').doc(lessonId);
-                    batch.update(lessonRef, { order: index });
-                });
-                await batch.commit();
-                hideActionOverlay();
-            };
-
+            
             document.addEventListener('click', async e => {
                 const button = e.target.closest('button');
                 if (!button) return;
 
-                if (button.id === 'add-chapter-btn') {
-                    button.style.display = 'none';
-                    document.getElementById('add-chapter-form').classList.add('active');
-                    document.getElementById('new-chapter-name').focus();
+                if (button.id === 'create-lesson-btn') {
+                    openLessonModal();
                 }
-                if (button.id === 'cancel-chapter-btn') {
-                    document.getElementById('add-chapter-form').classList.remove('active');
-                    document.getElementById('add-chapter-btn').style.display = 'flex';
-                    document.getElementById('new-chapter-name').value = '';
+                if (button.matches('.lesson-actions .edit')) {
+                    const doc = await db.collection('lessons').doc(button.dataset.id).get();
+                    openLessonModal({ id: doc.id, ...doc.data() });
                 }
-                if (button.id === 'save-chapter-btn') {
-                    const newName = document.getElementById('new-chapter-name').value.trim();
-                    if (newName) {
-                        const updatedChapters = [...(currentSubject.chapters || []), newName];
-                        await db.collection('subjects').doc(currentSubject.id).update({ chapters: updatedChapters });
-                        currentSubject.chapters = updatedChapters;
-                        renderContent();
-                    }
-                    button.closest('div').classList.remove('active');
-                    document.getElementById('add-chapter-btn').style.display = 'flex';
-                    document.getElementById('new-chapter-name').value = '';
+                if (button.matches('.lesson-actions .delete')) {
+                    deleteLesson(button.dataset.id);
                 }
-                if (button.matches('.rename-chapter-btn')) {
-                    const titleEl = button.closest('.chapter-header').querySelector('.chapter-title');
-                    titleEl.setAttribute('contenteditable', 'true');
-                    titleEl.focus();
-                    document.execCommand('selectAll', false, null);
-                }
-                if (button.matches('.delete-chapter-btn')) {
-                    const chapterIndex = parseInt(button.closest('.chapter-group').dataset.index, 10);
-                    if (confirm(`Are you sure you want to delete "${currentSubject.chapters[chapterIndex]}" and all its lessons?`)) {
-                        showActionOverlay('Deleting chapter...');
-                        const updatedChapters = currentSubject.chapters.filter((_, i) => i !== chapterIndex);
-                        const lessonsToDelete = lessonsData.filter(l => l.chapterIndex === chapterIndex);
-                        const batch = db.batch();
-                        lessonsToDelete.forEach(l => batch.delete(db.collection('lessons').doc(l.id)));
-                        batch.update(db.collection('subjects').doc(currentSubject.id), { chapters: updatedChapters });
-                        await batch.commit();
-                        hideActionOverlay();
-                    }
-                }
-                if (button.matches('.add-lesson-btn')) {
-                    const chapterIndex = parseInt(button.closest('.chapter-group').dataset.index, 10);
-                    openLessonModal(null, chapterIndex);
-                }
-                if (button.matches('.edit-lesson-btn')) {
-                    const lessonId = button.closest('.lesson-item').dataset.id;
-                    const lesson = lessonsData.find(l => l.id === lessonId);
-                    if (lesson) openLessonModal(lesson, lesson.chapterIndex);
-                }
-                if (button.matches('.delete-lesson-btn')) {
-                    const lessonId = button.closest('.lesson-item').dataset.id;
-                    if (confirm('Are you sure you want to delete this lesson?')) {
-                        await db.collection('lessons').doc(lessonId).delete();
-                    }
-                }
-                if (button.matches('.modal-overlay .close-btn, .modal-footer .secondary-btn')) {
+                if (button.matches('.modal-overlay .close-btn, .modal-overlay .secondary-btn')) {
                     button.closest('.modal-overlay').classList.remove('show');
                 }
             });
@@ -392,7 +370,7 @@
                 const data = {
                     title: document.getElementById('lesson-title').value.trim(),
                     subjectId: currentSubject.id,
-                    chapterIndex: parseInt(document.getElementById('chapter-index').value, 10),
+                    chapterIndex: parseInt(document.getElementById('chapter-select').value, 10),
                     order: parseInt(document.getElementById('lesson-order').value, 10),
                     duration: document.getElementById('lesson-duration').value.trim(),
                     content: document.getElementById('lesson-content').value
@@ -402,34 +380,13 @@
                     alert('Title and a valid Order number are required.');
                     return;
                 }
-                showActionOverlay('Saving lesson...');
+
                 if (id) {
                     await db.collection('lessons').doc(id).update(data);
                 } else {
                     await db.collection('lessons').add(data);
                 }
-                hideActionOverlay();
                 document.getElementById('lesson-modal').classList.remove('show');
-            });
-
-            document.getElementById('chapters-container').addEventListener('focusout', async (e) => {
-                if(e.target.matches('.chapter-title') && e.target.isContentEditable) {
-                    const chapterIndex = parseInt(e.target.closest('.chapter-group').dataset.index, 10);
-                    const newName = e.target.textContent.trim();
-                    if(newName && newName !== currentSubject.chapters[chapterIndex]) {
-                        currentSubject.chapters[chapterIndex] = newName;
-                        await db.collection('subjects').doc(currentSubject.id).update({ chapters: currentSubject.chapters });
-                    }
-                    e.target.textContent = currentSubject.chapters[chapterIndex];
-                    e.target.setAttribute('contenteditable', 'false');
-                }
-            });
-
-            document.getElementById('chapters-container').addEventListener('keydown', (e) => {
-                if (e.target.matches('.chapter-title') && e.key === 'Enter') {
-                    e.preventDefault();
-                    e.target.blur();
-                }
             });
         });
     </script>
