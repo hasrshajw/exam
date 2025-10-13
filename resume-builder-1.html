@@ -111,6 +111,20 @@
         
         .mobile-toggle-nav { display: none; }
         
+        #connection-status { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; font-size: 0.9rem; }
+        #connection-status .dot { width: 10px; height: 10px; border-radius: 50%; }
+        #connection-status .online { color: var(--accent-color); }
+        #connection-status .online .dot { background-color: var(--accent-color); }
+        #connection-status .offline { color: var(--danger-color); }
+        #connection-status .offline .dot { background-color: var(--danger-color); }
+
+        .modal-overlay { position: fixed; inset: 0; background-color: rgba(17, 24, 39, 0.6); z-index: 1999; display: grid; place-items: center; padding: 1rem; opacity: 0; visibility: hidden; transition: opacity 0.2s ease-in-out; backdrop-filter: blur(4px); }
+        .modal-overlay.show { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--widget-bg); border-radius: 1rem; width: 100%; max-width: 420px; padding: 2rem; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.1); text-align: center; }
+        .modal-content h3 { font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .modal-content p { color: var(--text-secondary); margin-bottom: 1.5rem; line-height: 1.6; }
+        .modal-content button { background-color: var(--primary-color); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
         @media screen and (max-width: 1024px) {
             body { overflow-y: auto; }
             .main-area, .content-body, .app-container { height: auto; overflow: visible; }
@@ -196,7 +210,8 @@
         <main class="main-area">
             <header class="main-header">
                 <button class="menu-toggle" id="menu-toggle"><i class='bx bx-menu'></i></button>
-                <h1>Resume Builder v1.01</h1>
+                <h1>Resume Builder</h1>
+                <div id="connection-status"></div>
             </header>
             <section class="content-body">
                 <div class="app-container">
@@ -219,33 +234,26 @@
                         <div class="form-section">
                             <legend><i class='bx bxs-user-circle'></i> Header</legend>
                             <div class="form-section-body">
-                                <div class="form-group"><label>Full Name</label><input type="text" data-field="name" value="PRIYA SINGH"></div>
-                                <div class="form-group"><label>Email</label><input type="email" data-field="email" value="priya.singh.dev@email.com"></div>
-                                <div class="form-group"><label>Phone</label><input type="tel" data-field="phone" value="+91 91234 56789"></div>
-                                <div class="form-group"><label>Location</label><input type="text" data-field="location" value="Mumbai, India"></div>
-                                <div class="form-group"><label>LinkedIn URL</label><input type="url" data-field="linkedin" value="https://linkedin.com/in/priyasinghdev"></div>
-                                <div class="form-group"><label>GitHub URL</label><input type="url" data-field="github" value="https://github.com/priyacodes"></div>
+                                <div class="form-group"><label>Full Name</label><input type="text" data-field="name"></div>
+                                <div class="form-group"><label>Email</label><input type="email" data-field="email"></div>
+                                <div class="form-group"><label>Phone</label><input type="tel" data-field="phone"></div>
+                                <div class="form-group"><label>Location</label><input type="text" data-field="location"></div>
+                                <div class="form-group"><label>LinkedIn URL</label><input type="url" data-field="linkedin"></div>
+                                <div class="form-group"><label>GitHub URL</label><input type="url" data-field="github"></div>
                             </div>
                         </div>
 
                         <div class="form-section">
                             <legend><i class='bx bxs-briefcase-alt-2'></i> Professional Profile</legend>
                              <div class="form-section-body">
-                                <div class="form-group"><label>Summary (Use *text* for bold)</label><textarea data-field="profile">Final-year B.Tech Computer Science student specializing in scalable distributed systems and cloud-native applications. Demonstrated expertise in full-stack development with a strong focus on backend architecture, containerization, and microservices. A proven problem-solver, validated by top-tier competitive programming achievements, with a passion for efficient system design.</textarea></div>
+                                <div class="form-group"><label>Summary (Use *text* for bold)</label><textarea data-field="profile"></textarea></div>
                             </div>
                         </div>
 
                         <div class="form-section">
                             <legend><i class='bx bxs-graduation'></i> Education</legend>
                              <div class="form-section-body">
-                                <div id="education-editor">
-                                    <div class="dynamic-entry">
-                                        <button class="remove-btn">&times;</button>
-                                        <div class="form-group"><label>Institution</label><input type="text" data-field="school" value="Indian Institute of Technology Bombay (IITB)"></div>
-                                        <div class="form-group"><label>Dates</label><input type="text" data-field="date" value="Aug 2020 – May 2024"></div>
-                                        <div class="form-group"><label>Details (Use *text* for bold)</label><input type="text" data-field="details" value="Bachelor of Technology (B.Tech), Computer Science & Engineering — CGPA: *9.4 / 10.0*"></div>
-                                    </div>
-                                </div>
+                                <div id="education-editor"></div>
                                 <button class="add-btn" data-section="education"><i class='bx bx-plus'></i> Add Education</button>
                             </div>
                         </div>
@@ -280,6 +288,14 @@
                 </div>
             </section>
         </main>
+    </div>
+
+    <div class="modal-overlay" id="offline-modal">
+        <div class="modal-content">
+            <h3>You are Offline</h3>
+            <p>Your connection was lost, but don't worry. Your data is being saved locally and will sync once you're back online.</p>
+            <button id="offline-ok-btn">Okay</button>
+        </div>
     </div>
 
     <template id="education-template">
@@ -333,13 +349,26 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
         const DEFAULT_AVATAR = 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRWxmiQqKsGu4P4FulnB-hDH6_RyTFPzHo67Q&s';
+        
+        let currentUser = null;
+        let resumeRef = null;
+        let debounceTimer;
 
+        const dom = {
+            editorPane: document.getElementById('editor-pane'),
+            showEditorBtn: document.getElementById('show-editor-btn'),
+            showPreviewBtn: document.getElementById('show-preview-btn'),
+            editorViewButtons: document.getElementById('editor-view-buttons'),
+            previewViewButtons: document.getElementById('preview-view-buttons'),
+            body: document.getElementById('page-body'),
+            connectionStatus: document.getElementById('connection-status'),
+            offlineModal: document.getElementById('offline-modal'),
+            offlineOkBtn: document.getElementById('offline-ok-btn')
+        };
+        
         const updateProfileUI = (userProfile) => {
             if (userProfile) {
-                document.querySelectorAll('.profile-avatar').forEach(el => {
-                    el.src = userProfile.photoURL || DEFAULT_AVATAR;
-                    el.onerror = () => { el.src = DEFAULT_AVATAR; };
-                });
+                document.querySelectorAll('.profile-avatar').forEach(el => { el.src = userProfile.photoURL || DEFAULT_AVATAR; el.onerror = () => { el.src = DEFAULT_AVATAR; }; });
                 document.querySelectorAll('.profile-name').forEach(el => el.textContent = userProfile.displayName);
                 document.querySelectorAll('.profile-email').forEach(el => el.textContent = userProfile.email);
                 document.querySelector('.profile-skeleton').style.display = 'none';
@@ -349,10 +378,12 @@
         
         auth.onAuthStateChanged(async (user) => {
             if (user) {
+                currentUser = user;
+                resumeRef = db.collection('resumes').doc(user.uid);
                 const userDoc = await db.collection('users').doc(user.uid).get();
                 if (!userDoc.exists) { window.location.href = 'index.html'; return; }
-                const currentUserProfile = userDoc.data();
-                updateProfileUI(currentUserProfile);
+                updateProfileUI(userDoc.data());
+                loadResumeData();
             } else { window.location.href = 'index.html'; }
         });
         
@@ -373,97 +404,127 @@
         };
         initSharedUI();
 
-        const editorPane = document.getElementById('editor-pane');
-        const showEditorBtn = document.getElementById('show-editor-btn');
-        const showPreviewBtn = document.getElementById('show-preview-btn');
-        const editorViewButtons = document.getElementById('editor-view-buttons');
-        const previewViewButtons = document.getElementById('preview-view-buttons');
-        const body = document.getElementById('page-body');
+        const getFormData = () => {
+            const getDynamicEntries = (containerId) => {
+                return Array.from(document.querySelectorAll(`#${containerId} .dynamic-entry`)).map(entry => {
+                    const data = {};
+                    entry.querySelectorAll('[data-field]').forEach(input => {
+                        data[input.dataset.field] = input.value;
+                    });
+                    return data;
+                });
+            };
+            return {
+                header: {
+                    name: document.querySelector('[data-field="name"]').value,
+                    email: document.querySelector('[data-field="email"]').value,
+                    phone: document.querySelector('[data-field="phone"]').value,
+                    location: document.querySelector('[data-field="location"]').value,
+                    linkedin: document.querySelector('[data-field="linkedin"]').value,
+                    github: document.querySelector('[data-field="github"]').value
+                },
+                profile: document.querySelector('[data-field="profile"]').value,
+                education: getDynamicEntries('education-editor'),
+                projects: getDynamicEntries('project-editor'),
+                skills: getDynamicEntries('skill-editor'),
+                achievements: getDynamicEntries('achievement-editor')
+            };
+        };
+
+        const setFormData = (data) => {
+            if (!data) return;
+            const setSimpleFields = (container, fields) => {
+                Object.keys(fields).forEach(key => {
+                    const input = container.querySelector(`[data-field="${key}"]`);
+                    if(input) input.value = fields[key] || '';
+                });
+            };
+
+            const setDynamicEntries = (containerId, entries) => {
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+                (entries || []).forEach(entryData => {
+                    const templateId = `${containerId.replace('-editor', '')}-template`;
+                    const template = document.getElementById(templateId);
+                    if (template) {
+                        const newEntry = template.content.cloneNode(true);
+                        Object.keys(entryData).forEach(field => {
+                            const input = newEntry.querySelector(`[data-field="${field}"]`);
+                            if(input) input.value = entryData[field] || '';
+                        });
+                        container.appendChild(newEntry);
+                    }
+                });
+            };
+
+            setSimpleFields(document, data.header || {});
+            document.querySelector('[data-field="profile"]').value = data.profile || '';
+            setDynamicEntries('education-editor', data.education);
+            setDynamicEntries('project-editor', data.projects);
+            setDynamicEntries('skill-editor', data.skills);
+            setDynamicEntries('achievement-editor', data.achievements);
+            syncFullResume();
+        };
+
+        const saveResumeData = async () => {
+            if (!currentUser) return;
+            const data = getFormData();
+            localStorage.setItem(`resume_${currentUser.uid}`, JSON.stringify(data));
+            if (navigator.onLine && resumeRef) {
+                try {
+                    await resumeRef.set(data, { merge: true });
+                } catch (error) {
+                    console.error("Firestore save failed:", error);
+                }
+            }
+        };
+
+        const loadResumeData = async () => {
+            const localData = localStorage.getItem(`resume_${currentUser.uid}`);
+            if (navigator.onLine && resumeRef) {
+                try {
+                    const doc = await resumeRef.get();
+                    if (doc.exists) {
+                        setFormData(doc.data());
+                        localStorage.setItem(`resume_${currentUser.uid}`, JSON.stringify(doc.data()));
+                    } else if (localData) {
+                        setFormData(JSON.parse(localData));
+                    }
+                } catch (error) {
+                    if (localData) setFormData(JSON.parse(localData));
+                }
+            } else {
+                if (localData) setFormData(JSON.parse(localData));
+            }
+        };
 
         const markdownToHtml = (text) => text ? text.replace(/\*(.*?)\*/g, '<strong>$1</strong>') : '';
 
-        const syncHeader = () => {
-            const name = document.querySelector('[data-field="name"]').value;
-            const email = document.querySelector('[data-field="email"]').value;
-            const phone = document.querySelector('[data-field="phone"]').value;
-            const location = document.querySelector('[data-field="location"]').value;
-            const linkedin = document.querySelector('[data-field="linkedin"]').value;
-            const github = document.querySelector('[data-field="github"]').value;
-            const contactParts = [];
-            if (email) contactParts.push(`<a href="mailto:${email}">${email}</a>`);
-            if (phone) contactParts.push(`<span>${phone}</span>`);
-            if (location) contactParts.push(`<span>${location}</span>`);
-            if (linkedin) contactParts.push(`<a href="${linkedin}" target="_blank">LinkedIn</a>`);
-            if (github) contactParts.push(`<a href="${github}" target="_blank">GitHub</a>`);
-            return `<header class="header"><h1>${name}</h1><div class="contact-info">${contactParts.join('<span>&nbsp;|&nbsp;</span>')}</div></header>`;
-        };
-
-        const syncProfile = () => {
-            const profileText = document.querySelector('[data-field="profile"]').value.trim();
-            if (!profileText) return '';
-            return `<section class="section"><h2 class="section-title">Professional Profile</h2><p class="profile-summary">${markdownToHtml(profileText)}</p></section>`;
-        };
-        
-        const syncEducation = () => {
-            const entries = document.querySelectorAll('#education-editor .dynamic-entry');
-            if (entries.length === 0) return '';
-            let html = '<section class="section"><h2 class="section-title">Education</h2>';
-            entries.forEach(entry => {
-                const school = entry.querySelector('[data-field="school"]').value;
-                const date = entry.querySelector('[data-field="date"]').value;
-                const details = entry.querySelector('[data-field="details"]').value;
-                html += `<div class="entry"><div class="entry-header"><h3>${school}</h3><span class="date">${date}</span></div><p class="subtitle">${markdownToHtml(details)}</p></div>`;
-            });
-            return html + '</section>';
-        };
-
-        const syncProjects = () => {
-            const entries = document.querySelectorAll('#project-editor .dynamic-entry');
-            if (entries.length === 0) return '';
-            let html = '<section class="section"><h2 class="section-title">Projects</h2>';
-            entries.forEach(entry => {
-                const title = entry.querySelector('[data-field="title"]').value;
-                const desc = entry.querySelector('[data-field="desc"]').value.trim();
-                const tech = entry.querySelector('[data-field="tech"]').value.trim();
-                const descList = desc.split('\n').filter(Boolean).map(item => `<li>${markdownToHtml(item)}</li>`).join('');
-                const techStackHtml = tech ? `<p class="tech-stack"><strong>Tech Stack:</strong> ${tech}</p>` : '';
-                if(title) html += `<div class="entry"><h3>${title}</h3><ul>${descList}</ul>${techStackHtml}</div>`;
-            });
-            return html + '</section>';
-        };
-
-        const syncSkills = () => {
-            const entries = document.querySelectorAll('#skill-editor .dynamic-entry');
-            if (entries.length === 0) return '';
-            let html = '<section class="section"><h2 class="section-title">Technical Skills</h2><div class="skills-grid">';
-            entries.forEach(entry => {
-                const label = entry.querySelector('[data-field="label"]').value;
-                const value = entry.querySelector('[data-field="value"]').value;
-                if(label && value) html += `<strong>${label}:</strong><span>${value}</span>`;
-            });
-            return html + '</div></section>';
-        };
-
-        const syncAchievements = () => {
-            const entries = document.querySelectorAll('#achievement-editor .dynamic-entry');
-            if (entries.length === 0) return '';
-            let html = '<section class="section"><h2 class="section-title">Key Achievements</h2><ul class="entry achievements-list">';
-            entries.forEach(entry => {
-                const value = entry.querySelector('[data-field="value"]').value.trim();
-                if (value) html += `<li>${markdownToHtml(value)}</li>`;
-            });
-            return html + '</ul></section>';
-        };
-        
         const syncFullResume = () => {
+            const data = getFormData();
             const resumePreview = document.getElementById('resume');
-            const sections = [syncHeader(), syncProfile(), syncEducation(), syncProjects(), syncSkills(), syncAchievements()].filter(Boolean).join('');
-            resumePreview.innerHTML = sections;
+            let html = '';
+
+            const header = data.header;
+            const contactParts = [header.email && `<a href="mailto:${header.email}">${header.email}</a>`, header.phone && `<span>${header.phone}</span>`, header.location && `<span>${header.location}</span>`, header.linkedin && `<a href="${header.linkedin}" target="_blank">LinkedIn</a>`, header.github && `<a href="${header.github}" target="_blank">GitHub</a>`].filter(Boolean);
+            html += `<header class="header"><h1>${header.name || ''}</h1><div class="contact-info">${contactParts.join('<span>&nbsp;|&nbsp;</span>')}</div></header>`;
+
+            if (data.profile) html += `<section class="section"><h2 class="section-title">Professional Profile</h2><p class="profile-summary">${markdownToHtml(data.profile)}</p></section>`;
+            if (data.education && data.education.length > 0) { html += '<section class="section"><h2 class="section-title">Education</h2>'; data.education.forEach(e => { html += `<div class="entry"><div class="entry-header"><h3>${e.school}</h3><span class="date">${e.date}</span></div><p class="subtitle">${markdownToHtml(e.details)}</p></div>`; }); html += '</section>'; }
+            if (data.projects && data.projects.length > 0) { html += '<section class="section"><h2 class="section-title">Projects</h2>'; data.projects.forEach(p => { const descList = p.desc.split('\n').filter(Boolean).map(item => `<li>${markdownToHtml(item)}</li>`).join(''); const techStack = p.tech ? `<p class="tech-stack"><strong>Tech Stack:</strong> ${p.tech}</p>` : ''; if(p.title) html += `<div class="entry"><h3>${p.title}</h3><ul>${descList}</ul>${techStack}</div>`; }); html += '</section>'; }
+            if (data.skills && data.skills.length > 0) { html += '<section class="section"><h2 class="section-title">Technical Skills</h2><div class="skills-grid">'; data.skills.forEach(s => { if(s.label && s.value) html += `<strong>${s.label}:</strong><span>${s.value}</span>`; }); html += '</div></section>'; }
+            if (data.achievements && data.achievements.length > 0) { html += '<section class="section"><h2 class="section-title">Key Achievements</h2><ul class="entry achievements-list">'; data.achievements.forEach(a => { if(a.value) html += `<li>${markdownToHtml(a.value)}</li>`; }); html += '</ul></section>'; }
+            
+            resumePreview.innerHTML = html;
         };
         
-        editorPane.addEventListener('input', syncFullResume);
+        dom.editorPane.addEventListener('input', () => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(saveResumeData, 500);
+            syncFullResume();
+        });
         
-        editorPane.addEventListener('click', (e) => {
+        dom.editorPane.addEventListener('click', (e) => {
             if (e.target.matches('.add-btn, .add-btn *')) {
                 const button = e.target.closest('.add-btn');
                 const section = button.dataset.section;
@@ -472,30 +533,40 @@
                 if (template && editorContainer) {
                     editorContainer.appendChild(template.content.cloneNode(true));
                 }
+                saveResumeData();
                 syncFullResume();
             }
             if (e.target.matches('.remove-btn')) {
                 e.target.closest('.dynamic-entry').remove();
+                saveResumeData();
                 syncFullResume();
             }
         });
 
-        showEditorBtn.addEventListener('click', () => {
-            body.classList.remove('view-preview');
-            editorViewButtons.style.display = 'flex';
-            previewViewButtons.style.display = 'none';
-        });
-        showPreviewBtn.addEventListener('click', () => {
-            body.classList.add('view-preview');
-            editorViewButtons.style.display = 'none';
-            previewViewButtons.style.display = 'flex';
-        });
-
+        dom.showEditorBtn.addEventListener('click', () => { dom.body.classList.remove('view-preview'); dom.editorViewButtons.style.display = 'flex'; dom.previewViewButtons.style.display = 'none'; });
+        dom.showPreviewBtn.addEventListener('click', () => { dom.body.classList.add('view-preview'); dom.editorViewButtons.style.display = 'none'; dom.previewViewButtons.style.display = 'flex'; });
         document.getElementById('printBtn').addEventListener('click', () => window.print());
         document.getElementById('mobile-print-btn').addEventListener('click', () => window.print());
         document.getElementById('mobile-print-btn-2').addEventListener('click', () => window.print());
 
-        syncFullResume();
+        const handleConnectionChange = () => {
+            const isOnline = navigator.onLine;
+            dom.connectionStatus.innerHTML = isOnline 
+                ? `<span class="online"><span class="dot"></span> Online</span>` 
+                : `<span class="offline"><span class="dot"></span> Offline</span>`;
+            
+            if (isOnline) {
+                dom.offlineModal.classList.remove('show');
+                saveResumeData(); 
+            } else {
+                dom.offlineModal.classList.add('show');
+            }
+        };
+
+        dom.offlineOkBtn.addEventListener('click', () => dom.offlineModal.classList.remove('show'));
+        window.addEventListener('online', handleConnectionChange);
+        window.addEventListener('offline', handleConnectionChange);
+        handleConnectionChange();
     });
     </script>
 </body>
