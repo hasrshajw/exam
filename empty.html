@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Exam Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <style>
+        :root { --body-bg: #F9FAFB; --widget-bg: #FFFFFF; --border-color: #E5E7EB; --text-primary: #002726; --text-secondary: #6B7280; --brand-green: #33C375; --hover-bg: #F3F4F6; --warning-color: #F59E0B; --danger-color: #EF4444; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 14px; overflow-x: hidden; }
+        .dashboard-container { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; position: relative; }
+        .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
+        .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
+        .logo-image { height: 40px; }
+        .main-nav { flex-grow: 1; }
+        .main-nav ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+        .main-nav a { display: flex; align-items: center; gap: 1rem; text-decoration: none; color: var(--text-primary); font-weight: 500; padding: 0.75rem 1rem; border-radius: 8px; transition: background-color 0.2s ease, color 0.2s ease; }
+        .main-nav a i, .main-nav a .material-symbols-outlined { font-size: 1.5rem; color: var(--text-secondary); transition: color 0.2s ease; }
+        .main-nav a:hover { background-color: var(--hover-bg); }
+        .main-nav a.active { background-color: var(--hover-bg); font-weight: 600; }
+        .main-nav a.active .material-symbols-outlined { color: var(--brand-green); }
+        .profile-section { margin-top: auto; padding-top: 1.5rem; border-top: 1px solid var(--border-color); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+        .profile-content-wrapper { display: flex; align-items: center; gap: 0.75rem; width: 100%; }
+        .profile-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+        .profile-details { flex-grow: 1; min-width: 0; }
+        .profile-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .profile-email { font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+        .main-area { display: flex; flex-direction: column; background-color: var(--body-bg); }
+        
+        .main-header { padding: 1.25rem 3rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 10; background-color: var(--widget-bg); color: var(--text-primary); border-bottom: 1px solid var(--border-color); transition: background-color 0.3s ease, color 0.3s ease, border-bottom-color 0.3s ease; }
+        .main-header h1 { font-size: 1.5rem; font-weight: 600; }
+
+        .content-body { padding: 2rem 3rem; display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; align-items: flex-start; }
+        .column { display: flex; flex-direction: column; gap: 2rem; }
+        .widget { background-color: var(--widget-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 1.5rem; }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+        .widget-header h2 { font-size: 1.125rem; font-weight: 600; }
+        .widget-header a { font-size: 0.9rem; color: var(--brand-green); text-decoration: none; font-weight: 500; }
+        
+        /* DESKTOP STYLES for featured course (old vertical style) */
+        .featured-course { background-color: var(--text-primary); color: #FFFFFF; border: none; }
+        .featured-course h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255, 255, 255, 0.7); margin-bottom: 0.5rem; }
+        .featured-course h3 { font-size: 1.75rem; font-weight: 600; margin-bottom: 1.5rem; }
+        .progress-bar-container { display: flex; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+        .progress-bar { flex-grow: 1; height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; }
+        .progress { height: 100%; background: var(--brand-green); border-radius: 10px; width: 0; transition: width 0.5s ease; }
+        .progress-bar-container span { font-size: 0.8rem; font-weight: 500; color: rgba(255,255,255,0.7); }
+        .btn-continue { background: var(--brand-green); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; text-decoration: none; display: inline-block; margin-top: 1.5rem; }
+
+        /* Other widget styles */
+        .course-outline-list { list-style: none; position: relative; padding-left: 1.5rem; }
+        .course-outline-list::before { content: ''; position: absolute; left: 10px; top: 10px; bottom: 10px; width: 2px; background-color: var(--border-color); }
+        .outline-item { position: relative; margin-bottom: 1.5rem; display: flex; }
+        .outline-marker { position: absolute; left: -24px; top: 0; width: 20px; height: 20px; border-radius: 50%; background-color: var(--widget-bg); border: 2px solid var(--border-color); display: grid; place-items: center; font-size: 0.8rem; }
+        .outline-item.completed .outline-marker { border-color: var(--brand-green); background-color: var(--brand-green); color: white; }
+        .outline-info h4 { font-weight: 600; } .outline-info p { color: var(--text-secondary); font-size: 0.9rem; }
+        .progress-chart-container { display: flex; align-items: center; gap: 2rem; }
+        .circular-progress-container { position: relative; width: 120px; height: 120px; }
+        .progress-ring__svg { transform: rotate(-90deg); }
+        .progress-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .progress-stats { display: flex; flex-direction: column; gap: 1rem; }
+        .notification-list { list-style: none; }
+        .notification-item { display: flex; align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--border-color); }
+        .notification-icon { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; }
+        .notification-icon.danger { background-color: #FEE2E2; color: var(--danger-color); }
+        .btn-notification { background: var(--hover-bg); color: var(--text-primary); text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; font-size: 0.85rem; margin-left: auto; }
+        .profile-list { list-style: none; display: flex; flex-direction: column; gap: 1rem; }
+        .profile-item { display: flex; align-items: center; }
+        .profile-item img { width: 40px; height: 40px; border-radius: 50%; margin-right: 1rem; }
+        .profile-item .score { font-weight: 600; color: var(--brand-green); margin-left: auto; }
+        .menu-toggle { display: none; }
+        .sidebar-close-btn { display: none; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 600, 'GRAD' -25, 'opsz' 48; }
+
+        /* --- MOBILE VIEW CHANGES --- */
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .sidebar { position: fixed; top: 0; left: 0; height: 100%; width: 80%; max-width: 300px; z-index: 1000; transform: translateX(-100%); box-shadow: 0 0 30px rgba(0,0,0,0.1); }
+            .sidebar.active { transform: translateX(0); }
+            .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .overlay.active { opacity: 1; pointer-events: auto; }
+            .sidebar-close-btn { display: flex; position: absolute; top: 1.5rem; right: 1.5rem; font-size: 1.75rem; color: var(--danger-color); border: none; background: none; }
+            .main-area { background-color: var(--body-bg); }
+            .content-body { grid-template-columns: 1fr; padding: 0 1.5rem 1.5rem 1.5rem; }
+
+            /* HEADER SCROLL EFFECT STYLES */
+            .main-header { padding: 1.25rem 1.5rem; background-color: #002726; color: #FFFFFF; border-bottom-color: transparent; }
+            .menu-toggle { display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; font-size: 1.5rem; cursor: pointer; border-radius: 8px; transition: all 0.3s ease; color: #FFFFFF; border: 2px solid rgba(255,255,255,0.2); }
+            .main-header.scrolled { background-color: var(--widget-bg); color: var(--text-primary); border-bottom-color: var(--border-color); }
+            .main-header.scrolled .menu-toggle { color: var(--text-primary); border-color: var(--border-color); }
+            
+            /* --- REDESIGNED FEATURED COURSE WIDGET --- */
+            .widget.featured-course {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 1rem;
+                margin: 0 -1.5rem 1.5rem -1.5rem;
+                padding: 1rem 1.5rem 1.5rem 1rem; /* Reduced vertical padding */
+                border-radius: 0;
+                border: none;
+                box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+            }
+            .course-info-wrapper {
+                flex-grow: 1;
+                min-width: 0; /* Prevents text overflow issues */
+            }
+            .featured-course h4 {
+                font-size: 0.75rem; /* smaller */
+                margin-bottom: 0.25rem;
+            }
+            .featured-course h3 {
+                font-size: 1.25rem; /* smaller */
+                margin-bottom: 0.75rem;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .btn-continue {
+                flex-shrink: 0; /* Prevents button from shrinking */
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                display: grid;
+                place-items: center;
+                padding: 0;
+                margin-top: 0; /* Reset margin */
+            }
+            .btn-continue .material-symbols-outlined {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay"></div>
+    <div class="dashboard-container">
+        <aside class="sidebar" id="sidebar">
+            <button class="sidebar-close-btn" id="sidebar-close-btn"><span class="material-symbols-outlined">close</span></button>
+            <div class="sidebar-header"><img src="https://i.ibb.co/68gP8P2/logo-dark.png" alt="Logo" class="logo-image"></div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#" class="active"><span class="material-symbols-outlined">grid_view</span> Dashboard</a></li>
+                    <li><a href="#"><span class="material-symbols-outlined">school</span> Course & Content</a></li>
+                </ul>
+            </nav>
+            <div class="profile-section">
+                <div class="profile-content-wrapper">
+                    <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Profile" class="profile-avatar">
+                    <div class="profile-details">
+                        <span class="profile-name">Alex Morgan</span>
+                        <span class="profile-email">alex@uni.edu</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-area">
+            <header class="main-header">
+                <span class="material-symbols-outlined menu-toggle" id="menu-toggle">menu</span>
+                <h1>Dashboard</h1>
+            </header>
+            <section class="content-body">
+                <div class="column main-col">
+                    <!-- REDESIGNED Full width, dark background widget -->
+                    <div class="widget featured-course" id="featured-course-widget">
+                        <div class="course-info-wrapper">
+                            <h4>CONTINUE LEARNING</h4>
+                            <h3>Advanced Web Development</h3>
+                            <div class="progress-bar-container">
+                                <div class="progress-bar"><div class="progress" style="width: 50%;"></div></div>
+                                <span>50%</span>
+                            </div>
+                        </div>
+                        <a href="#" class="btn-continue">
+                            <span class="material-symbols-outlined">play_arrow</span>
+                        </a>
+                    </div>
+                    
+                    <div class="widget">
+                        <div class="widget-header"><h2>Course Outline</h2></div>
+                        <ol class="course-outline-list">
+                            <li class="outline-item completed"><div class="outline-marker"><i class='bx bx-check'></i></div><div class="outline-info"><h4>Intro to Frameworks</h4><p>3 / 3 lessons</p></div></li>
+                            <li class="outline-item"><div class="outline-marker"></div><div class="outline-info"><h4>Deep Dive into React</h4><p>0 / 3 lessons</p></div></li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="column side-col">
+                    <div class="widget">
+                        <div class="widget-header"><h2>Progress</h2></div>
+                        <div class="progress-chart-container">
+                            <div class="circular-progress-container">
+                                <svg class="progress-ring__svg" width="120" height="120">
+                                    <circle stroke="#E5E7EB" stroke-width="10" fill="transparent" r="52" cx="60" cy="60"/>
+                                    <circle stroke="var(--brand-green)" stroke-linecap="round" stroke-width="10" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="326.7" stroke-dashoffset="163"/>
+                                </svg>
+                                <div class="progress-center-text"><strong>50%</strong></div>
+                            </div>
+                            <div class="progress-stats">
+                                <div class="stat"><p>Chapters</p><strong>1 / 2</strong></div>
+                                <div class="stat"><p>Assessments</p><strong>2 / 4</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-header"><h2>Deadlines</h2></div>
+                        <ul class="notification-list">
+                            <li class="notification-item">
+                                <div class="notification-icon danger"><i class='bx bxs-error-circle'></i></div>
+                                <div style="flex:1"><h4>Project Alpha</h4><p><small>Due in 2 hours</small></p></div>
+                                <a href="#" class="btn-notification">Start</a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="widget">
+                        <div class="widget-header"><h2>Leaderboard</h2></div>
+                        <ul class="profile-list">
+                            <li class="profile-item"><span style="width:20px;font-weight:600;color:var(--text-secondary)">1</span><img src="https://randomuser.me/api/portraits/men/32.jpg"><div class="profile-info"><p>Ben Carter</p></div><span class="score">2450 XP</span></li>
+                            <li class="profile-item"><span style="width:20px;font-weight:600;color:var(--text-secondary)">2</span><img src="https://randomuser.me/api/portraits/women/44.jpg"><div class="profile-info"><p>Alex Morgan (You)</p></div><span class="score">2150 XP</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const menuToggle = document.getElementById('menu-toggle');
+            const closeBtn = document.getElementById('sidebar-close-btn');
+            const overlay = document.getElementById('overlay');
+            const toggleMenu = () => { sidebar.classList.toggle('active'); overlay.classList.toggle('active'); };
+            menuToggle.addEventListener('click', toggleMenu);
+            closeBtn.addEventListener('click', toggleMenu);
+            overlay.addEventListener('click', toggleMenu);
+
+            const setupScrollEffect = () => {
+                const header = document.querySelector('.main-header');
+                const featuredWidget = document.getElementById('featured-course-widget');
+
+                if (window.innerWidth > 1024 || !featuredWidget) {
+                    header.classList.add('scrolled');
+                    return;
+                }
+
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+                            header.classList.add('scrolled');
+                        } else {
+                            header.classList.remove('scrolled');
+                        }
+                    });
+                }, { threshold: 0 });
+
+                observer.observe(featuredWidget);
+            };
+
+            setupScrollEffect();
+            window.addEventListener('resize', setupScrollEffect);
+        });
+    </script>
+</body>
+</html>
