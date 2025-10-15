@@ -49,48 +49,53 @@
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-        .main-area { 
-    display: flex; 
-    flex-direction: column; 
-    overflow-y: auto; 
-    background-color: var(--body-bg); 
-    scrollbar-width: none; /* For Firefox */
-    -ms-overflow-style: none;  /* For Internet Explorer and Edge */
-}
-
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); scrollbar-width: none; -ms-overflow-style: none; }
+        .main-area::-webkit-scrollbar { display: none; }
         .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; transition: background-color 0.3s ease, color 0.3s ease, border-bottom-color 0.3s ease; }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
         .content-body { padding: 2rem 3rem; display: grid; grid-template-columns: 1fr 400px; gap: 2rem; align-items: flex-start; }
         .column { display: flex; flex-direction: column; gap: 2rem; }
-        
         .widget { background-color: var(--widget-bg); border-radius: 20px; border: 1px solid var(--border-color); padding: 1.75rem; box-shadow: var(--shadow-sm); }
         .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
         .widget-header h2 { font-size: 1.2rem; font-weight: 600; }
         .widget-header a { font-size: 0.9rem; color: var(--brand-green); text-decoration: none; font-weight: 500; cursor: pointer; }
         
-        .featured-course { 
+        /* --- DESKTOP FEATURED COURSE VIEW --- */
+        .widget.featured-course { 
             background-color: var(--text-primary); color: #FFFFFF; border: none; box-shadow: var(--shadow-md);
-            display: flex; align-items: center; justify-content: space-between; gap: 2rem; padding: 2rem;
+            display: block;
         }
-        .featured-course .fc-header { flex-grow: 1; }
+        .featured-course .fc-header { margin-bottom: 1.5rem; }
         .featured-course h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255, 255, 255, 0.7); margin-bottom: 0.5rem; }
         .featured-course h3 { font-size: 1.75rem; font-weight: 600; margin-bottom: 0.5rem; }
         .fc-subject { color: rgba(255, 255, 255, 0.7); font-size: 0.9rem; }
-        .fc-bottom { flex-shrink: 0; width: 250px; }
         .progress-bar { width: 100%; height: 8px; background: rgba(255,255,255,0.2); border-radius: 10px; }
         .progress { height: 100%; background: var(--brand-green); border-radius: 10px; width: 0; transition: width 0.5s ease; }
-        .fc-progress-container { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem; }
-        .fc-progress-container span { font-size: 0.9rem; color: rgba(255,255,255,0.9); font-weight: 500; }
+        .fc-progress-container { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+        .fc-progress-container .progress-bar { flex-grow: 1; }
+        .fc-progress-container span { flex-shrink: 0; font-size: 0.9rem; color: rgba(255,255,255,0.9); font-weight: 500; }
         .btn-continue { 
             background: var(--brand-green); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; 
             cursor: pointer; transition: background-color 0.2s ease; text-decoration: none; 
-            display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; 
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; 
         }
         .btn-continue:hover { background-color: #2da967; }
         .btn-continue .btn-icon { font-size: 1.2rem; }
         
+        /* --- NEW PROGRESS WIDGET STYLES --- */
+        .progress-chart-container { display: flex; align-items: center; gap: 2rem; }
+        .circular-progress-container { position: relative; width: 120px; height: 120px; flex-shrink: 0; }
+        .progress-ring__svg { transform: rotate(-90deg); }
+        .progress-ring__circle { transition: stroke-dashoffset 0.8s ease-out; }
+        .progress-center-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .progress-center-text strong { display: block; font-size: 2rem; font-weight: 700; color: var(--brand-green); }
+        .progress-center-text span { font-size: 0.8rem; color: var(--text-secondary); }
+        .progress-stats { display: flex; flex-direction: column; gap: 1rem; }
+        .stat p { font-size: 0.9rem; color: var(--text-secondary); margin: 0; }
+        .stat strong { font-size: 1.25rem; font-weight: 600; }
+        
         .quick-links-header { font-size: 1.2rem; font-weight: 600; padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); }
-        .quick-actions-row { display: flex; justify-content: space-around; padding: 0; display: none; }
+        .quick-actions-row { display: flex; justify-content: space-around; padding: 0; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-primary); transition: transform 0.2s ease; width: 80px; text-align: center; }
         .action-item:hover { transform: translateY(-2px); }
         .action-circle { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background-color: var(--icon-bg-light); box-shadow: var(--shadow-sm); transition: box-shadow 0.2s ease; }
@@ -168,7 +173,9 @@
             .main-header.scrolled h1 { display: block; font-size: 1.25rem; }
             .mobile-profile-popup { display: block; }
             
-            /* --- CORRECT MOBILE FEATURED COURSE VIEW --- */
+            #progress-widget { display: none; } /* Hide progress card on mobile */
+
+            /* --- CURRENT MOBILE FEATURED COURSE VIEW --- */
             .widget.featured-course { 
                 display: flex; flex-direction: column; gap: 1rem; 
                 margin: 0 -1.5rem 0 -1.5rem; padding: 1rem 1.5rem 1.5rem 1.5rem; 
@@ -176,7 +183,7 @@
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
                 align-items: flex-start;
             }
-            .featured-course .fc-header { text-align: left; } /* Text alignment fix */
+            .featured-course .fc-header { margin-bottom: 0; text-align: left; }
             .featured-course .fc-bottom { 
                 display: flex; align-items: center; justify-content: space-between; gap: 1rem;
                 width: 100%;
@@ -184,7 +191,11 @@
             .featured-course h4 { font-size: 0.75rem; margin-bottom: 0.25rem; }
             .featured-course h3 { font-size: 1.25rem; margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .fc-subject { display: none; }
-            .fc-progress-container { flex-grow: 1; margin-bottom: 0; display: flex; align-items: center; gap: 0.75rem; flex-direction: row; }
+            .fc-progress-container { 
+                flex-grow: 1; margin-bottom: 0; display: flex; 
+                align-items: center; gap: 0.75rem; flex-direction: row; 
+            }
+            .fc-progress-container .progress-bar { width: 100%; }
             .btn-continue { 
                 flex-shrink: 0; width: auto; margin-top: 0;
                 background: rgba(255, 255, 255, 0.15); color: #FFFFFF; border: 1px solid rgba(255, 255, 255, 0.2);
@@ -193,28 +204,26 @@
             .btn-continue:hover { background: rgba(255, 255, 255, 0.25); }
             .btn-continue .btn-text, .btn-continue .btn-icon { display: inline-block; }
             .btn-continue .btn-icon { font-size: 1.2rem; }
-
-            .quick-links-header { margin-top: 0rem; }
-            .quick-actions-row { padding: 0; margin-bottom: 0rem; }
+            .quick-links-header { margin-top: 0; }
+            .quick-actions-row { padding: 0; margin-bottom: 0; }
             .action-circle { width: 48px; height: 48px; }
             .action-circle .material-symbols-outlined { font-size: 24px; }
             .action-item { width: 70px; gap: 0.5rem; }
             .action-label { font-size: 0.75rem; }
         }
-        
-@media (min-width: 1025px) {
-    #quick-links-section,
-    .profile-section,
-    .header-profile-toggle {
-        display: none !important;
-    }
 
-    /* ADD THIS NEW RULE BELOW */
-    .header-title-container {
-        margin-left: auto; /* Pushes the block to the far right */
-        text-align: right;  /* Aligns the text within the block */
-    }
-}
+        /* Custom styles for desktop view */
+        @media (min-width: 1025px) {
+            #quick-links-section,
+            .profile-section,
+            .header-profile-toggle {
+                display: none !important;
+            }
+            .header-title-container {
+                margin-left: auto;
+                text-align: right;
+            }
+        }
     </style>
 </head>
 <body>
@@ -276,7 +285,7 @@
                     <div class="widget featured-course" id="featured-course-widget" style="display: none;">
                         <div class="fc-header">
                             <h4>CONTINUE LEARNING</h4>
-                            <h3 id="featured-course-title">JAVA Course</h3>
+                            <h3 id="featured-course-title"></h3>
                             <div class="fc-subject" id="featured-course-subject"></div>
                         </div>
                         <div class="fc-bottom">
@@ -330,6 +339,22 @@
                     </div>
                 </div>
                 <div class="column side-col">
+                    <div class="widget" id="progress-widget">
+                        <div class="widget-header"><h2>Progress</h2></div>
+                        <div class="progress-chart-container">
+                            <div class="circular-progress-container">
+                                <svg class="progress-ring__svg" width="120" height="120">
+                                    <circle stroke="#E5E7EB" stroke-width="10" fill="transparent" r="52" cx="60" cy="60"/>
+                                    <circle class="progress-ring__circle" id="overall-progress-ring" stroke="var(--brand-green)" stroke-linecap="round" stroke-width="10" fill="transparent" r="52" cx="60" cy="60" stroke-dasharray="327" stroke-dashoffset="327"/>
+                                </svg>
+                                <div class="progress-center-text"><strong id="overall-progress-percent">0%</strong><span>Completed</span></div>
+                            </div>
+                            <div class="progress-stats">
+                                <div class="stat"><p>Chapters Completed</p><strong id="chapters-completed-stat">0 / 0</strong></div>
+                                <div class="stat"><p>Assessments</p><strong id="assessments-completed-stat">0 / 0</strong></div>
+                            </div>
+                        </div>
+                    </div>
                     <div class="widget">
                         <div class="widget-header"><h2>Notifications & Deadlines</h2></div>
                         <ul class="notification-list" id="notification-list"></ul>
@@ -458,6 +483,23 @@
                 });
             };
 
+            const renderOverallProgress = (totalChapters, totalAssessments, completedChapters, completedAssessments) => {
+                const totalItems = totalChapters + totalAssessments;
+                const completedItems = completedChapters + completedAssessments;
+                const overallPercent = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+                
+                document.getElementById('chapters-completed-stat').textContent = `${completedChapters} / ${totalChapters}`;
+                document.getElementById('assessments-completed-stat').textContent = `${completedAssessments} / ${totalAssessments}`;
+                document.getElementById('overall-progress-percent').textContent = `${overallPercent}%`;
+
+                const ring = document.getElementById('overall-progress-ring');
+                const radius = ring.r.baseVal.value;
+                const circumference = 2 * Math.PI * radius;
+                ring.style.strokeDasharray = `${circumference} ${circumference}`;
+                const offset = circumference - (overallPercent / 100) * circumference;
+                ring.style.strokeDashoffset = offset;
+            };
+
             const loadDashboardData = async (userId, userProfile) => {
                 try {
                     const enrollmentsSnap = await db.collection('enrollments').where('userId', '==', userId).get();
@@ -479,16 +521,16 @@
                     renderNotifications(notificationsSnap, enrolledExams, enrolledCodeAssignments, userStandaloneScores, userCodeAssignmentScores);
                     const allUsers = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
                     renderLeaderboards(scoresSnap, codeAssignmentScoresSnap, allUsers, userId, userProfile, usersSnap);
+                    
                     if (enrollmentsSnap.empty) {
                         document.getElementById('enrollment-prompt').style.display = 'block';
                         document.getElementById('featured-course-widget').style.display = 'none';
                         document.getElementById('quick-links-section').style.display = 'block';
-                        document.getElementById('quick-actions-row').style.display = 'flex';
                         document.getElementById('course-outline-widget').style.display = 'none';
+                        renderOverallProgress(0, 0, 0, 0); // Show 0 progress
                     } else {
                         document.getElementById('enrollment-prompt').style.display = 'none';
                         document.getElementById('quick-links-section').style.display = 'block';
-                        document.getElementById('quick-actions-row').style.display = 'flex';
                         const enrolledCourses = coursesSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                         const userProgress = new Set(progressSnap.docs.map(doc => doc.data().lessonId));
                         const allSubjects = new Map(subjectsSnap.docs.map(doc => [doc.id, doc.data()]));
@@ -496,6 +538,23 @@
                         const lessonsSnaps = await Promise.all(lessonsPromises);
                         const allEnrolledLessons = lessonsSnaps.flatMap(snap => snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
                         
+                        // Calculate progress stats
+                        let totalChapters = 0;
+                        let completedChapters = 0;
+                        enrolledCourses.forEach(course => {
+                            const courseChapters = course.chapters || [];
+                            totalChapters += courseChapters.length;
+                            courseChapters.forEach((chapterName, chapterIndex) => {
+                                const lessonsInChapter = allEnrolledLessons.filter(l => l.courseId === course.id && l.chapterIndex === chapterIndex);
+                                if (lessonsInChapter.length > 0 && lessonsInChapter.every(lesson => userProgress.has(lesson.id))) {
+                                    completedChapters++;
+                                }
+                            });
+                        });
+                        const totalAssessments = enrolledExams.length + enrolledCodeAssignments.length;
+                        const completedAssessments = userStandaloneScores.size + userCodeAssignmentScores.size;
+
+                        renderOverallProgress(totalChapters, totalAssessments, completedChapters, completedAssessments);
                         renderFeaturedCourse(enrolledCourses, allEnrolledLessons, allSubjects, userProgress);
                     }
                 } catch(error) {
@@ -509,7 +568,7 @@
                 let featuredCourse = courses.find(c => lessons.some(l => l.courseId === c.id && !progress.has(l.id))) || courses[0];
                 if (!featuredCourse) return;
                 const widget = document.getElementById('featured-course-widget');
-                widget.style.display = 'flex';
+                widget.style.display = 'block';
                 document.getElementById('course-outline-widget').style.display = 'block';
                 const courseLessons = lessons.filter(l => l.courseId === featuredCourse.id).sort((a,b) => a.chapterIndex - b.chapterIndex || a.order - b.order);
                 const completed = courseLessons.filter(l => progress.has(l.id)).length;
@@ -518,8 +577,13 @@
                 document.getElementById('featured-course-subject').textContent = `in ${subjects.get(featuredCourse.subjectId)?.name || ''}`;
                 document.getElementById('featured-course-progress').style.width = `${percent}%`;
                 const percentText = document.getElementById('featured-course-percent');
-                percentText.textContent = `${percent}%`;
-                if(window.innerWidth > 1024) percentText.textContent = `${percent}% Complete`;
+                
+                if(window.innerWidth > 1024) {
+                    percentText.textContent = `${percent}% Complete`;
+                } else {
+                    percentText.textContent = `${percent}%`;
+                }
+                
                 document.getElementById('featured-course-link').href = `lesson-view.html?id=${featuredCourse.id}`;
                 
                 const header = document.querySelector('.main-header');
