@@ -19,7 +19,7 @@
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
-        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 15px; overflow: hidden; }
+        body { font-family: 'IBM Plex Sans', sans-serif; background-color: var(--body-bg); color: var(--text-primary); font-size: 15px; overflow-x: hidden; }
         .dashboard-container { display: grid; grid-template-columns: 260px 1fr; height: 100vh; position: relative; }
         .sidebar { background-color: var(--widget-bg); border-right: 1px solid var(--border-color); padding: 2rem 1.5rem; display: flex; flex-direction: column; position: relative; transition: transform 0.3s ease-in-out; }
         .sidebar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; }
@@ -59,10 +59,7 @@
         .widget-header h2 { font-size: 1.2rem; font-weight: 600; }
         .widget-header a { font-size: 0.9rem; color: var(--brand-green); text-decoration: none; font-weight: 500; cursor: pointer; }
         
-        .widget.featured-course { 
-            background-color: var(--text-primary); color: #FFFFFF; border: none; box-shadow: var(--shadow-md);
-            display: block;
-        }
+        .widget.featured-course { background-color: var(--text-primary); color: #FFFFFF; border: none; box-shadow: var(--shadow-md); display: block; }
         .featured-course .fc-header { margin-bottom: 1.5rem; }
         .featured-course h4 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; color: rgba(255, 255, 255, 0.7); margin-bottom: 0.5rem; }
         .featured-course h3 { font-size: 1.75rem; font-weight: 600; margin-bottom: 0.5rem; }
@@ -72,11 +69,7 @@
         .fc-progress-container { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
         .fc-progress-container .progress-bar { flex-grow: 1; }
         .fc-progress-container span { flex-shrink: 0; font-size: 0.9rem; color: rgba(255,255,255,0.9); font-weight: 500; }
-        .btn-continue { 
-            background: var(--brand-green); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; 
-            cursor: pointer; transition: background-color 0.2s ease; text-decoration: none; 
-            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; 
-        }
+        .btn-continue { background: var(--brand-green); color: #FFFFFF; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background-color 0.2s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; }
         .btn-continue:hover { background-color: #2da967; }
         .btn-continue .btn-icon { font-size: 1.2rem; }
         
@@ -93,7 +86,7 @@
         
         .section-header { font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; }
         .quick-links-header { font-size: 1.2rem; font-weight: 600; padding-bottom: 1rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); }
-        .quick-actions-row { display: flex; justify-content: space-around; padding: 0; }
+        .quick-actions-row { display: flex; justify-content: space-between; flex-wrap: wrap; row-gap: 1.5rem; padding: 0; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 0.75rem; text-decoration: none; color: var(--text-primary); transition: transform 0.2s ease; width: 80px; text-align: center; }
         .action-item:hover { transform: translateY(-2px); }
         .action-circle { width: 56px; height: 56px; border-radius: 50%; display: grid; place-items: center; background-color: var(--icon-bg-light); box-shadow: var(--shadow-sm); transition: box-shadow 0.2s ease; }
@@ -117,12 +110,7 @@
         .outline-item.completed h4 { text-decoration: line-through; color: var(--text-secondary); }
 
         .notification-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
-        .notification-item { 
-            display: flex; align-items: center; gap: 1rem; 
-            background-color: var(--widget-bg); border: 1px solid var(--border-color);
-            border-radius: 18px; padding: 0.5rem 0.5rem;
-            transition: box-shadow 0.2s ease, transform 0.2s ease;
-        }
+        .notification-item { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 18px; padding: 0.5rem 1rem; transition: box-shadow 0.2s ease, transform 0.2s ease; }
         .notification-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
         .notification-content { display: flex; align-items: center; gap: 1rem; flex-grow: 1; }
         .notification-icon { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; }
@@ -175,7 +163,7 @@
             .dashboard-container { grid-template-columns: 1fr; }
             .sidebar { display: none; }
             .overlay.active { display: none; }
-            body { overflow-x: hidden; overflow-y: auto; }
+            body { overflow-y: auto; }
             .main-area { overflow: visible; }
             .content-body { grid-template-columns: 1fr; padding: 0 1.5rem 1.5rem 1.5rem; }
             .main-col { display: flex; flex-direction: column; }
@@ -233,7 +221,7 @@
             .quick-actions-row { padding: 0; margin-bottom: 0; }
             .action-circle { width: 48px; height: 48px; }
             .action-circle .material-symbols-outlined { font-size: 24px; }
-            .action-item { width: 70px; gap: 0.5rem; }
+            .action-item { width: auto; flex: 1; gap: 0.5rem; }
             .action-label { font-size: 0.75rem; }
         }
 
@@ -532,32 +520,42 @@
                 try {
                     const enrollmentsSnap = await db.collection('enrollments').where('userId', '==', userId).get();
                     const enrolledCourseIds = enrollmentsSnap.docs.map(doc => doc.data().courseId);
-                    const enrolledSubjectIds = enrollmentsSnap.docs.map(doc => doc.data().subjectId);
+                    const enrolledSubjectIds = [...new Set(enrollmentsSnap.docs.map(doc => doc.data().subjectId))];
 
-                    const [coursesSnap, examsSnap, codeAssignmentsSnap, progressSnap, scoresSnap, usersSnap, subjectsSnap, notificationsSnap, codeAssignmentScoresSnap] = await Promise.all([
+                    const [coursesSnap, examsSnap, codeAssignmentsSnap, progressSnap, allScoresSnap, allUsersSnap, subjectsSnap, notificationsSnap, allCodeAssignmentScoresSnap] = await Promise.all([
                         enrolledCourseIds.length ? db.collection('courses').where(firebase.firestore.FieldPath.documentId(), 'in', enrolledCourseIds).get() : Promise.resolve({ docs: [] }),
                         enrolledSubjectIds.length ? db.collection('exams').where('subjectId', 'in', enrolledSubjectIds).get() : Promise.resolve({ docs: [] }),
                         enrolledSubjectIds.length ? db.collection('codeAssignments').where('subjectId', 'in', enrolledSubjectIds).get() : Promise.resolve({ docs: [] }),
                         db.collection('users').doc(userId).collection('progress').get(),
-                        db.collection('scores').where('userId', '==', userId).get(),
+                        db.collection('scores').get(), 
                         db.collection('users').get(),
                         db.collection('subjects').get(),
                         db.collection('notifications').orderBy('createdAt', 'desc').get(),
-                        db.collection('codeAssignmentScores').where('userId', '==', userId).get()
+                        db.collection('codeAssignmentScores').get()
                     ]);
                     
-                    const userStandaloneScores = new Map(scoresSnap.docs.filter(d => d.data().examType !== 'quiz').map(d => [d.data().examId, d.data()]));
-                    const userCodeAssignmentScores = new Map(codeAssignmentScoresSnap.docs.map(d => [d.data().assignmentId, d.data()]));
-                    
+                    const userScores = new Map();
+                    allScoresSnap.docs.forEach(doc => {
+                        const data = doc.data();
+                        if (data.userId === userId) {
+                            userScores.set(data.examId, data);
+                        }
+                    });
+
+                    const userCodeAssignmentScores = new Map();
+                    allCodeAssignmentScoresSnap.docs.forEach(doc => {
+                        const data = doc.data();
+                        if (data.userId === userId) {
+                            userCodeAssignmentScores.set(data.assignmentId, data);
+                        }
+                    });
+
                     const enrolledExams = examsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     const enrolledCodeAssignments = codeAssignmentsSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderNotifications(notificationsSnap, enrolledExams, enrolledCodeAssignments, userStandaloneScores, userCodeAssignmentScores);
-
-                    const allUsers = new Map(usersSnap.docs.map(doc => [doc.id, doc.data()]));
+                    renderNotifications(notificationsSnap, enrolledExams, enrolledCodeAssignments, userScores, userCodeAssignmentScores);
                     
-                    const allScoresSnap = await db.collection('scores').get();
-                    const allCodeAssignmentScoresSnap = await db.collection('codeAssignmentScores').get();
-                    renderLeaderboards(allScoresSnap, allCodeAssignmentScoresSnap, allUsers, userId, userProfile, usersSnap);
+                    const allUsers = new Map(allUsersSnap.docs.map(doc => [doc.id, doc.data()]));
+                    renderLeaderboards(allScoresSnap, allCodeAssignmentScoresSnap, allUsers, userId, userProfile, allUsersSnap);
                     
                     if (enrollmentsSnap.empty) {
                         document.getElementById('enrollment-prompt').style.display = 'block';
@@ -588,7 +586,7 @@
                             });
                         });
                         const totalAssessments = enrolledExams.length + enrolledCodeAssignments.length;
-                        const completedAssessments = userStandaloneScores.size + userCodeAssignmentScores.size;
+                        const completedAssessments = Array.from(userScores.values()).filter(s => s.examType !== 'quiz').length + userCodeAssignmentScores.size;
 
                         renderOverallProgress(totalChapters, totalAssessments, completedChapters, completedAssessments);
                         renderFeaturedCourse(enrolledCourses, allEnrolledLessons, allSubjects, userProgress);
@@ -687,8 +685,8 @@
             const renderLeaderboards = async (scoresSnap, codeAssignmentScoresSnap, users, currentUserId, currentUserProfile, usersSnap) => {
                 const userPoints = new Map();
                 users.forEach((profile, id) => userPoints.set(id, 0));
-                scoresSnap.forEach(doc => { const score = doc.data(); if(userPoints.has(score.userId)) userPoints.set(score.userId, userPoints.get(score.userId) + score.pointsReceived); });
-                codeAssignmentScoresSnap.forEach(doc => { const score = doc.data(); if(userPoints.has(score.userId)) userPoints.set(score.userId, userPoints.get(score.userId) + score.totalScoreObtained); });
+                scoresSnap.forEach(doc => { const score = doc.data(); if(userPoints.has(score.userId)) userPoints.set(score.userId, userPoints.get(score.userId) + (score.pointsReceived || 0)); });
+                codeAssignmentScoresSnap.forEach(doc => { const score = doc.data(); if(userPoints.has(score.userId)) userPoints.set(score.userId, userPoints.get(score.userId) + (score.totalScoreObtained || 0)); });
                 const attendancePromises = usersSnap.docs.map(userDoc => db.collection('users').doc(userDoc.id).collection('scores').doc('attendance').get());
                 const attendanceSnaps = await Promise.all(attendancePromises);
                 attendanceSnaps.forEach((doc, index) => {
