@@ -112,7 +112,7 @@
         .notification-list { list-style: none; display: flex; flex-direction: column; gap: 0.75rem; }
         .notification-item { display: flex; align-items: center; gap: 1rem; background-color: var(--widget-bg); border: 1px solid var(--border-color); border-radius: 18px; padding: 0.5rem 1rem; transition: box-shadow 0.2s ease, transform 0.2s ease; }
         .notification-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-sm); }
-        .notification-content { display: flex; align-items: center; gap: 1rem; flex-grow: 1; }
+        .notification-content { display: flex; align-items: center; gap: 1rem; flex-grow: 1; min-width: 0; }
         .notification-icon { flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-size: 1.1rem; }
         .notification-icon.general { background-color: #E0E7FF; color: #4F46E5; }
         .notification-icon.warning { background-color: #FEF3C7; color: var(--warning-color); }
@@ -196,10 +196,16 @@
                 border-bottom: 1px solid rgba(255, 255, 255, 0.1);
                 align-items: flex-start;
             }
-            .featured-course .fc-header { margin-bottom: 0; text-align: left; }
+            .featured-course .fc-header {
+                margin-bottom: 0;
+                text-align: left;
+                width: 100%;
+                min-width: 0; /* CRITICAL FIX: Allows this flex item to shrink below its content size */
+            }
             .featured-course .fc-bottom { 
                 display: flex; align-items: center; justify-content: space-between; gap: 1rem;
                 width: 100%;
+                flex-wrap: wrap; /* Allows button to wrap if space is tight */
             }
             .featured-course h4 { font-size: 0.75rem; margin-bottom: 0.25rem; }
             .featured-course h3 { font-size: 1.25rem; margin-bottom: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -207,6 +213,7 @@
             .fc-progress-container { 
                 flex-grow: 1; margin-bottom: 0; display: flex; 
                 align-items: center; gap: 0.75rem; flex-direction: row; 
+                min-width: 120px; /* Gives a minimum space before wrapping */
             }
             .fc-progress-container .progress-bar { width: 100%; }
             .btn-continue { 
@@ -237,51 +244,45 @@
             }
         }
         
-        /* === NEW STYLES ADDED FOR VERY SMALL DEVICES === */
-        @media (max-width: 420px) {
-            /*
-              General layout adjustments for very small screens
-              to prevent horizontal overflow.
-            */
+        /* === NEW & IMPROVED MEDIA QUERIES FOR VERY SMALL DEVICES === */
+        @media (max-width: 400px) {
+            /* This query targets very narrow phones like the iPhone SE */
+
+            /* Reduce overall padding to create more space for content */
             .main-header,
             .content-body {
-                padding-left: 1rem;
-                padding-right: 1rem;
+                padding-left: 0.9rem;
+                padding-right: 0.9rem;
             }
-
             .widget.featured-course {
-                /* Adjust negative margin to match the new parent padding */
                 margin-left: -1rem;
                 margin-right: -1rem;
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
-            
-            /*
-              Specific fix for the "featured-course" widget as requested.
-              This allows the elements inside to wrap onto a new line if space is tight,
-              which prevents them from overflowing the screen. The overall format and
-              components of the widget remain the same.
-            */
+
+            /* Resizing the featured course elements to prevent overflow */
+            .featured-course h3 {
+                font-size: 1rem; /* Make the title font smaller */
+            }
             .featured-course .fc-bottom {
-                flex-wrap: wrap; /* Allow button to wrap to the next line */
-                row-gap: 0.75rem; /* Add space when wrapping occurs */
+                gap: 0.65rem; /* Reduce space between progress bar and button */
+            }
+            .fc-progress-container span {
+                font-size: 0.7rem; /* Make the percentage text smaller */
+            }
+            .btn-continue {
+                padding: 0.3rem 0.7rem; /* Make the button smaller */
+                font-size: 0.75rem;
             }
 
-            .fc-progress-container {
-                /* Ensure the progress bar can shrink but not too much before wrapping */
-                min-width: 120px; 
-            }
-
-            /* Adjust quick links for better spacing */
-            .quick-actions-row {
-                justify-content: space-around;
-            }
-
-            /* Adjust notifications to prevent overflow */
+            /* Prevent notification button from causing overflow */
             .notification-item {
-                flex-wrap: wrap; /* Allow the button to wrap below the text */
+                flex-wrap: wrap;
                 row-gap: 0.5rem;
+            }
+            .btn-notification {
+                white-space: normal; /* Allow button text to wrap if necessary */
             }
         }
     </style>
@@ -457,6 +458,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
     
     <script>
+        // Your existing script remains unchanged.
         document.addEventListener('DOMContentLoaded', function() {
             const firebaseConfig = {
                 apiKey: "AIzaSyCSW52Vl2UIC7eeM4uXKcSPdHflZCl3WJQ",
