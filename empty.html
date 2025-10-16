@@ -48,7 +48,7 @@
         .popup-list a i { font-size: 1.2rem; color: var(--text-secondary); }
         .popup-list a.logout i { color: var(--danger-color); }
         .popup-list a.logout { color: var(--danger-color); }
-        .main-area { display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; background-color: var(--body-bg); scrollbar-width: none; -ms-overflow-style: none; }
+        .main-area { display: flex; flex-direction: column; overflow-y: auto; background-color: var(--body-bg); scrollbar-width: none; -ms-overflow-style: none; }
         .main-area::-webkit-scrollbar { display: none; }
         .main-header { padding: 1.25rem 3rem; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; background-color: var(--widget-bg); position: sticky; top: 0; z-index: 10; transition: background-color 0.3s ease, color 0.3s ease, border-bottom-color 0.3s ease; }
         .main-header h1 { font-size: 1.5rem; font-weight: 600; }
@@ -164,7 +164,7 @@
             .sidebar { display: none; }
             .overlay.active { display: none; }
             body { overflow-y: auto; }
-            .main-area { overflow: visible; }
+            .main-area { overflow-x: hidden; } /* Added to prevent horizontal scroll */
             .content-body { grid-template-columns: 1fr; padding: 0 1.5rem 1.5rem 1.5rem; }
             .main-col { display: flex; flex-direction: column; }
             .main-header { padding: 0.75rem 1.5rem; background-color: var(--text-primary); color: #FFFFFF; border-bottom-color: transparent; justify-content: space-between; }
@@ -236,6 +236,59 @@
                 text-align: right;
             }
         }
+        
+        /* ============== NEW MEDIA QUERY FOR VERY SMALL DEVICES ============== */
+        @media (max-width: 360px) {
+            body {
+                font-size: 14px; /* Slightly reduce base font size */
+            }
+            .content-body {
+                padding: 0 1rem 1rem 1rem; /* Reduce side padding */
+            }
+            .widget {
+                padding: 1.25rem; /* Reduce padding inside all widgets */
+            }
+            .widget.featured-course {
+                margin: 0 -1rem; /* Match new content-body padding */
+                padding: 1rem 1rem 1.25rem 1rem;
+            }
+            .featured-course h3 {
+                font-size: 1.1rem; /* Reduce font size of the course title */
+            }
+            .fc-progress-container span {
+                font-size: 0.8rem;
+            }
+            .btn-continue {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            .section-header, .quick-links-header, .widget-header h2 {
+                font-size: 1.1rem;
+            }
+            .notification-item {
+                padding: 0.5rem 0.75rem;
+                gap: 0.75rem;
+            }
+             .notification-info h4 {
+                font-size: 0.9rem;
+            }
+            .notification-info p {
+                font-size: 0.8rem;
+            }
+            .enrollment-prompt {
+                padding: 1.5rem 1rem;
+            }
+            .enrollment-prompt h3 {
+                font-size: 1.25rem;
+            }
+            .tab-btn {
+                padding: 0.75rem 0.5rem;
+            }
+            .profile-item img {
+                margin-right: 0.75rem;
+            }
+        }
+
     </style>
 </head>
 <body>
